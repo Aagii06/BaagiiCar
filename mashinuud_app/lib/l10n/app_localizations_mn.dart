@@ -18,6 +18,9 @@ class AppLocalizationsMn extends AppLocalizations {
   String get home => 'Нүүр';
 
   @override
+  String get home_page => 'Нүүр хуудас';
+
+  @override
   String get payment => 'Төлбөр';
 
   @override

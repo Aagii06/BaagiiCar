@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'Home'**
   String get home;
 
+  /// No description provided for @home_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Home page'**
+  String get home_page;
+
   /// No description provided for @payment.
   ///
   /// In en, this message translates to:
