@@ -36,6 +36,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get name => 'First name';
 
   @override
+  String get first_name => 'First name';
+
+  @override
   String get last_name => 'Last name';
 
   @override

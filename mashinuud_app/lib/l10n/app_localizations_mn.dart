@@ -36,6 +36,9 @@ class AppLocalizationsMn extends AppLocalizations {
   String get name => 'Нэр';
 
   @override
+  String get first_name => 'Нэр';
+
+  @override
   String get last_name => 'Овог';
 
   @override
