@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mashinuud_app/l10n/app_localizations.dart';
 import 'layout/mainLayout.dart';
 
 void main() {
@@ -11,10 +13,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      locale: Locale('mn'),
+      supportedLocales: const [Locale('en'), Locale('mn')],
       debugShowCheckedModeBanner: false,
-      title: 'Inovv App',
+      title: '',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      // Апп эхлэхдээ шууд Layout-ыг дуудна
       home: const MainLayout(),
     );
   }

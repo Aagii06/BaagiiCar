@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:mashinuud_app/l10n/app_localizations.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
         child: Text(
-          'Нүүр хуудас',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          AppLocalizations.of(context)!.home_page,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
     );

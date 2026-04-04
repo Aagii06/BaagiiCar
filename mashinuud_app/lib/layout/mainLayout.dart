@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../screens/home.dart'; // Нүүр хуудсаа дуудаж байна
+import 'package:mashinuud_app/l10n/app_localizations.dart';
+import 'package:mashinuud_app/screens/home.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -22,21 +23,46 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Alerts',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.home),
+              onPressed: () => setState(() => _selectedIndex = 0),
+            ),
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () => setState(() => _selectedIndex = 1),
+            ),
+
+            Container(
+              width: 60,
+              height: 60,
+              decoration: const BoxDecoration(
+                color: Colors.blueAccent,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.add, color: Colors.white, size: 30),
+                onPressed: () => setState(() => _selectedIndex = 2),
+              ),
+            ),
+
+            IconButton(
+              icon: const Icon(Icons.chat),
+              onPressed: () => setState(() => _selectedIndex = 3),
+            ),
+            IconButton(
+              icon: const Icon(Icons.person),
+              onPressed: () => setState(() => _selectedIndex = 4),
+            ),
+          ],
+        ),
       ),
     );
   }
