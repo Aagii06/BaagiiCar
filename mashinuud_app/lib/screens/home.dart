@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mashinuud_app/l10n/app_localizations.dart';
+import 'package:mashinuud_app/l10n/locale.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -9,7 +9,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Text(
-          AppLocalizations.of(context)!.home_page,
+          context.l10n.home_page,
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
