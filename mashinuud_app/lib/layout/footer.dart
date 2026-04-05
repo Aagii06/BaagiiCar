@@ -11,15 +11,13 @@ class Footer extends StatefulWidget {
 
 class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
-  late final loc = context.l10n;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  bool _isPressed = false;
 
-  List<Widget> get _pages => [
+  List<Widget> _getPages(BuildContext context) => [
     const HomePage(),
-    Center(child: Text(loc.search)),
-    const Center(child: Text('Alerts')),
+    Center(child: Text(context.l10n.search)),
+    const Center(child: Text('Add New')),
     const Center(child: Text('Messages')),
     const Center(child: Text('Profile')),
   ];
@@ -47,8 +45,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: _pages[_selectedIndex],
-
+      body: IndexedStack(index: _selectedIndex, children: _getPages(context)),
       floatingActionButton: AnimatedBuilder(
         animation: _pulseAnimation,
         builder: (context, child) {
@@ -66,7 +63,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
               ],
             ),
             child: FloatingActionButton(
-              onPressed: () => setState(() => _selectedIndex = 2),
+              onPressed: () => {},
               backgroundColor: Colors.blueAccent,
               shape: const CircleBorder(),
               elevation: 0,
