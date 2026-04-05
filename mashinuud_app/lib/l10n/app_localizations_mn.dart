@@ -51,7 +51,7 @@ class AppLocalizationsMn extends AppLocalizations {
   String get password => 'Нууц үг';
 
   @override
-  String get remember_name => 'Нэвтрэх нэр санах';
+  String get remember_name => 'Намайг сана';
 
   @override
   String get login => 'Нэвтрэх';

@@ -2,23 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:mashinuud_app/l10n/locale.dart';
 import 'package:mashinuud_app/screens/home.dart';
 
-class MainLayout extends StatefulWidget {
-  const MainLayout({super.key});
+class Footer extends StatefulWidget {
+  const Footer({super.key});
 
   @override
-  State<MainLayout> createState() => _MainLayoutState();
+  State<Footer> createState() => _FooterState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
+class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  late final loc = context.l10n;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+  bool _isPressed = false;
 
   List<Widget> get _pages => [
     const HomePage(),
-    Center(child: Text(context.l10n.search)),
+    Center(child: Text(loc.search)),
     const Center(child: Text('Alerts')),
     const Center(child: Text('Messages')),
     const Center(child: Text('Profile')),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,33 +49,44 @@ class _MainLayoutState extends State<MainLayout> {
       backgroundColor: Colors.grey[50],
       body: _pages[_selectedIndex],
 
-      // 1. Голын товчийг тусад нь FloatingActionButton болгоно
-      floatingActionButton: SizedBox(
-        width: 70, // Хэмжээг нь эндээс тохируулж томруулна
-        height: 70,
-        child: FloatingActionButton(
-          onPressed: () => setState(() => _selectedIndex = 2),
-          backgroundColor: Colors.blueAccent, // Төв товчны өнгө
-          shape: const CircleBorder(), // Бөөрөнхий хэлбэр
-          elevation: 4, // Сүүдэр (дээшээ товойсон мэдрэмж өгнө)
-          child: const Icon(Icons.add, size: 35, color: Colors.white),
-        ),
+      floatingActionButton: AnimatedBuilder(
+        animation: _pulseAnimation,
+        builder: (context, child) {
+          return Container(
+            width: 55 * _pulseAnimation.value,
+            height: 55 * _pulseAnimation.value,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 5 * _pulseAnimation.value,
+                  spreadRadius: 4 * _pulseAnimation.value,
+                ),
+              ],
+            ),
+            child: FloatingActionButton(
+              onPressed: () => setState(() => _selectedIndex = 2),
+              backgroundColor: Colors.blueAccent,
+              shape: const CircleBorder(),
+              elevation: 0,
+              child: const Icon(Icons.add, size: 35, color: Colors.white),
+            ),
+          );
+        },
       ),
-
-      // 2. Байршлыг нь яг голд нь "шигтгэнэ"
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       bottomNavigationBar: BottomAppBar(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         height: 65,
-        shape: const CircularNotchedRectangle(), // Голын товчны орох ховил
-        notchMargin: 10.0, // Ховил болон товч хоорондын зай
-        color: Colors.white,
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 10.0,
+        color: Colors.grey[800],
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Зүүн талын товчлуурууд
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -61,24 +95,23 @@ class _MainLayoutState extends State<MainLayout> {
                     Icons.home,
                     color: _selectedIndex == 0
                         ? Colors.blueAccent
-                        : Colors.grey,
+                        : Colors.white,
                   ),
                   onPressed: () => setState(() => _selectedIndex = 0),
                 ),
-                const SizedBox(width: 20), // Товч хоорондын зай
+                const SizedBox(width: 20),
                 IconButton(
                   icon: Icon(
                     Icons.search,
                     color: _selectedIndex == 1
                         ? Colors.blueAccent
-                        : Colors.grey,
+                        : Colors.white,
                   ),
                   onPressed: () => setState(() => _selectedIndex = 1),
                 ),
               ],
             ),
 
-            // Баруун талын товчлуурууд
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -87,7 +120,7 @@ class _MainLayoutState extends State<MainLayout> {
                     Icons.chat,
                     color: _selectedIndex == 3
                         ? Colors.blueAccent
-                        : Colors.grey,
+                        : Colors.white,
                   ),
                   onPressed: () => setState(() => _selectedIndex = 3),
                 ),
@@ -97,7 +130,7 @@ class _MainLayoutState extends State<MainLayout> {
                     Icons.person,
                     color: _selectedIndex == 4
                         ? Colors.blueAccent
-                        : Colors.grey,
+                        : Colors.white,
                   ),
                   onPressed: () => setState(() => _selectedIndex = 4),
                 ),
