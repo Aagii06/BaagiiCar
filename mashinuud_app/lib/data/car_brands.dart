@@ -2,11 +2,13 @@ class CarBrand {
   final String brand;
   final String country;
   final String logo;
+  final bool asset;
 
   const CarBrand({
     required this.brand,
     required this.country,
     required this.logo,
+    this.asset = false,
   });
 }
 
@@ -14,126 +16,141 @@ const List<CarBrand> carBrands = [
   CarBrand(
     brand: "Toyota",
     country: "Japan",
-    logo: "https://cdn.simpleicons.org/toyota",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/toyota&w=128&h=128",
   ),
   CarBrand(
     brand: "Honda",
     country: "Japan",
-    logo: "https://cdn.simpleicons.org/honda",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/honda&w=128&h=128",
   ),
   CarBrand(
     brand: "Nissan",
     country: "Japan",
-    logo: "https://cdn.simpleicons.org/nissan",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/nissan&w=128&h=128",
   ),
   CarBrand(
     brand: "Lexus",
     country: "Japan",
-    logo: "https://cdn.simpleicons.org/lexus",
+    logo: "assets/logos/lexus.jpg",
+    asset: true,
   ),
   CarBrand(
     brand: "Mazda",
     country: "Japan",
-    logo: "https://cdn.simpleicons.org/mazda",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/mazda&w=128&h=128",
   ),
   CarBrand(
     brand: "Subaru",
     country: "Japan",
-    logo: "https://cdn.simpleicons.org/subaru",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/subaru&w=128&h=128",
   ),
   CarBrand(
     brand: "Suzuki",
     country: "Japan",
-    logo: "https://cdn.simpleicons.org/suzuki",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/suzuki&w=128&h=128",
   ),
   CarBrand(
     brand: "Mitsubishi",
     country: "Japan",
-    logo: "https://cdn.simpleicons.org/mitsubishi",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/mitsubishi&w=128&h=128",
   ),
   CarBrand(
     brand: "Mercedes-Benz",
     country: "Germany",
-    logo: "https://cdn.simpleicons.org/mercedes",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/mercedes&w=128&h=128",
   ),
   CarBrand(
     brand: "BMW",
     country: "Germany",
-    logo: "https://cdn.simpleicons.org/bmw",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/bmw&w=128&h=128",
   ),
   CarBrand(
     brand: "Audi",
     country: "Germany",
-    logo: "https://cdn.simpleicons.org/audi",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/audi&w=128&h=128",
   ),
   CarBrand(
     brand: "Volkswagen",
     country: "Germany",
-    logo: "https://cdn.simpleicons.org/volkswagen",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/volkswagen&w=128&h=128",
   ),
   CarBrand(
     brand: "Porsche",
     country: "Germany",
-    logo: "https://cdn.simpleicons.org/porsche",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/porsche&w=128&h=128",
   ),
   CarBrand(
     brand: "Hyundai",
     country: "South Korea",
-    logo: "https://cdn.simpleicons.org/hyundai",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/hyundai&w=128&h=128",
   ),
   CarBrand(
     brand: "Kia",
     country: "South Korea",
-    logo: "https://cdn.simpleicons.org/kia",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/kia&w=128&h=128",
   ),
   CarBrand(
     brand: "Tesla",
     country: "USA",
-    logo: "https://cdn.simpleicons.org/tesla",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/tesla&w=128&h=128",
   ),
   CarBrand(
     brand: "Ford",
     country: "USA",
-    logo: "https://cdn.simpleicons.org/ford",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/ford&w=128&h=128",
   ),
   CarBrand(
     brand: "Chevrolet",
     country: "USA",
-    logo: "https://cdn.simpleicons.org/chevrolet",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/chevrolet&w=128&h=128",
   ),
   CarBrand(
     brand: "Jeep",
     country: "USA",
-    logo: "https://cdn.simpleicons.org/jeep",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/jeep&w=128&h=128",
   ),
   CarBrand(
     brand: "Land Rover",
     country: "United Kingdom",
-    logo: "https://cdn.simpleicons.org/landrover",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/landrover&w=128&h=128",
   ),
   CarBrand(
     brand: "Bentley",
     country: "United Kingdom",
-    logo: "https://cdn.simpleicons.org/bentley",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/bentley&w=128&h=128",
   ),
   CarBrand(
     brand: "Ferrari",
     country: "Italy",
-    logo: "https://cdn.simpleicons.org/ferrari",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/ferrari&w=128&h=128",
   ),
   CarBrand(
     brand: "Lamborghini",
     country: "Italy",
-    logo: "https://cdn.simpleicons.org/lamborghini",
+    logo:
+        "https://images.weserv.nl/?url=cdn.simpleicons.org/lamborghini&w=128&h=128",
   ),
   CarBrand(
     brand: "Volvo",
     country: "Sweden",
-    logo: "https://cdn.simpleicons.org/volvo",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/volvo&w=128&h=128",
   ),
   CarBrand(
     brand: "BYD",
     country: "China",
-    logo: "https://static.cdnlogo.com/logos/b/96/byd.svg",
+    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/byd&w=128&h=128",
   ),
 ];

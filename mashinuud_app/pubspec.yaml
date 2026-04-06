@@ -27,3 +27,6 @@ flutter:
   generate: true
   uses-material-design: true
 
+  assets:
+    - assets/logos/
+

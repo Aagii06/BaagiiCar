@@ -38,13 +38,14 @@ class HomePage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: SvgPicture.network(
-                          brand.logo,
-                          width: 40,
-                          height: 40,
-                          placeholderBuilder: (context) =>
-                              const CircularProgressIndicator(),
-                        ),
+                        child: brand.asset
+                            ? Image.asset(brand.logo, width: 40, height: 40)
+                            : Image.network(
+                                brand.logo,
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.contain,
+                              ),
                       ),
                     );
                   },
