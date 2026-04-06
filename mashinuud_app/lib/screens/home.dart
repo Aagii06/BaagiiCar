@@ -44,7 +44,11 @@ class HomePage extends StatelessWidget {
                                 brand.logo,
                                 width: 40,
                                 height: 40,
-                                fit: BoxFit.contain,
+                                fit: BoxFit
+                                    .contain, // Зураг олддоггүй / алдаа гарсан үед
+                                errorBuilder: (context, error, stackTrace) {
+                                  return SizedBox(width: 40, height: 40);
+                                },
                               ),
                       ),
                     );
