@@ -17,7 +17,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
   List<Widget> _getPages(BuildContext context) => [
     const HomePage(),
     Center(child: Text(context.l10n.search)),
-    const Center(child: Text('Add New')),
+    SizedBox(),
     const Center(child: Text('Messages')),
     const Center(child: Text('Profile')),
   ];
@@ -78,7 +78,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         height: 65,
         shape: const CircularNotchedRectangle(),
-        notchMargin: 10.0,
+        notchMargin: 3.0,
         color: Colors.grey[800],
         child: Row(
           mainAxisSize: MainAxisSize.max,
