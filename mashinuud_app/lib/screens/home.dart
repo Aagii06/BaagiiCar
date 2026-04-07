@@ -39,15 +39,19 @@ class HomePage extends StatelessWidget {
                           ],
                         ),
                         child: brand.asset
-                            ? Image.asset(brand.logo, width: 40, height: 40)
+                            ? Image.asset(
+                                brand.logo,
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.contain,
+                              )
                             : Image.network(
                                 brand.logo,
                                 width: 40,
                                 height: 40,
-                                fit: BoxFit
-                                    .contain, // Зураг олддоггүй / алдаа гарсан үед
+                                fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return SizedBox(width: 40, height: 40);
+                                  return SizedBox();
                                 },
                               ),
                       ),

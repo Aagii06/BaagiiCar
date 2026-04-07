@@ -63,7 +63,7 @@ const List<CarBrand> carBrands = [
     brand: "Mercedes-Benz",
     country: "Germany",
     logo:
-        "https://images.weserv.nl/?url=cdn.simpleicons.org/mercedes&w=128&h=128",
+        "https://images.weserv.nl/?url=cdn.jsdelivr.net/npm/simple-icons@latest/icons/mercedes.svg&w=128&h=128",
   ),
   CarBrand(
     brand: "BMW",
