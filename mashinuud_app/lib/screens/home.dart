@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+// import 'package:flutter_svg/flutter_svg.dart';
 // import 'package:mashinuud_app/l10n/locale.dart';
 
 import 'package:mashinuud_app/data/car_brands.dart';
@@ -51,7 +52,14 @@ class HomePage extends StatelessWidget {
                                 height: 40,
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return SizedBox();
+                                  return SizedBox(
+                                    width: 40,
+                                    height: 40,
+                                    child: SpinKitFadingCircle(
+                                      color: Colors.blueGrey,
+                                      size: 30.0,
+                                    ),
+                                  );
                                 },
                               ),
                       ),

@@ -1,10 +1,14 @@
 class CarBrand {
+  final int? id;
   final String brand;
   final String country;
   final String logo;
   final bool asset;
+  final int? count;
 
   const CarBrand({
+    this.id = 0,
+    this.count = 0,
     required this.brand,
     required this.country,
     required this.logo,
@@ -123,7 +127,7 @@ const List<CarBrand> carBrands = [
     brand: "Land Rover",
     country: "United Kingdom",
     logo:
-        "https://images.weserv.nl/?url=cdn.simpleicons.org/landrover&w=128&h=128",
+        "https://icons.iconarchive.com/icons/simpleicons-team/simple/128/landrover-icon.png",
   ),
   CarBrand(
     brand: "Bentley",
@@ -151,6 +155,7 @@ const List<CarBrand> carBrands = [
   CarBrand(
     brand: "BYD",
     country: "China",
-    logo: "https://images.weserv.nl/?url=cdn.simpleicons.org/byd&w=128&h=128",
+    logo: "assets/logos/byd.png",
+    asset: true,
   ),
 ];
