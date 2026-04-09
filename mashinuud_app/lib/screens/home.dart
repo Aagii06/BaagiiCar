@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mashinuud_app/widgets/custom/carBrands.dart';
+import 'package:mashinuud_app/widgets/custom/carBodyTypes.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -13,7 +14,10 @@ class HomePage extends StatelessWidget {
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [SizedBox(height: 60, child: CarBrands())],
+            children: [
+              SizedBox(height: 60, child: CarBrands()),
+              SizedBox(height: 60, child: CarBodyTypes()),
+            ],
           ),
         ),
       ),
