@@ -75,8 +75,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       bottomNavigationBar: BottomAppBar(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        height: 65,
+        // height: 65,
         shape: const CircularNotchedRectangle(),
         notchMargin: 3.0,
         color: Colors.grey[800],
