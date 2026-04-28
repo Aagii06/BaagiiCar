@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mashinuud_app/l10n/app_localizations.dart';
 import 'layout/footer.dart';
+import 'package:mashinuud_app/screens/search.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: '',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      home: const Footer(),
+      home: const SearchScreen(),
     );
   }
 }
