@@ -14,7 +14,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   // Табын удирдлага (0: Шүүлтүүр, 1: Хадгалсан хайлт)
-  int _selectedTabIndex = 0;
+  // int _selectedTabIndex = 0;
 
   // Үнийн шүүлтүүрийн төлөв
   double _minPrice = 0.0;
@@ -64,7 +64,6 @@ class _SearchScreenState extends State<SearchScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              // Шүүлтүүрийг цэвэрлэх логик энд орно
               setState(() {
                 _minPrice = 0.0;
                 _maxPrice = 50000000.0;
@@ -79,8 +78,6 @@ class _SearchScreenState extends State<SearchScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        // Бүх контентийг гүйлгэж харах боломжтой болгоно
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           children: [
             const SizedBox(height: 10),
@@ -90,8 +87,8 @@ class _SearchScreenState extends State<SearchScreen> {
             const SizedBox(height: 16),
 
             // 2. Таб Вижет (Segmented Control - Cupertino хэв маягаар)
-            _buildTabSegment(),
-            const SizedBox(height: 20),
+            // _buildTabSegment(),
+            // const SizedBox(height: 20),
 
             // 3. Үнийн Шүүлтүүр (Price Slider)
             _buildPriceSlider(),
@@ -121,6 +118,7 @@ class _SearchScreenState extends State<SearchScreen> {
   // Хайлтын талбар
   Widget _buildSearchBar() {
     return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.grey[100], // Зөөлөн саарал дэвсгэр
         borderRadius: BorderRadius.circular(10),
@@ -130,10 +128,7 @@ class _SearchScreenState extends State<SearchScreen> {
         decoration: InputDecoration(
           hintText: 'Хайх (бренд, загвар, түлхүүр үг)',
           hintStyle: TextStyle(color: Colors.grey[500]),
-          prefixIcon: Icon(
-            CupertinoIcons.search,
-            color: Colors.grey[500],
-          ), // Хайлтын дүрс
+          prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
           border: InputBorder.none, // Текстийн хүрээг арилгах
           contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
@@ -142,130 +137,103 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   // Таб сонгох вижет (Cupertino Segmented Control-ийг илүү хялбараар)
-  Widget _buildTabSegment() {
-    return Row(
-      children: [
-        // Зүүн талын таб (Шүүлтүүр)
-        Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => _selectedTabIndex = 0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: _selectedTabIndex == 0
-                        ? Colors.blue
-                        : Colors.grey[200]!,
-                    width: 2,
-                  ),
-                ),
-              ),
-              child: Text(
-                'Шүүлтүүр',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _selectedTabIndex == 0 ? Colors.blue : Colors.black,
-                  fontWeight: _selectedTabIndex == 0
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                ),
-              ),
-            ),
-          ),
-        ),
-        // Баруун талын таб (Хадгалсан хайлт)
-        Expanded(
-          child: GestureDetector(
-            onTap: () => setState(() => _selectedTabIndex = 1),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: _selectedTabIndex == 1
-                        ? Colors.blue
-                        : Colors.grey[200]!,
-                    width: 2,
-                  ),
-                ),
-              ),
-              child: Text(
-                'Хадгалсан хайлт',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _selectedTabIndex == 1 ? Colors.blue : Colors.black,
-                  fontWeight: _selectedTabIndex == 1
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildTabSegment() {
+  //   return Row(
+  //     children: [
+  //       // Зүүн талын таб (Шүүлтүүр)
+  //       Expanded(
+  //         child: GestureDetector(
+  //           onTap: () => setState(() => _selectedTabIndex = 0),
+  //           child: Container(
+  //             padding: const EdgeInsets.symmetric(vertical: 12),
+  //             decoration: BoxDecoration(
+  //               border: Border(
+  //                 bottom: BorderSide(
+  //                   color: _selectedTabIndex == 0
+  //                       ? Colors.blue
+  //                       : Colors.grey[200]!,
+  //                   width: 2,
+  //                 ),
+  //               ),
+  //             ),
+  //             child: Text(
+  //               'Шүүлтүүр',
+  //               textAlign: TextAlign.center,
+  //               style: TextStyle(
+  //                 color: _selectedTabIndex == 0 ? Colors.blue : Colors.black,
+  //                 fontWeight: _selectedTabIndex == 0
+  //                     ? FontWeight.bold
+  //                     : FontWeight.normal,
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //       // Баруун талын таб (Хадгалсан хайлт)
+  //       Expanded(
+  //         child: GestureDetector(
+  //           onTap: () => setState(() => _selectedTabIndex = 1),
+  //           child: Container(
+  //             padding: const EdgeInsets.symmetric(vertical: 12),
+  //             decoration: BoxDecoration(
+  //               border: Border(
+  //                 bottom: BorderSide(
+  //                   color: _selectedTabIndex == 1
+  //                       ? Colors.blue
+  //                       : Colors.grey[200]!,
+  //                   width: 2,
+  //                 ),
+  //               ),
+  //             ),
+  //             child: Text(
+  //               'Хадгалсан хайлт',
+  //               textAlign: TextAlign.center,
+  //               style: TextStyle(
+  //                 color: _selectedTabIndex == 1 ? Colors.blue : Colors.black,
+  //                 fontWeight: _selectedTabIndex == 1
+  //                     ? FontWeight.bold
+  //                     : FontWeight.normal,
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   // Үнийн слайдер (Range Slider)
   Widget _buildPriceSlider() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Гарчиг болон утга харуулах
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Үнэ',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Үнэ (₮)',
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+          ),
+          RangeSlider(
+            values: RangeValues(_minPrice, _maxPrice),
+            min: 0,
+            max: 50000000,
+            divisions: 100,
+            labels: RangeLabels(
+              _formatPrice(_minPrice),
+              _formatPrice(_maxPrice),
             ),
-            Row(
-              children: [
-                Text(
-                  _formatPrice(_minPrice),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                const Text(' - ', style: TextStyle(color: Colors.grey)),
-                Text(
-                  _formatPrice(_maxPrice),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        // Range Slider вижет
-        RangeSlider(
-          values: RangeValues(_minPrice, _maxPrice),
-          min: 0,
-          max: 50000000,
-          divisions: 100, // Утгыг алхамаар өөрчлөх
-          activeColor: Colors.blue, // Сонгосон хэсгийн өнгө
-          inactiveColor: Colors.blue.withOpacity(0.1), // Сонгоогүй хэсгийн өнгө
-          labels: RangeLabels(
-            _formatPrice(_minPrice),
-            _formatPrice(_maxPrice),
-          ), // Товчлуур дээрх текст
-          onChanged: (RangeValues values) {
-            setState(() {
-              _minPrice = values.start;
-              _maxPrice = values.end;
-            });
-          },
-        ),
-      ],
+            onChanged: (RangeValues values) {
+              setState(() {
+                _minPrice = values.start;
+                _maxPrice = values.end;
+              });
+            },
+          ),
+        ],
+      ),
     );
   }
 
-  // Унадаг цэсүүдийг үүсгэх мөр (Filter Row)
   Widget _buildFilterRow(String label, String value) {
     return Container(
       decoration: BoxDecoration(
@@ -274,7 +242,7 @@ class _SearchScreenState extends State<SearchScreen> {
         ), // Сүлжээний шугам
       ),
       child: ListTile(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: EdgeInsets.symmetric(horizontal: 8),
         title: Text(
           label,
           style: const TextStyle(color: Colors.grey, fontSize: 14),
@@ -294,10 +262,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ), // Сум
           ],
         ),
-        onTap: () {
-          // Унадаг цэсний логик энд орно (Жишээ нь: Шинэ хуудас нээх эсвэл Dialog харуулах)
-          // Та энд CupertinoPicker эсвэл ModalBottomSheet ашиглаж болно.
-        },
+        onTap: () {},
       ),
     );
   }
@@ -309,7 +274,6 @@ class _SearchScreenState extends State<SearchScreen> {
       height: 50,
       child: ElevatedButton(
         onPressed: () {
-          // Хайх логик энд орно
           print('Хайлтын үр дүнг харах: ${_searchController.text}');
         },
         style: ElevatedButton.styleFrom(

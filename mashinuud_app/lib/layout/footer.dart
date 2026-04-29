@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/l10n/locale.dart';
 import 'package:mashinuud_app/screens/home.dart';
+import 'package:mashinuud_app/screens/search.dart';
 
 class Footer extends StatefulWidget {
   const Footer({super.key});
@@ -16,7 +17,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
 
   List<Widget> _getPages(BuildContext context) => [
     const HomePage(),
-    Center(child: Text(context.l10n.search)),
+    const SizedBox.shrink(), // Эндээс SearchScreen-ийг хасна
     SizedBox(),
     const Center(child: Text('Messages')),
     const Center(child: Text('Profile')),
@@ -103,7 +104,15 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                         ? Colors.blueAccent
                         : Colors.white,
                   ),
-                  onPressed: () => setState(() => _selectedIndex = 1),
+                  onPressed: () {
+                    // Layout-гүйгээр дангаар нь нээх (Full screen)
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SearchScreen(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
