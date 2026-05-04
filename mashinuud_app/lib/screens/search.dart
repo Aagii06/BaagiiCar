@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart'; // Зөвхөн хэдэн Cupertino widget ашиглах болно.
+import 'package:mashinuud_app/widgets/custom/filterRow.dart';
 
 // Үндсэн Хуудасны Вижет
 class SearchScreen extends StatefulWidget {
@@ -10,7 +11,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  // --- Төлөв Гэрчилгээ (State Management) ---
   final TextEditingController _searchController = TextEditingController();
 
   // Табын удирдлага (0: Шүүлтүүр, 1: Хадгалсан хайлт)
@@ -32,6 +32,12 @@ class _SearchScreenState extends State<SearchScreen> {
   String _selectedTransmission = 'Бүх төрөл';
 
   // --- Туслах функцууд ---
+
+  // Шүүлтүүр дээр дарах үед ажиллах функц
+  void _onFilterTap(String typeName) {
+    // Энд тухайн шүүлтүүрийн төрлөөс хамаарч сонголт хийх логик бичигдэнэ.
+    print('Selected filter type: $typeName');
+  }
 
   // Тоон утгыг валют формат руу хөрвүүлэх (Жишээ: 50000000 -> 50,000,000₮)
   String _formatPrice(double price) {
@@ -95,13 +101,48 @@ class _SearchScreenState extends State<SearchScreen> {
             const SizedBox(height: 16),
 
             // 4. Бусад Шүүлтүүрүүд (Filter Dropdowns)
-            _buildFilterRow('Байршил', _selectedLocation),
-            _buildFilterRow('Бренд', _selectedBrand),
-            _buildFilterRow('Он', _selectedYear),
-            _buildFilterRow('Явсан км', _selectedMileage),
-            _buildFilterRow('Шатахуун', _selectedFuelType),
-            _buildFilterRow('Хөтлөгч', _selectedDriveType),
-            _buildFilterRow('Хурдны хайрцаг', _selectedTransmission),
+            FilterRow(
+              label: 'Байршил',
+              value: _selectedLocation,
+              typeName: 'location',
+              onChanged: _onFilterTap,
+            ),
+            FilterRow(
+              label: 'Бренд',
+              value: _selectedBrand,
+              typeName: 'brand',
+              onChanged: _onFilterTap,
+            ),
+            FilterRow(
+              label: 'Он',
+              value: _selectedYear,
+              typeName: 'year',
+              onChanged: _onFilterTap,
+            ),
+            FilterRow(
+              label: 'Явсан км',
+              value: _selectedMileage,
+              typeName: 'mileage',
+              onChanged: _onFilterTap,
+            ),
+            FilterRow(
+              label: 'Шатахуун',
+              value: _selectedFuelType,
+              typeName: 'fuel',
+              onChanged: _onFilterTap,
+            ),
+            FilterRow(
+              label: 'Хөтлөгч',
+              value: _selectedDriveType,
+              typeName: 'drive',
+              onChanged: _onFilterTap,
+            ),
+            FilterRow(
+              label: 'Хурдны хайрцаг',
+              value: _selectedTransmission,
+              typeName: 'transmission',
+              onChanged: _onFilterTap,
+            ),
             const SizedBox(height: 30),
 
             // 5. Харах Товч (Bottom Action Button)
@@ -234,61 +275,31 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildFilterRow(String label, String value) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[100]!),
-        ), // Сүлжээний шугам
-      ),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 8),
-        title: Text(
-          label,
-          style: const TextStyle(color: Colors.grey, fontSize: 14),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.keyboard_arrow_right,
-              color: Colors.grey[400],
-              size: 20,
-            ), // Сум
-          ],
-        ),
-        onTap: () {},
-      ),
-    );
-  }
-
   // Харах товч (Bottom Button)
   Widget _buildViewResultsButton() {
-    return SizedBox(
-      width: double.infinity, // Бүрэн өргөнөөр
-      height: 50,
-      child: ElevatedButton(
-        onPressed: () {
-          print('Хайлтын үр дүнг харах: ${_searchController.text}');
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue, // Товчны өнгө
-          elevation: 0, // Сүүдрийг арилгах
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+    return Padding(
+      padding: EdgeInsetsGeometry.symmetric(horizontal: 8),
+      child: SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: ElevatedButton(
+          onPressed: () {
+            print('Хайлтын үр дүнг харах: ${_searchController.text}');
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
-        ),
-        child: const Text(
-          '1,245 зар харах', // Жишээ текст
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+          child: const Text(
+            '1,245 зар харах',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

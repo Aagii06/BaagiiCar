@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mashinuud_app/l10n/locale.dart';
+// import 'package:mashinuud_app/l10n/locale.dart';
 import 'package:mashinuud_app/screens/home.dart';
 import 'package:mashinuud_app/screens/search.dart';
 
