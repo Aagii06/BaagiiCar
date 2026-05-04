@@ -81,15 +81,17 @@ class _ListScreenState extends State<ListScreen>
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        leadingWidth: 120, // Текст багтахаар өргөнийг тохируулав
+        leadingWidth: 160, // Товчлуурыг илүү урт болгохын тулд өргөнийг нэмэв
         leading: TextButton.icon(
           onPressed: () => Navigator.pop(context),
           icon: const Icon(Icons.filter_list),
           label: const Text("Шүүлтүүр"),
-          style: TextButton.styleFrom(foregroundColor: Colors.black),
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.black,
+            alignment: Alignment.centerLeft, // Текстийг зүүн тал руу шахах
+            padding: const EdgeInsets.only(left: 16),
+          ),
         ),
-        title: const Text("Хайлт"),
-        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
