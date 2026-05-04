@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart'; // Зөвхөн хэдэн Cupertino widget ашиглах болно.
+import 'package:flutter/cupertino.dart';
 import 'package:mashinuud_app/widgets/custom/filterRow.dart';
+
+import 'package:mashinuud_app/screens/list.dart'; // ListScreen-ийг импортлох
+import 'package:mashinuud_app/data/filter_data.dart';
 
 // Үндсэн Хуудасны Вижет
 class SearchScreen extends StatefulWidget {
@@ -34,9 +37,33 @@ class _SearchScreenState extends State<SearchScreen> {
   // --- Туслах функцууд ---
 
   // Шүүлтүүр дээр дарах үед ажиллах функц
-  void _onFilterTap(String typeName) {
-    // Энд тухайн шүүлтүүрийн төрлөөс хамаарч сонголт хийх логик бичигдэнэ.
-    print('Selected filter type: $typeName');
+  void _onFilterTap(String typeName, String value) {
+    setState(() {
+      switch (typeName) {
+        case 'location':
+          _selectedLocation = value;
+          break;
+        case 'brand':
+          _selectedBrand = value;
+          break;
+        case 'year':
+          _selectedYear = value;
+          break;
+        case 'mileage':
+          _selectedMileage = value;
+          break;
+        case 'fuel':
+          _selectedFuelType = value;
+          break;
+        case 'drive':
+          _selectedDriveType = value;
+          break;
+        case 'transmission':
+          _selectedTransmission = value;
+          break;
+      }
+    });
+    print('Selected filter type: $typeName, value: $value');
   }
 
   // Тоон утгыг валют формат руу хөрвүүлэх (Жишээ: 50000000 -> 50,000,000₮)
@@ -73,7 +100,13 @@ class _SearchScreenState extends State<SearchScreen> {
               setState(() {
                 _minPrice = 0.0;
                 _maxPrice = 50000000.0;
-                // Бусад төлөвийг анхны байдалд нь оруулна
+                _selectedLocation = "Бүх байршил";
+                _selectedBrand = "Бүх бренд";
+                _selectedYear = "Бүх он";
+                _selectedMileage = "Бүх км";
+                _selectedFuelType = "Бүх төрөл";
+                _selectedDriveType = "Бүх төрөл";
+                _selectedTransmission = "Бүх төрөл";
               });
             },
             child: const Text(
@@ -105,42 +138,49 @@ class _SearchScreenState extends State<SearchScreen> {
               label: 'Байршил',
               value: _selectedLocation,
               typeName: 'location',
+              options: FilterData.locations,
               onChanged: _onFilterTap,
             ),
             FilterRow(
               label: 'Бренд',
               value: _selectedBrand,
               typeName: 'brand',
+              options: FilterData.brands,
               onChanged: _onFilterTap,
             ),
             FilterRow(
               label: 'Он',
               value: _selectedYear,
               typeName: 'year',
+              options: FilterData.years,
               onChanged: _onFilterTap,
             ),
             FilterRow(
               label: 'Явсан км',
               value: _selectedMileage,
               typeName: 'mileage',
+              options: FilterData.mileages,
               onChanged: _onFilterTap,
             ),
             FilterRow(
               label: 'Шатахуун',
               value: _selectedFuelType,
               typeName: 'fuel',
+              options: FilterData.fuelTypes,
               onChanged: _onFilterTap,
             ),
             FilterRow(
               label: 'Хөтлөгч',
               value: _selectedDriveType,
               typeName: 'drive',
+              options: FilterData.driveTypes,
               onChanged: _onFilterTap,
             ),
             FilterRow(
               label: 'Хурдны хайрцаг',
               value: _selectedTransmission,
               typeName: 'transmission',
+              options: FilterData.transmissions,
               onChanged: _onFilterTap,
             ),
             const SizedBox(height: 30),
@@ -284,7 +324,23 @@ class _SearchScreenState extends State<SearchScreen> {
         height: 50,
         child: ElevatedButton(
           onPressed: () {
-            print('Хайлтын үр дүнг харах: ${_searchController.text}');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ListScreen(
+                  searchQuery: _searchController.text,
+                  minPrice: _minPrice,
+                  maxPrice: _maxPrice,
+                  location: _selectedLocation,
+                  brand: _selectedBrand,
+                  year: _selectedYear,
+                  mileage: _selectedMileage,
+                  fuelType: _selectedFuelType,
+                  driveType: _selectedDriveType,
+                  transmission: _selectedTransmission,
+                ),
+              ),
+            );
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
