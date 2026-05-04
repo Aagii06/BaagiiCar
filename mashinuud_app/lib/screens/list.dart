@@ -81,9 +81,12 @@ class _ListScreenState extends State<ListScreen>
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+        leadingWidth: 120, // Текст багтахаар өргөнийг тохируулав
+        leading: TextButton.icon(
           onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.filter_list),
+          label: const Text("Шүүлтүүр"),
+          style: TextButton.styleFrom(foregroundColor: Colors.black),
         ),
         title: const Text("Хайлт"),
         centerTitle: true,
@@ -104,17 +107,7 @@ class _ListScreenState extends State<ListScreen>
           // Filter хэсэг
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                const Text("1,245 олдсон зар"),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.filter_list),
-                  label: const Text("Шүүлтүүр"),
-                ),
-              ],
-            ),
+            child: Row(children: [const Text("1,245 олдсон зар")]),
           ),
 
           // List
@@ -129,14 +122,47 @@ class _ListScreenState extends State<ListScreen>
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fiber_new),
-            label: "Шинэ эхэнд",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.swap_vert), label: "Хямд"),
-        ],
+      bottomNavigationBar: BottomAppBar(
+        padding: EdgeInsets.zero,
+        height: 38,
+        child: Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: () {
+                  print("Шинэ эхэнд эрэмбэлэх");
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.fiber_new, color: Colors.blue),
+                    SizedBox(width: 8),
+                    Text(
+                      "Шинэ эхэнд",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const VerticalDivider(width: 1, indent: 5, endIndent: 5),
+            Expanded(
+              child: InkWell(
+                onTap: () {
+                  print("Хямд үнээр эрэмбэлэх");
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.swap_vert, color: Colors.grey),
+                    SizedBox(width: 8),
+                    Text("Хямд", style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -150,54 +176,80 @@ class CarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      // Padding-ийг zero болгосноор зураг ирмэгтээ яг тулна
+      padding: EdgeInsets.zero,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
-        children: [
-          // Image
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              car["image"]!, // Network-ийн оронд Asset ашиглах
-              width: 90,
-              height: 70,
+      // Зургийг контейнерийн borderRadius-аар зүсэхийн тулд antiAlias ашиглана
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        // Дарахад эффект өгөх зориулалттай
+        onTap: () {
+          print("${car["name"]} сонгогдлоо");
+        },
+        child: Row(
+          children: [
+            // 1. Зураг хэсэг
+            Image.asset(
+              car["image"]!,
+              width: 110,
+              height: 90,
               fit: BoxFit.cover,
             ),
-          ),
 
-          const SizedBox(width: 10),
-
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  car["name"]!,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+            // 2. Мэдээлэл хэсэг
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      car["name"]!,
+                      maxLines: 1, // Текст хэтэрвэл нэг мөрөнд тасална
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      car["price"]!,
+                      style: const TextStyle(
+                        color: Colors.blue, // Үнийг өнгөөр ялгавал зүгээр
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  car["price"]!,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
 
-          // Favorite icon
-          const Icon(Icons.favorite_border),
-        ],
+            // 3. Дуртай зарт нэмэх (Favorite)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: IconButton(
+                onPressed: () {
+                  print("Favorite-д нэмлээ");
+                },
+                icon: const Icon(Icons.favorite_border, color: Colors.grey),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
