@@ -19,11 +19,8 @@ class _SearchScreenState extends State<SearchScreen> {
   // Табын удирдлага (0: Шүүлтүүр, 1: Хадгалсан хайлт)
   // int _selectedTabIndex = 0;
 
-  // Үнийн шүүлтүүрийн төлөв
   double _minPrice = 0.0;
-  double _maxPrice = 50000000.0;
-  // Шинэ хувилбар дээр Slider-т заавал ValueNotifier эсвэл StatefulRangeSlider ашиглана.
-  // Бид Stateful вижет ашиглаж байгаа учраас setState дуудна.
+  double _maxPrice = 1000000000.0;
 
   // Унадаг цэсүүдийн төлөв
   String _selectedLocation = 'Бүх байршил';
@@ -99,7 +96,7 @@ class _SearchScreenState extends State<SearchScreen> {
             onPressed: () {
               setState(() {
                 _minPrice = 0.0;
-                _maxPrice = 50000000.0;
+                _maxPrice = 1000000000.0;
                 _selectedLocation = "Бүх байршил";
                 _selectedBrand = "Бүх бренд";
                 _selectedYear = "Бүх он";
@@ -283,7 +280,6 @@ class _SearchScreenState extends State<SearchScreen> {
   //   );
   // }
 
-  // Үнийн слайдер (Range Slider)
   Widget _buildPriceSlider() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -297,7 +293,7 @@ class _SearchScreenState extends State<SearchScreen> {
           RangeSlider(
             values: RangeValues(_minPrice, _maxPrice),
             min: 0,
-            max: 50000000,
+            max: 1000000000,
             divisions: 100,
             labels: RangeLabels(
               _formatPrice(_minPrice),

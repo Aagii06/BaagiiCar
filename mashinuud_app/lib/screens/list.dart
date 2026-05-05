@@ -137,8 +137,6 @@ class _ListScreenState extends State<ListScreen>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.fiber_new, color: Colors.blue),
-                    SizedBox(width: 8),
                     Text(
                       "Шинэ эхэнд",
                       style: TextStyle(fontWeight: FontWeight.bold),
