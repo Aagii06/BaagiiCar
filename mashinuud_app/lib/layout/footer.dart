@@ -17,7 +17,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
 
   List<Widget> _getPages(BuildContext context) => [
     const HomePage(),
-    const SizedBox.shrink(), // Эндээс SearchScreen-ийг хасна
+    const SizedBox.shrink(),
     SizedBox(),
     const Center(child: Text('Messages')),
     const Center(child: Text('Profile')),

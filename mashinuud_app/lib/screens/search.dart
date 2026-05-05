@@ -5,7 +5,6 @@ import 'package:mashinuud_app/widgets/custom/filterRow.dart';
 import 'package:mashinuud_app/screens/list.dart'; // ListScreen-ийг импортлох
 import 'package:mashinuud_app/data/filter_data.dart';
 
-// Үндсэн Хуудасны Вижет
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
 
@@ -63,7 +62,6 @@ class _SearchScreenState extends State<SearchScreen> {
     print('Selected filter type: $typeName, value: $value');
   }
 
-  // Тоон утгыг валют формат руу хөрвүүлэх (Жишээ: 50000000 -> 50,000,000₮)
   String _formatPrice(double price) {
     String formatted = price
         .toStringAsFixed(0)
@@ -74,15 +72,13 @@ class _SearchScreenState extends State<SearchScreen> {
     return '$formatted₮';
   }
 
-  // --- Вижет Мод (Widget Tree) ---
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Үндсэн дэвсгэр өнгө цагаан
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0, // AppBar-ийн сүүдрийг арилгах
+        elevation: 0,
         title: const Text(
           'Хайлт',
           style: TextStyle(

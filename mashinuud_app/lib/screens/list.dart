@@ -177,7 +177,6 @@ class CarItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      // Padding-ийг zero болгосноор зураг ирмэгтээ яг тулна
       padding: EdgeInsets.zero,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -189,16 +188,13 @@ class CarItem extends StatelessWidget {
           ),
         ],
       ),
-      // Зургийг контейнерийн borderRadius-аар зүсэхийн тулд antiAlias ашиглана
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        // Дарахад эффект өгөх зориулалттай
         onTap: () {
           print("${car["name"]} сонгогдлоо");
         },
         child: Row(
           children: [
-            // 1. Зураг хэсэг
             Image.asset(
               car["image"]!,
               width: 110,
@@ -206,7 +202,6 @@ class CarItem extends StatelessWidget {
               fit: BoxFit.cover,
             ),
 
-            // 2. Мэдээлэл хэсэг
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -216,7 +211,7 @@ class CarItem extends StatelessWidget {
                   children: [
                     Text(
                       car["name"]!,
-                      maxLines: 1, // Текст хэтэрвэл нэг мөрөнд тасална
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
@@ -228,7 +223,7 @@ class CarItem extends StatelessWidget {
                     Text(
                       car["price"]!,
                       style: const TextStyle(
-                        color: Colors.blue, // Үнийг өнгөөр ялгавал зүгээр
+                        color: Colors.blue,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
@@ -238,7 +233,6 @@ class CarItem extends StatelessWidget {
               ),
             ),
 
-            // 3. Дуртай зарт нэмэх (Favorite)
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(
