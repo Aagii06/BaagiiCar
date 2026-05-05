@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mashinuud_app/data/car_data.dart';
+import 'package:mashinuud_app/screens/detail.dart';
 
 class ListScreen extends StatefulWidget {
   const ListScreen({
@@ -32,24 +34,6 @@ class ListScreen extends StatefulWidget {
 class _ListScreenState extends State<ListScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  final List<Map<String, String>> cars = [
-    {
-      "name": "Toyota Prius 2018",
-      "price": "19,500,000₮",
-      "image": "assets/no-car.jpg",
-    },
-    {
-      "name": "Lexus RX 350 2019",
-      "price": "45,000,000₮",
-      "image": "assets/no-car.jpg",
-    },
-    {
-      "name": "Hyundai Tucson 2017",
-      "price": "23,000,000₮",
-      "image": "assets/no-car.jpg",
-    },
-  ];
 
   @override
   void initState() {
@@ -92,6 +76,17 @@ class _ListScreenState extends State<ListScreen>
             padding: const EdgeInsets.only(left: 16),
           ),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Text(
+                "1,245 олдсон зар",
+                style: const TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+            ),
+          ),
+        ],
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -106,18 +101,12 @@ class _ListScreenState extends State<ListScreen>
       ),
       body: Column(
         children: [
-          // Filter хэсэг
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(children: [const Text("1,245 олдсон зар")]),
-          ),
-
           // List
           Expanded(
             child: ListView.builder(
-              itemCount: cars.length,
+              itemCount: carData.length,
               itemBuilder: (context, index) {
-                final car = cars[index];
+                final car = carData[index];
                 return CarItem(car: car);
               },
             ),
@@ -191,7 +180,12 @@ class CarItem extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          print("${car["name"]} сонгогдлоо");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailScreen(carId: car["id"]!),
+            ),
+          );
         },
         child: Row(
           children: [

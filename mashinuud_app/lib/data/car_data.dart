@@ -1,0 +1,43 @@
+final List<Map<String, String>> carData = [
+  {
+    "id": "1",
+    "name": "Toyota Prius 2018",
+    "price": "19,500,000₮",
+    "image": "assets/no-car.jpg",
+    "mileage": "120,000 км",
+    "fuel": "Хайбрид",
+    "transmission": "Автомат",
+    "drive": "FWD",
+    "location": "Улаанбаатар",
+    "date": "Өнөөдөр 10:00",
+    "description":
+        "Toyota Prius 50 маш цэвэрхэн, явах эд анги асуудалгүй, бүх үйлчилгээ хийгдсэн.",
+  },
+  {
+    "id": "2",
+    "name": "Lexus RX 350 2019",
+    "price": "45,000,000₮",
+    "image": "assets/no-car.jpg",
+    "mileage": "60,000 км",
+    "fuel": "Бензин",
+    "transmission": "Автомат",
+    "drive": "4WD",
+    "location": "Улаанбаатар",
+    "date": "Өнөөдөр 14:30",
+    "description":
+        "Машины байдал маш сайн. Бүх үйлчилгээ хийлгэсэн, нэмэлт мэдээлэл утсаар лавлана уу.",
+  },
+  {
+    "id": "3",
+    "name": "Hyundai Tucson 2017",
+    "price": "23,000,000₮",
+    "image": "assets/no-car.jpg",
+    "mileage": "85,000 км",
+    "fuel": "Дизель",
+    "transmission": "Автомат",
+    "drive": "AWD",
+    "location": "Дархан",
+    "date": "Өчигдөр 18:20",
+    "description": "Монголд орж ирээд удаагүй, маш цэвэрхэн Tucson зарна.",
+  },
+];
