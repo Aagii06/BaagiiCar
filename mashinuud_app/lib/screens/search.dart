@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:mashinuud_app/widgets/custom/filterRow.dart';
 
 import 'package:mashinuud_app/screens/list.dart'; // ListScreen-ийг импортлох
@@ -14,6 +15,8 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _minPriceController = TextEditingController();
+  final TextEditingController _maxPriceController = TextEditingController();
 
   // Табын удирдлага (0: Шүүлтүүр, 1: Хадгалсан хайлт)
   // int _selectedTabIndex = 0;
@@ -31,6 +34,21 @@ class _SearchScreenState extends State<SearchScreen> {
   String _selectedTransmission = 'Бүх төрөл';
 
   // --- Туслах функцууд ---
+
+  @override
+  void initState() {
+    super.initState();
+    _minPriceController.text = _formatNumber(_minPrice.toString());
+    _maxPriceController.text = _formatNumber(_maxPrice.toString());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _minPriceController.dispose();
+    _maxPriceController.dispose();
+    super.dispose();
+  }
 
   // Шүүлтүүр дээр дарах үед ажиллах функц
   void _onFilterTap(String typeName, String value) {
@@ -62,15 +80,29 @@ class _SearchScreenState extends State<SearchScreen> {
     print('Selected filter type: $typeName, value: $value');
   }
 
-  String _formatPrice(double price) {
-    String formatted = price
+  // Тоог мянгатын таслалтай болгож форматлах туслах функц
+  String _formatNumber(String value) {
+    if (value.isEmpty) return "";
+    String raw = value.replaceAll(',', '');
+    double? amount = double.tryParse(raw);
+    if (amount == null) return "";
+    return amount
         .toStringAsFixed(0)
         .replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (Match m) => '${m[1]},',
         );
-    return '$formatted₮';
   }
+
+  // String _formatPrice(double price) {
+  //   String formatted = price
+  //       .toStringAsFixed(0)
+  //       .replaceAllMapped(
+  //         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+  //         (Match m) => '${m[1]},',
+  //       );
+  //   return '$formatted₮';
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +125,8 @@ class _SearchScreenState extends State<SearchScreen> {
               setState(() {
                 _minPrice = 0.0;
                 _maxPrice = 1000000000.0;
+                _minPriceController.text = _formatNumber("0");
+                _maxPriceController.text = _formatNumber("1000000000");
                 _selectedLocation = "Бүх байршил";
                 _selectedBrand = "Бүх бренд";
                 _selectedYear = "Бүх он";
@@ -286,23 +320,73 @@ class _SearchScreenState extends State<SearchScreen> {
             'Үнэ (₮)',
             style: TextStyle(color: Colors.grey[600], fontSize: 14),
           ),
-          RangeSlider(
-            values: RangeValues(_minPrice, _maxPrice),
-            min: 0,
-            max: 1000000000,
-            divisions: 100,
-            labels: RangeLabels(
-              _formatPrice(_minPrice),
-              _formatPrice(_maxPrice),
-            ),
-            onChanged: (RangeValues values) {
-              setState(() {
-                _minPrice = values.start;
-                _maxPrice = values.end;
-              });
-            },
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildPriceField(
+                  controller: _minPriceController,
+                  hint: 'Доод үнэ',
+                  onChanged: (val) {
+                    setState(() {
+                      _minPrice = double.tryParse(val) ?? 0.0;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildPriceField(
+                  controller: _maxPriceController,
+                  hint: 'Дээд үнэ',
+                  onChanged: (val) {
+                    setState(() {
+                      _maxPrice = double.tryParse(val) ?? 1000000000.0;
+                    });
+                  },
+                ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPriceField({
+    required TextEditingController controller,
+    required String hint,
+    required Function(String) onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        onChanged: (value) {
+          // Форматласан утгыг харуулах
+          String formatted = _formatNumber(value);
+          if (formatted != value) {
+            controller.value = TextEditingValue(
+              text: formatted,
+              selection: TextSelection.collapsed(offset: formatted.length),
+            );
+          }
+          // Эх утгыг (таслалгүй) эцэг функц рүү дамжуулах
+          onChanged(value.replaceAll(',', ''));
+        },
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+        style: const TextStyle(fontSize: 14),
       ),
     );
   }
@@ -316,6 +400,15 @@ class _SearchScreenState extends State<SearchScreen> {
         height: 50,
         child: ElevatedButton(
           onPressed: () {
+            if (_minPrice > _maxPrice) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Доод үнэ дээд үнээс их байж болохгүй'),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+              return;
+            }
             Navigator.push(
               context,
               MaterialPageRoute(
