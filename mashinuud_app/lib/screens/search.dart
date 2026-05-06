@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:mashinuud_app/widgets/custom/filterRow.dart';
 
 import 'package:mashinuud_app/screens/list.dart'; // ListScreen-ийг импортлох
+import 'package:mashinuud_app/data/car_data.dart'; // carData-г импортлох
 import 'package:mashinuud_app/data/filter_data.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -38,8 +39,8 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    _minPriceController.text = _formatNumber(_minPrice.toString());
-    _maxPriceController.text = _formatNumber(_maxPrice.toString());
+    _minPriceController.text = ""; // Анх нээгдэхэд хоосон байна
+    _maxPriceController.text = "";
   }
 
   @override
@@ -125,8 +126,8 @@ class _SearchScreenState extends State<SearchScreen> {
               setState(() {
                 _minPrice = 0.0;
                 _maxPrice = 1000000000.0;
-                _minPriceController.text = _formatNumber("0");
-                _maxPriceController.text = _formatNumber("1000000000");
+                _minPriceController.text = ""; // Цэвэрлэх үед хоосон болгоно
+                _maxPriceController.text = "";
                 _selectedLocation = "Бүх байршил";
                 _selectedBrand = "Бүх бренд";
                 _selectedYear = "Бүх он";
@@ -367,9 +368,11 @@ class _SearchScreenState extends State<SearchScreen> {
       child: TextField(
         controller: controller,
         keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(10),
+        ],
         onChanged: (value) {
-          // Форматласан утгыг харуулах
           String formatted = _formatNumber(value);
           if (formatted != value) {
             controller.value = TextEditingValue(
@@ -377,7 +380,6 @@ class _SearchScreenState extends State<SearchScreen> {
               selection: TextSelection.collapsed(offset: formatted.length),
             );
           }
-          // Эх утгыг (таслалгүй) эцэг функц рүү дамжуулах
           onChanged(value.replaceAll(',', ''));
         },
         decoration: InputDecoration(
@@ -391,7 +393,6 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // Харах товч (Bottom Button)
   Widget _buildViewResultsButton() {
     return Padding(
       padding: EdgeInsetsGeometry.symmetric(horizontal: 8),
@@ -434,9 +435,9 @@ class _SearchScreenState extends State<SearchScreen> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          child: const Text(
-            '1,245 зар харах',
-            style: TextStyle(
+          child: Text(
+            '${carData.length} зар харах', // carData-ийн бодит тоог харуулах
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,
