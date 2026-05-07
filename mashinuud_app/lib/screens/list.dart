@@ -38,7 +38,6 @@ class _ListScreenState extends State<ListScreen>
   @override
   void initState() {
     _tabController = TabController(length: 2, vsync: this);
-    // Дамжуулсан хайлтын утгуудыг хэвлэж үзэх (тест хийх зорилгоор)
     print('ListScreen received search query: ${widget.searchQuery}');
     print('ListScreen received min price: ${widget.minPrice}');
     print('ListScreen received max price: ${widget.maxPrice}');
@@ -50,7 +49,6 @@ class _ListScreenState extends State<ListScreen>
     print('ListScreen received driveType: ${widget.driveType}');
     print('ListScreen received transmission: ${widget.transmission}');
 
-    // Энд та дамжуулсан утгуудыг ашиглан жагсаалтыг шүүх логикийг нэмж болно.
     super.initState();
   }
 

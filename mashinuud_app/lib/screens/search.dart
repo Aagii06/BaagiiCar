@@ -34,12 +34,10 @@ class _SearchScreenState extends State<SearchScreen> {
   String _selectedDriveType = 'Бүх төрөл';
   String _selectedTransmission = 'Бүх төрөл';
 
-  // --- Туслах функцууд ---
-
   @override
   void initState() {
     super.initState();
-    _minPriceController.text = ""; // Анх нээгдэхэд хоосон байна
+    _minPriceController.text = "";
     _maxPriceController.text = "";
   }
 
@@ -51,7 +49,6 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
-  // Шүүлтүүр дээр дарах үед ажиллах функц
   void _onFilterTap(String typeName, String value) {
     setState(() {
       switch (typeName) {
@@ -81,7 +78,6 @@ class _SearchScreenState extends State<SearchScreen> {
     print('Selected filter type: $typeName, value: $value');
   }
 
-  // Тоог мянгатын таслалтай болгож форматлах туслах функц
   String _formatNumber(String value) {
     if (value.isEmpty) return "";
     String raw = value.replaceAll(',', '');
@@ -126,7 +122,7 @@ class _SearchScreenState extends State<SearchScreen> {
               setState(() {
                 _minPrice = 0.0;
                 _maxPrice = 1000000000.0;
-                _minPriceController.text = ""; // Цэвэрлэх үед хоосон болгоно
+                _minPriceController.text = "";
                 _maxPriceController.text = "";
                 _selectedLocation = "Бүх байршил";
                 _selectedBrand = "Бүх бренд";
@@ -436,7 +432,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           child: Text(
-            '${carData.length} зар харах', // carData-ийн бодит тоог харуулах
+            '${carData.length} зар харах',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
