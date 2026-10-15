@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-// import 'package:mashinuud_app/l10n/locale.dart';
+import 'package:mashinuud_app/app/theme.dart';
+import 'package:mashinuud_app/screens/chat.dart';
 import 'package:mashinuud_app/screens/home.dart';
+import 'package:mashinuud_app/screens/post_ad.dart';
+import 'package:mashinuud_app/screens/profile.dart';
 import 'package:mashinuud_app/screens/search.dart';
 
 class Footer extends StatefulWidget {
@@ -10,136 +13,98 @@ class Footer extends StatefulWidget {
   State<Footer> createState() => _FooterState();
 }
 
-class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
+class _FooterState extends State<Footer> {
+  // 0: Нүүр, 1: Чат, 2: Профайл
   int _selectedIndex = 0;
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
 
-  List<Widget> _getPages(BuildContext context) => [
-    const HomePage(),
-    const SizedBox.shrink(),
-    SizedBox(),
-    const Center(child: Text('Messages')),
-    const Center(child: Text('Profile')),
+  static const _pages = [
+    HomePage(),
+    ChatScreen(embedded: true),
+    ProfileScreen(),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
+  void _push(Widget page, {bool fullscreen = false}) => Navigator.push(
+    context,
+    MaterialPageRoute(fullscreenDialog: fullscreen, builder: (_) => page),
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: IndexedStack(index: _selectedIndex, children: _getPages(context)),
-      floatingActionButton: AnimatedBuilder(
-        animation: _pulseAnimation,
-        builder: (context, child) {
-          return Container(
-            width: 55 * _pulseAnimation.value,
-            height: 55 * _pulseAnimation.value,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 5 * _pulseAnimation.value,
-                  spreadRadius: 4 * _pulseAnimation.value,
-                ),
-              ],
-            ),
-            child: FloatingActionButton(
-              onPressed: () => {},
-              backgroundColor: Colors.blueAccent,
-              shape: const CircleBorder(),
-              elevation: 0,
-              child: const Icon(Icons.add, size: 35, color: Colors.white),
-            ),
-          );
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      bottomNavigationBar: BottomAppBar(
-        // height: 65,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 3.0,
-        color: Colors.grey[800],
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: IndexedStack(index: _selectedIndex, children: _pages),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppPalette.surface,
+          border: Border(top: BorderSide(color: AppPalette.border)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 76,
+            child: Row(
               children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.home,
-                    color: _selectedIndex == 0
-                        ? Colors.blueAccent
-                        : Colors.white,
-                  ),
-                  onPressed: () => setState(() => _selectedIndex = 0),
-                ),
-                const SizedBox(width: 20),
-                IconButton(
-                  icon: Icon(
-                    Icons.search,
-                    color: _selectedIndex == 1
-                        ? Colors.blueAccent
-                        : Colors.white,
-                  ),
-                  onPressed: () {
-                    // Layout-гүйгээр дангаар нь нээх (Full screen)
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SearchScreen(),
+                _item(Icons.home_outlined, 'Нүүр', selected: _selectedIndex == 0,
+                    onTap: () => setState(() => _selectedIndex = 0)),
+                _item(Icons.search_rounded, 'Хайх',
+                    onTap: () => _push(const SearchScreen())),
+                Expanded(
+                  child: Center(
+                    child: Transform.translate(
+                      offset: const Offset(0, -14),
+                      child: Material(
+                        color: AppPalette.primary,
+                        elevation: 6,
+                        shadowColor: AppPalette.primary.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(24),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () => _push(const PostAdScreen(), fullscreen: true),
+                          child: const SizedBox(
+                            width: 64,
+                            height: 64,
+                            child: Icon(Icons.add_rounded, color: Colors.white, size: 34),
+                          ),
+                        ),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
+                _item(Icons.chat_bubble_outline_rounded, 'Чат',
+                    selected: _selectedIndex == 1,
+                    onTap: () => setState(() => _selectedIndex = 1)),
+                _item(Icons.person_outline_rounded, 'Профайл',
+                    selected: _selectedIndex == 2,
+                    onTap: () => setState(() => _selectedIndex = 2)),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
 
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.chat,
-                    color: _selectedIndex == 3
-                        ? Colors.blueAccent
-                        : Colors.white,
-                  ),
-                  onPressed: () => setState(() => _selectedIndex = 3),
-                ),
-                const SizedBox(width: 20),
-                IconButton(
-                  icon: Icon(
-                    Icons.person,
-                    color: _selectedIndex == 4
-                        ? Colors.blueAccent
-                        : Colors.white,
-                  ),
-                  onPressed: () => setState(() => _selectedIndex = 4),
-                ),
-              ],
+  Widget _item(
+    IconData icon,
+    String label, {
+    bool selected = false,
+    required VoidCallback onTap,
+  }) {
+    final color = selected ? AppPalette.primary : AppPalette.muted;
+    return Expanded(
+      child: InkResponse(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
         ),

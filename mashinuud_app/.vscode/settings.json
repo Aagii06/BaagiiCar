@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "/Users/altansukh/Documents/GitHub/BaagiiCar/mashinuud_app/linux"
+    "cmake.sourceDirectory": "/Users/altansukh/Documents/GitHub/BaagiiCar/mashinuud_app/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

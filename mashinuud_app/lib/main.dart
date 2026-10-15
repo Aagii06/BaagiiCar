@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mashinuud_app/l10n/app_localizations.dart';
+import 'app/theme.dart';
 import 'layout/footer.dart';
 
 void main() {
@@ -22,8 +23,8 @@ class MyApp extends StatelessWidget {
       locale: Locale('mn'),
       supportedLocales: const [Locale('en'), Locale('mn')],
       debugShowCheckedModeBanner: false,
-      title: '',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      title: 'AutoZah',
+      theme: AppTheme.light,
       home: const Footer(),
     );
   }
