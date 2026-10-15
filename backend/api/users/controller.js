@@ -6,12 +6,28 @@ const { users, sequelize, op } = require("../../models");
 const { uploadImage } = require("../../helper/fileHelper");
 const { authLogin } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
+const { roles } = require("../../config/constants");
 
 module.exports.save = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
 
   let { id, modifyData, by, at, ...body } = req.body;
-  let { files } = req;
+  let { files, loggedUser } = req;
+
+  // Админ бус хэрэглэгч зөвхөн өөрийн мэдээллийг засна, эрхээ өөрчилж чадахгүй
+  if (loggedUser?.role !== roles.admin) {
+    if (!id || id + "" !== loggedUser?.id + "") {
+      result.message = "Зөвхөн өөрийн мэдээллийг засах боломжтой";
+      return res.status(200).json(result);
+    }
+    delete body.role;
+    delete body.status;
+  }
+  // Засах үед нууц үгийг /change-password-оор солино
+  if (id) {
+    delete body.password;
+    delete body.password_confirm;
+  }
 
   const t = await sequelize.transaction();
   try {
@@ -105,7 +121,7 @@ module.exports.save = async (req, res) => {
 module.exports.login = async (req, res) => {
   let result = { success: true, data: null, message: "" };
 
-  const { phonenumber, password, isMobile } = req.body;
+  const { phonenumber, password } = req.body;
   try {
     const findUser = await users.findOne({
       where: { phonenumber, status: "active" },
@@ -113,14 +129,6 @@ module.exports.login = async (req, res) => {
       raw: true,
     });
     if (findUser) {
-      if (isMobile) {
-        if (findUser.role !== "Жолооч" && findUser.role !== "Харилцагч") {
-          return res.status(200).json({
-            success: false,
-            message: "Системд зөвхөн жолооч нэвтрэх боломжтой",
-          });
-        }
-      }
       const currentPassword = findUser.password
         ? findUser.password.toString().replace(/^\$2y/, "$2a")
         : "";
@@ -160,6 +168,45 @@ module.exports.login = async (req, res) => {
   }
 };
 
+// Апп-аас өөрөө бүртгүүлэх (Хэрэглэгч эрхтэй)
+module.exports.register = async (req, res) => {
+  let result = { success: false, data: null, message: "Амжилттай" };
+
+  const { phonenumber, firstname, lastname, email, password, at } = req.body;
+  try {
+    const user = await users.create({
+      phonenumber,
+      firstname,
+      lastname,
+      email,
+      password,
+      role: roles.customer,
+      status: "active",
+      created_at: at,
+    });
+    await saveLog({
+      object_name: "users",
+      object_id: user.id,
+      log_action: "registered",
+      log_action_mn: "Бүртгүүлсэн",
+      created_by: user.id,
+      created_at: at,
+    });
+
+    // Бүртгүүлсний дараа шууд нэвтэрсэн төлөвт оруулна
+    const { user: loggedUser } = await findUserData(user.id);
+    authLogin(loggedUser, (token) => {
+      result.success = true;
+      result.data = { token, loggedUser };
+      return res.status(200).json(result);
+    });
+  } catch (error) {
+    console.log(error);
+    result.message = typeof error === "string" ? error : "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
 module.exports.logout = async (req, res) => {
   let result = { data: null, success: true, message: "" };
   console.log("logOut:", req.loggedUser.phonenumber + " logout system");
@@ -194,9 +241,16 @@ module.exports.changePassword = async (req, res) => {
 
   const t = await sequelize.transaction();
   try {
-    // const { loggedUser } = req;
-    const { id, isAdmin, old_password, password, password_confirm, by, at } =
-      req.body;
+    const { loggedUser } = req;
+    const { id, old_password, password, password_confirm, by, at } = req.body;
+    // Админ эсэхийг токеноос шалгана (body-оос итгэхгүй)
+    const isAdmin = loggedUser?.role === roles.admin;
+    if (!isAdmin && id + "" !== loggedUser?.id + "") {
+      await t.rollback();
+      result.success = false;
+      result.message = "Зөвхөн өөрийн нууц үгийг солих боломжтой";
+      return res.status(200).json(result);
+    }
     if (password.replace(/\s+/g, "") !== password_confirm.replace(/\s+/g, "")) {
       result.success = false;
       result.message = "Нууц үгийн давталт буруу байна";
@@ -275,7 +329,7 @@ module.exports.changePassword = async (req, res) => {
 const findUserData = async (id) => {
   const user = await users.findOne({
     where: { id, status: { [op.ne]: "deleted" } },
-    includes: [],
+    attributes: { exclude: ["password", "forgot_pass_token"] },
     raw: true,
   });
   if (user === null)

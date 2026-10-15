@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { roles } = require("../config/constants");
 
 module.exports.authLogin = (user, callback) => {
   jwt.sign(
@@ -35,4 +36,12 @@ module.exports.protect = async (req, res, next) => {
       .status(401)
       .json({ success: false, message: "Систем рүү нэвтэрнэ үү" });
   }
+};
+
+// protect-ийн дараа ашиглана
+module.exports.isAdmin = (req, res, next) => {
+  if (req.loggedUser?.role === roles.admin) return next();
+  return res
+    .status(200)
+    .json({ success: false, message: "Танд энэ үйлдлийг хийх эрх байхгүй" });
 };

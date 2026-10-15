@@ -1,31 +1,21 @@
 const { actionLogs } = require("../../../models");
+const { isAdmin } = require("../../../middleware/auth");
 
+// Үйлдлийн түүхийг зөвхөн админ харна, гараар өөрчлөхгүй
 const list = (req, res, next) => {
-  next();
+  isAdmin(req, res, next);
 };
 
 const show = (req, res, next) => {
-  next();
+  isAdmin(req, res, next);
 };
 
 const lookup = (req, res, next) => {
-  next();
-};
-
-const create = (req, res, next) => {
-  next();
-};
-
-const update = (req, res, next) => {
-  next();
-};
-
-const destroy = (req, res, next) => {
-  next();
+  isAdmin(req, res, next);
 };
 
 module.exports = {
   model: actionLogs,
-  middleware: { show, list, create, update, lookup, destroy },
+  middleware: { show, list, lookup },
   validation: {},
 };

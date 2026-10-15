@@ -1,28 +1,32 @@
 const { users } = require("../../../models");
 const { body } = require("express-validator");
+const { isAdmin } = require("../../../middleware/auth");
+const { roles } = require("../../../config/constants");
 
+// Хэрэглэгчийн удирдлага зөвхөн админд
 const list = (req, res, next) => {
-  next();
+  isAdmin(req, res, next);
 };
 
 const show = (req, res, next) => {
-  next();
+  isAdmin(req, res, next);
 };
 
 const lookup = (req, res, next) => {
-  next();
+  isAdmin(req, res, next);
 };
 
 const create = async (req, res, next) => {
-  next();
+  req.body.status = "active";
+  isAdmin(req, res, next);
 };
 
 const update = async (req, res, next) => {
-  next();
+  isAdmin(req, res, next);
 };
 
 const destroy = async (req, res, next) => {
-  next();
+  isAdmin(req, res, next);
 };
 
 const customValidation = [
@@ -33,7 +37,11 @@ const customValidation = [
     .withMessage("Утасны дугаар зөвхөн тоо байх ёстой")
     .matches(/^\d{8}$/)
     .withMessage("Утасны дугаарын формат таарахгүй байна"),
-  body("role").notEmpty().withMessage("Хэрэглэгчийн эрхээ сонгоно уу"),
+  body("role")
+    .notEmpty()
+    .withMessage("Хэрэглэгчийн эрхээ сонгоно уу")
+    .isIn(Object.values(roles))
+    .withMessage("Хэрэглэгчийн эрх буруу байна"),
   body("email")
     .isEmail()
     .optional({ nullable: true, checkFalsy: true })

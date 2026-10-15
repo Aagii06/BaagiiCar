@@ -1,28 +1,39 @@
 const { body } = require("express-validator");
 const validation = require("../../middleware/validation");
+const { roles } = require("../../config/constants");
 
-module.exports.saveValidation = [
+const phonenumberValidation = (message) =>
   body("phonenumber")
     .notEmpty()
-    .withMessage("Утасны дугаар оруулна уу")
+    .withMessage(message)
     .isNumeric()
     .withMessage("Утасны дугаар зөвхөн тоо байх ёстой")
     .matches(/^\d{8}$/)
-    .withMessage("Утасны дугаарын формат таарахгүй байна"),
+    .withMessage("Утасны дугаарын формат таарахгүй байна");
+
+const passwordConfirmValidation = body("password_confirm").custom(
+  (value, { req }) => {
+    if (value !== req.body.password)
+      throw new Error("Нууц үгийн давталт буруу байна");
+    return true;
+  },
+);
+
+module.exports.saveValidation = [
+  phonenumberValidation("Утасны дугаар оруулна уу"),
   body("email")
     .isEmail()
     .optional({ nullable: true, checkFalsy: true })
     .withMessage("И-мэйл формат буруу байна"),
   body("firstname").notEmpty().withMessage("Нэр оруулна уу"),
-  body("role").notEmpty().withMessage("Хэрэглэгчийн эрх сонгоно уу"),
-  body("organization_id")
-    .if((value, { req }) => req.body.role === "Харилцагч")
+  body("role")
+    .optional({ nullable: true, checkFalsy: true })
+    .isIn(Object.values(roles))
+    .withMessage("Хэрэглэгчийн эрх буруу байна"),
+  body("role")
+    .if((value, { req }) => !req.body.id)
     .notEmpty()
-    .withMessage("Байгууллага сонгоно уу"),
-  body("zone_id")
-    .if((value, { req }) => req.body.role === "Жолооч")
-    .notEmpty()
-    .withMessage("Бүс сонгоно уу"),
+    .withMessage("Хэрэглэгчийн эрх сонгоно уу"),
   body("password")
     .if((value, { req }) => !req.body.id)
     .notEmpty()
@@ -37,6 +48,22 @@ module.exports.saveValidation = [
   validation,
 ];
 
+module.exports.registerValidation = [
+  phonenumberValidation("Утасны дугаар оруулна уу"),
+  body("firstname").notEmpty().withMessage("Нэр оруулна уу"),
+  body("email")
+    .isEmail()
+    .optional({ nullable: true, checkFalsy: true })
+    .withMessage("И-мэйл формат буруу байна"),
+  body("password")
+    .notEmpty()
+    .withMessage("Нууц үгээ оруулна уу")
+    .isLength({ min: 6 })
+    .withMessage("Нууц үг хамгийн багадаа 6 тэмдэгт байна"),
+  passwordConfirmValidation,
+  validation,
+];
+
 module.exports.changePasswordValidation = [
   body("id").notEmpty().withMessage("Хэрэглэгчийн дугаар хоосон байна"),
   body("password").notEmpty().withMessage("Нууц үгээ оруулна уу"),
@@ -44,22 +71,12 @@ module.exports.changePasswordValidation = [
   //   .optional({ nullable: true, checkFalsy: true })
   //   .matches(/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/, "i")
   //   .withMessage(""),
-  body("password_confirm").custom((value, { req }) => {
-    if (value !== req.body.password)
-      throw new Error("Нууц үгийн давталт буруу байна");
-    return true;
-  }),
+  passwordConfirmValidation,
   validation,
 ];
 
 module.exports.loginValidation = [
-  body("phonenumber")
-    .notEmpty()
-    .withMessage("Утасны дугаар оруулна уу")
-    .isNumeric()
-    .withMessage("Утасны дугаар зөвхөн тоо байх ёстой")
-    .matches(/^\d{8}$/)
-    .withMessage("Утасны дугаарын формат таарахгүй байна"),
+  phonenumberValidation("Утасны дугаар оруулна уу"),
   body("password").notEmpty().withMessage("Нууц үг оруулна уу"),
   validation,
 ];

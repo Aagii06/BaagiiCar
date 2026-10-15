@@ -10,11 +10,13 @@ const {
   saveValidation,
   changePasswordValidation,
   loginValidation,
+  registerValidation,
 } = require("./validation");
 
 const {
   save,
   login,
+  register,
   logout,
   getUserData,
   changePassword,
@@ -25,6 +27,7 @@ router
   .post(protect, extractFormData, saveValidation, byAndAt, save);
 
 router.route("/login").post(loginValidation, login);
+router.route("/register").post(registerValidation, byAndAt, register);
 router.route("/logout").post(protect, logout);
 router.route("/get-user-data").post(protect, getUserData);
 router

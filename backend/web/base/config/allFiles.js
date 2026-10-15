@@ -1,31 +1,13 @@
-const { allFiles } = require("../../../models");
+const { allFiles, op } = require("../../../models");
 
+// Олон нийтэд зөвхөн зарын зургууд харагдана
+// Жишээ: /web/base/allFiles?filter=["data_id","=",1]&sort=[{"selector":"order"}]
 const list = (req, res, next) => {
-  next();
-};
-
-const show = (req, res, next) => {
-  next();
-};
-
-const lookup = (req, res, next) => {
-  next();
-};
-
-const create = (req, res, next) => {
-  next();
-};
-
-const update = (req, res, next) => {
-  next();
-};
-
-const destroy = (req, res, next) => {
+  req.where.push({ object_name: "cars", status: { [op.ne]: "deleted" } });
   next();
 };
 
 module.exports = {
   model: allFiles,
-  middleware: { show, list, create, update, lookup, destroy },
-  validation: {},
+  middleware: { list },
 };

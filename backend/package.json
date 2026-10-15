@@ -1,5 +1,5 @@
 {
-  "name": "delivery-system-project",
+  "name": "cardealer",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -11,6 +11,7 @@
     "generate-model": "node ./command/generate-model.js",
     "sync-db": "node ./command/sync-db.js",
     "seed": "npx sequelize-cli db:seed:all",
+    "migrate:undo": "npx sequelize-cli db:migrate:undo",
     "migrate": "npx sequelize-cli db:migrate"
   },
   "dependencies": {

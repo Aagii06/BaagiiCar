@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const str = require("@supercharge/strings");
 
-const { users, deliveries, sequelize, op } = require("../../models");
+const { users, cars, sequelize, op } = require("../../models");
 
 const {
   cyrillicToLatin,
@@ -74,10 +74,10 @@ module.exports.checkOrWhere = async (req, res) => {
 };
 
 module.exports.getLastId = async (req, res) => {
-  const lastId = await deliveries.findAll({
+  const lastId = await cars.findAll({
     where: { status: { [op.ne]: "deleted" } },
     attributes: [[sequelize.fn("MAX", "id"), "max_id"]],
-    group: ["apartment_id", "category_id"],
+    group: ["brand_id"],
     logging: (q) => console.log(q),
   });
   return res.status(200).json({ lastId });

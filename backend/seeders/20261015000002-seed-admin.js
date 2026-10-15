@@ -1,0 +1,33 @@
+"use strict";
+
+// Анхны админ хэрэглэгч. Нууц үгийг кодонд бичихгүйн тулд .env-ээс уншина:
+// ADMIN_PHONENUMBER=99999999 ADMIN_PASSWORD=... npm run seed
+require("dotenv").config({ path: __dirname + "/../.env" });
+const bcrypt = require("bcrypt");
+
+/** @type {import('sequelize-cli').Migration} */
+module.exports = {
+  async up(queryInterface) {
+    const { ADMIN_PHONENUMBER, ADMIN_PASSWORD } = process.env;
+    if (!ADMIN_PHONENUMBER || !ADMIN_PASSWORD) {
+      console.log("ADMIN_PHONENUMBER / ADMIN_PASSWORD тохируулаагүй тул админ үүсгэсэнгүй");
+      return;
+    }
+
+    const password = await bcrypt.hash(ADMIN_PASSWORD, await bcrypt.genSalt(8));
+    await queryInterface.bulkInsert("users", [
+      {
+        phonenumber: ADMIN_PHONENUMBER,
+        firstname: "Админ",
+        password,
+        role: "Админ",
+        status: "active",
+        created_at: "2026-10-15 00:00:00",
+      },
+    ]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.bulkDelete("users", { role: "Админ" }, {});
+  },
+};

@@ -1,8 +1,6 @@
-const { protect } = require("../middleware/auth");
-
 const Router = require("express").Router();
 
+// Нэвтрэлтгүй (апп-ын зар үзэх хэсэг) - зөвхөн унших
 Router.use("/base", require("./base/router"));
-Router.use("/organization-requests", require("./organizationRequests/router"));
 
 module.exports = Router;
