@@ -1,0 +1,25 @@
+{
+  "development": {
+    "host": "153.122.19.241",
+    "username": "root",
+    "password": "2Fha23+0",
+    "database": "delivery-project",
+    "dialect": "mysql"
+  },
+
+  "test": {
+    "host": "153.122.19.241",
+    "username": "root",
+    "password": "2Fha23+0",
+    "database": "delivery-project",
+    "dialect": "mysql"
+  },
+
+  "production": {
+    "host": "153.122.19.241",
+    "username": "root",
+    "password": "2Fha23+0",
+    "database": "delivery-project",
+    "dialect": "mysql"
+  }
+}
