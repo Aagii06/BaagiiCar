@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:mashinuud_app/app/theme.dart';
 
 class Car {
@@ -52,7 +53,34 @@ class Car {
   String get summary => '$year · ${formatNumber(mileage)} км · $fuel';
 
   String get priceLabel => formatPrice(price);
+
+  /// Газрын зураг дээрх богино үнэ: "19.5 сая"
+  String get shortPrice {
+    final m = price / 1000000;
+    return '${m == m.roundToDouble() ? m.toStringAsFixed(0) : m.toStringAsFixed(1)} сая';
+  }
+
+  /// Дүүргийн төв + id-аас хамаарсан бага зэрэг шилжилт.
+  LatLng get position {
+    final base = districtCenters[location] ?? districtCenters['Сүхбаатар']!;
+    final seed = int.tryParse(id) ?? 0;
+    return LatLng(
+      base.latitude + ((seed * 37) % 11 - 5) * 0.0012,
+      base.longitude + ((seed * 53) % 13 - 6) * 0.0015,
+    );
+  }
 }
+
+const Map<String, LatLng> districtCenters = {
+  'Баянзүрх': LatLng(47.9145, 106.9620),
+  'Хан-Уул': LatLng(47.8820, 106.9050),
+  'Сүхбаатар': LatLng(47.9290, 106.9200),
+  'Чингэлтэй': LatLng(47.9330, 106.8990),
+  'Сонгинохайрхан': LatLng(47.9120, 106.8300),
+  'Баянгол': LatLng(47.9100, 106.8700),
+};
+
+const LatLng ulaanbaatar = LatLng(47.9150, 106.9000);
 
 String formatNumber(num value) => value
     .toStringAsFixed(0)
