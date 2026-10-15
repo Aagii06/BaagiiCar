@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
-import 'package:mashinuud_app/screens/chat.dart';
 import 'package:mashinuud_app/screens/home.dart';
+import 'package:mashinuud_app/screens/messages.dart';
 import 'package:mashinuud_app/screens/post_ad.dart';
 import 'package:mashinuud_app/screens/profile.dart';
 import 'package:mashinuud_app/screens/search.dart';
@@ -19,7 +19,7 @@ class _FooterState extends State<Footer> {
 
   static const _pages = [
     HomePage(),
-    ChatScreen(embedded: true),
+    MessagesScreen(),
     ProfileScreen(),
   ];
 
@@ -69,7 +69,7 @@ class _FooterState extends State<Footer> {
                     ),
                   ),
                 ),
-                _item(Icons.chat_bubble_outline_rounded, 'Чат',
+                _item(Icons.chat_bubble_outline_rounded, 'Мессеж',
                     selected: _selectedIndex == 1,
                     onTap: () => setState(() => _selectedIndex = 1)),
                 _item(Icons.person_outline_rounded, 'Профайл',

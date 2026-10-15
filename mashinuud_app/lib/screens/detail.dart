@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/data/car_data.dart';
+import 'package:mashinuud_app/data/chat_data.dart';
 import 'package:mashinuud_app/screens/chat.dart';
 import 'package:mashinuud_app/widgets/custom/ui.dart';
 
@@ -230,7 +231,38 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 18),
+        AppCard(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+          child: Row(
+            children: [
+              for (final (icon, value) in [
+                (Icons.speed_rounded, '${formatNumber(car.mileage)} км'),
+                (Icons.local_gas_station_outlined, car.fuel),
+                (Icons.settings_outlined, car.transmission),
+                (Icons.all_inclusive_rounded, car.drive),
+              ])
+                Expanded(
+                  child: Column(
+                    children: [
+                      Icon(icon, color: AppPalette.primary),
+                      const SizedBox(height: 6),
+                      Text(
+                        value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
         GridView.count(
           crossAxisCount: 3,
           shrinkWrap: true,
@@ -431,16 +463,20 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget _seller() {
+    final seller = conversations.firstWhere(
+      (c) => c.carId == car.id,
+      orElse: () => conversations.first,
+    );
     return AppCard(
       padding: const EdgeInsets.all(18),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 30,
             backgroundColor: AppPalette.primaryTint,
             child: Text(
-              'БА',
-              style: TextStyle(
+              seller.initials,
+              style: const TextStyle(
                 color: AppPalette.primary,
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
@@ -448,7 +484,7 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -456,24 +492,24 @@ class _DetailScreenState extends State<DetailScreen> {
                   children: [
                     Flexible(
                       child: Text(
-                        'Батаа',
+                        seller.name,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
-                    SizedBox(width: 6),
-                    Icon(
+                    const SizedBox(width: 6),
+                    const Icon(
                       Icons.verified_user_outlined,
                       size: 18,
                       color: AppPalette.green,
                     ),
                   ],
                 ),
-                SizedBox(height: 2),
-                Text(
+                const SizedBox(height: 2),
+                const Text(
                   'Хувь хүн · Утас баталгаажсан',
                   style: TextStyle(color: AppPalette.muted),
                 ),

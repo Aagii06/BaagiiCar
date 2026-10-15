@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/data/car_data.dart';
+import 'package:mashinuud_app/data/chat_data.dart';
 import 'package:mashinuud_app/screens/detail.dart';
 import 'package:mashinuud_app/widgets/custom/ui.dart';
 
@@ -20,11 +21,9 @@ const _quickReplies = [
 
 class ChatScreen extends StatefulWidget {
   final Car? car;
+  final Conversation? conversation;
 
-  /// Доод цэсэн дотор харагдах үед буцах товчийг нуух.
-  final bool embedded;
-
-  const ChatScreen({super.key, this.car, this.embedded = false});
+  const ChatScreen({super.key, this.car, this.conversation});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -34,13 +33,25 @@ class _ChatScreenState extends State<ChatScreen> {
   final _input = TextEditingController();
   final _scroll = ScrollController();
   final List<_Message> _messages = [
-    const _Message('Сайн байна уу. Машин зарагдаагүй байгаа юу?', '10:12', mine: true),
+    const _Message(
+      'Сайн байна уу. Машин зарагдаагүй байгаа юу?',
+      '10:12',
+      mine: true,
+    ),
     const _Message('Сайн байна уу. Зарагдаагүй ээ, үзэх боломжтой.', '10:14'),
     const _Message('Маргааш үдээс хойш үзэж болох уу?', '10:15', mine: true),
     const _Message('Болно. 15:00 цагт Баянзүрхэд уулзъя.', '10:17'),
   ];
 
-  Car get car => widget.car ?? findCar('3');
+  Car get car => widget.car ?? findCar(contact.carId);
+
+  /// Харилцагч: дамжуулсан эсвэл тухайн машины зарлагч.
+  Conversation get contact =>
+      widget.conversation ??
+      conversations.firstWhere(
+        (c) => c.carId == widget.car?.id,
+        orElse: () => conversations.first,
+      );
 
   void _send([String? text]) {
     final value = (text ?? _input.text).trim();
@@ -112,66 +123,73 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               Row(
                 children: [
-                  if (!widget.embedded)
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.chevron_left_rounded, size: 32),
-                    )
-                  else
-                    const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.chevron_left_rounded, size: 32),
+                  ),
                   const SizedBox(width: 4),
                   Stack(
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 28,
                         backgroundColor: AppPalette.primaryTint,
                         child: Text(
-                          'БА',
-                          style: TextStyle(
+                          contact.initials,
+                          style: const TextStyle(
                             color: AppPalette.primary,
                             fontWeight: FontWeight.w800,
                             fontSize: 18,
                           ),
                         ),
                       ),
-                      Positioned(
-                        right: 0,
-                        bottom: 2,
-                        child: Container(
-                          width: 14,
-                          height: 14,
-                          decoration: BoxDecoration(
-                            color: AppPalette.green,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: Colors.white, width: 2),
+                      if (contact.online)
+                        Positioned(
+                          right: 0,
+                          bottom: 2,
+                          child: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: AppPalette.green,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Батаа',
-                          style: TextStyle(
+                          contact.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         Text(
-                          'Онлайн байна',
+                          contact.online
+                              ? 'Онлайн байна'
+                              : 'Саяхан онлайн байсан',
                           style: TextStyle(
-                            color: AppPalette.green,
+                            color: contact.online
+                                ? AppPalette.green
+                                : AppPalette.muted,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  SquareIconButton(icon: Icons.call_outlined, size: 52, onTap: () {}),
+                  SquareIconButton(
+                    icon: Icons.call_outlined,
+                    size: 52,
+                    onTap: () {},
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -214,7 +232,10 @@ class _ChatScreenState extends State<ChatScreen> {
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, color: AppPalette.muted),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppPalette.muted,
+                      ),
                     ],
                   ),
                 ),
@@ -236,8 +257,9 @@ class _ChatScreenState extends State<ChatScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment:
-            m.mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: m.mine
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           ConstrainedBox(
             constraints: BoxConstraints(
@@ -286,8 +308,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
                 itemCount: _quickReplies.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
-                itemBuilder: (_, i) =>
-                    PillChip(label: _quickReplies[i], onTap: () => _send(_quickReplies[i])),
+                itemBuilder: (_, i) => PillChip(
+                  label: _quickReplies[i],
+                  onTap: () => _send(_quickReplies[i]),
+                ),
               ),
             ),
             Padding(
