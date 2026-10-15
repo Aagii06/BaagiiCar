@@ -50,9 +50,7 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.only(top: 24, bottom: 32),
           children: [
             _pad(_greeting()),
-            const SizedBox(height: 28),
-            _pad(Text('Мөрөөдлийн\nмашинаа\nолоорой', style: displayStyle(44))),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
             _pad(_searchRow()),
             const SizedBox(height: 24),
             _categories(),
