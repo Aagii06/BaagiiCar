@@ -4,12 +4,9 @@ const bcrypt = require("bcrypt");
 
 module.exports = (sequelize, DataTypes) => {
   class users extends Sequelize.Model {
-    static associate({ organizations, zones, users }) {
-      this.belongsTo(organizations, {
-        as: "organization",
-        foreignKey: "organization_id",
-      });
-      this.belongsTo(zones, { as: "zone", foreignKey: "zone_id" });
+    static associate({ cars, favorites, users }) {
+      this.hasMany(cars, { as: "cars", foreignKey: "user_id" });
+      this.hasMany(favorites, { as: "favorites", foreignKey: "user_id" });
       this.belongsTo(users, { as: "createdBy", foreignKey: "created_by" });
       this.belongsTo(users, { as: "updatedBy", foreignKey: "updated_by" });
       this.belongsTo(users, { as: "deletedBy", foreignKey: "deleted_by" });
@@ -26,8 +23,6 @@ module.exports = (sequelize, DataTypes) => {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 
       profile: { type: DataTypes.STRING },
-      organization_id: { type: DataTypes.INTEGER },
-      zone_id: { type: DataTypes.INTEGER },
       username: { type: DataTypes.STRING },
       phonenumber: { type: DataTypes.STRING },
       firstname: { type: DataTypes.STRING },
@@ -60,7 +55,8 @@ module.exports = (sequelize, DataTypes) => {
   users.softDelete = true;
 
   users.beforeSave(async (data, options) => {
-    if (data.password) {
+    // Зөвхөн нууц үг өөрчлөгдсөн үед hash хийнэ (давхар hash хийхээс сэргийлнэ)
+    if (data.password && data.changed("password")) {
       const salt = await bcrypt.genSalt(8);
       const hashedPassword = await bcrypt.hash(data.password, salt);
       data.password = hashedPassword;
@@ -109,23 +105,18 @@ module.exports = (sequelize, DataTypes) => {
         isDelete = true;
     });
     if (isDelete) {
-      const id = data.id;
-
-      // Идэвхтэй (явж буй) хүргэлттэй бол хэрэглэгчийг (тухайлбал жолоочийг) устгахгүй
-      const activeDeliveriesCount = await sequelize.models.deliveries.count({
-        where: {
-          status: { [Op.in]: ["Хуваарилагдсан", "Хүргэлтэнд гарсан"] },
-          [Op.or]: [
-            { receive_by: id },
-            { allocate_by: id },
-            { allocate_to: id },
-            { delivery_by: id },
-          ],
+      // Хэрэглэгчийг устгахад түүний идэвхтэй зарууд мөн устгагдана
+      await sequelize.models.cars.update(
+        {
+          status: "deleted",
+          deleted_by: data.deleted_by,
+          deleted_at: data.deleted_at,
         },
-        transaction: options.transaction,
-      });
-      if (activeDeliveriesCount > 0)
-        throw "Энэ хэрэглэгч дээр идэвхтэй хүргэлт байгаа тул устгах боломжгүй";
+        {
+          where: { user_id: data.id, status: "active" },
+          transaction: options.transaction,
+        },
+      );
     }
   });
 
