@@ -3,7 +3,7 @@
     "host": "153.122.19.241",
     "username": "root",
     "password": "2Fha23+0",
-    "database": "delivery-project",
+    "database": "cardealer",
     "dialect": "mysql"
   },
 
@@ -11,7 +11,7 @@
     "host": "153.122.19.241",
     "username": "root",
     "password": "2Fha23+0",
-    "database": "delivery-project",
+    "database": "cardealer",
     "dialect": "mysql"
   },
 
@@ -19,7 +19,7 @@
     "host": "153.122.19.241",
     "username": "root",
     "password": "2Fha23+0",
-    "database": "delivery-project",
+    "database": "cardealer",
     "dialect": "mysql"
   }
 }
