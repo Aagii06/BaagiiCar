@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/data/car_data.dart';
+import 'package:mashinuud_app/data/car_filter.dart';
 import 'package:mashinuud_app/screens/detail.dart';
 import 'package:mashinuud_app/screens/list.dart';
 import 'package:mashinuud_app/screens/post_ad.dart';
 import 'package:mashinuud_app/screens/search.dart';
 import 'package:mashinuud_app/widgets/custom/ui.dart';
 
-const List<String> homeCategories = ['Бүгд', 'Седан', 'Жийп', 'Хэтчбэк', 'Пикап'];
+const List<String> homeCategories = [
+  'Бүгд',
+  'Седан',
+  'Жийп',
+  'Хэтчбэк',
+  'Пикап',
+];
 const List<String> homeBrands = ['Toyota', 'Lexus', 'Hyundai', 'Nissan'];
 
 class HomePage extends StatefulWidget {
@@ -26,9 +33,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(
         builder: (_) => ListScreen(
           title: title,
-          searchQuery: query,
-          brand: brand,
-          bodyType: body,
+          query: CarQuery(query: query ?? '', brand: brand, bodyType: body),
         ),
       ),
     );
@@ -96,8 +101,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _pad(Widget child) =>
-      Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: child);
+  Widget _pad(Widget child) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: child,
+  );
 
   Widget _greeting() {
     return Row(
@@ -325,11 +332,7 @@ class _FeaturedCard extends StatelessWidget {
                   carWidth: 180,
                   radius: BorderRadius.zero,
                 ),
-                Positioned(
-                  top: 14,
-                  left: 14,
-                  child: Tag(label: car.badge!),
-                ),
+                Positioned(top: 14, left: 14, child: Tag(label: car.badge!)),
               ],
             ),
             Padding(
@@ -393,7 +396,10 @@ class _CompactCarCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(car.summary, style: const TextStyle(color: AppPalette.muted)),
+                Text(
+                  car.summary,
+                  style: const TextStyle(color: AppPalette.muted),
+                ),
                 const SizedBox(height: 6),
                 PriceText(car.priceLabel),
               ],

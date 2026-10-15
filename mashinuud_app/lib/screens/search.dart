@@ -1,446 +1,495 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
-import 'package:mashinuud_app/widgets/custom/filterRow.dart';
-
-import 'package:mashinuud_app/screens/list.dart'; // ListScreen-ийг импортлох
-import 'package:mashinuud_app/data/car_data.dart'; // carData-г импортлох
+import 'package:mashinuud_app/app/theme.dart';
+import 'package:mashinuud_app/data/car_data.dart';
+import 'package:mashinuud_app/data/car_filter.dart';
 import 'package:mashinuud_app/data/filter_data.dart';
+import 'package:mashinuud_app/screens/list.dart';
+import 'package:mashinuud_app/widgets/custom/ui.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+  /// 0: Шүүлтүүр, 1: Хадгалсан хайлт
+  final int initialTab;
+  final CarQuery initial;
+
+  /// true бол үр дүнг шинэ дэлгэцээр нээхгүй, хайлтыг буцаана.
+  final bool returnQuery;
+
+  const SearchScreen({
+    super.key,
+    this.initialTab = 0,
+    this.initial = const CarQuery(),
+    this.returnQuery = false,
+  });
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _minPriceController = TextEditingController();
-  final TextEditingController _maxPriceController = TextEditingController();
+  late final _searchController = TextEditingController(
+    text: widget.initial.query,
+  );
+  late int _tab = widget.initialTab;
+  late RangeValues _price = RangeValues(
+    widget.initial.minPrice,
+    widget.initial.maxPrice,
+  );
+  late final Map<String, String?> _selected = {
+    'location': widget.initial.location,
+    'brand': widget.initial.brand,
+    'body': widget.initial.bodyType,
+    'year': widget.initial.year,
+    'mileage': widget.initial.mileage,
+    'fuel': widget.initial.fuelType,
+    'drive': widget.initial.driveType,
+    'transmission': widget.initial.transmission,
+  };
 
-  // Табын удирдлага (0: Шүүлтүүр, 1: Хадгалсан хайлт)
-  // int _selectedTabIndex = 0;
+  static const _rows = [
+    ('location', 'Байршил', Icons.location_on_outlined, FilterData.locations),
+    ('brand', 'Брэнд', Icons.directions_car_outlined, FilterData.brands),
+    ('body', 'Төрөл', Icons.category_outlined, _bodyTypes),
+    ('year', 'Он', Icons.calendar_today_outlined, FilterData.years),
+    ('mileage', 'Явсан км', Icons.speed_rounded, FilterData.mileages),
+    (
+      'fuel',
+      'Шатахуун',
+      Icons.local_gas_station_outlined,
+      FilterData.fuelTypes,
+    ),
+    ('drive', 'Хөтлөгч', Icons.all_inclusive_rounded, FilterData.driveTypes),
+    (
+      'transmission',
+      'Хурдны хайрцаг',
+      Icons.settings_outlined,
+      FilterData.transmissions,
+    ),
+  ];
+  static const _bodyTypes = ['Бүх төрөл', 'Седан', 'Жийп', 'Хэтчбэк', 'Пикап'];
 
-  double _minPrice = 0.0;
-  double _maxPrice = 1000000000.0;
-
-  // Унадаг цэсүүдийн төлөв
-  String _selectedLocation = 'Бүх байршил';
-  String _selectedBrand = 'Бүх бренд';
-  String _selectedYear = 'Бүх он';
-  String _selectedMileage = 'Бүх км';
-  String _selectedFuelType = 'Бүх төрөл';
-  String _selectedDriveType = 'Бүх төрөл';
-  String _selectedTransmission = 'Бүх төрөл';
-
-  @override
-  void initState() {
-    super.initState();
-    _minPriceController.text = "";
-    _maxPriceController.text = "";
-  }
+  CarQuery get _query => CarQuery(
+    query: _searchController.text,
+    minPrice: _price.start,
+    maxPrice: _price.end,
+    location: _selected['location'],
+    brand: _selected['brand'],
+    bodyType: _selected['body'],
+    year: _selected['year'],
+    mileage: _selected['mileage'],
+    fuelType: _selected['fuel'],
+    driveType: _selected['drive'],
+    transmission: _selected['transmission'],
+  );
 
   @override
   void dispose() {
     _searchController.dispose();
-    _minPriceController.dispose();
-    _maxPriceController.dispose();
     super.dispose();
   }
 
-  void _onFilterTap(String typeName, String value) {
-    setState(() {
-      switch (typeName) {
-        case 'location':
-          _selectedLocation = value;
-          break;
-        case 'brand':
-          _selectedBrand = value;
-          break;
-        case 'year':
-          _selectedYear = value;
-          break;
-        case 'mileage':
-          _selectedMileage = value;
-          break;
-        case 'fuel':
-          _selectedFuelType = value;
-          break;
-        case 'drive':
-          _selectedDriveType = value;
-          break;
-        case 'transmission':
-          _selectedTransmission = value;
-          break;
-      }
-    });
-    print('Selected filter type: $typeName, value: $value');
+  void _reset() => setState(() {
+    _searchController.clear();
+    _price = const RangeValues(0, maxPriceLimit);
+    _selected.updateAll((_, _) => null);
+  });
+
+  void _showResults(CarQuery query, {String title = 'Хайлтын үр дүн'}) {
+    if (widget.returnQuery) {
+      Navigator.pop(context, query);
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ListScreen(title: title, query: query),
+      ),
+    );
   }
 
-  String _formatNumber(String value) {
-    if (value.isEmpty) return "";
-    String raw = value.replaceAll(',', '');
-    double? amount = double.tryParse(raw);
-    if (amount == null) return "";
-    return amount
-        .toStringAsFixed(0)
-        .replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]},',
-        );
-  }
-
-  // String _formatPrice(double price) {
-  //   String formatted = price
-  //       .toStringAsFixed(0)
-  //       .replaceAllMapped(
-  //         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-  //         (Match m) => '${m[1]},',
-  //       );
-  //   return '$formatted₮';
-  // }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Хайлт',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
+  Future<void> _saveSearch() async {
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Хайлт хадгалах'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Нэр (ж: Toyota жийп)'),
+          onSubmitted: (v) => Navigator.pop(context, v),
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              setState(() {
-                _minPrice = 0.0;
-                _maxPrice = 1000000000.0;
-                _minPriceController.text = "";
-                _maxPriceController.text = "";
-                _selectedLocation = "Бүх байршил";
-                _selectedBrand = "Бүх бренд";
-                _selectedYear = "Бүх он";
-                _selectedMileage = "Бүх км";
-                _selectedFuelType = "Бүх төрөл";
-                _selectedDriveType = "Бүх төрөл";
-                _selectedTransmission = "Бүх төрөл";
-              });
-            },
-            child: const Text(
-              'Цэвэрлэх',
-              style: TextStyle(color: Colors.blue, fontSize: 16),
-            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Болих'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Хадгалах'),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-
-            // 1. Хайлтын Талбар (Search Bar)
-            _buildSearchBar(),
-            const SizedBox(height: 16),
-
-            // 2. Таб Вижет (Segmented Control - Cupertino хэв маягаар)
-            // _buildTabSegment(),
-            // const SizedBox(height: 20),
-
-            // 3. Үнийн Шүүлтүүр (Price Slider)
-            _buildPriceSlider(),
-            const SizedBox(height: 16),
-
-            // 4. Бусад Шүүлтүүрүүд (Filter Dropdowns)
-            FilterRow(
-              label: 'Байршил',
-              value: _selectedLocation,
-              typeName: 'location',
-              options: FilterData.locations,
-              onChanged: _onFilterTap,
-            ),
-            FilterRow(
-              label: 'Бренд',
-              value: _selectedBrand,
-              typeName: 'brand',
-              options: FilterData.brands,
-              onChanged: _onFilterTap,
-            ),
-            FilterRow(
-              label: 'Он',
-              value: _selectedYear,
-              typeName: 'year',
-              options: FilterData.years,
-              onChanged: _onFilterTap,
-            ),
-            FilterRow(
-              label: 'Явсан км',
-              value: _selectedMileage,
-              typeName: 'mileage',
-              options: FilterData.mileages,
-              onChanged: _onFilterTap,
-            ),
-            FilterRow(
-              label: 'Шатахуун',
-              value: _selectedFuelType,
-              typeName: 'fuel',
-              options: FilterData.fuelTypes,
-              onChanged: _onFilterTap,
-            ),
-            FilterRow(
-              label: 'Хөтлөгч',
-              value: _selectedDriveType,
-              typeName: 'drive',
-              options: FilterData.driveTypes,
-              onChanged: _onFilterTap,
-            ),
-            FilterRow(
-              label: 'Хурдны хайрцаг',
-              value: _selectedTransmission,
-              typeName: 'transmission',
-              options: FilterData.transmissions,
-              onChanged: _onFilterTap,
-            ),
-            const SizedBox(height: 30),
-
-            // 5. Харах Товч (Bottom Action Button)
-            _buildViewResultsButton(),
-            const SizedBox(height: 30), // Доод талын зай
-          ],
-        ),
-      ),
     );
+    controller.dispose();
+    if (name == null || name.trim().isEmpty) return;
+    setState(() {
+      savedSearches.insert(0, SavedSearch(name.trim(), _query));
+      _tab = 1;
+    });
   }
 
-  // --- Кодын Хэсгүүд (Modular Widgets) ---
-
-  // Хайлтын талбар
-  Widget _buildSearchBar() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey[100], // Зөөлөн саарал дэвсгэр
-        borderRadius: BorderRadius.circular(10),
+  Future<void> _pick(String key, String title, List<String> options) async {
+    final current = _selected[key] ?? options.first;
+    final value = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: AppPalette.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: 'Хайх (бренд, загвар, түлхүүр үг)',
-          hintStyle: TextStyle(color: Colors.grey[500]),
-          prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
-          border: InputBorder.none, // Текстийн хүрээг арилгах
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
-        ),
-      ),
-    );
-  }
-
-  // Таб сонгох вижет (Cupertino Segmented Control-ийг илүү хялбараар)
-  // Widget _buildTabSegment() {
-  //   return Row(
-  //     children: [
-  //       // Зүүн талын таб (Шүүлтүүр)
-  //       Expanded(
-  //         child: GestureDetector(
-  //           onTap: () => setState(() => _selectedTabIndex = 0),
-  //           child: Container(
-  //             padding: const EdgeInsets.symmetric(vertical: 12),
-  //             decoration: BoxDecoration(
-  //               border: Border(
-  //                 bottom: BorderSide(
-  //                   color: _selectedTabIndex == 0
-  //                       ? Colors.blue
-  //                       : Colors.grey[200]!,
-  //                   width: 2,
-  //                 ),
-  //               ),
-  //             ),
-  //             child: Text(
-  //               'Шүүлтүүр',
-  //               textAlign: TextAlign.center,
-  //               style: TextStyle(
-  //                 color: _selectedTabIndex == 0 ? Colors.blue : Colors.black,
-  //                 fontWeight: _selectedTabIndex == 0
-  //                     ? FontWeight.bold
-  //                     : FontWeight.normal,
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //       // Баруун талын таб (Хадгалсан хайлт)
-  //       Expanded(
-  //         child: GestureDetector(
-  //           onTap: () => setState(() => _selectedTabIndex = 1),
-  //           child: Container(
-  //             padding: const EdgeInsets.symmetric(vertical: 12),
-  //             decoration: BoxDecoration(
-  //               border: Border(
-  //                 bottom: BorderSide(
-  //                   color: _selectedTabIndex == 1
-  //                       ? Colors.blue
-  //                       : Colors.grey[200]!,
-  //                   width: 2,
-  //                 ),
-  //               ),
-  //             ),
-  //             child: Text(
-  //               'Хадгалсан хайлт',
-  //               textAlign: TextAlign.center,
-  //               style: TextStyle(
-  //                 color: _selectedTabIndex == 1 ? Colors.blue : Colors.black,
-  //                 fontWeight: _selectedTabIndex == 1
-  //                     ? FontWeight.bold
-  //                     : FontWeight.normal,
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
-
-  Widget _buildPriceSlider() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Үнэ (₮)',
-            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+      builder: (context) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.6,
           ),
-          const SizedBox(height: 8),
-          Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: _buildPriceField(
-                  controller: _minPriceController,
-                  hint: 'Доод үнэ',
-                  onChanged: (val) {
-                    setState(() {
-                      _minPrice = double.tryParse(val) ?? 0.0;
-                    });
-                  },
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildPriceField(
-                  controller: _maxPriceController,
-                  hint: 'Дээд үнэ',
-                  onChanged: (val) {
-                    setState(() {
-                      _maxPrice = double.tryParse(val) ?? 1000000000.0;
-                    });
-                  },
+              const SizedBox(height: 8),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (final o in options)
+                      ListTile(
+                        title: Text(o, style: const TextStyle(fontSize: 17)),
+                        trailing: o == current
+                            ? const Icon(
+                                Icons.check_rounded,
+                                color: AppPalette.primary,
+                              )
+                            : null,
+                        onTap: () => Navigator.pop(context, o),
+                      ),
+                  ],
                 ),
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPriceField({
-    required TextEditingController controller,
-    required String hint,
-    required Function(String) onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(10),
-        ],
-        onChanged: (value) {
-          String formatted = _formatNumber(value);
-          if (formatted != value) {
-            controller.value = TextEditingValue(
-              text: formatted,
-              selection: TextSelection.collapsed(offset: formatted.length),
-            );
-          }
-          onChanged(value.replaceAll(',', ''));
-        },
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
-        style: const TextStyle(fontSize: 14),
+      ),
+    );
+    if (value != null) {
+      setState(() => _selected[key] = value == options.first ? null : value);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppPalette.background,
+      body: Column(
+        children: [
+          _header(),
+          const Divider(height: 1, color: AppPalette.border),
+          Expanded(child: _tab == 0 ? _filters() : _saved()),
+          if (_tab == 0) _bottomBar(),
+        ],
       ),
     );
   }
 
-  Widget _buildViewResultsButton() {
-    return Padding(
-      padding: EdgeInsetsGeometry.symmetric(horizontal: 8),
-      child: SizedBox(
-        width: double.infinity,
-        height: 50,
-        child: ElevatedButton(
-          onPressed: () {
-            if (_minPrice > _maxPrice) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Доод үнэ дээд үнээс их байж болохгүй'),
-                  backgroundColor: Colors.redAccent,
+  Widget _header() {
+    return Container(
+      color: AppPalette.surface,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  SquareIconButton(
+                    icon: Icons.chevron_left_rounded,
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(child: Text('Хайлт', style: displayStyle(30))),
+                  if (_tab == 0)
+                    TextButton(
+                      onPressed: _reset,
+                      child: const Text(
+                        'Цэвэрлэх',
+                        style: TextStyle(
+                          color: AppPalette.primary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SearchField(
+                hint: 'Брэнд, загвар, түлхүүр үг',
+                controller: _searchController,
+                fill: AppPalette.background,
+                bordered: false,
+                onSubmitted: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 14),
+              SegmentedPicker(
+                options: const ['Шүүлтүүр', 'Хадгалсан хайлт'],
+                selected: _tab,
+                expand: true,
+                onChanged: (i) => setState(() => _tab = i),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _filters() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      children: [
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    flex: 1,
+                    child: Text(
+                      'Үнэ',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    flex: 3,
+                    child: Text(
+                      '${_shortPrice(_price.start)} – ${_shortPrice(_price.end, max: true)}',
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                        color: AppPalette.primary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: AppPalette.primary,
+                  inactiveTrackColor: AppPalette.chipGrey,
+                  thumbColor: AppPalette.surface,
+                  overlayColor: AppPalette.primary.withValues(alpha: 0.1),
+                  trackHeight: 5,
+                  rangeThumbShape: const RoundRangeSliderThumbShape(
+                    enabledThumbRadius: 12,
+                    elevation: 3,
+                  ),
                 ),
-              );
-              return;
-            }
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ListScreen(
-                  searchQuery: _searchController.text,
-                  minPrice: _minPrice,
-                  maxPrice: _maxPrice,
-                  location: _selectedLocation,
-                  brand: _selectedBrand,
-                  year: _selectedYear,
-                  mileage: _selectedMileage,
-                  fuelType: _selectedFuelType,
-                  driveType: _selectedDriveType,
-                  transmission: _selectedTransmission,
+                child: RangeSlider(
+                  values: _price,
+                  max: maxPriceLimit,
+                  divisions: 80,
+                  onChanged: (v) => setState(() => _price = v),
                 ),
               ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        AppCard(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            children: [
+              for (final (key, label, icon, options) in _rows)
+                InkWell(
+                  onTap: () => _pick(key, label, options),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(icon, color: AppPalette.muted, size: 22),
+                        const SizedBox(width: 14),
+                        Flexible(
+                          child: Text(
+                            label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _selected[key] ?? options.first,
+                            textAlign: TextAlign.end,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: _selected[key] == null
+                                  ? AppPalette.muted
+                                  : AppPalette.primary,
+                              fontWeight: _selected[key] == null
+                                  ? FontWeight.w400
+                                  : FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: AppPalette.muted,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        Center(
+          child: TextButton.icon(
+            onPressed: _saveSearch,
+            icon: const Icon(Icons.bookmark_add_outlined),
+            label: const Text(
+              'Энэ хайлтыг хадгалах',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
             ),
           ),
-          child: Text(
-            '${carData.length} зар харах',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+        ),
+      ],
+    );
+  }
+
+  Widget _saved() {
+    if (savedSearches.isEmpty) {
+      return const Center(
+        child: Text(
+          'Хадгалсан хайлт алга',
+          style: TextStyle(color: AppPalette.muted, fontSize: 16),
+        ),
+      );
+    }
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      children: [
+        for (final s in savedSearches)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: AppCard(
+              padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
+              onTap: () => _showResults(s.query, title: s.title),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppPalette.primaryTint,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.manage_search_rounded,
+                      color: AppPalette.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.title,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          s.summary,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: AppPalette.muted),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${s.query.apply(carData).length} зар',
+                          style: const TextStyle(
+                            color: AppPalette.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => setState(() => savedSearches.remove(s)),
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: AppPalette.muted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _bottomBar() {
+    final count = _query.apply(carData).length;
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppPalette.surface,
+        border: Border(top: BorderSide(color: AppPalette.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+          child: SizedBox(
+            width: double.infinity,
+            child: PrimaryButton(
+              label: '$count зар харах',
+              onPressed: count == 0 ? null : () => _showResults(_query),
             ),
           ),
         ),
       ),
     );
+  }
+
+  static String _shortPrice(double v, {bool max = false}) {
+    if (max && v >= maxPriceLimit) return 'Дээд хязгааргүй';
+    if (v == 0) return '0₮';
+    return '${formatNumber(v / 1000000)} сая₮';
   }
 }

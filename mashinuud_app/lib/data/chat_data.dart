@@ -20,7 +20,8 @@ class Conversation {
   /// "Bat-Erdene" -> "BE", "Номин" -> "НО"
   String get initials {
     final parts = name.split(RegExp(r'[\s-]+')).where((p) => p.isNotEmpty);
-    if (parts.length > 1) return parts.take(2).map((p) => p[0]).join().toUpperCase();
+    if (parts.length > 1)
+      return parts.take(2).map((p) => p[0]).join().toUpperCase();
     return name.substring(0, name.length < 2 ? name.length : 2).toUpperCase();
   }
 }

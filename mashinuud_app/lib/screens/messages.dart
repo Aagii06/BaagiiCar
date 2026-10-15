@@ -166,8 +166,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: unread > 0 ? AppPalette.ink : AppPalette.muted,
-                          fontWeight:
-                              unread > 0 ? FontWeight.w700 : FontWeight.w400,
+                          fontWeight: unread > 0
+                              ? FontWeight.w700
+                              : FontWeight.w400,
                         ),
                       ),
                     ),

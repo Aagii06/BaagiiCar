@@ -17,11 +17,7 @@ class _FooterState extends State<Footer> {
   // 0: Нүүр, 1: Чат, 2: Профайл
   int _selectedIndex = 0;
 
-  static const _pages = [
-    HomePage(),
-    MessagesScreen(),
-    ProfileScreen(),
-  ];
+  static const _pages = [HomePage(), MessagesScreen(), ProfileScreen()];
 
   void _push(Widget page, {bool fullscreen = false}) => Navigator.push(
     context,
@@ -43,10 +39,17 @@ class _FooterState extends State<Footer> {
             height: 76,
             child: Row(
               children: [
-                _item(Icons.home_outlined, 'Нүүр', selected: _selectedIndex == 0,
-                    onTap: () => setState(() => _selectedIndex = 0)),
-                _item(Icons.search_rounded, 'Хайх',
-                    onTap: () => _push(const SearchScreen())),
+                _item(
+                  Icons.home_outlined,
+                  'Нүүр',
+                  selected: _selectedIndex == 0,
+                  onTap: () => setState(() => _selectedIndex = 0),
+                ),
+                _item(
+                  Icons.search_rounded,
+                  'Хайх',
+                  onTap: () => _push(const SearchScreen()),
+                ),
                 Expanded(
                   child: Center(
                     child: Transform.translate(
@@ -58,23 +61,34 @@ class _FooterState extends State<Footer> {
                         borderRadius: BorderRadius.circular(24),
                         clipBehavior: Clip.antiAlias,
                         child: InkWell(
-                          onTap: () => _push(const PostAdScreen(), fullscreen: true),
+                          onTap: () =>
+                              _push(const PostAdScreen(), fullscreen: true),
                           child: const SizedBox(
                             width: 64,
                             height: 64,
-                            child: Icon(Icons.add_rounded, color: Colors.white, size: 34),
+                            child: Icon(
+                              Icons.add_rounded,
+                              color: Colors.white,
+                              size: 34,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-                _item(Icons.chat_bubble_outline_rounded, 'Мессеж',
-                    selected: _selectedIndex == 1,
-                    onTap: () => setState(() => _selectedIndex = 1)),
-                _item(Icons.person_outline_rounded, 'Профайл',
-                    selected: _selectedIndex == 2,
-                    onTap: () => setState(() => _selectedIndex = 2)),
+                _item(
+                  Icons.chat_bubble_outline_rounded,
+                  'Мессеж',
+                  selected: _selectedIndex == 1,
+                  onTap: () => setState(() => _selectedIndex = 1),
+                ),
+                _item(
+                  Icons.person_outline_rounded,
+                  'Профайл',
+                  selected: _selectedIndex == 2,
+                  onTap: () => setState(() => _selectedIndex = 2),
+                ),
               ],
             ),
           ),

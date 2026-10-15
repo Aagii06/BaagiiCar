@@ -14,20 +14,48 @@ class ProfileScreen extends StatelessWidget {
         Navigator.push(context, MaterialPageRoute(builder: (_) => page));
 
     final menu = [
-      (Icons.notes_rounded, 'Миний зарууд', AppPalette.primaryTint,
-          () => push(const ListScreen(title: 'Миний зарууд'))),
-      (Icons.favorite_border_rounded, 'Хадгалсан машинууд', AppPalette.redTint,
-          () => push(const ListScreen(title: 'Хадгалсан'))),
-      (Icons.manage_search_rounded, 'Хадгалсан хайлт', AppPalette.accentTint,
-          () => push(const SearchScreen(initialTab: 1))),
-      (Icons.notifications_none_rounded, 'Хайлтын мэдэгдэл',
-          AppPalette.accentTint, () {}),
-      (Icons.compare_arrows_rounded, 'Машин харьцуулах', AppPalette.greenTint,
-          () {}),
-      (Icons.calculate_outlined, 'Зээлийн тооцоолуур',
-          AppPalette.lavenderTint, () {}),
-      (Icons.help_outline_rounded, 'Тусламж', AppPalette.primaryTint,
-          () => push(const HelpScreen())),
+      (
+        Icons.notes_rounded,
+        'Миний зарууд',
+        AppPalette.primaryTint,
+        () => push(const ListScreen(title: 'Миний зарууд')),
+      ),
+      (
+        Icons.favorite_border_rounded,
+        'Хадгалсан машинууд',
+        AppPalette.redTint,
+        () => push(const ListScreen(title: 'Хадгалсан')),
+      ),
+      (
+        Icons.manage_search_rounded,
+        'Хадгалсан хайлт',
+        AppPalette.accentTint,
+        () => push(const SearchScreen(initialTab: 1)),
+      ),
+      (
+        Icons.notifications_none_rounded,
+        'Хайлтын мэдэгдэл',
+        AppPalette.accentTint,
+        () {},
+      ),
+      (
+        Icons.compare_arrows_rounded,
+        'Машин харьцуулах',
+        AppPalette.greenTint,
+        () {},
+      ),
+      (
+        Icons.calculate_outlined,
+        'Зээлийн тооцоолуур',
+        AppPalette.lavenderTint,
+        () {},
+      ),
+      (
+        Icons.help_outline_rounded,
+        'Тусламж',
+        AppPalette.primaryTint,
+        () => push(const HelpScreen()),
+      ),
       (Icons.settings_outlined, 'Тохиргоо', AppPalette.chipGrey, () {}),
     ];
 

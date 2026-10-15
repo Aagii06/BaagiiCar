@@ -142,7 +142,10 @@ class _DetailScreenState extends State<DetailScreen> {
               bottom: 30,
               right: 20,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppPalette.ink,
                   borderRadius: BorderRadius.circular(16),
@@ -334,7 +337,12 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Widget _diagnosis() {
-    const parts = ['Хөдөлгүүр', 'Хурдны хайрцаг', 'Явах эд анги', 'Цахилгаан систем'];
+    const parts = [
+      'Хөдөлгүүр',
+      'Хурдны хайрцаг',
+      'Явах эд анги',
+      'Цахилгаан систем',
+    ];
     return AppCard(
       child: Column(
         children: [
@@ -429,7 +437,9 @@ class _DetailScreenState extends State<DetailScreen> {
                       height: 50,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: term == _term ? Colors.white : AppPalette.inkSoft,
+                        color: term == _term
+                            ? Colors.white
+                            : AppPalette.inkSoft,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Text(

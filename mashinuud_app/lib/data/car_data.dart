@@ -109,7 +109,8 @@ const List<Car> carData = [
     color: 'Цагаан',
     location: 'Баянзүрх',
     postedAgo: '1 цагийн өмнө',
-    description: 'Шинэвтэр, бүрэн комплектлэлтэй. Албан ёсны засвар үйлчилгээтэй.',
+    description:
+        'Шинэвтэр, бүрэн комплектлэлтэй. Албан ёсны засвар үйлчилгээтэй.',
     verified: true,
     leasing: true,
     badge: 'Шалгагдсан',

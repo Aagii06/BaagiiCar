@@ -315,9 +315,7 @@ class PillChip extends StatelessWidget {
     return Material(
       color: selected ? AppPalette.ink : AppPalette.surface,
       shape: StadiumBorder(
-        side: BorderSide(
-          color: selected ? AppPalette.ink : AppPalette.border,
-        ),
+        side: BorderSide(color: selected ? AppPalette.ink : AppPalette.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -432,7 +430,10 @@ class PrimaryButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[Icon(icon, size: 20), const SizedBox(width: 10)],
+            if (icon != null) ...[
+              Icon(icon, size: 20),
+              const SizedBox(width: 10),
+            ],
             Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
           ],
         ),

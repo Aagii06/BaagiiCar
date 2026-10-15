@@ -5,14 +5,57 @@ import 'package:mashinuud_app/data/car_data.dart';
 import 'package:mashinuud_app/data/filter_data.dart';
 import 'package:mashinuud_app/widgets/custom/ui.dart';
 
-const _steps = ['Машин', 'Зураг', 'Үнэ', 'Нийтлэх'];
+const _steps = ['Машин', 'Техник', 'Үнэ', 'Харах'];
 const _models = {
-  'Toyota': ['Prius 30', 'Prius 50', 'Land Cruiser 200', 'Land Cruiser 300', 'RAV4', 'Prado 150', 'Highlander'],
+  'Toyota': [
+    'Prius 30',
+    'Prius 50',
+    'Land Cruiser 200',
+    'Land Cruiser 300',
+    'RAV4',
+    'Prado 150',
+    'Highlander',
+  ],
   'Lexus': ['RX 450h', 'LX 570', 'NX 300h'],
   'Hyundai': ['Tucson', 'Santa Fe', 'Elantra'],
   'Nissan': ['X-Trail', 'Leaf', 'Patrol'],
 };
 const _fuels = ['Бензин', 'Дизель', 'Хайбрид', 'Цахилгаан'];
+const _engines = [
+  '1.0',
+  '1.3',
+  '1.5',
+  '1.8',
+  '2.0',
+  '2.5',
+  '2.8',
+  '3.0',
+  '3.5',
+  '4.0',
+  '4.5',
+  '4.6',
+  '5.7',
+];
+const _drives = ['FWD', 'RWD', '4WD', 'AWD'];
+const _doors = ['2', '3', '4', '5'];
+const _colors = [
+  'Цагаан',
+  'Хар',
+  'Саарал',
+  'Мөнгөлөг',
+  'Улаан',
+  'Цэнхэр',
+  'Бусад',
+];
+const _districts = [
+  'Баянзүрх',
+  'Хан-Уул',
+  'Сүхбаатар',
+  'Чингэлтэй',
+  'Сонгинохайрхан',
+  'Баянгол',
+];
+const _transmissions = ['Автомат', 'Механик', 'Вариатор'];
 
 class PostAdScreen extends StatefulWidget {
   const PostAdScreen({super.key});
@@ -37,6 +80,11 @@ class _PostAdScreenState extends State<PostAdScreen> {
   bool _diagnosis = true;
   bool _leasing = false;
   int _photos = 3;
+  String? _engine = '1.8';
+  String? _drive = 'FWD';
+  String? _doorCount = '5';
+  String? _color;
+  String? _district;
 
   @override
   void dispose() {
@@ -46,8 +94,9 @@ class _PostAdScreenState extends State<PostAdScreen> {
     super.dispose();
   }
 
-  List<String> get _years =>
-      [for (var y = DateTime.now().year; y >= 1995; y--) '$y'];
+  List<String> get _years => [
+    for (var y = DateTime.now().year; y >= 1995; y--) '$y',
+  ];
 
   Future<void> _pick(
     String title,
@@ -71,7 +120,10 @@ class _PostAdScreenState extends State<PostAdScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 8),
               Flexible(
@@ -118,9 +170,9 @@ class _PostAdScreenState extends State<PostAdScreen> {
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
               children: switch (_step) {
                 0 => _carStep(),
-                1 => _photoStep(),
+                1 => _techStep(),
                 2 => _priceStep(),
-                _ => _publishStep(),
+                _ => _previewStep(),
               },
             ),
           ),
@@ -165,7 +217,9 @@ class _PostAdScreenState extends State<PostAdScreen> {
                     if (i > 0) const SizedBox(width: 10),
                     Expanded(
                       child: GestureDetector(
-                        onTap: i < _step ? () => setState(() => _step = i) : null,
+                        onTap: i < _step
+                            ? () => setState(() => _step = i)
+                            : null,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -296,7 +350,11 @@ class _PostAdScreenState extends State<PostAdScreen> {
   );
 
   Widget _photoRow() {
-    const tints = [AppPalette.tintBlue, AppPalette.tintYellow, AppPalette.tintGreen];
+    const tints = [
+      AppPalette.tintBlue,
+      AppPalette.tintYellow,
+      AppPalette.tintGreen,
+    ];
     return Row(
       children: [
         Expanded(
@@ -309,7 +367,10 @@ class _PostAdScreenState extends State<PostAdScreen> {
                 child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.photo_camera_outlined, color: AppPalette.primary),
+                    Icon(
+                      Icons.photo_camera_outlined,
+                      color: AppPalette.primary,
+                    ),
                     SizedBox(height: 4),
                     Text(
                       'Нэмэх',
@@ -330,7 +391,11 @@ class _PostAdScreenState extends State<PostAdScreen> {
             child: AspectRatio(
               aspectRatio: 1,
               child: i < _photos
-                  ? CarThumb(tint: tints[i], height: double.infinity, carWidth: 60)
+                  ? CarThumb(
+                      tint: tints[i],
+                      height: double.infinity,
+                      carWidth: 60,
+                    )
                   : const SizedBox.shrink(),
             ),
           ),
@@ -377,14 +442,22 @@ class _PostAdScreenState extends State<PostAdScreen> {
           _dropdown(
             _model,
             'Сонгох',
-            () => _pick('Загвар', _models[_brand] ?? const ['Бусад'], (v) => _model = v),
+            () => _pick(
+              'Загвар',
+              _models[_brand] ?? const ['Бусад'],
+              (v) => _model = v,
+            ),
           ),
         ),
       ),
       _pair(
         _field(
           'Үйлдвэрлэсэн он',
-          _dropdown(_year, 'Он', () => _pick('Үйлдвэрлэсэн он', _years, (v) => _year = v)),
+          _dropdown(
+            _year,
+            'Он',
+            () => _pick('Үйлдвэрлэсэн он', _years, (v) => _year = v),
+          ),
         ),
         _field(
           'Орж ирсэн он',
@@ -399,12 +472,16 @@ class _PostAdScreenState extends State<PostAdScreen> {
         _field('Гүйлт (км)', _textInput(_mileage, '0', number: true)),
         _field(
           'Түлш',
-          _dropdown(_fuel, 'Сонгох', () => _pick('Түлш', _fuels, (v) => _fuel = v)),
+          _dropdown(
+            _fuel,
+            'Сонгох',
+            () => _pick('Түлш', _fuels, (v) => _fuel = v),
+          ),
         ),
       ),
       _label('Хурдны хайрцаг'),
       SegmentedPicker(
-        options: const ['Автомат', 'Механик', 'Вариатор'],
+        options: _transmissions,
         selected: _transmission,
         height: 64,
         expand: true,
@@ -453,20 +530,53 @@ class _PostAdScreenState extends State<PostAdScreen> {
     ];
   }
 
-  List<Widget> _photoStep() {
+  List<Widget> _techStep() {
     return [
-      Text('Зургаа нэмнэ үү', style: displayStyle(24)),
-      const SizedBox(height: 8),
-      const Text(
-        'Гадна, дотор, хөдөлгүүрийн зургийг оруулбал илүү олон хүн үзнэ.',
-        style: TextStyle(color: AppPalette.muted, fontSize: 16),
-      ),
+      Text('Техникийн мэдээлэл', style: displayStyle(24)),
       const SizedBox(height: 20),
-      _photoRow(),
-      const SizedBox(height: 16),
-      Text(
-        '$_photos / 8 зураг',
-        style: const TextStyle(color: AppPalette.muted, fontWeight: FontWeight.w600),
+      _pair(
+        _field(
+          'Хөдөлгүүр (л)',
+          _dropdown(
+            _engine,
+            'Сонгох',
+            () => _pick('Хөдөлгүүрийн багтаамж', _engines, (v) => _engine = v),
+          ),
+        ),
+        _field(
+          'Хөтлөгч',
+          _dropdown(
+            _drive,
+            'Сонгох',
+            () => _pick('Хөтлөгч', _drives, (v) => _drive = v),
+          ),
+        ),
+      ),
+      _pair(
+        _field(
+          'Хаалганы тоо',
+          _dropdown(
+            _doorCount,
+            'Сонгох',
+            () => _pick('Хаалганы тоо', _doors, (v) => _doorCount = v),
+          ),
+        ),
+        _field(
+          'Өнгө',
+          _dropdown(
+            _color,
+            'Сонгох',
+            () => _pick('Өнгө', _colors, (v) => _color = v),
+          ),
+        ),
+      ),
+      _field(
+        'Тодорхойлолт',
+        _textInput(
+          _description,
+          'Машины байдал, засвар үйлчилгээ, нэмэлт мэдээлэл...',
+          maxLines: 6,
+        ),
       ),
     ];
   }
@@ -476,8 +586,12 @@ class _PostAdScreenState extends State<PostAdScreen> {
       _field('Үнэ', _textInput(_price, '0', number: true, suffix: '₮')),
       const SizedBox(height: 18),
       _field(
-        'Тайлбар',
-        _textInput(_description, 'Машины байдал, нэмэлт мэдээлэл...', maxLines: 5),
+        'Байршил',
+        _dropdown(
+          _district,
+          'Дүүрэг сонгох',
+          () => _pick('Байршил', _districts, (v) => _district = v),
+        ),
       ),
       const SizedBox(height: 18),
       AppCard(
@@ -497,47 +611,139 @@ class _PostAdScreenState extends State<PostAdScreen> {
     ];
   }
 
-  List<Widget> _publishStep() {
+  List<Widget> _previewStep() {
     final price = int.tryParse(_price.text);
-    final rows = [
-      ('Машин', '$_brand ${_model ?? ''}'.trim()),
-      ('Он', _year ?? '—'),
-      ('Гүйлт', _mileage.text.isEmpty ? '—' : '${formatNumber(int.parse(_mileage.text))} км'),
-      ('Түлш', _fuel ?? '—'),
-      ('Хурдны хайрцаг', const ['Автомат', 'Механик', 'Вариатор'][_transmission]),
-      ('Зураг', '$_photos'),
-      ('Үнэ', price == null ? '—' : formatPrice(price)),
+    final mileage = int.tryParse(_mileage.text);
+    final name = '$_brand ${_model ?? ''}'.trim();
+    const tints = [
+      AppPalette.tintBlue,
+      AppPalette.tintYellow,
+      AppPalette.tintGreen,
     ];
     return [
-      Text('Шалгаад нийтлээрэй', style: displayStyle(24)),
-      const SizedBox(height: 18),
-      AppCard(
-        child: Column(
+      Text('Урьдчилан харах', style: displayStyle(24)),
+      const SizedBox(height: 6),
+      const Text(
+        'Худалдан авагчид таны зарыг ингэж харна.',
+        style: TextStyle(color: AppPalette.muted, fontSize: 15),
+      ),
+      const SizedBox(height: 16),
+      SizedBox(
+        height: 190,
+        child: Row(
           children: [
-            for (final (label, value) in rows)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
+            const Expanded(
+              flex: 2,
+              child: CarThumb(
+                tint: AppPalette.tintBlue,
+                height: double.infinity,
+                carWidth: 170,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                children: [
+                  for (var i = 1; i < 3; i++) ...[
+                    if (i > 1) const SizedBox(height: 10),
                     Expanded(
-                      child: Text(label, style: const TextStyle(color: AppPalette.muted)),
+                      child: i < _photos
+                          ? CarThumb(
+                              tint: tints[i],
+                              height: double.infinity,
+                              carWidth: 70,
+                            )
+                          : const SizedBox.shrink(),
                     ),
-                    Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 18),
+      Wrap(
+        spacing: 10,
+        runSpacing: 8,
+        children: [
+          if (_diagnosis) const Tag.verified(label: 'Оношилгоонд хамрагдана'),
+          if (_leasing)
+            const Tag(
+              label: 'Лизинг боломжтой',
+              background: AppPalette.accentTint,
+            ),
+        ],
+      ),
+      const SizedBox(height: 10),
+      Text('$name${_year == null ? '' : ' $_year'}', style: displayStyle(26)),
+      const SizedBox(height: 6),
+      PriceText(
+        price == null ? 'Үнэ оруулаагүй' : formatPrice(price),
+        size: 26,
+      ),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          const Icon(
+            Icons.location_on_outlined,
+            size: 18,
+            color: AppPalette.muted,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            _district ?? 'Байршил сонгоогүй',
+            style: const TextStyle(color: AppPalette.muted),
+          ),
+        ],
+      ),
+      const SizedBox(height: 14),
+      AppCard(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        child: Row(
+          children: [
+            for (final (icon, value) in [
+              (
+                Icons.speed_rounded,
+                mileage == null ? '— км' : '${formatNumber(mileage)} км',
+              ),
+              (Icons.local_gas_station_outlined, _fuel ?? '—'),
+              (Icons.settings_outlined, _transmissions[_transmission]),
+              (Icons.all_inclusive_rounded, _drive ?? '—'),
+            ])
+              Expanded(
+                child: Column(
+                  children: [
+                    Icon(icon, color: AppPalette.primary),
+                    const SizedBox(height: 6),
+                    Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
           ],
         ),
       ),
-      const SizedBox(height: 14),
-      Wrap(
-        spacing: 10,
-        children: [
-          if (_diagnosis) const Tag.verified(label: 'Оношилгоонд хамрагдана'),
-          if (_leasing)
-            const Tag(label: 'Лизинг боломжтой', background: AppPalette.accentTint),
-        ],
-      ),
+      if (_description.text.trim().isNotEmpty) ...[
+        const SizedBox(height: 14),
+        AppCard(
+          child: Text(
+            _description.text.trim(),
+            style: const TextStyle(
+              color: AppPalette.muted,
+              fontSize: 16,
+              height: 1.5,
+            ),
+          ),
+        ),
+      ],
     ];
   }
 
@@ -562,7 +768,9 @@ class _PostAdScreenState extends State<PostAdScreen> {
               const SizedBox(width: 14),
               Expanded(
                 child: PrimaryButton(
-                  label: _step == _steps.length - 1 ? 'Нийтлэх' : 'Үргэлжлүүлэх',
+                  label: _step == _steps.length - 1
+                      ? 'Зар нийтлэх'
+                      : 'Үргэлжлүүлэх',
                   onPressed: _next,
                 ),
               ),
