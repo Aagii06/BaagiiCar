@@ -28,7 +28,7 @@ function Cell({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-const cellSelect = "h-9 border-0 bg-transparent px-0 text-[15px] font-semibold focus:ring-0";
+const cellSelect = "h-9 border-0 bg-transparent px-0 text-[15px] font-semibold focus:ring-0 disabled:bg-transparent disabled:opacity-40";
 
 /** White search card overlapping the bottom of the full-width hero. */
 export default function HeroSearch() {

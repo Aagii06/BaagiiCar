@@ -86,14 +86,14 @@ function Hero({ featured }: { featured: Car[] }) {
   return (
     <section className="relative">
       {/* Full-bleed, viewport-tall hero on a bright sky gradient. */}
-      <div className="relative overflow-hidden bg-[linear-gradient(180deg,#e3f0fb_0%,#f2f8fd_45%,#ffffff_100%)] lg:min-h-[calc(100svh-76px)]">
+      <div className="relative overflow-hidden bg-[linear-gradient(180deg,#e3f0fb_0%,#f2f8fd_45%,#ffffff_100%)] lg:min-h-[min(calc(100svh-76px),820px)]">
         <div
           aria-hidden
           className="absolute left-[3%] top-[12%] hidden h-40 w-56 opacity-60 md:block"
           style={{ backgroundImage: "radial-gradient(#c5d3e0 1.6px, transparent 1.6px)", backgroundSize: "18px 18px" }}
         />
         <div aria-hidden className="absolute -bottom-24 -left-24 size-72 rounded-full border-[18px] border-primary/10" />
-        <Container className="relative grid items-center gap-8 pb-56 pt-10 sm:pb-40 md:pt-16 lg:min-h-[calc(100svh-76px)] lg:grid-cols-[0.95fr_1.05fr] lg:pb-36 lg:pt-10">
+        <Container className="relative grid items-center gap-8 pb-56 pt-10 sm:pb-40 md:pt-16 lg:min-h-[min(calc(100svh-76px),820px)] lg:grid-cols-[0.95fr_1.05fr] lg:pb-36 lg:pt-10">
           <div>
             <p className="kicker text-foreground/60">Шинэ · Хуучин · Лизинг</p>
             <h1 className="mt-4 font-display text-[52px] font-light leading-[0.98] sm:text-[68px] xl:text-[88px]">
@@ -133,13 +133,17 @@ function BrandGrid() {
     <Container className="mt-20 md:mt-28">
       <SectionTitle kicker="Бүх үйлдвэр" light="Машины" bold="брэнд" action={<ViewAll href="/cars" />} />
       <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-        {brands.data.slice(0, 16).map((b) => {
+        {brands.data.slice(0, 16).map((b, i) => {
           const logo = remoteImage(b.logo);
           return (
             <Link
               key={b.id}
               href={`/cars?brand=${b.id}`}
-              className="group flex flex-col items-center gap-3 rounded-2xl bg-card px-3 pb-4 pt-5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5"
+              className={cn(
+                "group flex-col items-center gap-3 rounded-2xl bg-card px-3 pb-4 pt-5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5",
+                // 3×3 on phones; the full 16 from sm up.
+                i < 9 ? "flex" : "hidden sm:flex"
+              )}
             >
               <span className="grid size-14 place-items-center">
                 {logo ? (
@@ -168,7 +172,7 @@ function Budgets() {
   );
   return (
     <Container className="mt-20 md:mt-28">
-      <SectionTitle kicker="Сонголт" light="Төсвөөрөө" bold="сонго" />
+      <SectionTitle light="Төсвөөрөө" bold="сонго" />
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {BUDGETS.map((b, i) => {
           const q = new URLSearchParams();
@@ -178,7 +182,6 @@ function Budgets() {
             <Link key={b.label} href={`/cars?${q}`} className={cn("group relative overflow-hidden rounded-2xl p-5 md:p-6", b.tint)}>
               <p className="font-display text-xl font-semibold md:text-2xl">{b.label}</p>
               <p className="mt-1 text-sm text-foreground/60">{counts.data ? `${counts.data[i]} машин` : " "}</p>
-              <CarArt className="ml-auto mt-4 w-28 text-foreground/70 transition-transform group-hover:translate-x-1 md:w-36" strokeWidth={2.4} />
             </Link>
           );
         })}

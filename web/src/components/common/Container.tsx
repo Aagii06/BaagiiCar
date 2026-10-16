@@ -26,7 +26,7 @@ export function SectionTitle({
   action,
   className,
 }: {
-  kicker: string;
+  kicker?: string;
   light?: string;
   bold: string;
   action?: React.ReactNode;
@@ -35,8 +35,8 @@ export function SectionTitle({
   return (
     <div className={cn("flex items-end justify-between gap-4", className)}>
       <div>
-        <p className="kicker">{kicker}</p>
-        <h2 className="mt-2 font-display text-[30px] leading-none md:text-[40px]">
+        {kicker && <p className="kicker">{kicker}</p>}
+        <h2 className={cn(kicker && "mt-2", "font-display text-[30px] leading-none md:text-[40px]")}>
           {light && <span className="font-light">{light} </span>}
           <span className="font-bold">{bold}</span>
         </h2>
