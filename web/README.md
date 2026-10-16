@@ -22,5 +22,5 @@ npm run dev            # http://localhost:3880
 
 Notes
 - The leasing calculator uses illustrative terms (`src/lib/constants.ts` → `LEASING`).
-- The backend only applies `desc: true` sorts, so the sort menu offers descending orders only.
+- Sort menu: newest, oldest, price ↑, price ↓, most viewed (`CAR_SORTS` in `src/lib/api/cars.ts`).
 - The help form opens a mail draft to `NEXT_PUBLIC_CONTACT_EMAIL`; there is no contact endpoint.

@@ -88,14 +88,13 @@ export type Condition = [string, string, unknown];
 export interface ListQuery {
   /** Joined with "and". */
   filter?: Condition[];
-  sort?: { selector: string; desc: true }[];
+  sort?: { selector: string; desc: boolean }[];
   take?: number;
   skip?: number;
 }
 
 /**
- * Query string for the generic `/base/:target` list endpoints. Note the
- * backend only applies `desc: true` sorts — ascending ones are ignored.
+ * Query string for the generic `/base/:target` list endpoints.
  */
 export function listQuery({ filter = [], sort, take, skip }: ListQuery = {}) {
   const params = new URLSearchParams();

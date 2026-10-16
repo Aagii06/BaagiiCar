@@ -7,7 +7,7 @@ import Container, { PageTitle } from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState } from "@/components/common/States";
-import { getBodyTypes, getBrands, getModels, searchCars, type CarSearch } from "@/lib/api/cars";
+import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
 import type { Brand } from "@/lib/api/types";
 import { FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
@@ -27,7 +27,7 @@ type Params = {
   priceMax?: number;
   fuel: string[];
   steering?: string;
-  sort: NonNullable<CarSearch["sort"]>;
+  sort: CarSort;
   page: number;
 };
 
@@ -45,7 +45,7 @@ function readParams(sp: URLSearchParams): Params {
     priceMax: num(sp.get("priceMax")),
     fuel: list(sp.get("fuel")),
     steering: sp.get("steering") || undefined,
-    sort: sort === "priceDesc" || sort === "mileageDesc" ? sort : "new",
+    sort: CAR_SORTS.find((o) => o.value === sort)?.value ?? "new",
     page: num(sp.get("page")) ?? 1,
   };
 }
@@ -300,9 +300,11 @@ function CarsPageInner() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{result.data ? `${result.data.count} зар олдлоо` : " "}</p>
             <Select value={p.sort} onChange={(e) => set({ sort: e.target.value as Params["sort"] })} className="h-10 w-48 text-sm" aria-label="Эрэмбэлэх">
-              <option value="new">Шинээр нэмэгдсэн</option>
-              <option value="priceDesc">Үнэ: өндрөөс</option>
-              <option value="mileageDesc">Гүйлт: ихээс</option>
+              {CAR_SORTS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
             </Select>
           </div>
 

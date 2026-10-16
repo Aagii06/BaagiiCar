@@ -71,10 +71,11 @@ const getSort = (sorts) => {
     let result = [];
     for (let i = 0; i < sorts.length; i++) {
       const sort = sorts[i];
-      if (sort && sort["selector"] && sort["desc"])
+      // desc байхгүй / false бол өсөхөөр (өмнө нь зөвхөн desc: true ажилладаг байсан)
+      if (sort && sort["selector"])
         result.push([
           Sequelize.col(sort["selector"]),
-          sort["desc"] || sort["desc"] === "true" ? "desc" : "asc",
+          sort["desc"] === true || sort["desc"] === "true" ? "desc" : "asc",
         ]);
     }
     return result;

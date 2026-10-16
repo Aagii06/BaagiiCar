@@ -2,7 +2,7 @@ import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type C
 import type { BodyType, Brand, Car, CarFile, CarModel, Location, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
-const NEWEST = [{ selector: "created_at", desc: true as const }];
+const NEWEST = [{ selector: "created_at", desc: true }];
 
 // --- auth ------------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
 import type { BodyType, Brand, Car, CarFile, CarModel, Location } from "./types";
 
-const NEWEST = [{ selector: "created_at", desc: true as const }];
+const NEWEST = [{ selector: "created_at", desc: true }];
 
 export interface CarSearch {
   brandIds?: number[];
@@ -14,7 +14,7 @@ export interface CarSearch {
   priceMax?: number;
   fuelTypes?: string[];
   steering?: string;
-  sort?: "new" | "priceDesc" | "mileageDesc";
+  sort?: CarSort;
   page?: number;
   pageSize?: number;
 }
@@ -33,10 +33,24 @@ export function searchConditions(s: CarSearch): Condition[] {
   return c;
 }
 
-const SORTS = {
-  new: NEWEST,
-  priceDesc: [{ selector: "price", desc: true as const }],
-  mileageDesc: [{ selector: "mileage", desc: true as const }],
+export type CarSort = "new" | "old" | "priceAsc" | "priceDesc" | "views";
+
+/** Sort menu on /cars, in display order. */
+export const CAR_SORTS: { value: CarSort; label: string }[] = [
+  { value: "new", label: "Шинэ нь эхэндээ" },
+  { value: "old", label: "Хуучин нь эхэндээ" },
+  { value: "priceAsc", label: "Үнэ өсөхөөр" },
+  { value: "priceDesc", label: "Үнэ буурахаар" },
+  { value: "views", label: "Их үзсэн" },
+];
+
+// `id` breaks ties so paging stays stable when values repeat.
+const SORTS: Record<CarSort, { selector: string; desc: boolean }[]> = {
+  new: [{ selector: "created_at", desc: true }, { selector: "id", desc: true }],
+  old: [{ selector: "created_at", desc: false }, { selector: "id", desc: false }],
+  priceAsc: [{ selector: "price", desc: false }, { selector: "id", desc: true }],
+  priceDesc: [{ selector: "price", desc: true }, { selector: "id", desc: true }],
+  views: [{ selector: "view_count", desc: true }, { selector: "id", desc: true }],
 };
 
 export async function searchCars(s: CarSearch) {
