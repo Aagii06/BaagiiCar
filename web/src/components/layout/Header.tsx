@@ -34,7 +34,7 @@ export default function Header() {
           Улаанбаатар
         </span>
 
-        <nav className="hidden h-full items-stretch gap-7 md:flex">
+        <nav className="hidden h-full items-stretch gap-5 whitespace-nowrap md:flex lg:gap-7">
           {NAV.map((item) => {
             const active = isActive(pathname, item.href);
             return (

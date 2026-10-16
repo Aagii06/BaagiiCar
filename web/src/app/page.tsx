@@ -1,16 +1,17 @@
 "use client";
 
 import BodyTypeTabs from "@/components/car/BodyTypeTabs";
-import CarArt, { shapeFor } from "@/components/car/CarArt";
-import CarCard, { carTitle } from "@/components/car/CarCard";
+import CarArt from "@/components/car/CarArt";
+import CarCard from "@/components/car/CarCard";
 import Container, { SectionTitle, ViewAll } from "@/components/common/Container";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
+import HeroCarousel from "@/components/home/HeroCarousel";
 import HeroSearch from "@/components/home/HeroSearch";
 import { featuredCars, getBodyTypes, getBrands, searchCars } from "@/lib/api/cars";
-import { remoteImage, uploadUrl } from "@/lib/api/config";
-import type { Car } from "@/lib/api/types";
+import { remoteImage } from "@/lib/api/config";
+import type { BodyType } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
-import { cn, formatPriceShort } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ArrowRight, CreditCard, Heart, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -37,89 +38,12 @@ const STEPS = [
   { n: "03", title: "Нийтлэх", text: "Зар шууд гарч, худалдан авагч холбогдоно." },
 ];
 
-/** Hero visual: the top featured ad's photo when there is one, else the line-art car. */
-function HeroCar({ car }: { car?: Car }) {
-  const photo = uploadUrl(car?.image, "full");
-  return (
-    <div className="relative mx-auto aspect-[4/3] w-full max-w-[640px]">
-      <div className="absolute right-[4%] top-[2%] size-[78%] rounded-full bg-gradient-to-br from-white to-[#dcecfb]" />
-      <div className="absolute right-[10%] top-[-4%] size-24 rounded-full border-[10px] border-primary/90 md:size-32 md:border-[14px]" />
-      {photo ? (
-        // eslint-disable-next-line @next/next/no-img-element -- backend-served uploads
-        <img src={photo} alt={carTitle(car!)} className="absolute inset-x-0 bottom-[6%] mx-auto max-h-[80%] w-[92%] rounded-3xl object-cover shadow-2xl shadow-black/20" />
-      ) : (
-        <CarArt shape={shapeFor(car?.body_type_name ?? "SUV")} className="absolute inset-x-0 bottom-[10%] mx-auto w-[96%] text-dark" strokeWidth={1.8} />
-      )}
-      {car && (
-        <Link href={`/cars/${car.id}`} className="absolute bottom-0 left-[4%] flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/10">
-          <span className="grid size-9 place-items-center rounded-xl bg-primary text-white">
-            <ArrowRight className="size-4" />
-          </span>
-          <span>
-            <span className="block text-sm font-bold">{carTitle(car)}</span>
-            <span className="block text-xs font-semibold text-primary">{formatPriceShort(car.price)}</span>
-          </span>
-        </Link>
-      )}
-    </div>
-  );
-}
-
-/** "Онцлох" strip at the hero's right edge, like the reference's top-selling column. */
-function TopStrip({ cars }: { cars: Car[] }) {
-  if (cars.length < 2) return null;
-  return (
-    <div className="absolute right-6 top-1/2 hidden w-36 -translate-y-1/2 space-y-2 rounded-2xl bg-white/80 p-2 shadow-xl shadow-black/5 backdrop-blur 2xl:block">
-      <p className="px-1 pt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Онцлох</p>
-      {cars.slice(1, 4).map((c) => (
-        <Link key={c.id} href={`/cars/${c.id}`} className="block rounded-xl bg-white p-2 text-center hover:shadow-md">
-          <CarArt shape={shapeFor(c.body_type_name)} className="mx-auto w-16" strokeWidth={3} />
-          <p className="mt-1 truncate text-xs font-bold">{carTitle(c)}</p>
-          <p className="text-[11px] text-primary">{formatPriceShort(c.price)}</p>
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-function Hero({ featured }: { featured: Car[] }) {
+function Hero({ bodyTypes }: { bodyTypes: BodyType[] }) {
   return (
     <section className="relative">
-      {/* Full-bleed, viewport-tall hero on a bright sky gradient. */}
-      <div className="relative overflow-hidden bg-[linear-gradient(180deg,#e3f0fb_0%,#f2f8fd_45%,#ffffff_100%)] lg:min-h-[min(calc(100svh-76px),820px)]">
-        <div
-          aria-hidden
-          className="absolute left-[3%] top-[12%] hidden h-40 w-56 opacity-60 md:block"
-          style={{ backgroundImage: "radial-gradient(#c5d3e0 1.6px, transparent 1.6px)", backgroundSize: "18px 18px" }}
-        />
-        <div aria-hidden className="absolute -bottom-24 -left-24 size-72 rounded-full border-[18px] border-primary/10" />
-        <Container className="relative grid items-center gap-8 pb-56 pt-10 sm:pb-40 md:pt-16 lg:min-h-[min(calc(100svh-76px),820px)] lg:grid-cols-[0.95fr_1.05fr] lg:pb-36 lg:pt-10">
-          <div>
-            <p className="kicker text-foreground/60">Шинэ · Хуучин · Лизинг</p>
-            <h1 className="mt-4 font-display text-[52px] font-light leading-[0.98] sm:text-[68px] xl:text-[88px]">
-              Мөрөөдлийн
-              <br />
-              машинаа <span className="font-bold text-primary">олоорой</span>
-            </h1>
-            <p className="mt-6 max-w-md text-[15px] leading-7 text-foreground/70">
-              Улаанбаатарын машины зарууд нэг дор. Шүүж хайх, лизингээ тооцоолох, зарлагчтай шууд холбогдох.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/cars" className="rounded-xl bg-primary px-6 py-3.5 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg shadow-primary/30 hover:bg-primary-hover">
-                Машин хайх
-              </Link>
-              <Link href="/sell" className="rounded-xl bg-dark px-6 py-3.5 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-dark-2">
-                Машинаа зарах
-              </Link>
-            </div>
-          </div>
-          <div className="hidden md:block">
-            <HeroCar car={featured[0]} />
-          </div>
-        </Container>
-        <TopStrip cars={featured} />
-      </div>
-      <Container className="absolute inset-x-0 bottom-0 translate-y-1/2 lg:translate-y-[38%]">
+      <HeroCarousel bodyTypes={bodyTypes} className="h-[520px] lg:h-[560px]" />
+      {/* Phones / tablets: below the photo with a slight overlap. Desktop: floats over its bottom edge. */}
+      <Container className="relative z-10 -mt-12 lg:absolute lg:inset-x-0 lg:bottom-0 lg:mt-0 lg:translate-y-[38%]">
         <HeroSearch />
       </Container>
     </section>
@@ -197,10 +121,10 @@ export default function HomePage() {
 
   return (
     <>
-      <Hero featured={featured.data ?? []} />
+      <Hero bodyTypes={bodyTypes.data ?? []} />
 
       {/* Space for the overlapping search card (taller when it stacks). */}
-      <div className="h-[210px] sm:h-[150px] lg:h-[80px]" />
+      <div className="hidden h-[80px] lg:block" />
 
       <Container className="mt-10">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
