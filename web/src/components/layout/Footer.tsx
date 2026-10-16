@@ -45,11 +45,11 @@ export default function Footer() {
           </div>
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <p className="eyebrow text-amber">{col.title}</p>
+              <p className="eyebrow text-primary">{col.title}</p>
               <ul className="mt-3 space-y-2.5 text-sm font-medium">
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <Link href={l.href} className="hover:text-amber">
+                    <Link href={l.href} className="hover:text-primary">
                       {l.label}
                     </Link>
                   </li>
@@ -58,15 +58,15 @@ export default function Footer() {
             </div>
           ))}
           <div>
-            <p className="eyebrow text-amber">Холбоо</p>
+            <p className="eyebrow text-primary">Холбоо</p>
             <ul className="mt-3 space-y-2.5 text-sm font-medium">
               {contact.length ? (
                 contact.map((c) => (
-                  <li key={c.label}>{c.href ? <a href={c.href} className="hover:text-amber">{c.label}</a> : c.label}</li>
+                  <li key={c.label}>{c.href ? <a href={c.href} className="hover:text-primary">{c.label}</a> : c.label}</li>
                 ))
               ) : (
                 <li>
-                  <Link href="/help#contact" className="hover:text-amber">
+                  <Link href="/help#contact" className="hover:text-primary">
                     Бидэнд бичих
                   </Link>
                 </li>

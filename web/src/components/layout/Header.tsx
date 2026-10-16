@@ -43,8 +43,8 @@ export default function Header() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex items-center border-b-2 pt-0.5 text-[15px] font-medium transition-colors",
-                  active ? "border-primary text-primary" : "border-transparent text-foreground/80 hover:text-foreground"
+                  "flex items-center border-b-2 pt-0.5 text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors",
+                  active ? "border-primary text-primary" : "border-transparent text-foreground/75 hover:text-foreground"
                 )}
               >
                 {item.label}
@@ -62,7 +62,7 @@ export default function Header() {
           </Link>
           {status === "authenticated" && user ? (
             <Link href="/profile" className="hidden h-11 items-center gap-2 rounded-xl bg-muted pl-1.5 pr-3 hover:bg-border md:flex">
-              <span className="grid size-8 place-items-center rounded-lg bg-dark text-xs font-bold text-white">{initials(userName(user))}</span>
+              <span className="grid size-8 place-items-center rounded-lg bg-primary text-xs font-bold text-white">{initials(userName(user))}</span>
               <span className="max-w-32 truncate text-sm font-semibold">{user.firstname || userName(user)}</span>
             </Link>
           ) : (

@@ -14,18 +14,14 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
+/** Orange mark + stacked "BAAGII / CAR DEALER" wordmark. */
 export default function Logo({ dark, className }: { dark?: boolean; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      {!dark && <LogoMark />}
-      <span
-        className={cn(
-          "whitespace-nowrap font-display font-semibold tracking-tight",
-          // Header: wordmark on phones and wide screens; mark only on tablets, where the nav needs the room.
-          dark ? "text-xl text-white" : "text-base text-foreground md:hidden lg:inline lg:text-lg xl:text-xl"
-        )}
-      >
-        {BRAND}
+    <span className={cn("inline-flex items-center gap-2.5", className)} aria-label={BRAND}>
+      <LogoMark />
+      <span className="flex flex-col leading-none">
+        <span className={cn("font-display text-[22px] font-bold tracking-wide", dark ? "text-white" : "text-foreground")}>Baagii</span>
+        <span className={cn("mt-0.5 text-[9px] font-semibold uppercase tracking-[0.32em]", dark ? "text-white/60" : "text-muted-foreground")}>Car Dealer</span>
       </span>
     </span>
   );

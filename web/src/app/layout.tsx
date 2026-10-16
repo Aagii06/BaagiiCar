@@ -4,13 +4,13 @@ import MobileNav from "@/components/layout/MobileNav";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { FavoritesProvider } from "@/lib/favorites/FavoritesProvider";
 import type { Metadata, Viewport } from "next";
-import { Inter, Unbounded } from "next/font/google";
+import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "cyrillic"], display: "swap" });
 
-// The design's wide display face for page titles.
-const unbounded = Unbounded({ variable: "--font-unbounded", subsets: ["latin", "cyrillic"], display: "swap" });
+// Condensed display face for uppercase titles.
+const oswald = Oswald({ variable: "--font-oswald", subsets: ["latin", "cyrillic"], display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: "Baagii Car Dealer — Машин авах, зарах", template: "%s · Baagii Car Dealer" },
@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="mn" className={`${inter.variable} ${unbounded.variable}`}>
+    <html lang="mn" className={`${inter.variable} ${oswald.variable}`}>
       <body className="font-sans antialiased">
         <AuthProvider>
           <FavoritesProvider>

@@ -1,46 +1,48 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   AutoZah design tokens (Downloads/AutoZah - web&mobile): electric-blue
-   primary, near-black hero/footer, amber accent, cool grey page.
-   Light theme only, like the design.
+   Baagii Car Dealer tokens. Bright, airy look (white cards on a light grey
+   page) with a vivid orange accent and near-black for contrast, after the
+   "Helium" car-dealer reference. Layout follows the AutoZah design.
+   Light theme only.
    ------------------------------------------------------------------------- */
 :root {
-  --background: #f2f3f5;
-  --foreground: #111318;
+  --background: #f6f7f9;
+  --foreground: #16181d;
   --card: #ffffff;
 
-  --primary: #1f4bff;
-  --primary-hover: #183dd6;
+  --primary: #f26a1b;
+  --primary-hover: #dc5810;
   --primary-foreground: #ffffff;
-  --primary-soft: #e6ebff;
+  --primary-soft: #fff1e8;
 
-  --dark: #111318;
-  --dark-2: #23262e;
+  --dark: #16181d;
+  --dark-2: #2a2d35;
   --dark-foreground: #ffffff;
 
-  --amber: #ffb020;
-  --amber-soft: #fff1d6;
-  --amber-ink: #8a5a00;
+  /* Secondary warm highlight (featured price chip, footer labels). */
+  --amber: #ffb547;
+  --amber-soft: #fff6e5;
+  --amber-ink: #9a5b00;
 
-  --muted: #f2f3f5;
-  --muted-foreground: #5b6170;
+  --muted: #f1f3f6;
+  --muted-foreground: #6b7280;
 
-  --success: #0e8a4f;
-  --success-soft: #e3f4ea;
+  --success: #12a150;
+  --success-soft: #e7f8ee;
   --destructive: #e5484d;
-  --destructive-soft: #fde8e8;
+  --destructive-soft: #fdecec;
 
-  --border: #e6e8ec;
-  --input: #dcdfe5;
-  --ring: #1f4bff;
+  --border: #eceef2;
+  --input: #dfe3e8;
+  --ring: #f26a1b;
 
-  /* Card image tints, cycled by car id. */
-  --tint-blue: #e6ebff;
-  --tint-peach: #fff1d6;
-  --tint-mint: #e6f4ec;
-  --tint-lavender: #eeeaf8;
-  --tint-rose: #fbe7e7;
+  /* Bright pastel wells behind car images, cycled by car id. */
+  --tint-blue: #e9f5ff;
+  --tint-peach: #fff3ea;
+  --tint-mint: #eafaf2;
+  --tint-lavender: #f1eeff;
+  --tint-rose: #fff0f1;
 
   --radius: 1rem;
 }
@@ -82,7 +84,7 @@
   --color-tint-rose: var(--tint-rose);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-unbounded), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-display: var(--font-oswald), var(--font-inter), ui-sans-serif, sans-serif;
 
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 4px);
@@ -113,6 +115,15 @@
   /* Small uppercase label: footer column titles, hero eyebrow. */
   .eyebrow {
     @apply text-[11px] font-bold uppercase tracking-[0.08em];
+  }
+  /* Condensed uppercase display type, like the reference's headings. */
+  .font-display {
+    text-transform: uppercase;
+    letter-spacing: 0.005em;
+  }
+  /* Spaced-out kicker above section titles ("О Н Ц Л О Х"). */
+  .kicker {
+    @apply text-[11px] font-medium uppercase tracking-[0.35em] text-muted-foreground;
   }
 }
 

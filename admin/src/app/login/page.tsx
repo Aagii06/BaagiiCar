@@ -40,11 +40,9 @@ function LoginForm() {
   return (
     <div className="flex min-h-screen flex-col justify-center px-5">
       <div className="rounded-3xl bg-dark px-6 pb-8 pt-7 text-white">
-        <span className="[&_.font-display]:text-white">
-          <BrandMark />
-        </span>
+        <BrandMark dark />
         <h1 className="mt-8 font-display text-[28px] font-bold leading-tight tracking-tight">
-          Удирдлагын <span className="text-amber">самбар</span>
+          Удирдлагын <span className="text-primary">самбар</span>
         </h1>
         <p className="mt-2 text-sm text-white/70">Админ эрхтэй утасны дугаараараа нэвтэрнэ үү.</p>
       </div>
