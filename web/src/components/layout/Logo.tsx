@@ -18,7 +18,15 @@ export default function Logo({ dark, className }: { dark?: boolean; className?: 
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       {!dark && <LogoMark />}
-      <span className={cn("whitespace-nowrap font-display text-base font-semibold tracking-tight md:text-xl", dark ? "text-white" : "text-foreground")}>{BRAND}</span>
+      <span
+        className={cn(
+          "whitespace-nowrap font-display font-semibold tracking-tight",
+          // Header: wordmark on phones and wide screens; mark only on tablets, where the nav needs the room.
+          dark ? "text-xl text-white" : "text-base text-foreground md:hidden lg:inline lg:text-lg xl:text-xl"
+        )}
+      >
+        {BRAND}
+      </span>
     </span>
   );
 }

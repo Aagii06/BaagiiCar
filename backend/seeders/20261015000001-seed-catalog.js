@@ -51,31 +51,48 @@ const bodyTypes = [
 
 const locations = ["Улаанбаатар", "Дархан-Уул", "Орхон", "Сэлэнгэ", "Дорнод", "Ховд"];
 
+// Дахин ажиллуулахад давхардахгүй: зөвхөн байхгүй нэрийг нэмнэ
+const existingNames = async (queryInterface, table) => {
+  const [rows] = await queryInterface.sequelize.query(`SELECT name FROM \`${table}\``);
+  return new Set(rows.map((r) => r.name));
+};
+
+const insertMissing = async (queryInterface, table, rows) => {
+  const existing = await existingNames(queryInterface, table);
+  const missing = rows.filter((r) => !existing.has(r.name));
+  if (missing.length) await queryInterface.bulkInsert(table, missing);
+};
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface) {
     const base = { status: "active", created_at: "2026-10-15 00:00:00" };
 
-    await queryInterface.bulkInsert(
+    await insertMissing(
+      queryInterface,
       "brands",
       brands.map(([name, country, logo], i) => ({ ...base, name, country, logo, sort_order: i + 1 })),
     );
 
-    const [brandRows] = await queryInterface.sequelize.query("SELECT id, name FROM brands");
+    const [brandRows] = await queryInterface.sequelize.query("SELECT MIN(id) id, name FROM brands GROUP BY name");
+    const [existingModels] = await queryInterface.sequelize.query("SELECT brand_id, name FROM carModels");
+    const modelKeys = new Set(existingModels.map((m) => `${m.brand_id}:${m.name}`));
     const modelRows = [];
     brandRows.forEach((brand) =>
-      (carModels[brand.name] || []).forEach((name) =>
-        modelRows.push({ ...base, brand_id: brand.id, name }),
-      ),
+      (carModels[brand.name] || []).forEach((name) => {
+        if (!modelKeys.has(`${brand.id}:${name}`)) modelRows.push({ ...base, brand_id: brand.id, name });
+      }),
     );
-    await queryInterface.bulkInsert("carModels", modelRows);
+    if (modelRows.length) await queryInterface.bulkInsert("carModels", modelRows);
 
-    await queryInterface.bulkInsert(
+    await insertMissing(
+      queryInterface,
       "bodyTypes",
       bodyTypes.map(([name, image], i) => ({ ...base, name, image, sort_order: i + 1 })),
     );
 
-    await queryInterface.bulkInsert(
+    await insertMissing(
+      queryInterface,
       "locations",
       locations.map((name, i) => ({ ...base, name, sort_order: i + 1 })),
     );

@@ -25,11 +25,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-6 px-4 md:h-[76px] md:px-10">
-        <Link href="/" aria-label="Нүүр">
+        <Link href="/" aria-label="Нүүр" className="shrink-0">
           <Logo />
         </Link>
 
-        <span className="hidden items-center gap-1.5 text-sm font-medium text-foreground/80 lg:flex">
+        <span className="hidden items-center gap-1.5 text-sm font-medium text-foreground/80 xl:flex">
           <MapPin className="size-4" />
           Улаанбаатар
         </span>
@@ -72,10 +72,11 @@ export default function Header() {
           )}
           <Link
             href="/sell"
-            className="hidden h-11 items-center gap-1.5 rounded-xl bg-primary px-4 text-sm font-bold text-white hover:bg-primary-hover md:flex"
+            aria-label="Зар нэмэх"
+            className="hidden h-11 items-center gap-1.5 rounded-xl bg-primary px-3.5 text-sm font-bold text-white hover:bg-primary-hover md:flex xl:px-4"
           >
             <Plus className="size-4" strokeWidth={2.6} />
-            Зар нэмэх
+            <span className="hidden xl:inline">Зар нэмэх</span>
           </Link>
         </div>
       </div>
