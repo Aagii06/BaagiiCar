@@ -37,7 +37,8 @@ function HelpInner() {
   const [open, setOpen] = useState<string | null>(topic === "leasing" ? "leasing" : "fee");
   const [form, setForm] = useState({
     name: "",
-    contact: "",
+    phone: "",
+    email: "",
     message: topic === "leasing" ? `Лизингийн хүсэлт${car ? ` — зар #${car}` : ""}\n` : "",
   });
 
@@ -48,7 +49,7 @@ function HelpInner() {
 
   // No contact endpoint on the backend yet, so the form opens the user's mail app.
   const mailto = CONTACT.email
-    ? `mailto:${CONTACT.email}?subject=${encodeURIComponent("Baagii Car Dealer — асуулт")}&body=${encodeURIComponent(`${form.message}\n\n${form.name} · ${form.contact}`)}`
+    ? `mailto:${CONTACT.email}?subject=${encodeURIComponent("Baagii Car Dealer — асуулт")}&body=${encodeURIComponent(`${form.message}\n\n${[form.name, form.phone, form.email].filter(Boolean).join(" · ")}`)}`
     : null;
 
   return (
@@ -114,8 +115,26 @@ function HelpInner() {
             <Field label="Нэр">
               <input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </Field>
-            <Field label="Утас эсвэл и-мэйл">
-              <input className={inputClass} value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} />
+            <Field label="Утас">
+              <input
+                className={inputClass}
+                inputMode="numeric"
+                autoComplete="tel"
+                maxLength={8}
+                placeholder="99112233"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })}
+              />
+            </Field>
+            <Field label="И-мэйл">
+              <input
+                className={inputClass}
+                type="email"
+                autoComplete="email"
+                placeholder="name@example.com"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
             </Field>
             <Field label="Асуулт">
               <textarea className={cn(inputClass, "h-auto min-h-28 py-3")} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
