@@ -1,0 +1,48 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { Home, MessageCircle, Plus, Search, UserRound } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { isActive } from "./Header";
+
+const TABS = [
+  { href: "/", label: "Нүүр", icon: Home },
+  { href: "/cars", label: "Хайх", icon: Search },
+  { href: "/sell", label: "Зар нэмэх", icon: Plus, primary: true },
+  { href: "/chat", label: "Чат", icon: MessageCircle },
+  { href: "/profile", label: "Профайл", icon: UserRound },
+];
+
+/** Bottom tab bar from the mobile design; hidden from `md` up. */
+export default function MobileNav() {
+  const pathname = usePathname() ?? "/";
+  return (
+    <nav aria-label="Үндсэн цэс" className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      <div className="grid grid-cols-5">
+        {TABS.map(({ href, label, icon: Icon, primary }) => {
+          const active = isActive(pathname, href);
+          if (primary)
+            return (
+              <Link key={href} href={href} aria-label={label} className="grid place-items-center">
+                <span className="-mt-5 grid size-12 place-items-center rounded-full bg-primary text-white shadow-lg shadow-primary/30">
+                  <Icon className="size-6" strokeWidth={2.6} />
+                </span>
+              </Link>
+            );
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={cn("flex flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-semibold", active ? "text-primary" : "text-muted-foreground")}
+            >
+              <Icon className="size-5" strokeWidth={active ? 2.4 : 2} />
+              {label}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
