@@ -143,9 +143,9 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
               value=""
               onChange={(e) => e.target.value && set({ brands: [...p.brands, Number(e.target.value)], model: undefined })}
               className="border-0 bg-primary font-bold text-white [&>option]:text-foreground"
-              aria-label="Үйлдвэр нэмэх"
+              aria-label="Үйлдвэр сонгох"
             >
-              <option value="">＋ Үйлдвэр нэмэх</option>
+              <option value="">Үйлдвэр сонгох</option>
               {available.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}
