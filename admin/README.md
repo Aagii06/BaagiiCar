@@ -5,7 +5,7 @@ Admin panel for the BaagiiCar backend (`../backend`, port 5008), in the AutoZah 
 ```bash
 cp .env.example .env   # NEXT_PUBLIC_API_URL, NEXT_PUBLIC_WEB_URL
 npm install
-npm run dev            # http://localhost:3781
+npm run dev            # http://localhost:3881
 ```
 
 Sign in with a user whose role is `Админ` (see `backend/seeders/…-seed-admin.js`).

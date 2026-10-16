@@ -5,7 +5,7 @@ AutoZah design (`Downloads/AutoZah - web&mobile`) on Next.js 16 + Tailwind 4. Pu
 ```bash
 cp .env.example .env   # NEXT_PUBLIC_API_URL=http://localhost:5008
 npm install
-npm run dev            # http://localhost:3780
+npm run dev            # http://localhost:3880
 ```
 
 | Route | Page | Backend |

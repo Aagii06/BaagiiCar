@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3781",
+    "dev": "next dev -p 3881",
     "build": "next build",
-    "start": "next start -p 3781",
+    "start": "next start -p 3881",
     "lint": "eslint ."
   },
   "dependencies": {
