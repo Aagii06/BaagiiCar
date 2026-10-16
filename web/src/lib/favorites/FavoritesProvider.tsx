@@ -7,6 +7,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 
 interface FavoritesValue {
   ids: Set<number>;
+  /** True once the signed-in user's list has loaded. */
+  ready: boolean;
   isFavorite: (id: number) => boolean;
   toggle: (id: number) => Promise<void>;
 }
@@ -18,15 +20,23 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const { status } = useAuth();
   const router = useRouter();
   const [ids, setIds] = useState<Set<number>>(new Set());
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (status !== "authenticated") {
-      Promise.resolve().then(() => setIds(new Set()));
+      Promise.resolve().then(() => {
+        setIds(new Set());
+        setReady(false);
+      });
       return;
     }
     let cancelled = false;
     getFavorites().then(
-      (rows) => !cancelled && setIds(new Set(rows.map((r) => r.id))),
+      (rows) => {
+        if (cancelled) return;
+        setIds(new Set(rows.map((r) => r.id)));
+        setReady(true);
+      },
       () => undefined
     );
     return () => {
@@ -51,7 +61,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     [status, router]
   );
 
-  const value = useMemo(() => ({ ids, isFavorite: (id: number) => ids.has(id), toggle }), [ids, toggle]);
+  const value = useMemo(() => ({ ids, ready, isFavorite: (id: number) => ids.has(id), toggle }), [ids, ready, toggle]);
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;
 }
 
