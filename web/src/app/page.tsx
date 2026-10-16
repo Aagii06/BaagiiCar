@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const FEATURES = [
-  { icon: ShieldCheck, tint: "bg-tint-mint text-success", title: "Шалгагдсан зар", text: "Зарлагчийн утас баталгаажсан, онцлох зарыг админ шалгаж тэмдэглэнэ." },
+  { icon: ShieldCheck, tint: "bg-tint-mint text-success", title: "Шалгагдсан зар", text: "Онцлох зарыг админ шалгаж тэмдэглэнэ. Зарагдсан машин жагсаалтаас хасагдана." },
   { icon: CreditCard, tint: "bg-tint-peach text-amber-ink", title: "Зээл, лизинг", text: "Сарын төлбөрөө шууд тооцоолж, хүсэлтээ онлайнаар илгээнэ." },
   { icon: MessageCircle, tint: "bg-tint-blue text-primary", title: "Шууд холбогдох", text: "Зарлагчтай утсаар эсвэл чатаар шууд холбогдоно." },
   { icon: Bell, tint: "bg-tint-lavender text-[#5b3fae]", title: "Хадгалсан зар", text: "Таалагдсан машинаа хадгалаад дараа нь эргэн харна." },
@@ -96,7 +96,7 @@ export default function HomePage() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="font-display text-2xl font-bold tracking-tight md:text-[34px]">Онцлох зарууд</h2>
-            <p className="mt-1.5 text-sm text-muted-foreground">Админ шалгаж онцолсон, зарлагч нь баталгаажсан машинууд</p>
+            <p className="mt-1.5 text-sm text-muted-foreground">Админ шалгаж онцолсон машинууд</p>
           </div>
           <Link href="/cars" className="hidden shrink-0 rounded-xl border-[1.5px] border-foreground px-4 py-2.5 text-sm font-bold hover:bg-white sm:block">
             Бүгдийг харах
