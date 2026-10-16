@@ -74,7 +74,9 @@ export async function apiFetch<T>(
       clearSession();
       if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT));
     }
-    throw new ApiError(response.status, data?.message || statusMessage(response.status));
+    // express-validator failures come as `{ type: "validation", errors: [{ field, message }] }`.
+    const firstError = Array.isArray(data?.errors) ? data.errors[0]?.message : undefined;
+    throw new ApiError(response.status, data?.message || firstError || statusMessage(response.status));
   }
 
   return data as T;

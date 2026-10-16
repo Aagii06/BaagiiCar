@@ -1,6 +1,6 @@
 "use client";
 
-import { getUserData, login as loginRequest, register as registerRequest, type RegisterInput } from "@/lib/api/auth";
+import { getUserData, sendCode as sendCodeRequest, verifyCode as verifyCodeRequest } from "@/lib/api/auth";
 import { UNAUTHORIZED_EVENT } from "@/lib/api/client";
 import { clearSession, getAuthToken, getStoredUser, setSession } from "@/lib/api/token";
 import type { User } from "@/lib/api/types";
@@ -11,8 +11,10 @@ type AuthStatus = "loading" | "authenticated" | "anonymous";
 interface AuthContextValue {
   status: AuthStatus;
   user: User | null;
-  login: (phonenumber: string, password: string) => Promise<void>;
-  register: (input: RegisterInput) => Promise<void>;
+  /** Sends the one-time code to the phone. */
+  sendCode: (phonenumber: string) => Promise<void>;
+  /** Signs in with phone + code (new numbers are registered on the spot). */
+  verifyCode: (phonenumber: string, code: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -53,15 +55,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
   }, []);
 
-  const login = useCallback(async (phonenumber: string, password: string) => {
-    const { token, loggedUser } = await loginRequest(phonenumber, password);
-    setSession(token, loggedUser);
-    setUser(loggedUser);
-    setStatus("authenticated");
-  }, []);
+  const sendCode = useCallback((phonenumber: string) => sendCodeRequest(phonenumber), []);
 
-  const register = useCallback(async (input: RegisterInput) => {
-    const { token, loggedUser } = await registerRequest(input);
+  const verifyCode = useCallback(async (phonenumber: string, code: string) => {
+    const { token, loggedUser } = await verifyCodeRequest(phonenumber, code);
     setSession(token, loggedUser);
     setUser(loggedUser);
     setStatus("authenticated");
@@ -73,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus("anonymous");
   }, []);
 
-  const value = useMemo(() => ({ status, user, login, register, logout }), [status, user, login, register, logout]);
+  const value = useMemo(() => ({ status, user, sendCode, verifyCode, logout }), [status, user, sendCode, verifyCode, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

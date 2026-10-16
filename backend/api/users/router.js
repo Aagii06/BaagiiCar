@@ -11,12 +11,16 @@ const {
   changePasswordValidation,
   loginValidation,
   registerValidation,
+  otpSendValidation,
+  otpLoginValidation,
 } = require("./validation");
 
 const {
   save,
   login,
   register,
+  otpSend,
+  otpLogin,
   logout,
   getUserData,
   changePassword,
@@ -27,6 +31,9 @@ router
   .post(protect, extractFormData, saveValidation, byAndAt, save);
 
 router.route("/login").post(loginValidation, login);
+// Вэб: утас + нэг удаагийн кодоор нэвтрэх
+router.route("/otp-send").post(otpSendValidation, otpSend);
+router.route("/otp-login").post(otpLoginValidation, byAndAt, otpLogin);
 router.route("/register").post(registerValidation, byAndAt, register);
 router.route("/logout").post(protect, logout);
 router.route("/get-user-data").post(protect, getUserData);

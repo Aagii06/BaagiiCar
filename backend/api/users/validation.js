@@ -75,6 +75,23 @@ module.exports.changePasswordValidation = [
   validation,
 ];
 
+// Код илгээх: зөвхөн утасны дугаар
+module.exports.otpSendValidation = [
+  phonenumberValidation("Утасны дугаар оруулна уу"),
+  validation,
+];
+
+// Кодоор нэвтрэх
+module.exports.otpLoginValidation = [
+  phonenumberValidation("Утасны дугаар оруулна уу"),
+  body("code")
+    .notEmpty()
+    .withMessage("Баталгаажуулах код оруулна уу")
+    .matches(/^\d{4}$/)
+    .withMessage("Код 4 оронтой тоо байна"),
+  validation,
+];
+
 module.exports.loginValidation = [
   phonenumberValidation("Утасны дугаар оруулна уу"),
   body("password").notEmpty().withMessage("Нууц үг оруулна уу"),

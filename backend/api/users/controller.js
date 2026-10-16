@@ -168,6 +168,78 @@ module.exports.login = async (req, res) => {
   }
 };
 
+// --- Утас + нэг удаагийн код (OTP) -----------------------------------------
+// SMS үйлчилгээ холбогдоогүй тул түр хугацаанд бүх дугаарт ижил код ажиллана
+// (.env: OTP_DEV_CODE, анхдагч "2222"). SMS холбогдоход otpSend нь код үүсгэж
+// илгээн, otpLogin нь тэр кодыг шалгана.
+const otpDevCode = () => process.env.OTP_DEV_CODE || "2222";
+
+module.exports.otpSend = async (req, res) => {
+  // TODO: SMS-ээр санамсаргүй код илгээх
+  return res.status(200).json({ success: true, data: { sent: true }, message: "Код илгээлээ" });
+};
+
+// Кодоор нэвтрэх. Бүртгэлгүй дугаар бол "Хэрэглэгч" эрхтэй шинэ хэрэглэгч үүсгэнэ.
+module.exports.otpLogin = async (req, res) => {
+  let result = { success: false, data: null, message: "" };
+  const { phonenumber, code, at } = req.body;
+  try {
+    if (code !== otpDevCode()) {
+      result.message = "Баталгаажуулах код буруу байна";
+      return res.status(200).json(result);
+    }
+
+    let user = await users.findOne({
+      where: { phonenumber, status: { [op.ne]: "deleted" } },
+      attributes: ["id", "role", "status"],
+      raw: true,
+    });
+
+    // Тогтмол кодоор админ эрх авахаас сэргийлнэ: админ нууц үгээр нэвтэрнэ
+    if (user && user.role === roles.admin) {
+      result.message = "Админ эрхтэй хэрэглэгч нууц үгээр нэвтэрнэ үү";
+      return res.status(200).json(result);
+    }
+    if (user && user.status !== "active") {
+      result.message = "Таны бүртгэл идэвхгүй байна";
+      return res.status(200).json(result);
+    }
+
+    if (!user) {
+      const created = await users.create({
+        phonenumber,
+        role: roles.customer,
+        status: "active",
+        created_at: at,
+      });
+      await saveLog({
+        object_name: "users",
+        object_id: created.id,
+        log_action: "registered",
+        log_action_mn: "Кодоор бүртгүүлсэн",
+        created_by: created.id,
+        created_at: at,
+      });
+      user = { id: created.id };
+    }
+
+    const { success, user: loggedUser, message } = await findUserData(user.id);
+    if (!success) {
+      result.message = message;
+      return res.status(200).json(result);
+    }
+    authLogin(loggedUser, (token) => {
+      result.success = true;
+      result.data = { token, loggedUser };
+      return res.status(200).json(result);
+    });
+  } catch (error) {
+    console.log(error);
+    result.message = typeof error === "string" ? error : "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
 // Апп-аас өөрөө бүртгүүлэх (Хэрэглэгч эрхтэй)
 module.exports.register = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };

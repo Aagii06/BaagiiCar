@@ -16,7 +16,7 @@ npm run dev            # http://localhost:3880
 | `/sell` (`?id=` to edit) | Зар нэмэх | `POST /api/cars/save` (multipart) |
 | `/profile` | My ads: edit, mark sold, delete | `/api/cars/mark-sold`, `DELETE /api/base/cars` |
 | `/saved` | Favorites | `/api/cars/favorites`, `/api/cars/favorite` |
-| `/login`, `/register` | Phone + password | `/api/users/login`, `/api/users/register` |
+| `/login` (`/register` redirects here) | Phone → 4-digit code; a new number is registered on the spot. Until SMS is connected the code is `OTP_DEV_CODE` from `backend/.env` (default `2222`) for every number; admin accounts are refused and use their password in the admin panel | `/api/users/otp-send`, `/api/users/otp-login` |
 | `/leasing`, `/help` | Calculator, FAQ + contact | — |
 | `/chat` | Chat layout; no messaging API yet, shows the seller's phone | — |
 
