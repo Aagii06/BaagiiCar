@@ -55,7 +55,7 @@ function HelpInner() {
     <>
       <Container className="pt-4 md:pt-8">
         <section className="rounded-[28px] bg-dark px-6 py-12 text-center text-white md:py-16">
-          <span className="eyebrow inline-block rounded-full bg-dark-2 px-3 py-1.5 text-amber">Тусламжийн төв</span>
+          <span className="eyebrow inline-block rounded-full bg-dark-2 px-3 py-1.5 text-primary">Тусламжийн төв</span>
           <h1 className="mt-5 font-display text-[28px] font-bold leading-tight tracking-tight md:text-5xl">Бид танд юугаар туслах вэ?</h1>
           <form
             className="mx-auto mt-7 flex max-w-xl items-center gap-2 rounded-2xl bg-white p-1.5 pl-4"

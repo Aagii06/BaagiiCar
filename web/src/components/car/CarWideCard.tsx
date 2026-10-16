@@ -6,11 +6,11 @@ import { carTitle } from "./CarCard";
 import CarImage from "./CarImage";
 import SpecChips from "./SpecChips";
 
-/** The amber-outlined, full-width featured card in the "Машин авах" grid. */
+/** The orange-outlined, full-width featured card in the "Машин авах" grid. */
 export default function CarWideCard({ car }: { car: Car }) {
   const href = `/cars/${car.id}`;
   return (
-    <article className="grid gap-5 rounded-2xl border-[1.5px] border-amber bg-card p-3 sm:col-span-2 md:grid-cols-[1.1fr_1fr] xl:col-span-3">
+    <article className="grid gap-5 rounded-2xl border-[1.5px] border-primary bg-card p-3 sm:col-span-2 md:grid-cols-[1.1fr_1fr] xl:col-span-3">
       <Link href={href}>
         <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} className="aspect-[16/9] h-full md:aspect-auto md:min-h-56" alt={carTitle(car)} />
       </Link>
@@ -22,7 +22,7 @@ export default function CarWideCard({ car }: { car: Car }) {
               {car.manufactured_year ? <span className="font-medium text-muted-foreground"> · {car.manufactured_year}</span> : null}
             </h3>
           </Link>
-          <span className="flex shrink-0 items-center gap-1 rounded-lg bg-amber px-2.5 py-1.5 font-bold">
+          <span className="flex shrink-0 items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 font-bold text-white">
             <Zap className="size-4" />
             {formatPriceShort(car.price)}
           </span>

@@ -34,7 +34,7 @@ export default function LeasingCalculator({ price, carId, className }: { price: 
       </div>
       <div className="mt-5 flex items-center justify-between gap-3">
         <span className="text-sm text-white/80">Сарын төлбөр ({months} сар)</span>
-        <span className="text-xl font-bold text-amber">{amount ? formatPrice(monthly) : "—"}</span>
+        <span className="text-xl font-bold text-primary">{amount ? formatPrice(monthly) : "—"}</span>
       </div>
       <p className="mt-2 text-[11px] leading-4 text-white/50">
         Жишиг тооцоо: сарын {(LEASING.monthlyRate * 100).toFixed(1)}% хүүтэй. Бодит нөхцөл банк, лизингийн компаниас хамаарна.
