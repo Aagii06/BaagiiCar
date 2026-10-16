@@ -7,7 +7,7 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "cyrillic"], 
 const unbounded = Unbounded({ variable: "--font-unbounded", subsets: ["latin", "cyrillic"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "AutoZah Admin", template: "%s · AutoZah Admin" },
+  title: { default: "Baagii Car Dealer Admin", template: "%s · Baagii Car Dealer Admin" },
   robots: { index: false, follow: false },
 };
 

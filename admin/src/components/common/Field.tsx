@@ -1,5 +1,8 @@
+"use client";
+
 import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 export const inputClass =
   "h-12 w-full rounded-xl border border-input bg-white px-4 text-[15px] outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:bg-muted";
@@ -33,6 +36,23 @@ export function Select({ className, children, ...props }: React.SelectHTMLAttrib
         {children}
       </select>
       <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+    </span>
+  );
+}
+
+export function PasswordInput({ className, ...props }: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <span className="relative block">
+      <input {...props} type={visible ? "text" : "password"} className={cn(inputClass, "pr-12", className)} />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        aria-label={visible ? "Нууц үг нуух" : "Нууц үг харуулах"}
+        className="absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground"
+      >
+        {visible ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+      </button>
     </span>
   );
 }

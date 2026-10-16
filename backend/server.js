@@ -5,7 +5,7 @@ const moment = require("moment");
 const cors = require("cors");
 
 const app = express();
-const PORT = 5008;
+const PORT = process.env.PORT || 5011;
 const api = require("./api/routes");
 const webApi = require("./web/routes");
 

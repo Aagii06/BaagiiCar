@@ -1,4 +1,4 @@
-export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5008").replace(/\/$/, "");
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5011").replace(/\/$/, "");
 
 /** Car photos live under `<backend>/uploads/cars`, in four widths. */
 export type ImageSize = "icon" | "thumb" | "grid" | "full";

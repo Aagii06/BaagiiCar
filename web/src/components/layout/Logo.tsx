@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export const BRAND = "AutoZah";
+export const BRAND = "Baagii Car Dealer";
 
 export function LogoMark({ className }: { className?: string }) {
   return (
@@ -18,7 +18,7 @@ export default function Logo({ dark, className }: { dark?: boolean; className?: 
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       {!dark && <LogoMark />}
-      <span className={cn("font-display text-xl font-semibold tracking-tight", dark ? "text-white" : "text-foreground")}>{BRAND}</span>
+      <span className={cn("whitespace-nowrap font-display text-base font-semibold tracking-tight md:text-xl", dark ? "text-white" : "text-foreground")}>{BRAND}</span>
     </span>
   );
 }

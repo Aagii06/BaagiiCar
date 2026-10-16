@@ -1,6 +1,6 @@
 # baagii-car-dealer · admin
 
-Admin panel for the BaagiiCar backend (`../backend`, port 5008), in the AutoZah style. Same structure as the baagii-shop admin: Next.js 16, phone-width layout with a bottom tab bar.
+Admin panel for the BaagiiCar backend (`../backend`, port 5011), in the AutoZah design style. Same structure as the baagii-shop admin: Next.js 16, phone-width layout with a bottom tab bar.
 
 ```bash
 cp .env.example .env   # NEXT_PUBLIC_API_URL, NEXT_PUBLIC_WEB_URL

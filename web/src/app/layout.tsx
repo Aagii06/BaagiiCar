@@ -13,7 +13,7 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "cyrillic"], 
 const unbounded = Unbounded({ variable: "--font-unbounded", subsets: ["latin", "cyrillic"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "AutoZah — Машин авах, зарах", template: "%s · AutoZah" },
+  title: { default: "Baagii Car Dealer — Машин авах, зарах", template: "%s · Baagii Car Dealer" },
   description: "Монголын машин авах, зарах платформ. Оношилгоотой зар, зээлийн тооцоолуур, зарлагчтай шууд холбогдох.",
 };
 

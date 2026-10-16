@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, FormError, inputClass } from "@/components/common/Field";
+import { Field, FormError, inputClass, PasswordInput } from "@/components/common/Field";
 import { LoadingState } from "@/components/common/States";
 import BrandMark from "@/components/layout/BrandMark";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -50,10 +50,10 @@ function LoginForm() {
       </div>
       <form onSubmit={submit} className="-mt-4 space-y-4 rounded-3xl bg-white p-5 shadow-xl shadow-black/5">
         <Field label="Утасны дугаар">
-          <input className={inputClass} inputMode="numeric" autoComplete="tel" maxLength={8} value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))} required />
+          <input className={inputClass} inputMode="numeric" autoComplete="tel" maxLength={8} placeholder="Утасны дугаар" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))} required />
         </Field>
         <Field label="Нууц үг">
-          <input className={inputClass} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <PasswordInput autoComplete="current-password" placeholder="Нууц үг" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </Field>
         <FormError message={error} />
         <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">

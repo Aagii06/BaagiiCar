@@ -1,9 +1,9 @@
 # baagii-car-dealer · web
 
-AutoZah design (`Downloads/AutoZah - web&mobile`) on Next.js 16 + Tailwind 4. Public car-ad site for the BaagiiCar backend (`../backend`, port 5008).
+Baagii Car Dealer site, built from the AutoZah design (`Downloads/AutoZah - web&mobile`) on Next.js 16 + Tailwind 4. Public car-ad site for the BaagiiCar backend (`../backend`, port 5011).
 
 ```bash
-cp .env.example .env   # NEXT_PUBLIC_API_URL=http://localhost:5008
+cp .env.example .env   # NEXT_PUBLIC_API_URL=http://localhost:5011
 npm install
 npm run dev            # http://localhost:3880
 ```

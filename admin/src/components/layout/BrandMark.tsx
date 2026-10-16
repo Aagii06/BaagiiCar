@@ -8,7 +8,7 @@ export default function BrandMark() {
           <circle cx="17" cy="15" r="1.6" fill="currentColor" />
         </svg>
       </span>
-      <span className="font-display text-lg font-semibold tracking-tight">AutoZah</span>
+      <span className="whitespace-nowrap font-display text-base font-semibold tracking-tight">Baagii Car Dealer</span>
       <span className="rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">Admin</span>
     </span>
   );

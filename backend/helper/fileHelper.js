@@ -6,7 +6,7 @@ const sharp = require("sharp");
 
 const fileURL =
   process.env.NODE_ENV === "development"
-    ? "http://localhost:5008/uploads"
+    ? `http://localhost:${process.env.PORT || 5011}/uploads`
     : "https://odexpresss.com:8898/uploads";
 
 module.exports.fileURL = () => fileURL;
