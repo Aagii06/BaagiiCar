@@ -37,7 +37,7 @@ const isImage = (file) => /^image\/(jpeg|png|webp)$/.test(file.mimetype);
 
 // Бүх upload-ийн нэгдсэн хадгалах функц
 // file   - formidable-ийн файл объект
-// folder - public/uploads доторх хавтас ("deliveries", "deliveries/excel" гэх мэт)
+// folder - public/uploads доторх хавтас ("cars" гэх мэт)
 // suffix - нэг хүсэлтэд олон файл ирэхэд нэр давхцахгүй байлгах төгсгөл
 // resize - true бол sharp-аар 4 хэмжээгээр, false бол шууд хуулж хадгална
 module.exports.saveFile = async (
