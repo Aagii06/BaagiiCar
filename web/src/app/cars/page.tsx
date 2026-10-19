@@ -1,6 +1,7 @@
 "use client";
 
 import BodyTypeTabs from "@/components/car/BodyTypeTabs";
+import BrandTabs from "@/components/car/BrandTabs";
 import CarCard from "@/components/car/CarCard";
 import CarWideCard from "@/components/car/CarWideCard";
 import Container, { PageTitle } from "@/components/common/Container";
@@ -253,6 +254,7 @@ function CarsPageInner() {
     router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: "page" in patch });
   };
 
+  const brands = useApi(getBrands);
   const bodyTypes = useApi(getBodyTypes);
   const key = writeParams(p);
   const result = useApi(
@@ -283,7 +285,16 @@ function CarsPageInner() {
     <Container className="pt-8 md:pt-12">
       <PageTitle count={result.data?.count}>{t("Машин авах")}</PageTitle>
 
-      <BodyTypeTabs className="mt-6" items={bodyTypes.data ?? []} selectedId={p.body} onSelect={(id) => set({ body: id })} />
+      <p className="mt-6 text-xs font-semibold text-muted-foreground">{t("Үйлдвэр")}</p>
+      <BrandTabs
+        className="mt-2"
+        items={brands.data ?? []}
+        selectedIds={p.brands}
+        onToggle={(id) => set({ brands: p.brands.includes(id) ? p.brands.filter((b) => b !== id) : [...p.brands, id], model: undefined })}
+      />
+
+      <p className="mt-4 text-xs font-semibold text-muted-foreground">{t("Төрөл")}</p>
+      <BodyTypeTabs className="mt-2" items={bodyTypes.data ?? []} selectedId={p.body} onSelect={(id) => set({ body: id })} />
 
       <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[296px_1fr]">
         <aside>
