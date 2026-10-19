@@ -7,7 +7,7 @@ import { CONTACT } from "@/lib/api/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CreditCard, MessageCircle, Minus, Phone, Plus, Search, ShieldCheck, UserRound } from "lucide-react";
+import { CreditCard, MessageCircle, Minus, Phone, Plus, Search, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
@@ -16,7 +16,7 @@ const TOPICS: { icon: typeof Plus; tint: string; title: MessageKey; text: Messag
   { icon: Search, tint: "bg-tint-blue text-primary", title: "Машин хайх", text: "Шүүлтүүр ашиглан тохирох машинаа олох.", href: "/cars" },
   { icon: ShieldCheck, tint: "bg-tint-mint text-success", title: "Аюулгүй худалдаа", text: "Залилангаас сэргийлэх зөвлөмж.", href: "#safety" },
   { icon: CreditCard, tint: "bg-tint-peach text-amber-ink", title: "Төлбөр, лизинг", text: "Зээл, лизингийн нөхцөл, тооцоолуур.", href: "/leasing" },
-  { icon: UserRound, tint: "bg-tint-lavender text-[#5b3fae]", title: "Бүртгэл", text: "Нэвтрэх, бүртгүүлэх, профайл.", href: "/profile" },
+  { icon: Phone, tint: "bg-tint-lavender text-[#5b3fae]", title: "Холбоо барих", text: "Утас, и-мэйлээр бидэнтэй холбогдох.", href: "#contact" },
 ];
 
 const FAQ: { id: string; q: MessageKey; a: MessageKey }[] = [

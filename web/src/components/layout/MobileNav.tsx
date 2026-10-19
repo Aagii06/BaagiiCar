@@ -3,7 +3,7 @@
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Home, MessageCircle, Search, UserRound } from "lucide-react";
+import { Heart, Home, MessageCircle, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isActive } from "./Header";
@@ -12,7 +12,7 @@ const TABS: { href: string; label: MessageKey; icon: typeof Home }[] = [
   { href: "/", label: "Нүүр", icon: Home },
   { href: "/cars", label: "Хайх", icon: Search },
   { href: "/chat", label: "Чат", icon: MessageCircle },
-  { href: "/profile", label: "Профайл", icon: UserRound },
+  { href: "/saved", label: "Хадгалсан", icon: Heart },
 ];
 
 /** Bottom tab bar from the mobile design; hidden from `md` up. */

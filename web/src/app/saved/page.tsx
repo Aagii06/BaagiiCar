@@ -2,26 +2,29 @@
 
 import CarCard from "@/components/car/CarCard";
 import Container, { PageTitle } from "@/components/common/Container";
-import RequireAuth from "@/components/common/RequireAuth";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
-import { getFavorites } from "@/lib/api/cars";
+import { getCarsByIds } from "@/lib/api/cars";
 import { useFavorites } from "@/lib/favorites/FavoritesProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import Link from "next/link";
+import { useState } from "react";
 
-function Saved() {
+export default function SavedPage() {
   const { ids, ready } = useFavorites();
   const { t } = useI18n();
-  const favorites = useApi(getFavorites);
-  // Hide cards un-hearted on this page without refetching.
-  const rows = (favorites.data ?? []).filter((c) => !ready || ids.has(c.id));
+  // Fetch the list as it was on arrival; un-hearted cards just hide, no refetch.
+  const [loadedIds, setLoadedIds] = useState<number[] | null>(null);
+  if (ready && loadedIds === null) setLoadedIds([...ids]);
+  const favorites = useApi(() => (loadedIds ? getCarsByIds(loadedIds) : Promise.resolve(undefined)), loadedIds?.join(",") ?? "");
+  const rows = (favorites.data ?? []).filter((c) => ids.has(c.id));
+  const loading = !loadedIds || (favorites.loading && !favorites.data);
 
   return (
     <Container className="pt-8 md:pt-12">
-      <PageTitle count={favorites.data ? rows.length : undefined}>{t("Хадгалсан")}</PageTitle>
+      <PageTitle count={loading ? undefined : rows.length}>{t("Хадгалсан")}</PageTitle>
       <div className="mt-8">
-        {favorites.loading && !favorites.data ? (
+        {loading ? (
           <CardGridSkeleton count={3} />
         ) : favorites.error ? (
           <ErrorState message={favorites.error.message} onRetry={favorites.reload} />
@@ -40,13 +43,5 @@ function Saved() {
         )}
       </div>
     </Container>
-  );
-}
-
-export default function SavedPage() {
-  return (
-    <RequireAuth>
-      <Saved />
-    </RequireAuth>
   );
 }

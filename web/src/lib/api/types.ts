@@ -63,10 +63,6 @@ export interface BodyType {
   car_count?: number;
 }
 
-export interface Location {
-  id: number;
-  name: string;
-}
 
 export interface CarFile {
   id: number;
@@ -74,14 +70,4 @@ export interface CarFile {
   generated_name: string | null;
   original_name: string | null;
   order: number | null;
-}
-
-export interface User {
-  id: number;
-  phonenumber: string | null;
-  firstname: string | null;
-  lastname: string | null;
-  email: string | null;
-  role: string | null;
-  profile: string | null;
 }

@@ -36,8 +36,3 @@ export function Select({ className, children, ...props }: React.SelectHTMLAttrib
     </span>
   );
 }
-
-export function FormError({ message }: { message?: string | null }) {
-  if (!message) return null;
-  return <p className="rounded-xl bg-destructive-soft px-4 py-3 text-sm font-medium text-destructive">{message}</p>;
-}

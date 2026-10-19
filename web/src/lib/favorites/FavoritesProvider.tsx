@@ -1,65 +1,57 @@
 "use client";
 
-import { getFavorites, toggleFavorite } from "@/lib/api/cars";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+
+const STORAGE_KEY = "baagii_car_saved";
 
 interface FavoritesValue {
   ids: Set<number>;
-  /** True once the signed-in user's list has loaded. */
+  /** True once the saved list has been read from this browser. */
   ready: boolean;
   isFavorite: (id: number) => boolean;
-  toggle: (id: number) => Promise<void>;
+  toggle: (id: number) => void;
 }
 
 const FavoritesContext = createContext<FavoritesValue | null>(null);
 
-/** Ids of the signed-in user's saved ads, so every heart shows its state. */
+function readStored(): number[] {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((n): n is number => Number.isInteger(n)) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Saved ads live in this browser only — the site has no sign-in. */
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
-  const { status } = useAuth();
-  const router = useRouter();
   const [ids, setIds] = useState<Set<number>>(new Set());
   const [ready, setReady] = useState(false);
 
+  // Read after mount so the server render and first client render match.
   useEffect(() => {
-    if (status !== "authenticated") {
-      Promise.resolve().then(() => {
-        setIds(new Set());
-        setReady(false);
-      });
-      return;
-    }
-    let cancelled = false;
-    getFavorites().then(
-      (rows) => {
-        if (cancelled) return;
-        setIds(new Set(rows.map((r) => r.id)));
-        setReady(true);
-      },
-      () => undefined
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [status]);
+    Promise.resolve().then(() => {
+      setIds(new Set(readStored()));
+      setReady(true);
+    });
+    const onStorage = (e: StorageEvent) => e.key === STORAGE_KEY && setIds(new Set(readStored()));
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
-  const toggle = useCallback(
-    async (id: number) => {
-      if (status !== "authenticated") {
-        router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);
-        return;
+  const toggle = useCallback((id: number) => {
+    setIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+      } catch {
+        // storage blocked — the heart still works for this visit
       }
-      const on = await toggleFavorite(id);
-      setIds((prev) => {
-        const next = new Set(prev);
-        if (on) next.add(id);
-        else next.delete(id);
-        return next;
-      });
-    },
-    [status, router]
-  );
+      return next;
+    });
+  }, []);
 
   const value = useMemo(() => ({ ids, ready, isFavorite: (id: number) => ids.has(id), toggle }), [ids, ready, toggle]);
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;

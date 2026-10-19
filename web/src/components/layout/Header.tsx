@@ -1,10 +1,9 @@
 "use client";
 
-import { useAuth } from "@/lib/auth/AuthProvider";
 import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { cn, initials, userName } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Heart, MapPin, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,7 +22,6 @@ export function isActive(pathname: string, href: string) {
 
 export default function Header() {
   const pathname = usePathname() ?? "/";
-  const { user, status } = useAuth();
   const { t } = useI18n();
 
   return (
@@ -65,16 +63,6 @@ export default function Header() {
           <Link href="/saved" aria-label={t("Хадгалсан")} className="grid size-11 place-items-center rounded-xl bg-muted hover:bg-border">
             <Heart className="size-[18px]" />
           </Link>
-          {status === "authenticated" && user ? (
-            <Link href="/profile" className="hidden h-11 items-center gap-2 rounded-xl bg-muted pl-1.5 pr-3 hover:bg-border md:flex">
-              <span className="grid size-8 place-items-center rounded-lg bg-primary text-xs font-bold text-white">{initials(userName(user))}</span>
-              <span className="max-w-32 truncate text-sm font-semibold">{user.firstname || userName(user)}</span>
-            </Link>
-          ) : (
-            <Link href="/login" className="hidden h-11 items-center rounded-xl bg-muted px-4 text-sm font-semibold hover:bg-border md:flex">
-              {t("Нэвтрэх")}
-            </Link>
-          )}
         </div>
       </div>
     </header>

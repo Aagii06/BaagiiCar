@@ -66,16 +66,14 @@ export async function searchCars(s: CarSearch) {
       sort: SORTS[s.sort ?? "new"],
       take: pageSize,
       skip: ((s.page ?? 1) - 1) * pageSize,
-    })}`,
-    { auth: false }
+    })}`
   );
   return res.data;
 }
 
 export async function featuredCars(take = 6) {
   const res = await apiFetch<ApiListResponse<Car>>(
-    `/web/base/vwCars${listQuery({ filter: [["status", "=", "active"], ["is_featured", "=", 1]], sort: NEWEST, take })}`,
-    { auth: false }
+    `/web/base/vwCars${listQuery({ filter: [["status", "=", "active"], ["is_featured", "=", 1]], sort: NEWEST, take })}`
   );
   if (res.data.rows.length) return res.data.rows;
   // No featured ads yet — show the newest instead so the section isn't empty.
@@ -83,45 +81,38 @@ export async function featuredCars(take = 6) {
 }
 
 export async function getCar(id: number | string) {
-  const res = await apiFetch<ApiItemResponse<Car | null>>(`/web/base/vwCars/${id}`, { auth: false });
+  const res = await apiFetch<ApiItemResponse<Car | null>>(`/web/base/vwCars/${id}`);
   return res.data;
 }
 
 export async function getCarFiles(carId: number) {
   const res = await apiFetch<ApiListResponse<CarFile>>(
-    `/web/base/allFiles${listQuery({ filter: [["data_id", "=", carId]] })}`,
-    { auth: false }
+    `/web/base/allFiles${listQuery({ filter: [["data_id", "=", carId]] })}`
   );
   return [...res.data.rows].sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.id - b.id);
 }
 
 export async function getBrands() {
-  const res = await apiFetch<ApiListResponse<Brand>>("/web/base/vwBrands", { auth: false });
+  const res = await apiFetch<ApiListResponse<Brand>>("/web/base/vwBrands");
   return [...res.data.rows].sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999) || a.name.localeCompare(b.name));
 }
 
 export async function getModels(brandId?: number) {
   const q = brandId ? listQuery({ filter: [["brand_id", "=", brandId]] }) : "";
-  const res = await apiFetch<ApiListResponse<CarModel>>(`/web/base/carModels${q}`, { auth: false });
+  const res = await apiFetch<ApiListResponse<CarModel>>(`/web/base/carModels${q}`);
   return [...res.data.rows].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getBodyTypes() {
-  const res = await apiFetch<ApiListResponse<BodyType>>("/web/base/vwBodyTypes", { auth: false });
+  const res = await apiFetch<ApiListResponse<BodyType>>("/web/base/vwBodyTypes");
   return [...res.data.rows].sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
 }
 
-// --- signed-in -------------------------------------------------------------
-
-export async function getFavorites() {
-  const res = await apiFetch<ApiListResponse<Car>>("/api/cars/favorites");
+/** Active ads by id (the visitor's saved list), newest first. */
+export async function getCarsByIds(ids: number[]) {
+  if (!ids.length) return [];
+  const res = await apiFetch<ApiListResponse<Car>>(
+    `/web/base/vwCars${listQuery({ filter: [["id", "in", ids]], sort: NEWEST, take: ids.length })}`
+  );
   return res.data.rows;
-}
-
-export async function toggleFavorite(carId: number) {
-  const res = await apiFetch<ApiItemResponse<{ car_id: number; is_favorite: boolean }>>("/api/cars/favorite", {
-    method: "POST",
-    body: { car_id: carId },
-  });
-  return res.data.is_favorite;
 }

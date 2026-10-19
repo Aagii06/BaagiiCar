@@ -1,10 +1,6 @@
 import type { MessageKey } from "../i18n/messages";
 import { documentLocale, translate, type Vars } from "../i18n/translate";
 import { API_BASE_URL } from "./config";
-import { clearSession, getAuthToken } from "./token";
-
-/** Fired on `window` when the backend rejects the stored token. */
-export const UNAUTHORIZED_EVENT = "web-unauthorized";
 
 export class ApiError extends Error {
   status: number;
@@ -28,16 +24,13 @@ export interface ApiListResponse<T> {
 }
 
 type RequestOptions = Omit<RequestInit, "body"> & {
-  /** JSON body, or a FormData for multipart endpoints (`/api/cars/save`). */
+  /** JSON body. */
   body?: unknown;
-  /** Attach the stored bearer token (default `true`). */
-  auth?: boolean;
 };
 
 const tr = (key: MessageKey, vars?: Vars) => translate(documentLocale(), key, vars);
 
 function statusMessage(status: number) {
-  if (status === 401) return tr("Нэвтэрнэ үү");
   if (status === 404) return tr("Хүсэлт олдсонгүй");
   if (status >= 500) return tr("Серверийн алдаа ({status})", { status });
   return tr("Хүсэлт амжилтгүй боллоо");
@@ -47,23 +40,17 @@ function statusMessage(status: number) {
 // tells them apart via `success`, so that flag is checked with `response.ok`.
 export async function apiFetch<T>(
   path: string,
-  { body, auth = true, headers, ...options }: RequestOptions = {}
+  { body, headers, ...options }: RequestOptions = {}
 ): Promise<T> {
   const requestHeaders = new Headers(headers);
-  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
-  if (!isForm && body !== undefined) requestHeaders.set("Content-Type", "application/json");
-
-  if (auth) {
-    const token = getAuthToken();
-    if (token) requestHeaders.set("Authorization", `Bearer ${token}`);
-  }
+  if (body !== undefined) requestHeaders.set("Content-Type", "application/json");
 
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
       headers: requestHeaders,
-      body: isForm ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch (err) {
     if (err instanceof TypeError) throw new ApiError(0, tr("Сервертэй холбогдож чадсангүй"));
@@ -74,10 +61,6 @@ export async function apiFetch<T>(
   const data = isJson ? await response.json() : undefined;
 
   if (!response.ok || data?.success === false) {
-    if (auth && response.status === 401) {
-      clearSession();
-      if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT));
-    }
     // express-validator failures come as `{ type: "validation", errors: [{ field, message }] }`.
     const firstError = Array.isArray(data?.errors) ? data.errors[0]?.message : undefined;
     throw new ApiError(response.status, data?.message || firstError || statusMessage(response.status));

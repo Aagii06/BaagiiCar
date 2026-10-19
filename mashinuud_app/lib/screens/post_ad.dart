@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/data/car_data.dart';
 import 'package:mashinuud_app/data/filter_data.dart';
+import 'package:mashinuud_app/services/vehicleLookupService.dart';
 import 'package:mashinuud_app/widgets/custom/ui.dart';
 
-const _steps = ['Машин', 'Техник', 'Үнэ', 'Харах'];
+const _stepCount = 4;
+const _maxPhotos = 20;
 const _models = {
   'Toyota': [
     'Prius 30',
@@ -16,11 +18,11 @@ const _models = {
     'Prado 150',
     'Highlander',
   ],
-  'Lexus': ['RX 450h', 'LX 570', 'NX 300h'],
+  'Lexus': ['RX 350', 'RX 450h', 'LX 570', 'NX 300h'],
   'Hyundai': ['Tucson', 'Santa Fe', 'Elantra'],
   'Nissan': ['X-Trail', 'Leaf', 'Patrol'],
 };
-const _fuels = ['Бензин', 'Дизель', 'Хайбрид', 'Цахилгаан'];
+const _fuels = ['Бензин', 'Дизель', 'Хайбрид', 'Газ', 'Цахилгаан'];
 const _engines = [
   '1.0',
   '1.3',
@@ -37,6 +39,8 @@ const _engines = [
   '5.7',
 ];
 const _drives = ['FWD', 'RWD', '4WD', 'AWD'];
+const _transmissions = ['Автомат', 'Механик', 'CVT', 'Типтроник'];
+const _steerings = ['Зүүн', 'Баруун'];
 const _doors = ['2', '3', '4', '5'];
 const _colors = [
   'Цагаан',
@@ -47,15 +51,13 @@ const _colors = [
   'Цэнхэр',
   'Бусад',
 ];
-const _districts = [
-  'Баянзүрх',
-  'Хан-Уул',
-  'Сүхбаатар',
-  'Чингэлтэй',
-  'Сонгинохайрхан',
-  'Баянгол',
+const _tints = [
+  AppPalette.tintBlue,
+  AppPalette.tintYellow,
+  AppPalette.tintGreen,
+  AppPalette.tintLavender,
+  AppPalette.tintPink,
 ];
-const _transmissions = ['Автомат', 'Механик', 'Вариатор'];
 
 class PostAdScreen extends StatefulWidget {
   const PostAdScreen({super.key});
@@ -65,31 +67,44 @@ class PostAdScreen extends StatefulWidget {
 }
 
 class _PostAdScreenState extends State<PostAdScreen> {
-  final _mileage = TextEditingController();
+  final _plate = TextEditingController();
+  final _vin = TextEditingController();
   final _price = TextEditingController();
+  final _mileage = TextEditingController();
   final _description = TextEditingController();
 
   int _step = 0;
-  String _brand = 'Toyota';
-  String? _model = 'Prius 30';
-  String? _year = '2012';
+
+  // 1. Дугаараар хайх
+  bool _searching = false;
+  String? _lookupError;
+  VehicleInfo? _found;
+
+  // 2. Ерөнхий мэдээлэл
+  int _photos = 0;
+  String? _brand;
+  String? _model;
+  String? _year;
   String? _importYear;
-  String? _fuel = 'Хайбрид';
-  int _transmission = 0;
-  int _steering = 0;
-  bool _diagnosis = true;
-  bool _leasing = false;
-  int _photos = 3;
-  String? _engine = '1.8';
-  String? _drive = 'FWD';
-  String? _doorCount = '5';
+  String? _location = 'Улаанбаатар';
+
+  // 3. Техникийн мэдээлэл
+  String? _fuel;
+  String? _drive;
+  String? _transmission;
+  String? _engine;
+  String? _doorCount;
+  String? _steering;
   String? _color;
-  String? _district;
+  bool _diagnosis = false;
+  bool _leasing = false;
 
   @override
   void dispose() {
-    _mileage.dispose();
+    _plate.dispose();
+    _vin.dispose();
     _price.dispose();
+    _mileage.dispose();
     _description.dispose();
     super.dispose();
   }
@@ -98,9 +113,58 @@ class _PostAdScreenState extends State<PostAdScreen> {
     for (var y = DateTime.now().year; y >= 1995; y--) '$y',
   ];
 
+  bool get _canSearch =>
+      _plate.text.trim().isNotEmpty || _vin.text.trim().isNotEmpty;
+
+  Future<void> _search() async {
+    if (!_canSearch || _searching) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _searching = true;
+      _lookupError = null;
+    });
+    try {
+      final info = await VehicleLookupService.lookup(
+        plate: _plate.text,
+        vin: _vin.text,
+      );
+      if (!mounted) return;
+      setState(() {
+        _apply(info);
+        _found = info;
+        _searching = false;
+        _step = 1;
+      });
+    } on VehicleLookupException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _lookupError = e.message;
+        _searching = false;
+      });
+    }
+  }
+
+  /// Хайлтаас ирсэн утгуудаар маягтыг бөглөнө (ирээгүй талбарыг хэвээр үлдээнэ).
+  void _apply(VehicleInfo info) {
+    _brand = info.brand ?? _brand;
+    _model = info.model ?? _model;
+    _year = info.manufacturedYear?.toString() ?? _year;
+    _importYear = info.importedYear?.toString() ?? _importYear;
+    _fuel = info.fuelType ?? _fuel;
+    _drive = info.driveType ?? _drive;
+    _transmission = info.transmission ?? _transmission;
+    _engine = info.engineCapacity?.toStringAsFixed(1) ?? _engine;
+    _doorCount = info.doorCount?.toString() ?? _doorCount;
+    _steering = info.steering ?? _steering;
+    _color = info.color ?? _color;
+    if (info.plate != null) _plate.text = info.plate!;
+    if (info.vin != null) _vin.text = info.vin!;
+  }
+
   Future<void> _pick(
     String title,
     List<String> options,
+    String? current,
     ValueChanged<String> onPicked,
   ) async {
     final value = await showModalBottomSheet<String>(
@@ -133,6 +197,12 @@ class _PostAdScreenState extends State<PostAdScreen> {
                     for (final o in options)
                       ListTile(
                         title: Text(o, style: const TextStyle(fontSize: 17)),
+                        trailing: o == current
+                            ? const Icon(
+                                Icons.check_rounded,
+                                color: AppPalette.primary,
+                              )
+                            : null,
                         onTap: () => Navigator.pop(context, o),
                       ),
                   ],
@@ -146,8 +216,25 @@ class _PostAdScreenState extends State<PostAdScreen> {
     if (value != null) setState(() => onPicked(value));
   }
 
+  String? _missingGeneral() {
+    if (_brand == null) return 'Брэнд сонгоно уу';
+    if (_year == null) return 'Үйлдвэрлэсэн он сонгоно уу';
+    if (_price.text.trim().isEmpty) return 'Үнэ оруулна уу';
+    return null;
+  }
+
   void _next() {
-    if (_step < _steps.length - 1) {
+    FocusScope.of(context).unfocus();
+    if (_step == 1) {
+      final missing = _missingGeneral();
+      if (missing != null) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(missing)));
+        return;
+      }
+    }
+    if (_step < _stepCount - 1) {
       setState(() => _step++);
       return;
     }
@@ -159,170 +246,175 @@ class _PostAdScreenState extends State<PostAdScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppPalette.background,
-      body: Column(
-        children: [
-          _header(),
-          const Divider(height: 1, color: AppPalette.border),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-              children: switch (_step) {
-                0 => _carStep(),
-                1 => _techStep(),
-                2 => _priceStep(),
-                _ => _previewStep(),
-              },
+    return PopScope(
+      canPop: _step == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) setState(() => _step--);
+      },
+      child: Scaffold(
+        backgroundColor: AppPalette.surface,
+        body: Column(
+          children: [
+            _header(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                children: switch (_step) {
+                  0 => _lookupStep(),
+                  1 => _generalStep(),
+                  2 => _techStep(),
+                  _ => _previewStep(),
+                },
+              ),
             ),
-          ),
-          _bottomBar(),
-        ],
+            _bottomBar(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _header() {
-    return Container(
-      color: AppPalette.surface,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  SquareIconButton(
-                    icon: Icons.close_rounded,
-                    size: 56,
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  const SizedBox(width: 18),
-                  Expanded(child: Text('Зар оруулах', style: displayStyle(30))),
-                  Text(
-                    '${_step + 1} / ${_steps.length}',
-                    style: const TextStyle(
-                      color: AppPalette.muted,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  for (var i = 0; i < _steps.length; i++) ...[
-                    if (i > 0) const SizedBox(width: 10),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: i < _step
-                            ? () => setState(() => _step = i)
-                            : null,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: i <= _step
-                                    ? AppPalette.primary
-                                    : AppPalette.chipGrey,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              _steps[i],
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: i == _step
-                                    ? AppPalette.ink
-                                    : AppPalette.muted,
-                              ),
-                            ),
-                          ],
-                        ),
+    const actionStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  width: 96,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppPalette.ink,
                       ),
+                      child: const Text('Цуцлах', style: actionStyle),
                     ),
-                  ],
-                ],
-              ),
-            ],
-          ),
+                  ),
+                ),
+                const Expanded(
+                  child: Text(
+                    'Зар оруулах',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  ),
+                ),
+                SizedBox(
+                  width: 96,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: _step == _stepCount - 1
+                        ? null
+                        : TextButton(
+                            onPressed: _step == 0
+                                ? () => setState(() => _step = 1)
+                                : _next,
+                            child: Text(
+                              _step == 0 ? 'Алгасах' : 'Дараах',
+                              style: actionStyle,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _stepper(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _label(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
+  Widget _stepper() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (var i = 0; i < _stepCount; i++) ...[
+          if (i > 0)
+            Container(
+              width: 32,
+              height: 2,
+              margin: const EdgeInsets.symmetric(horizontal: 6),
+              color: i <= _step ? AppPalette.primary : AppPalette.border,
+            ),
+          GestureDetector(
+            onTap: i < _step ? () => setState(() => _step = i) : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 30,
+              height: 30,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: i == _step
+                    ? AppPalette.primary
+                    : i < _step
+                    ? AppPalette.primaryTint
+                    : AppPalette.chipGrey,
+              ),
+              child: Text(
+                '${i + 1}',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: i == _step
+                      ? Colors.white
+                      : i < _step
+                      ? AppPalette.primary
+                      : AppPalette.muted,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _title(String text) => Padding(
+    padding: const EdgeInsets.only(top: 12, bottom: 12),
     child: Text(
       text,
-      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
     ),
   );
 
-  Widget _dropdown(String? value, String hint, VoidCallback onTap) {
-    return Material(
-      color: AppPalette.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppPalette.border),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  value ?? hint,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: value == null ? AppPalette.muted : AppPalette.ink,
-                  ),
-                ),
-              ),
-              const Icon(Icons.keyboard_arrow_down_rounded),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _textInput(
+  Widget _boxInput(
     TextEditingController controller,
     String hint, {
-    bool number = false,
     int maxLines = 1,
-    String? suffix,
+    bool upperCase = false,
+    IconData? icon,
+    ValueChanged<String>? onSubmitted,
   }) {
     final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       borderSide: const BorderSide(color: AppPalette.border),
     );
     return TextField(
       controller: controller,
       maxLines: maxLines,
-      keyboardType: number ? TextInputType.number : TextInputType.text,
-      inputFormatters: number ? [FilteringTextInputFormatter.digitsOnly] : null,
-      onChanged: (_) => setState(() {}),
-      style: const TextStyle(fontSize: 18),
+      textCapitalization: upperCase
+          ? TextCapitalization.characters
+          : TextCapitalization.sentences,
+      inputFormatters: upperCase ? [_UpperCaseFormatter()] : null,
+      onChanged: (_) => setState(() => _lookupError = null),
+      onSubmitted: onSubmitted,
+      style: const TextStyle(fontSize: 17),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(color: AppPalette.muted),
-        suffixText: suffix,
+        prefixIcon: icon == null ? null : Icon(icon, color: AppPalette.muted),
         filled: true,
         fillColor: AppPalette.surface,
-        contentPadding: const EdgeInsets.all(20),
+        contentPadding: const EdgeInsets.all(18),
         border: border,
         enabledBorder: border,
         focusedBorder: border.copyWith(
@@ -332,281 +424,388 @@ class _PostAdScreenState extends State<PostAdScreen> {
     );
   }
 
-  Widget _pair(Widget left, Widget right) => Padding(
-    padding: const EdgeInsets.only(bottom: 18),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: left),
-        const SizedBox(width: 20),
-        Expanded(child: right),
+  /// Дизайны "шошго ← → утга ⌄" мөр.
+  Widget _row(String label, Widget trailing, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 56),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: AppPalette.border)),
+        ),
+        child: Row(
+          children: [
+            Text(label, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Align(alignment: Alignment.centerRight, child: trailing),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _selectRow(
+    String label,
+    String? value,
+    List<String> options,
+    ValueChanged<String> onPicked,
+  ) {
+    return _row(
+      label,
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(
+              value ?? 'Сонгох',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 16,
+                color: value == null ? AppPalette.muted : AppPalette.ink,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: AppPalette.muted,
+          ),
+        ],
+      ),
+      onTap: () => _pick(label, options, value, onPicked),
+    );
+  }
+
+  Widget _numberRow(
+    String label,
+    TextEditingController controller, {
+    String? suffix,
+  }) {
+    return _row(
+      label,
+      SizedBox(
+        width: 180,
+        child: TextField(
+          controller: controller,
+          textAlign: TextAlign.right,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          onChanged: (_) => setState(() {}),
+          style: const TextStyle(fontSize: 16),
+          decoration: InputDecoration(
+            isDense: true,
+            hintText: '0',
+            hintStyle: const TextStyle(color: AppPalette.muted),
+            suffixText: suffix,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _switchRow(
+    String title,
+    String subtitle,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      value: value,
+      activeTrackColor: AppPalette.primary,
+      onChanged: (v) => setState(() => onChanged(v)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+      subtitle: Text(subtitle),
+    );
+  }
+
+  List<Widget> _lookupStep() {
+    return [
+      _title('Машины дугаар'),
+      const Text(
+        'Улсын дугаар эсвэл арлын дугаараа оруулбал машины мэдээлэл '
+        'автоматаар бөглөгдөнө.',
+        style: TextStyle(color: AppPalette.muted, fontSize: 15, height: 1.4),
+      ),
+      const SizedBox(height: 20),
+      const Text('Улсын дугаар', style: TextStyle(fontWeight: FontWeight.w700)),
+      const SizedBox(height: 8),
+      _boxInput(
+        _plate,
+        '1234 УБА',
+        upperCase: true,
+        icon: Icons.pin_outlined,
+        onSubmitted: (_) => _search(),
+      ),
+      const SizedBox(height: 18),
+      const Text(
+        'Арлын дугаар (VIN)',
+        style: TextStyle(fontWeight: FontWeight.w700),
+      ),
+      const SizedBox(height: 8),
+      _boxInput(
+        _vin,
+        'ZVW30-1234567',
+        upperCase: true,
+        icon: Icons.qr_code_2_rounded,
+        onSubmitted: (_) => _search(),
+      ),
+      if (_lookupError != null) ...[
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppPalette.redTint,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: AppPalette.red),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _lookupError!,
+                  style: const TextStyle(color: AppPalette.redText),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
-    ),
-  );
-
-  Widget _field(String label, Widget input) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [_label(label), input],
-  );
-
-  Widget _photoRow() {
-    const tints = [
-      AppPalette.tintBlue,
-      AppPalette.tintYellow,
-      AppPalette.tintGreen,
+      const SizedBox(height: 24),
+      Center(
+        child: TextButton.icon(
+          onPressed: () => setState(() => _step = 1),
+          iconAlignment: IconAlignment.end,
+          icon: const Icon(Icons.arrow_forward_rounded),
+          label: const Text(
+            'Алгасаад гараар бөглөх',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+      ),
     ];
-    return Row(
-      children: [
-        Expanded(
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: GestureDetector(
-              onTap: () => setState(() => _photos = (_photos + 1).clamp(0, 8)),
-              child: CustomPaint(
-                painter: _DashedBorderPainter(),
-                child: const Column(
+  }
+
+  Widget _foundBanner(VehicleInfo info) {
+    final id = info.plate ?? info.vin ?? '';
+    return Container(
+      margin: const EdgeInsets.only(top: 8, bottom: 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppPalette.greenTint,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle_rounded, color: AppPalette.green),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '$id дугаартай машины мэдээлэл бөглөгдлөө. Шалгаад, '
+              'дутуу мэдээллээ нөхнө үү.',
+              style: const TextStyle(color: AppPalette.green, height: 1.35),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _photoBox() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppPalette.background,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Зураг нэмэх ($_photos/$_maxPhotos)',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+          if (_photos == 0)
+            InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => setState(() => _photos++),
+              child: const SizedBox(
+                height: 110,
+                width: double.infinity,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.photo_camera_outlined,
+                      Icons.photo_camera_rounded,
                       color: AppPalette.primary,
+                      size: 30,
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(height: 8),
                     Text(
-                      'Нэмэх',
-                      style: TextStyle(
-                        color: AppPalette.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      'Зургаа нэмнэ үү',
+                      style: TextStyle(color: AppPalette.muted),
                     ),
                   ],
                 ),
               ),
+            )
+          else
+            SizedBox(
+              height: 84,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _photos < _maxPhotos ? _photos + 1 : _photos,
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
+                itemBuilder: (_, i) => i == _photos
+                    ? GestureDetector(
+                        onTap: () => setState(() => _photos++),
+                        child: CustomPaint(
+                          painter: _DashedBorderPainter(),
+                          child: const SizedBox(
+                            width: 84,
+                            child: Icon(
+                              Icons.add_a_photo_outlined,
+                              color: AppPalette.primary,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Stack(
+                        children: [
+                          CarThumb(
+                            tint: _tints[i % _tints.length],
+                            width: 84,
+                            height: 84,
+                            carWidth: 56,
+                          ),
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: GestureDetector(
+                              onTap: () => setState(() => _photos--),
+                              child: const CircleAvatar(
+                                radius: 11,
+                                backgroundColor: Colors.black54,
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
-          ),
-        ),
-        for (var i = 0; i < 3; i++) ...[
-          const SizedBox(width: 12),
-          Expanded(
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: i < _photos
-                  ? CarThumb(
-                      tint: tints[i],
-                      height: double.infinity,
-                      carWidth: 60,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ),
         ],
-      ],
+      ),
     );
   }
 
-  List<Widget> _carStep() {
+  List<Widget> _generalStep() {
     return [
-      const Text.rich(
-        TextSpan(
-          text: 'Зураг ',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-          children: [
-            TextSpan(
-              text: '(8 хүртэл)',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppPalette.muted,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+      if (_found != null) _foundBanner(_found!),
+      _title('Ерөнхий мэдээлэл'),
+      _photoBox(),
+      const SizedBox(height: 8),
+      _selectRow(
+        'Брэнд',
+        _brand,
+        FilterData.brands.skip(1).toList(),
+        (v) {
+          if (v != _brand) _model = null;
+          _brand = v;
+        },
       ),
-      const SizedBox(height: 14),
-      _photoRow(),
-      const SizedBox(height: 24),
-      _pair(
-        _field(
-          'Үйлдвэр',
-          _dropdown(
-            _brand,
-            'Сонгох',
-            () => _pick('Үйлдвэр', FilterData.brands.skip(1).toList(), (v) {
-              _brand = v;
-              _model = null;
-            }),
-          ),
-        ),
-        _field(
-          'Загвар',
-          _dropdown(
-            _model,
-            'Сонгох',
-            () => _pick(
-              'Загвар',
-              _models[_brand] ?? const ['Бусад'],
-              (v) => _model = v,
-            ),
-          ),
-        ),
+      _selectRow(
+        'Загвар',
+        _model,
+        _models[_brand] ?? const ['Бусад'],
+        (v) => _model = v,
       ),
-      _pair(
-        _field(
-          'Үйлдвэрлэсэн он',
-          _dropdown(
-            _year,
-            'Он',
-            () => _pick('Үйлдвэрлэсэн он', _years, (v) => _year = v),
-          ),
-        ),
-        _field(
-          'Орж ирсэн он',
-          _dropdown(
-            _importYear,
-            'Он',
-            () => _pick('Орж ирсэн он', _years, (v) => _importYear = v),
-          ),
-        ),
+      _selectRow('Он', _year, _years, (v) => _year = v),
+      _selectRow(
+        'Орж ирсэн он',
+        _importYear,
+        _years,
+        (v) => _importYear = v,
       ),
-      _pair(
-        _field('Гүйлт (км)', _textInput(_mileage, '0', number: true)),
-        _field(
-          'Түлш',
-          _dropdown(
-            _fuel,
-            'Сонгох',
-            () => _pick('Түлш', _fuels, (v) => _fuel = v),
-          ),
-        ),
-      ),
-      _label('Хурдны хайрцаг'),
-      SegmentedPicker(
-        options: _transmissions,
-        selected: _transmission,
-        height: 64,
-        expand: true,
-        onChanged: (i) => setState(() => _transmission = i),
-      ),
-      const SizedBox(height: 18),
-      _label('Хүрд'),
-      SegmentedPicker(
-        options: const ['Зүүн', 'Баруун'],
-        selected: _steering,
-        height: 64,
-        expand: true,
-        onChanged: (i) => setState(() => _steering = i),
-      ),
-      const SizedBox(height: 22),
-      AppCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-        onTap: () => setState(() => _diagnosis = !_diagnosis),
-        child: Row(
-          children: [
-            Checkbox(
-              value: _diagnosis,
-              activeColor: AppPalette.primary,
-              onChanged: (v) => setState(() => _diagnosis = v ?? false),
-            ),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Оношилгоонд хамруулах',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    '“Оношилгоотой” тэмдэг авч, илүү хурдан зарна',
-                    style: TextStyle(color: AppPalette.muted),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      _numberRow('Үнэ', _price, suffix: '₮'),
+      _numberRow('Явсан км', _mileage, suffix: 'км'),
+      _selectRow(
+        'Байршил',
+        _location,
+        FilterData.locations.skip(1).toList(),
+        (v) => _location = v,
       ),
     ];
   }
 
   List<Widget> _techStep() {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: const BorderSide(color: AppPalette.border),
+    );
     return [
-      Text('Техникийн мэдээлэл', style: displayStyle(24)),
-      const SizedBox(height: 20),
-      _pair(
-        _field(
-          'Хөдөлгүүр (л)',
-          _dropdown(
-            _engine,
-            'Сонгох',
-            () => _pick('Хөдөлгүүрийн багтаамж', _engines, (v) => _engine = v),
-          ),
-        ),
-        _field(
-          'Хөтлөгч',
-          _dropdown(
-            _drive,
-            'Сонгох',
-            () => _pick('Хөтлөгч', _drives, (v) => _drive = v),
+      _title('Техникийн мэдээлэл'),
+      _selectRow('Шатахуун', _fuel, _fuels, (v) => _fuel = v),
+      _selectRow('Хөтлөгч', _drive, _drives, (v) => _drive = v),
+      _selectRow(
+        'Хурдны хайрцаг',
+        _transmission,
+        _transmissions,
+        (v) => _transmission = v,
+      ),
+      _selectRow(
+        'Хөдөлгүүрийн багтаамж',
+        _engine,
+        _engines,
+        (v) => _engine = v,
+      ),
+      _selectRow('Хаалганы тоо', _doorCount, _doors, (v) => _doorCount = v),
+      _selectRow('Хүрд', _steering, _steerings, (v) => _steering = v),
+      _selectRow('Өнгө', _color, _colors, (v) => _color = v),
+      const SizedBox(height: 12),
+      _title('Тодорхойлолт'),
+      TextField(
+        controller: _description,
+        maxLines: 6,
+        textCapitalization: TextCapitalization.sentences,
+        onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(
+          hintText: 'Нэмэлт мэдээллээ бичнэ үү...',
+          hintStyle: const TextStyle(color: AppPalette.muted),
+          contentPadding: const EdgeInsets.all(16),
+          border: border,
+          enabledBorder: border,
+          focusedBorder: border.copyWith(
+            borderSide: const BorderSide(
+              color: AppPalette.primary,
+              width: 1.5,
+            ),
           ),
         ),
       ),
-      _pair(
-        _field(
-          'Хаалганы тоо',
-          _dropdown(
-            _doorCount,
-            'Сонгох',
-            () => _pick('Хаалганы тоо', _doors, (v) => _doorCount = v),
-          ),
-        ),
-        _field(
-          'Өнгө',
-          _dropdown(
-            _color,
-            'Сонгох',
-            () => _pick('Өнгө', _colors, (v) => _color = v),
-          ),
-        ),
+      const SizedBox(height: 12),
+      _switchRow(
+        'Оношилгоонд хамруулах',
+        '“Оношилгоотой” тэмдэг авч, илүү хурдан зарна',
+        _diagnosis,
+        (v) => _diagnosis = v,
       ),
-      _field(
-        'Тодорхойлолт',
-        _textInput(
-          _description,
-          'Машины байдал, засвар үйлчилгээ, нэмэлт мэдээлэл...',
-          maxLines: 6,
-        ),
-      ),
-    ];
-  }
-
-  List<Widget> _priceStep() {
-    return [
-      _field('Үнэ', _textInput(_price, '0', number: true, suffix: '₮')),
-      const SizedBox(height: 18),
-      _field(
-        'Байршил',
-        _dropdown(
-          _district,
-          'Дүүрэг сонгох',
-          () => _pick('Байршил', _districts, (v) => _district = v),
-        ),
-      ),
-      const SizedBox(height: 18),
-      AppCard(
-        padding: const EdgeInsets.fromLTRB(20, 8, 12, 8),
-        child: SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          value: _leasing,
-          activeTrackColor: AppPalette.primary,
-          onChanged: (v) => setState(() => _leasing = v),
-          title: const Text(
-            'Лизинг боломжтой',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
-          ),
-          subtitle: const Text('Худалдан авагч лизингээр авч болно'),
-        ),
+      _switchRow(
+        'Лизинг боломжтой',
+        'Худалдан авагч лизингээр авч болно',
+        _leasing,
+        (v) => _leasing = v,
       ),
     ];
   }
@@ -614,22 +813,11 @@ class _PostAdScreenState extends State<PostAdScreen> {
   List<Widget> _previewStep() {
     final price = int.tryParse(_price.text);
     final mileage = int.tryParse(_mileage.text);
-    final name = '$_brand ${_model ?? ''}'.trim();
-    const tints = [
-      AppPalette.tintBlue,
-      AppPalette.tintYellow,
-      AppPalette.tintGreen,
-    ];
+    final name = [_brand, _model, _year].whereType<String>().join(' ');
     return [
-      Text('Урьдчилан харах', style: displayStyle(24)),
-      const SizedBox(height: 6),
-      const Text(
-        'Худалдан авагчид таны зарыг ингэж харна.',
-        style: TextStyle(color: AppPalette.muted, fontSize: 15),
-      ),
-      const SizedBox(height: 16),
+      _title('Харах'),
       SizedBox(
-        height: 190,
+        height: 200,
         child: Row(
           children: [
             const Expanded(
@@ -649,7 +837,7 @@ class _PostAdScreenState extends State<PostAdScreen> {
                     Expanded(
                       child: i < _photos
                           ? CarThumb(
-                              tint: tints[i],
+                              tint: _tints[i],
                               height: double.infinity,
                               carWidth: 70,
                             )
@@ -663,24 +851,11 @@ class _PostAdScreenState extends State<PostAdScreen> {
         ),
       ),
       const SizedBox(height: 18),
-      Wrap(
-        spacing: 10,
-        runSpacing: 8,
-        children: [
-          if (_diagnosis) const Tag.verified(label: 'Оношилгоонд хамрагдана'),
-          if (_leasing)
-            const Tag(
-              label: 'Лизинг боломжтой',
-              background: AppPalette.accentTint,
-            ),
-        ],
-      ),
-      const SizedBox(height: 10),
-      Text('$name${_year == null ? '' : ' $_year'}', style: displayStyle(26)),
+      Text(name.isEmpty ? 'Нэргүй машин' : name, style: displayStyle(24)),
       const SizedBox(height: 6),
       PriceText(
         price == null ? 'Үнэ оруулаагүй' : formatPrice(price),
-        size: 26,
+        size: 24,
       ),
       const SizedBox(height: 8),
       Row(
@@ -692,55 +867,62 @@ class _PostAdScreenState extends State<PostAdScreen> {
           ),
           const SizedBox(width: 4),
           Text(
-            _district ?? 'Байршил сонгоогүй',
+            _location ?? 'Байршил сонгоогүй',
             style: const TextStyle(color: AppPalette.muted),
           ),
         ],
       ),
       const SizedBox(height: 14),
-      AppCard(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-        child: Row(
-          children: [
-            for (final (icon, value) in [
-              (
-                Icons.speed_rounded,
-                mileage == null ? '— км' : '${formatNumber(mileage)} км',
-              ),
-              (Icons.local_gas_station_outlined, _fuel ?? '—'),
-              (Icons.settings_outlined, _transmissions[_transmission]),
-              (Icons.all_inclusive_rounded, _drive ?? '—'),
-            ])
-              Expanded(
-                child: Column(
-                  children: [
-                    Icon(icon, color: AppPalette.primary),
-                    const SizedBox(height: 6),
-                    Text(
-                      value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+      Wrap(
+        spacing: 16,
+        runSpacing: 10,
+        children: [
+          for (final (icon, value) in [
+            (
+              Icons.speed_rounded,
+              mileage == null ? '— км' : '${formatNumber(mileage)} км',
+            ),
+            (Icons.local_gas_station_outlined, _fuel ?? '—'),
+            (Icons.settings_outlined, _transmission ?? '—'),
+            (Icons.all_inclusive_rounded, _drive ?? '—'),
+          ])
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 18, color: AppPalette.inkSoft),
+                const SizedBox(width: 6),
+                Text(
+                  value,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
+              ],
+            ),
+        ],
+      ),
+      if (_diagnosis || _leasing) ...[
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            if (_diagnosis)
+              const Tag.verified(label: 'Оношилгоонд хамрагдана'),
+            if (_leasing)
+              const Tag(
+                label: 'Лизинг боломжтой',
+                background: AppPalette.accentTint,
               ),
           ],
         ),
-      ),
+      ],
       if (_description.text.trim().isNotEmpty) ...[
-        const SizedBox(height: 14),
-        AppCard(
-          child: Text(
-            _description.text.trim(),
-            style: const TextStyle(
-              color: AppPalette.muted,
-              fontSize: 16,
-              height: 1.5,
-            ),
+        const SizedBox(height: 16),
+        Text(
+          _description.text.trim(),
+          style: const TextStyle(
+            color: AppPalette.muted,
+            fontSize: 15,
+            height: 1.5,
           ),
         ),
       ],
@@ -748,38 +930,41 @@ class _PostAdScreenState extends State<PostAdScreen> {
   }
 
   Widget _bottomBar() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppPalette.surface,
-        border: Border(top: BorderSide(color: AppPalette.border)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-          child: Row(
-            children: [
-              OutlineButton(
-                label: _step == 0 ? 'Ноорог' : 'Буцах',
-                onPressed: () => _step == 0
-                    ? Navigator.pop(context)
-                    : setState(() => _step--),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: PrimaryButton(
-                  label: _step == _steps.length - 1
+    final isLookup = _step == 0;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
+        child: SizedBox(
+          width: double.infinity,
+          child: isLookup && _searching
+              ? const SizedBox(
+                  height: 60,
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              : PrimaryButton(
+                  label: isLookup
+                      ? 'Хайх'
+                      : _step == _stepCount - 1
                       ? 'Зар нийтлэх'
-                      : 'Үргэлжлүүлэх',
-                  onPressed: _next,
+                      : 'Дараах',
+                  icon: isLookup ? Icons.search_rounded : null,
+                  onPressed: isLookup
+                      ? (_canSearch ? _search : null)
+                      : _next,
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );
   }
+}
+
+class _UpperCaseFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) => newValue.copyWith(text: newValue.text.toUpperCase());
 }
 
 class _DashedBorderPainter extends CustomPainter {
