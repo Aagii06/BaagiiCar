@@ -16,6 +16,13 @@ module.exports = (sequelize, DataTypes) => {
       token: { type: DataTypes.STRING(64) },
       status: { type: DataTypes.STRING(20) },
 
+      otp_hash: { type: DataTypes.STRING(64) },
+      otp_expires_at: { type: DataTypes.STRING },
+      otp_sent_at: { type: DataTypes.STRING },
+      otp_attempts: { type: DataTypes.INTEGER },
+      last_car_id: { type: DataTypes.INTEGER },
+      last_sent_at: { type: DataTypes.STRING },
+
       created_at: { type: DataTypes.STRING },
       updated_at: { type: DataTypes.STRING },
     },

@@ -8,6 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 5011;
 const api = require("./api/routes");
 const webApi = require("./web/routes");
+const { scheduleDigest } = require("./helper/digestHelper");
 
 app.use(cors());
 app.use(express.static(__dirname + "/public"));
@@ -37,4 +38,5 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, async () => {
   console.log("Car dealer start:", moment().format("YYYY-MM-DD HH:mm:ss"));
+  scheduleDigest();
 });

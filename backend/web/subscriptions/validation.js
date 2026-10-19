@@ -2,14 +2,20 @@ const { body } = require("express-validator");
 const validation = require("../../middleware/validation");
 const { isValidEmail } = require("../../helper/mailHelper");
 
-module.exports.emailValidation = [
+const emailField = () =>
   body("email")
     .trim()
     .toLowerCase()
     .custom((email) => {
       if (!isValidEmail(email)) throw new Error("Имэйл хаяг буруу байна");
       return true;
-    }),
+    });
+
+module.exports.emailValidation = [emailField(), validation];
+
+module.exports.verifyValidation = [
+  emailField(),
+  body("code").trim().matches(/^\d{6}$/).withMessage("6 оронтой код оруулна уу"),
   validation,
 ];
 
