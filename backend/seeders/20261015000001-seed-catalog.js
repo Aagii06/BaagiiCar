@@ -49,8 +49,6 @@ const bodyTypes = [
   ["Convertible", "https://img.icons8.com/ios-filled/100/convertible.png"],
 ];
 
-const locations = ["Улаанбаатар", "Дархан-Уул", "Орхон", "Сэлэнгэ", "Дорнод", "Ховд"];
-
 // Дахин ажиллуулахад давхардахгүй: зөвхөн байхгүй нэрийг нэмнэ
 const existingNames = async (queryInterface, table) => {
   const [rows] = await queryInterface.sequelize.query(`SELECT name FROM \`${table}\``);
@@ -90,18 +88,11 @@ module.exports = {
       "bodyTypes",
       bodyTypes.map(([name, image], i) => ({ ...base, name, image, sort_order: i + 1 })),
     );
-
-    await insertMissing(
-      queryInterface,
-      "locations",
-      locations.map((name, i) => ({ ...base, name, sort_order: i + 1 })),
-    );
   },
 
   async down(queryInterface) {
     await queryInterface.bulkDelete("carModels", null, {});
     await queryInterface.bulkDelete("brands", null, {});
     await queryInterface.bulkDelete("bodyTypes", null, {});
-    await queryInterface.bulkDelete("locations", null, {});
   },
 };

@@ -4,8 +4,6 @@ import type { T } from "./i18n/translate";
 // Values are stored as is (Mongolian) — show them through `tv()`.
 // Must match backend/config/constants.js — the save endpoint validates these.
 export const FUEL_TYPES = ["Бензин", "Дизель", "Хайбрид", "Газ", "Цахилгаан"];
-export const TRANSMISSIONS = ["Автомат", "Механик", "CVT", "Типтроник"];
-export const DRIVE_TYPES = ["FWD", "RWD", "4WD", "AWD"];
 export const STEERINGS = ["Зүүн", "Баруун"];
 
 /** Seeded body types are English; their labels are translated. */

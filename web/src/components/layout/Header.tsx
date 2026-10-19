@@ -5,7 +5,7 @@ import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn, initials, userName } from "@/lib/utils";
-import { Heart, MapPin, MessageCircle, Plus } from "lucide-react";
+import { Heart, MapPin, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -13,7 +13,6 @@ import Logo from "./Logo";
 
 export const NAV: { href: string; label: MessageKey }[] = [
   { href: "/cars", label: "Машин авах" },
-  { href: "/sell", label: "Зарах" },
   { href: "/leasing", label: "Лизинг" },
   { href: "/help", label: "Тусламж" },
 ];
@@ -76,14 +75,6 @@ export default function Header() {
               {t("Нэвтрэх")}
             </Link>
           )}
-          <Link
-            href="/sell"
-            aria-label={t("Зар нэмэх")}
-            className="hidden h-11 items-center gap-1.5 rounded-xl bg-primary px-3.5 text-sm font-bold text-white hover:bg-primary-hover md:flex xl:px-4"
-          >
-            <Plus className="size-4" strokeWidth={2.6} />
-            <span className="hidden xl:inline">{t("Зар нэмэх")}</span>
-          </Link>
         </div>
       </div>
     </header>

@@ -3,15 +3,14 @@
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Home, MessageCircle, Plus, Search, UserRound } from "lucide-react";
+import { Home, MessageCircle, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isActive } from "./Header";
 
-const TABS: { href: string; label: MessageKey; icon: typeof Home; primary?: boolean }[] = [
+const TABS: { href: string; label: MessageKey; icon: typeof Home }[] = [
   { href: "/", label: "Нүүр", icon: Home },
   { href: "/cars", label: "Хайх", icon: Search },
-  { href: "/sell", label: "Зар нэмэх", icon: Plus, primary: true },
   { href: "/chat", label: "Чат", icon: MessageCircle },
   { href: "/profile", label: "Профайл", icon: UserRound },
 ];
@@ -22,17 +21,9 @@ export default function MobileNav() {
   const { t } = useI18n();
   return (
     <nav aria-label={t("Үндсэн цэс")} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-      <div className="grid grid-cols-5">
-        {TABS.map(({ href, label, icon: Icon, primary }) => {
+      <div className="grid grid-cols-4">
+        {TABS.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
-          if (primary)
-            return (
-              <Link key={href} href={href} aria-label={t(label)} className="grid place-items-center">
-                <span className="-mt-5 grid size-12 place-items-center rounded-full bg-primary text-white shadow-lg shadow-primary/30">
-                  <Icon className="size-6" strokeWidth={2.6} />
-                </span>
-              </Link>
-            );
           return (
             <Link
               key={href}

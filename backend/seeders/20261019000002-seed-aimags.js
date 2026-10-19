@@ -1,8 +1,7 @@
 "use strict";
 
-// Улаанбаатар + 21 аймаг. Байгаа нэрийг дахин нэмэхгүй (id хэвээр), зөвхөн sort_order-ийг шинэчилнэ.
+// Улаанбаатар + 21 аймаг, үсгийн дарааллаар. Байгаа нэрийг дахин нэмэхгүй (id хэвээр), зөвхөн sort_order-ийг шинэчилнэ.
 const locations = [
-  "Улаанбаатар",
   "Архангай",
   "Баян-Өлгий",
   "Баянхонгор",
@@ -21,6 +20,7 @@ const locations = [
   "Сэлэнгэ",
   "Төв",
   "Увс",
+  "Улаанбаатар",
   "Ховд",
   "Хөвсгөл",
   "Хэнтий",
@@ -43,13 +43,6 @@ module.exports = {
   },
 
   async down(queryInterface) {
-    // Анхны каталогийн 6 байршлыг үлдээнэ
-    const original = ["Улаанбаатар", "Дархан-Уул", "Орхон", "Сэлэнгэ", "Дорнод", "Ховд"];
-    await queryInterface.bulkDelete("locations", {
-      name: locations.filter((n) => !original.includes(n)),
-    });
-    for (const [i, name] of original.entries()) {
-      await queryInterface.bulkUpdate("locations", { sort_order: i + 1 }, { name });
-    }
+    await queryInterface.bulkDelete("locations", { name: locations });
   },
 };

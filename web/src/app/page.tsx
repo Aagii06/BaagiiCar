@@ -15,7 +15,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { T } from "@/lib/i18n/translate";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ArrowRight, CreditCard, Heart, Plus, Search } from "lucide-react";
+import { ArrowRight, CreditCard, Heart, LifeBuoy, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +23,7 @@ const MLN = 1_000_000;
 
 const QUICK: { icon: typeof Search; tint: string; title: MessageKey; text: MessageKey; href: string }[] = [
   { icon: Search, tint: "bg-tint-blue text-[#2b7bd8]", title: "Машин хайх", text: "Бүх зарыг шүүж үзэх", href: "/cars" },
-  { icon: Plus, tint: "bg-tint-peach text-primary", title: "Машинаа зарах", text: "Зараа 3 алхамаар нийтлэх", href: "/sell" },
+  { icon: LifeBuoy, tint: "bg-tint-peach text-primary", title: "Тусламж", text: "Түгээмэл асуулт, холбоо барих", href: "/help" },
   { icon: CreditCard, tint: "bg-tint-lavender text-[#6b4fd8]", title: "Лизинг", text: "Сарын төлбөрөө тооцоолох", href: "/leasing" },
   { icon: Heart, tint: "bg-tint-rose text-destructive", title: "Хадгалсан", text: "Таалагдсан машинууд", href: "/saved" },
 ];
@@ -42,9 +42,9 @@ function budgetLabel({ min, max }: { min: number; max: number }, t: T) {
 }
 
 const STEPS: { n: string; title: MessageKey; text: MessageKey }[] = [
-  { n: "01", title: "Мэдээлэл оруулах", text: "Үйлдвэр, загвар, он, гүйлтээ сонгоно." },
-  { n: "02", title: "Зураг нэмэх", text: "Олон зураг нэмж, машинаа бүрэн харуулна." },
-  { n: "03", title: "Нийтлэх", text: "Зар шууд гарч, худалдан авагч холбогдоно." },
+  { n: "01", title: "Хайх", text: "Үйлдвэр, загвар, он, үнээр шүүнэ." },
+  { n: "02", title: "Харьцуулах", text: "Зураг, үзүүлэлтийг нь сайтар үзнэ." },
+  { n: "03", title: "Холбогдох", text: "Зарлагч руу шууд залгаж тохирно." },
 ];
 
 function Hero({ bodyTypes }: { bodyTypes: BodyType[] }) {
@@ -171,8 +171,6 @@ export default function HomePage() {
           ) : (
             <EmptyState
               title={t("Одоогоор зар алга")}
-              description={t("Анхны зараа нэмээрэй.")}
-              action={<Link href="/sell" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">{t("Зар нэмэх")}</Link>}
             />
           )}
         </div>
@@ -192,15 +190,15 @@ export default function HomePage() {
         <CarArt className="pointer-events-none absolute -right-16 bottom-0 hidden w-[46%] text-foreground/10 lg:block" strokeWidth={1.2} />
         <Container className="relative grid gap-10 py-16 md:py-24 lg:grid-cols-[1fr_1.1fr] lg:items-center">
           <div>
-            <p className="kicker">{t("Машинаа зарах")}</p>
+            <p className="kicker">{t("Машин авах")}</p>
             <h2 className="mt-3 font-display text-[44px] font-light leading-[0.98] md:text-[64px]">
               {t("Мөрөөдөх биш,")}
               <br />
               <span className="font-bold text-primary">{t("жолоод")}</span>
             </h2>
-            <p className="mt-5 max-w-md text-[15px] leading-7 text-foreground/70">{t("Зураг, мэдээллээ оруулаад нийтэл. Худалдан авагчид шууд холбогдоно.")}</p>
-            <Link href="/sell" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-dark px-6 py-3.5 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-dark-2">
-              {t("Зар нэмэх")}
+            <p className="mt-5 max-w-md text-[15px] leading-7 text-foreground/70">{t("Зарыг шүүж, тохирохоо сонгоод зарлагчтай шууд холбогдоорой.")}</p>
+            <Link href="/cars" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-dark px-6 py-3.5 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-dark-2">
+              {t("Машин хайх")}
               <ArrowRight className="size-4" />
             </Link>
           </div>

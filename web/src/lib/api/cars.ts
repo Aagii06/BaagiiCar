@@ -1,6 +1,6 @@
 import type { MessageKey } from "../i18n/messages";
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
-import type { BodyType, Brand, Car, CarFile, CarModel, Location } from "./types";
+import type { BodyType, Brand, Car, CarFile, CarModel } from "./types";
 
 const NEWEST = [{ selector: "created_at", desc: true }];
 
@@ -95,14 +95,6 @@ export async function getCarFiles(carId: number) {
   return [...res.data.rows].sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.id - b.id);
 }
 
-export async function myCars(userId: number) {
-  const res = await apiFetch<ApiListResponse<Car>>(
-    `/web/base/vwCars${listQuery({ filter: [["user_id", "=", userId]], sort: NEWEST })}`,
-    { auth: false }
-  );
-  return res.data.rows;
-}
-
 export async function getBrands() {
   const res = await apiFetch<ApiListResponse<Brand>>("/web/base/vwBrands", { auth: false });
   return [...res.data.rows].sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999) || a.name.localeCompare(b.name));
@@ -119,11 +111,6 @@ export async function getBodyTypes() {
   return [...res.data.rows].sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
 }
 
-export async function getLocations() {
-  const res = await apiFetch<ApiListResponse<Location>>("/web/base/locations", { auth: false });
-  return res.data.rows;
-}
-
 // --- signed-in -------------------------------------------------------------
 
 export async function getFavorites() {
@@ -137,57 +124,4 @@ export async function toggleFavorite(carId: number) {
     body: { car_id: carId },
   });
   return res.data.is_favorite;
-}
-
-export async function markSold(id: number) {
-  await apiFetch("/api/cars/mark-sold", { method: "POST", body: { id } });
-}
-
-export async function deleteCar(id: number) {
-  await apiFetch("/api/base/cars", { method: "DELETE", body: { ids: [id] } });
-}
-
-export type CarInput = Partial<
-  Pick<
-    Car,
-    | "brand_id"
-    | "car_model_id"
-    | "body_type_id"
-    | "location_id"
-    | "manufactured_year"
-    | "imported_year"
-    | "price"
-    | "mileage"
-    | "fuel_type"
-    | "transmission"
-    | "drive_type"
-    | "steering"
-    | "engine_capacity"
-    | "color"
-    | "vin"
-    | "phonenumber"
-    | "description"
-  >
-> & { id?: number };
-
-/** A photo in the editor: one already on the server, or a new upload. */
-export type PhotoItem = { kind: "existing"; id: number; url: string } | { kind: "new"; file: File; url: string };
-
-/**
- * `POST /api/cars/save` — multipart: `data` is the JSON body, and each photo
- * is a `fileN` + `fileNInfo` pair. Existing photos are kept by sending only
- * their `{ id }`; the server deletes any it doesn't hear about.
- */
-export async function saveCar(input: CarInput, photos: PhotoItem[]) {
-  const form = new FormData();
-  form.append("data", JSON.stringify(input));
-  photos.forEach((p, i) => {
-    if (p.kind === "existing") form.append(`file${i}Info`, JSON.stringify({ id: p.id }));
-    else {
-      form.append(`file${i}`, p.file);
-      form.append(`file${i}Info`, JSON.stringify({ original_name: p.file.name }));
-    }
-  });
-  const res = await apiFetch<ApiItemResponse<{ id: number }>>("/api/cars/save", { method: "POST", body: form });
-  return res.data.id;
 }

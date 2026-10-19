@@ -11,7 +11,6 @@ const COLUMNS: { title: MessageKey; links: { href: string; label: MessageKey }[]
     title: "Машин",
     links: [
       { href: "/cars", label: "Машин авах" },
-      { href: "/sell", label: "Зар нэмэх" },
       { href: "/help#faq", label: "Оношилгоо" },
       { href: "/leasing", label: "Лизинг" },
     ],

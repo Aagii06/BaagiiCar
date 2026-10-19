@@ -13,14 +13,14 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 
 const TOPICS: { icon: typeof Plus; tint: string; title: MessageKey; text: MessageKey; href: string }[] = [
-  { icon: Plus, tint: "bg-tint-blue text-primary", title: "Зар оруулах", text: "Зураг, мэдээлэл, үнэ тавих заавар.", href: "/sell" },
+  { icon: Search, tint: "bg-tint-blue text-primary", title: "Машин хайх", text: "Шүүлтүүр ашиглан тохирох машинаа олох.", href: "/cars" },
   { icon: ShieldCheck, tint: "bg-tint-mint text-success", title: "Аюулгүй худалдаа", text: "Залилангаас сэргийлэх зөвлөмж.", href: "#safety" },
   { icon: CreditCard, tint: "bg-tint-peach text-amber-ink", title: "Төлбөр, лизинг", text: "Зээл, лизингийн нөхцөл, тооцоолуур.", href: "/leasing" },
   { icon: UserRound, tint: "bg-tint-lavender text-[#5b3fae]", title: "Бүртгэл", text: "Нэвтрэх, бүртгүүлэх, профайл.", href: "/profile" },
 ];
 
 const FAQ: { id: string; q: MessageKey; a: MessageKey }[] = [
-  { id: "fee", q: "Зар оруулахад төлбөртэй юу?", a: "Энгийн зар үнэгүй. Зарыг онцлох бол бидэнтэй холбогдоно уу." },
+  { id: "sell", q: "Машинаа зарах боломжтой юу?", a: "Зарыг манай админ оруулдаг. Машинаа зарах бол доорх маягтаар эсвэл утсаар бидэнтэй холбогдоно уу." },
   {
     id: "safety",
     q: "Залилангаас яаж сэргийлэх вэ?",
@@ -28,7 +28,6 @@ const FAQ: { id: string; q: MessageKey; a: MessageKey }[] = [
   },
   { id: "featured", q: "“Онцлох” тэмдэг гэж юу вэ?", a: "Админ шалгаж онцолсон зарууд нүүр хуудсанд болон хайлтын дээд хэсэгт гарна." },
   { id: "leasing", q: "Лизингээр авах боломжтой юу?", a: "Тийм. Зар бүрийн хажууд байгаа тооцоолуураар сарын төлбөрөө урьдчилан тооцоолж, хүсэлтээ бидэнд илгээгээрэй." },
-  { id: "edit", q: "Зараа хэрхэн устгах, засах вэ?", a: "Профайл → Миний зарууд хэсгээс зараа засах, зарагдсан гэж тэмдэглэх эсвэл устгах боломжтой." },
 ];
 
 function HelpInner() {
@@ -37,7 +36,7 @@ function HelpInner() {
   const topic = sp.get("topic");
   const car = sp.get("car");
   const [query, setQuery] = useState("");
-  const [open, setOpen] = useState<string | null>(topic === "leasing" ? "leasing" : "fee");
+  const [open, setOpen] = useState<string | null>(topic === "leasing" ? "leasing" : "sell");
   const [form, setForm] = useState({
     name: "",
     phone: "",
