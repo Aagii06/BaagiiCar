@@ -6,7 +6,7 @@ const brands = [
   ["Toyota", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/toyota&w=128&h=128"],
   ["Honda", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/honda&w=128&h=128"],
   ["Nissan", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/nissan&w=128&h=128"],
-  ["Lexus", "Japan", "assets/logos/lexus.jpg"],
+  ["Lexus", "Japan", "logos/lexus.jpg"],
   ["Mazda", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/mazda&w=128&h=128"],
   ["Subaru", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/subaru&w=128&h=128"],
   ["Suzuki", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/suzuki&w=128&h=128"],
@@ -27,7 +27,7 @@ const brands = [
   ["Ferrari", "Italy", "https://images.weserv.nl/?url=cdn.simpleicons.org/ferrari&w=128&h=128"],
   ["Lamborghini", "Italy", "https://images.weserv.nl/?url=cdn.simpleicons.org/lamborghini&w=128&h=128"],
   ["Volvo", "Sweden", "https://images.weserv.nl/?url=cdn.simpleicons.org/volvo&w=128&h=128"],
-  ["BYD", "China", "assets/logos/byd.png"],
+  ["BYD", "China", "logos/byd.png"],
 ];
 
 const carModels = {

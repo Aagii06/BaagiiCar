@@ -10,9 +10,11 @@ export function uploadUrl(fileName: string | null | undefined, size: ImageSize =
   return `${API_BASE_URL}/uploads/${folder}/${prefix}${fileName}`;
 }
 
-/** Brand logos / body-type icons are seeded as absolute URLs; anything else is skipped. */
+/** Brand logos / body-type icons: absolute URLs, or paths served from the backend's public folder (e.g. "logos/lexus.jpg"). */
 export function remoteImage(url: string | null | undefined) {
-  return url && /^https?:\/\//.test(url) ? url : null;
+  if (!url) return null;
+  if (/^https?:\/\//.test(url)) return url;
+  return `${API_BASE_URL}/${url.replace(/^\//, "")}`;
 }
 
 export const CONTACT = {
