@@ -5,6 +5,7 @@ import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Link from "next/link";
 import Logo, { BRAND } from "./Logo";
+import NotifySignup from "./NotifySignup";
 
 const COLUMNS: { title: MessageKey; links: { href: string; label: MessageKey }[] }[] = [
   {
@@ -78,7 +79,10 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:justify-between">
+        <div className="mt-12">
+          <NotifySignup />
+        </div>
+        <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:justify-between">
           <span>© {new Date().getFullYear()} {BRAND}</span>
           <span>{t("Нууцлалын бодлого · Үйлчилгээний нөхцөл")}</span>
         </div>

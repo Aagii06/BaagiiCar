@@ -4,7 +4,7 @@ import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Heart, MapPin, MessageCircle } from "lucide-react";
+import { Heart, MapPin } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -57,9 +57,6 @@ export default function Header() {
 
         <div className="ml-auto flex items-center gap-2">
           {LANGUAGE_SWITCHING && <LanguageSwitcher />}
-          <Link href="/chat" aria-label={t("Чат")} className="hidden size-11 place-items-center rounded-xl bg-muted hover:bg-border md:grid">
-            <MessageCircle className="size-[18px]" />
-          </Link>
           <Link href="/saved" aria-label={t("Хадгалсан")} className="grid size-11 place-items-center rounded-xl bg-muted hover:bg-border">
             <Heart className="size-[18px]" />
           </Link>

@@ -1,3 +1,4 @@
+import ChatWidget from "@/components/chat/ChatWidget";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
@@ -40,6 +41,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             {/* Room for the mobile tab bar. */}
             <div className="h-[calc(4.5rem+env(safe-area-inset-bottom))] bg-dark md:hidden" />
             <MobileNav />
+            <ChatWidget />
           </FavoritesProvider>
         </I18nProvider>
       </body>

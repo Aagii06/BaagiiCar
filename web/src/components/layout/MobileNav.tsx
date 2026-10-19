@@ -3,7 +3,7 @@
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Heart, Home, MessageCircle, Search } from "lucide-react";
+import { CreditCard, Heart, Home, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isActive } from "./Header";
@@ -11,7 +11,7 @@ import { isActive } from "./Header";
 const TABS: { href: string; label: MessageKey; icon: typeof Home }[] = [
   { href: "/", label: "Нүүр", icon: Home },
   { href: "/cars", label: "Хайх", icon: Search },
-  { href: "/chat", label: "Чат", icon: MessageCircle },
+  { href: "/leasing", label: "Лизинг", icon: CreditCard },
   { href: "/saved", label: "Хадгалсан", icon: Heart },
 ];
 

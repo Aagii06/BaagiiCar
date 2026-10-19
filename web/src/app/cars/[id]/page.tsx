@@ -10,6 +10,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/common/States
 import { getCar, getCarFiles, searchCars } from "@/lib/api/cars";
 import { uploadUrl } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
+import { openChat } from "@/lib/chat";
 import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
@@ -212,10 +213,13 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
       <p className="mt-4 text-[28px] font-bold">{formatPrice(c.price, t)}</p>
 
       <div className="mt-4 flex gap-2">
-        <Link href={`/chat?car=${c.id}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white hover:bg-primary-hover">
+        <button
+          onClick={() => openChat({ carId: c.id, title: `${carTitle(c, t)} ${c.manufactured_year ?? ""}`.trim() })}
+          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white hover:bg-primary-hover"
+        >
           <MessageCircle className="size-4" />
           {t("Чатлах")}
-        </Link>
+        </button>
         {phone && (
           <a href={`tel:${phone}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border-[1.5px] border-foreground font-bold hover:bg-muted">
             <Phone className="size-4" />

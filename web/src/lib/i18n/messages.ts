@@ -286,14 +286,48 @@ export const MESSAGES = {
     en: "Contact email is not configured (NEXT_PUBLIC_CONTACT_EMAIL).",
   },
 
-  // --- saved / chat ----------------------------------------------------------
+  // --- saved -----------------------------------------------------------------
   "Хадгалсан зар алга": { ru: "Нет сохранённых объявлений", en: "No saved ads" },
   "Таалагдсан машиныхаа ♡ дээр дарж хадгална уу.": { ru: "Нажмите ♡ на понравившемся авто, чтобы сохранить его.", en: "Tap ♡ on a car you like to save it." },
-  "Яриа алга": { ru: "Нет диалогов", en: "No conversations" },
-  "Чат удахгүй нээгдэнэ": { ru: "Чат скоро появится", en: "Chat is coming soon" },
-  "Одоогоор зарлагчтай утсаар шууд холбогдоно уу.": { ru: "Пока свяжитесь с продавцом по телефону.", en: "For now, call the seller directly." },
-  "Зарын хуудаснаас зарлагчтай утсаар холбогдох боломжтой.": { ru: "Позвонить продавцу можно со страницы объявления.", en: "You can call the seller from the ad page." },
 
+  // --- chat box --------------------------------------------------------------
+  "Бидэнтэй чатлах": { ru: "Чат с нами", en: "Chat with us" },
+  "Мессеж үлдээвэл бид утсаар эргэн холбогдоно.": { ru: "Оставьте сообщение — мы перезвоним.", en: "Leave a message and we'll call you back." },
+  "Хаах": { ru: "Закрыть", en: "Close" },
+  "Мессеж илгээгдлээ": { ru: "Сообщение отправлено", en: "Message sent" },
+  "Бид ажлын цагаар {phone} дугаарт холбогдоно.": { ru: "Мы позвоним на номер {phone} в рабочее время.", en: "We'll call {phone} during business hours." },
+  "Шинэ мессеж": { ru: "Новое сообщение", en: "New message" },
+  "Зар": { ru: "Объявление", en: "Ad" },
+  "Хасах": { ru: "Убрать", en: "Remove" },
+  "Мессеж": { ru: "Сообщение", en: "Message" },
+  "Мессеж бичнэ үү": { ru: "Напишите сообщение", en: "Write a message" },
+  "8 оронтой утасны дугаар оруулна уу": { ru: "Введите 8-значный номер телефона", en: "Enter an 8-digit phone number" },
+  "Илгээж байна…": { ru: "Отправляем…", en: "Sending…" },
+  "Алдаа гарлаа": { ru: "Произошла ошибка", en: "Something went wrong" },
+
+  // --- new-listing alerts ----------------------------------------------------
+  "Шинэ зарын мэдээлэл": { ru: "Новые объявления", en: "New listings" },
+  "Шинээр орсон машинуудыг цаг алдалгүй мэдээрэй.": { ru: "Узнавайте о новых авто без промедления.", en: "Hear about new cars as soon as they're listed." },
+  "И-мэйл хаяг": { ru: "Адрес e-mail", en: "Email address" },
+  "Бүртгүүлэх": { ru: "Подписаться", en: "Subscribe" },
+  "{email} хаяг руу илгээсэн 6 оронтой кодыг оруулна уу.": { ru: "Введите 6-значный код, отправленный на {email}.", en: "Enter the 6-digit code sent to {email}." },
+  "Баталгаажуулах код": { ru: "Код подтверждения", en: "Verification code" },
+  "Баталгаажуулах": { ru: "Подтвердить", en: "Verify" },
+  "← Имэйл солих": { ru: "← Изменить e-mail", en: "← Change email" },
+  "Код дахин авах": { ru: "Отправить код снова", en: "Resend code" },
+  "Код дахин авах ({n})": { ru: "Отправить снова ({n})", en: "Resend ({n})" },
+  "{email} хаягт шинэ зарын мэдээлэл ирнэ.": { ru: "Новые объявления будут приходить на {email}.", en: "New listings will be sent to {email}." },
+  "Хөтчийн мэдэгдэл асаах": { ru: "Включить уведомления", en: "Turn on notifications" },
+  "Мэдэгдэл унтраах": { ru: "Выключить уведомления", en: "Turn off notifications" },
+  "Мэдэгдэл одоогоор боломжгүй байна": { ru: "Уведомления сейчас недоступны", en: "Notifications are unavailable right now" },
+  "Хөтөч дээр мэдэгдэл хаалттай байна. Хөтчийн тохиргооноос зөвшөөрнө үү.": {
+    ru: "Уведомления заблокированы в браузере. Разрешите их в настройках браузера.",
+    en: "Notifications are blocked in your browser. Allow them in the browser settings.",
+  },
+  "Холбоос хүчингүй байна": { ru: "Ссылка недействительна", en: "This link is invalid" },
+  "Та бүртгэлээс гарлаа": { ru: "Вы отписались", en: "You're unsubscribed" },
+  "Бүртгэлээс гарч чадсангүй": { ru: "Не удалось отписаться", en: "Couldn't unsubscribe" },
+  "Цаашид шинэ зарын имэйл ирэхгүй.": { ru: "Письма о новых объявлениях больше не будут приходить.", en: "You won't get new-listing emails anymore." },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;

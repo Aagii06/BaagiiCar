@@ -4,6 +4,7 @@ import Container from "@/components/common/Container";
 import { Field, inputClass } from "@/components/common/Field";
 import { LoadingState } from "@/components/common/States";
 import { CONTACT } from "@/lib/api/config";
+import { openChat } from "@/lib/chat";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
@@ -150,10 +151,10 @@ function HelpInner() {
             )}
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 border-t border-border pt-5">
-            <Link href="/chat" className="flex items-center justify-center gap-2 rounded-xl bg-muted py-3 text-sm font-bold hover:bg-border">
+            <button onClick={() => openChat()} className="flex items-center justify-center gap-2 rounded-xl bg-muted py-3 text-sm font-bold hover:bg-border">
               <MessageCircle className="size-4" />
               {t("Чат")}
-            </Link>
+            </button>
             {CONTACT.phone ? (
               <a href={`tel:${CONTACT.phone}`} className="flex items-center justify-center gap-2 rounded-xl bg-muted py-3 text-sm font-bold hover:bg-border">
                 <Phone className="size-4" />

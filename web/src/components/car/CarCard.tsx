@@ -1,6 +1,7 @@
 "use client";
 
 import type { Car } from "@/lib/api/types";
+import { openChat } from "@/lib/chat";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { T } from "@/lib/i18n/translate";
 import { cn, formatPriceShort } from "@/lib/utils";
@@ -66,13 +67,14 @@ export default function CarCard({ car, showDescription, featuredBadge }: { car: 
           <Link href={href} className="flex h-10 flex-1 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white hover:bg-primary-hover">
             {t("Дэлгэрэнгүй")}
           </Link>
-          <Link
-            href={`/chat?car=${car.id}`}
+          <button
+            type="button"
+            onClick={() => openChat({ carId: car.id, title: carTitle(car, t) })}
             aria-label={t("Зарлагчтай холбогдох")}
             className="grid size-10 place-items-center rounded-xl border-[1.5px] border-primary text-primary hover:bg-primary-soft"
           >
             <MessageCircle className="size-4" />
-          </Link>
+          </button>
         </div>
       </div>
     </article>
