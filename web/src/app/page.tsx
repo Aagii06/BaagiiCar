@@ -10,6 +10,9 @@ import HeroSearch from "@/components/home/HeroSearch";
 import { featuredCars, getBodyTypes, getBrands, searchCars } from "@/lib/api/cars";
 import { remoteImage } from "@/lib/api/config";
 import type { BodyType } from "@/lib/api/types";
+import type { MessageKey } from "@/lib/i18n/messages";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import type { T } from "@/lib/i18n/translate";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ArrowRight, CreditCard, Heart, Plus, Search } from "lucide-react";
@@ -18,7 +21,7 @@ import { useRouter } from "next/navigation";
 
 const MLN = 1_000_000;
 
-const QUICK = [
+const QUICK: { icon: typeof Search; tint: string; title: MessageKey; text: MessageKey; href: string }[] = [
   { icon: Search, tint: "bg-tint-blue text-[#2b7bd8]", title: "Машин хайх", text: "Бүх зарыг шүүж үзэх", href: "/cars" },
   { icon: Plus, tint: "bg-tint-peach text-primary", title: "Машинаа зарах", text: "Зараа 3 алхамаар нийтлэх", href: "/sell" },
   { icon: CreditCard, tint: "bg-tint-lavender text-[#6b4fd8]", title: "Лизинг", text: "Сарын төлбөрөө тооцоолох", href: "/leasing" },
@@ -26,13 +29,19 @@ const QUICK = [
 ];
 
 const BUDGETS = [
-  { label: "30 сая хүртэл", min: 0, max: 30, tint: "bg-tint-blue" },
-  { label: "30 – 60 сая", min: 30, max: 60, tint: "bg-tint-lavender" },
-  { label: "60 – 100 сая", min: 60, max: 100, tint: "bg-tint-rose" },
-  { label: "100 сая +", min: 100, max: 0, tint: "bg-tint-mint" },
+  { min: 0, max: 30, tint: "bg-tint-blue" },
+  { min: 30, max: 60, tint: "bg-tint-lavender" },
+  { min: 60, max: 100, tint: "bg-tint-rose" },
+  { min: 100, max: 0, tint: "bg-tint-mint" },
 ];
 
-const STEPS = [
+function budgetLabel({ min, max }: { min: number; max: number }, t: T) {
+  if (!min) return t("{n} сая хүртэл", { n: max });
+  if (!max) return t("{n} сая +", { n: min });
+  return t("{a} – {b} сая", { a: min, b: max });
+}
+
+const STEPS: { n: string; title: MessageKey; text: MessageKey }[] = [
   { n: "01", title: "Мэдээлэл оруулах", text: "Үйлдвэр, загвар, он, гүйлтээ сонгоно." },
   { n: "02", title: "Зураг нэмэх", text: "Олон зураг нэмж, машинаа бүрэн харуулна." },
   { n: "03", title: "Нийтлэх", text: "Зар шууд гарч, худалдан авагч холбогдоно." },
@@ -51,11 +60,12 @@ function Hero({ bodyTypes }: { bodyTypes: BodyType[] }) {
 }
 
 function BrandGrid() {
+  const { t } = useI18n();
   const brands = useApi(getBrands);
   if (!brands.data?.length) return null;
   return (
     <Container className="mt-20 md:mt-28">
-      <SectionTitle kicker="Бүх үйлдвэр" light="Машины" bold="брэнд" action={<ViewAll href="/cars" />} />
+      <SectionTitle kicker={t("Бүх үйлдвэр")} light={t("Машины")} bold={t("брэнд")} action={<ViewAll href="/cars" />} />
       <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {brands.data.slice(0, 16).map((b, i) => {
           const logo = remoteImage(b.logo);
@@ -87,6 +97,7 @@ function BrandGrid() {
 }
 
 function Budgets() {
+  const { t } = useI18n();
   const counts = useApi(() =>
     Promise.all(
       BUDGETS.map((b) =>
@@ -96,16 +107,16 @@ function Budgets() {
   );
   return (
     <Container className="mt-20 md:mt-28">
-      <SectionTitle light="Төсвөөрөө" bold="сонго" />
+      <SectionTitle light={t("Төсвөөрөө")} bold={t("сонго")} />
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {BUDGETS.map((b, i) => {
           const q = new URLSearchParams();
           if (b.min) q.set("priceMin", String(b.min));
           if (b.max) q.set("priceMax", String(b.max));
           return (
-            <Link key={b.label} href={`/cars?${q}`} className={cn("group relative overflow-hidden rounded-2xl p-5 md:p-6", b.tint)}>
-              <p className="font-display text-xl font-semibold md:text-2xl">{b.label}</p>
-              <p className="mt-1 text-sm text-foreground/60">{counts.data ? `${counts.data[i]} машин` : " "}</p>
+            <Link key={b.min} href={`/cars?${q}`} className={cn("group relative overflow-hidden rounded-2xl p-5 md:p-6", b.tint)}>
+              <p className="font-display text-xl font-semibold md:text-2xl">{budgetLabel(b, t)}</p>
+              <p className="mt-1 text-sm text-foreground/60">{counts.data ? t("{n} машин", { n: counts.data[i] }) : " "}</p>
             </Link>
           );
         })}
@@ -116,6 +127,7 @@ function Budgets() {
 
 export default function HomePage() {
   const router = useRouter();
+  const { t } = useI18n();
   const bodyTypes = useApi(getBodyTypes);
   const featured = useApi(() => featuredCars(6));
 
@@ -134,8 +146,8 @@ export default function HomePage() {
                 <Icon className="size-5" />
               </span>
               <span className="min-w-0">
-                <span className="block font-display text-base font-semibold md:text-lg">{title}</span>
-                <span className="hidden text-xs text-muted-foreground sm:block">{text}</span>
+                <span className="block font-display text-base font-semibold md:text-lg">{t(title)}</span>
+                <span className="hidden text-xs text-muted-foreground sm:block">{t(text)}</span>
               </span>
               <ArrowRight className="ml-auto hidden size-4 text-muted-foreground transition-transform group-hover:translate-x-1 md:block" />
             </Link>
@@ -144,7 +156,7 @@ export default function HomePage() {
       </Container>
 
       <Container className="mt-20 md:mt-28">
-        <SectionTitle kicker="Онцлох" light="Онцлох" bold="машинууд" action={<ViewAll href="/cars" />} />
+        <SectionTitle kicker={t("Онцлох")} light={t("Онцлох")} bold={t("машинууд")} action={<ViewAll href="/cars" />} />
         <div className="mt-8">
           {featured.loading && !featured.data ? (
             <CardGridSkeleton count={3} />
@@ -158,9 +170,9 @@ export default function HomePage() {
             </div>
           ) : (
             <EmptyState
-              title="Одоогоор зар алга"
-              description="Анхны зараа нэмээрэй."
-              action={<Link href="/sell" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">Зар нэмэх</Link>}
+              title={t("Одоогоор зар алга")}
+              description={t("Анхны зараа нэмээрэй.")}
+              action={<Link href="/sell" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">{t("Зар нэмэх")}</Link>}
             />
           )}
         </div>
@@ -169,7 +181,7 @@ export default function HomePage() {
       <BrandGrid />
 
       <Container className="mt-20 md:mt-28">
-        <SectionTitle kicker="Биеийн хэлбэр" light="Хэлбэрээр" bold="хайх" />
+        <SectionTitle kicker={t("Биеийн хэлбэр")} light={t("Хэлбэрээр")} bold={t("хайх")} />
         <BodyTypeTabs className="mt-8" items={bodyTypes.data ?? []} onSelect={(id) => id && router.push(`/cars?body=${id}`)} />
       </Container>
 
@@ -180,15 +192,15 @@ export default function HomePage() {
         <CarArt className="pointer-events-none absolute -right-16 bottom-0 hidden w-[46%] text-foreground/10 lg:block" strokeWidth={1.2} />
         <Container className="relative grid gap-10 py-16 md:py-24 lg:grid-cols-[1fr_1.1fr] lg:items-center">
           <div>
-            <p className="kicker">Машинаа зарах</p>
+            <p className="kicker">{t("Машинаа зарах")}</p>
             <h2 className="mt-3 font-display text-[44px] font-light leading-[0.98] md:text-[64px]">
-              Мөрөөдөх биш,
+              {t("Мөрөөдөх биш,")}
               <br />
-              <span className="font-bold text-primary">жолоод</span>
+              <span className="font-bold text-primary">{t("жолоод")}</span>
             </h2>
-            <p className="mt-5 max-w-md text-[15px] leading-7 text-foreground/70">Зураг, мэдээллээ оруулаад нийтэл. Худалдан авагчид шууд холбогдоно.</p>
+            <p className="mt-5 max-w-md text-[15px] leading-7 text-foreground/70">{t("Зураг, мэдээллээ оруулаад нийтэл. Худалдан авагчид шууд холбогдоно.")}</p>
             <Link href="/sell" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-dark px-6 py-3.5 text-sm font-bold uppercase tracking-[0.08em] text-white hover:bg-dark-2">
-              Зар нэмэх
+              {t("Зар нэмэх")}
               <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -196,8 +208,8 @@ export default function HomePage() {
             {STEPS.map((s) => (
               <div key={s.n} className="rounded-2xl bg-white p-6 shadow-xl shadow-black/5">
                 <p className="font-display text-4xl font-bold text-primary">{s.n}</p>
-                <p className="mt-4 font-display text-lg font-semibold">{s.title}</p>
-                <p className="mt-1.5 text-[13px] leading-5 text-muted-foreground">{s.text}</p>
+                <p className="mt-4 font-display text-lg font-semibold">{t(s.title)}</p>
+                <p className="mt-1.5 text-[13px] leading-5 text-muted-foreground">{t(s.text)}</p>
               </div>
             ))}
           </div>

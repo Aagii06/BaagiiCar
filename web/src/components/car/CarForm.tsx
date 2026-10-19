@@ -4,6 +4,7 @@ import { Field, FormError, inputClass, Select } from "@/components/common/Field"
 import { getBodyTypes, getBrands, getLocations, getModels, saveCar, type CarInput, type PhotoItem } from "@/lib/api/cars";
 import type { Car } from "@/lib/api/types";
 import { bodyTypeLabel, DRIVE_TYPES, FUEL_TYPES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ImagePlus, X } from "lucide-react";
@@ -91,6 +92,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Chips({ options, value, onChange }: { options: string[]; value: string; onChange: (v: string) => void }) {
+  const { tv } = useI18n();
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((o) => (
@@ -101,7 +103,7 @@ function Chips({ options, value, onChange }: { options: string[]; value: string;
           aria-pressed={o === value}
           className={cn("rounded-xl border-[1.5px] px-3.5 py-2 text-sm font-semibold", o === value ? "border-foreground bg-foreground text-white" : "border-border bg-white hover:border-foreground/40")}
         >
-          {o}
+          {tv(o)}
         </button>
       ))}
     </div>
@@ -123,6 +125,7 @@ export default function CarForm({
   defaultPhone?: string | null;
   onSaved: (id: number) => void;
 }) {
+  const { t } = useI18n();
   const [f, setF] = useState<FormState>(() => initialState(car, defaultPhone));
   const [photos, setPhotos] = useState<PhotoItem[]>(initialPhotos);
   const [error, setError] = useState<string | null>(null);
@@ -164,30 +167,30 @@ export default function CarForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!f.brand_id) return setError("Үйлдвэр сонгоно уу");
-    if (!f.manufactured_year) return setError("Үйлдвэрлэсэн он оруулна уу");
-    if (!f.price) return setError("Үнэ оруулна уу");
+    if (!f.brand_id) return setError(t("Үйлдвэр сонгоно уу"));
+    if (!f.manufactured_year) return setError(t("Үйлдвэрлэсэн он оруулна уу"));
+    if (!f.price) return setError(t("Үнэ оруулна уу"));
     setBusy(true);
     setError(null);
     try {
       const id = await saveCar({ ...toInput(f), ...(car ? { id: car.id } : {}) }, photos);
       onSaved(id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Хадгалах үед алдаа гарлаа");
+      setError(err instanceof Error ? err.message : t("Хадгалах үед алдаа гарлаа"));
       setBusy(false);
     }
   };
 
   return (
     <form onSubmit={submit} className="space-y-5">
-      <Section title="Зураг">
+      <Section title={t("Зураг")}>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
           {photos.map((p, i) => (
             <div key={p.url} className="relative aspect-square overflow-hidden rounded-xl bg-muted">
               {/* eslint-disable-next-line @next/next/no-img-element -- local previews / backend uploads */}
               <img src={p.url} alt="" className="size-full object-cover" />
-              {i === 0 && <span className="absolute bottom-1.5 left-1.5 rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold text-white">Нүүр</span>}
-              <button type="button" onClick={() => removePhoto(i)} aria-label="Зураг хасах" className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-dark/80 text-white">
+              {i === 0 && <span className="absolute bottom-1.5 left-1.5 rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold text-white">{t("Нүүр зураг")}</span>}
+              <button type="button" onClick={() => removePhoto(i)} aria-label={t("Зураг хасах")} className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-dark/80 text-white">
                 <X className="size-3.5" strokeWidth={3} />
               </button>
             </div>
@@ -199,19 +202,19 @@ export default function CarForm({
               className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-input text-xs font-semibold text-muted-foreground hover:border-primary hover:text-primary"
             >
               <ImagePlus className="size-6" />
-              Зураг нэмэх
+              {t("Зураг нэмэх")}
             </button>
           )}
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">JPG, PNG, WEBP · {MAX_PHOTOS} хүртэл зураг. Эхний зураг нүүр зураг болно.</p>
+        <p className="mt-3 text-xs text-muted-foreground">{t("JPG, PNG, WEBP · {max} хүртэл зураг. Эхний зураг нүүр зураг болно.", { max: MAX_PHOTOS })}</p>
         <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => (addFiles(e.target.files), (e.target.value = ""))} />
       </Section>
 
-      <Section title="Үндсэн мэдээлэл">
+      <Section title={t("Үндсэн мэдээлэл")}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Үйлдвэр *">
+          <Field label={t("Үйлдвэр *")}>
             <Select value={f.brand_id} onChange={(e) => setF((p) => ({ ...p, brand_id: e.target.value, car_model_id: "" }))} required>
-              <option value="">Сонгох</option>
+              <option value="">{t("Сонгох")}</option>
               {brands.data?.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}
@@ -219,9 +222,9 @@ export default function CarForm({
               ))}
             </Select>
           </Field>
-          <Field label="Загвар">
+          <Field label={t("Загвар")}>
             <Select {...bind("car_model_id")} disabled={!f.brand_id}>
-              <option value="">Сонгох</option>
+              <option value="">{t("Сонгох")}</option>
               {models.data?.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name}
@@ -229,19 +232,19 @@ export default function CarForm({
               ))}
             </Select>
           </Field>
-          <Field label="Биеийн хэлбэр">
+          <Field label={t("Биеийн хэлбэр")}>
             <Select {...bind("body_type_id")}>
-              <option value="">Сонгох</option>
+              <option value="">{t("Сонгох")}</option>
               {bodyTypes.data?.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {bodyTypeLabel(b.name)}
+                  {bodyTypeLabel(b.name, t)}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label="Байршил">
+          <Field label={t("Байршил")}>
             <Select {...bind("location_id")}>
-              <option value="">Сонгох</option>
+              <option value="">{t("Сонгох")}</option>
               {locations.data?.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
@@ -249,56 +252,56 @@ export default function CarForm({
               ))}
             </Select>
           </Field>
-          <Field label="Үйлдвэрлэсэн он *">
+          <Field label={t("Үйлдвэрлэсэн он *")}>
             <input className={inputClass} {...digits("manufactured_year")} maxLength={4} placeholder={String(THIS_YEAR - 5)} required />
           </Field>
-          <Field label="Орж ирсэн он">
+          <Field label={t("Орж ирсэн он")}>
             <input className={inputClass} {...digits("imported_year")} maxLength={4} placeholder={String(THIS_YEAR - 2)} />
           </Field>
-          <Field label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : "Жишээ: 45000000"}>
+          <Field label={t("Үнэ (₮) *")} hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : t("Жишээ: {n}", { n: 45000000 })}>
             <input className={inputClass} {...digits("price")} placeholder="45000000" required />
           </Field>
-          <Field label="Гүйлт (км)">
+          <Field label={t("Гүйлт (км)")}>
             <input className={inputClass} {...digits("mileage")} placeholder="120000" />
           </Field>
         </div>
       </Section>
 
-      <Section title="Техникийн үзүүлэлт">
+      <Section title={t("Техникийн үзүүлэлт")}>
         <div className="space-y-5">
-          <Field label="Түлш">
+          <Field label={t("Түлш")}>
             <Chips options={FUEL_TYPES} value={f.fuel_type} onChange={(v) => set("fuel_type", v)} />
           </Field>
-          <Field label="Хурдны хайрцаг">
+          <Field label={t("Хурдны хайрцаг")}>
             <Chips options={TRANSMISSIONS} value={f.transmission} onChange={(v) => set("transmission", v)} />
           </Field>
-          <Field label="Хөтлөгч">
+          <Field label={t("Хөтлөгч")}>
             <Chips options={DRIVE_TYPES} value={f.drive_type} onChange={(v) => set("drive_type", v)} />
           </Field>
-          <Field label="Хүрд">
+          <Field label={t("Хүрд")}>
             <Chips options={STEERINGS} value={f.steering} onChange={(v) => set("steering", v)} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Хөдөлгүүр (л)">
+            <Field label={t("Хөдөлгүүр (л)")}>
               <input className={inputClass} inputMode="decimal" value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder="2.5" />
             </Field>
-            <Field label="Өнгө">
-              <input className={inputClass} {...bind("color")} placeholder="Цагаан" />
+            <Field label={t("Өнгө")}>
+              <input className={inputClass} {...bind("color")} placeholder={t("Цагаан")} />
             </Field>
-            <Field label="VIN / Арлын дугаар">
+            <Field label={t("VIN / Арлын дугаар")}>
               <input className={inputClass} {...bind("vin")} />
             </Field>
           </div>
         </div>
       </Section>
 
-      <Section title="Тайлбар, холбоо барих">
+      <Section title={t("Тайлбар, холбоо барих")}>
         <div className="space-y-4">
-          <Field label="Тайлбар">
-            <textarea className={cn(inputClass, "h-auto min-h-32 py-3")} {...bind("description")} maxLength={5000} placeholder="Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…" />
+          <Field label={t("Тайлбар")}>
+            <textarea className={cn(inputClass, "h-auto min-h-32 py-3")} {...bind("description")} maxLength={5000} placeholder={t("Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…")} />
           </Field>
-          <Field label="Холбогдох утас" hint="Худалдан авагч энэ дугаар руу залгана">
-            <input className={cn(inputClass, "sm:max-w-xs")} {...digits("phonenumber")} maxLength={8} placeholder="Утасны дугаар" />
+          <Field label={t("Холбогдох утас")} hint={t("Худалдан авагч энэ дугаар руу залгана")}>
+            <input className={cn(inputClass, "sm:max-w-xs")} {...digits("phonenumber")} maxLength={8} placeholder={t("Утасны дугаар")} />
           </Field>
         </div>
       </Section>
@@ -306,7 +309,7 @@ export default function CarForm({
       <FormError message={error} />
       <div className="flex justify-end">
         <button disabled={busy} className="h-12 w-full rounded-xl bg-primary px-8 font-bold text-white hover:bg-primary-hover disabled:opacity-60 sm:w-auto">
-          {busy ? "Хадгалж байна…" : car ? "Хадгалах" : "Зар нийтлэх"}
+          {busy ? t("Хадгалж байна…") : car ? t("Хадгалах") : t("Зар нийтлэх")}
         </button>
       </div>
     </form>

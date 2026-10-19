@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 
 export default function Container({ className, children }: { className?: string; children: React.ReactNode }) {
@@ -46,10 +49,11 @@ export function SectionTitle({
   );
 }
 
-export function ViewAll({ href, label = "Бүгдийг харах" }: { href: string; label?: string }) {
+export function ViewAll({ href, label }: { href: string; label?: string }) {
+  const { t } = useI18n();
   return (
     <a href={href} className="group flex shrink-0 items-center gap-1.5 text-xs font-bold uppercase tracking-[0.12em] hover:text-primary">
-      {label}
+      {label ?? t("Бүгдийг харах")}
       <span className="transition-transform group-hover:translate-x-0.5">→</span>
     </a>
   );

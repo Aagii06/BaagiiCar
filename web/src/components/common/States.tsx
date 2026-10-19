@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Loader2 } from "lucide-react";
 
@@ -14,13 +17,14 @@ export function LoadingState({ className }: { className?: string }) {
 }
 
 export function ErrorState({ message, onRetry, className }: { message: string; onRetry?: () => void; className?: string }) {
+  const { t } = useI18n();
   return (
     <div className={cn("flex flex-col items-center gap-3 rounded-2xl bg-card px-6 py-12 text-center", className)}>
       <AlertCircle className="size-8 text-destructive" />
       <p className="max-w-sm text-sm text-muted-foreground">{message}</p>
       {onRetry && (
         <button onClick={onRetry} className="rounded-xl border-[1.5px] border-foreground px-4 py-2 text-sm font-bold hover:bg-muted">
-          Дахин оролдох
+          {t("Дахин оролдох")}
         </button>
       )}
     </div>

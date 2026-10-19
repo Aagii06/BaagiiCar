@@ -1,8 +1,12 @@
+"use client";
+
 import { CONTACT } from "@/lib/api/config";
+import type { MessageKey } from "@/lib/i18n/messages";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import Link from "next/link";
 import Logo, { BRAND } from "./Logo";
 
-const COLUMNS = [
+const COLUMNS: { title: MessageKey; links: { href: string; label: MessageKey }[] }[] = [
   {
     title: "Машин",
     links: [
@@ -23,6 +27,7 @@ const COLUMNS = [
 ];
 
 export default function Footer() {
+  const { t } = useI18n();
   const contact = [
     CONTACT.phone && { label: CONTACT.phone, href: `tel:${CONTACT.phone}` },
     CONTACT.email && { label: CONTACT.email, href: `mailto:${CONTACT.email}` },
@@ -36,7 +41,7 @@ export default function Footer() {
           <div>
             <Logo dark />
             <p className="mt-4 max-w-sm text-sm leading-6 text-white/80">
-              Монголын машин авах, зарах платформ. Оношилгоотой зар, зээлийн тооцоолуур, зарлагчтай шууд чат.
+              {t("Монголын машин авах, зарах платформ. Оношилгоотой зар, зээлийн тооцоолуур, зарлагчтай шууд чат.")}
             </p>
             <div className="mt-5 flex gap-2">
               <span className="rounded-lg bg-dark-2 px-3 py-2 text-xs font-bold">App Store</span>
@@ -45,12 +50,12 @@ export default function Footer() {
           </div>
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <p className="eyebrow text-primary">{col.title}</p>
+              <p className="eyebrow text-primary">{t(col.title)}</p>
               <ul className="mt-3 space-y-2.5 text-sm font-medium">
                 {col.links.map((l) => (
                   <li key={l.label}>
                     <Link href={l.href} className="hover:text-primary">
-                      {l.label}
+                      {t(l.label)}
                     </Link>
                   </li>
                 ))}
@@ -58,7 +63,7 @@ export default function Footer() {
             </div>
           ))}
           <div>
-            <p className="eyebrow text-primary">Холбоо</p>
+            <p className="eyebrow text-primary">{t("Холбоо")}</p>
             <ul className="mt-3 space-y-2.5 text-sm font-medium">
               {contact.length ? (
                 contact.map((c) => (
@@ -67,7 +72,7 @@ export default function Footer() {
               ) : (
                 <li>
                   <Link href="/help#contact" className="hover:text-primary">
-                    Бидэнд бичих
+                    {t("Бидэнд бичих")}
                   </Link>
                 </li>
               )}
@@ -76,7 +81,7 @@ export default function Footer() {
         </div>
         <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/70 sm:flex-row sm:justify-between">
           <span>© {new Date().getFullYear()} {BRAND}</span>
-          <span>Нууцлалын бодлого · Үйлчилгээний нөхцөл</span>
+          <span>{t("Нууцлалын бодлого · Үйлчилгээний нөхцөл")}</span>
         </div>
       </div>
     </footer>

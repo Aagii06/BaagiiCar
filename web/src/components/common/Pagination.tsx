@@ -1,3 +1,6 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 
 function pages(current: number, total: number): (number | "…")[] {
@@ -13,9 +16,10 @@ function pages(current: number, total: number): (number | "…")[] {
 }
 
 export default function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (page: number) => void }) {
+  const { t } = useI18n();
   if (total <= 1) return null;
   return (
-    <nav aria-label="Хуудас" className="flex justify-center gap-2">
+    <nav aria-label={t("Хуудас")} className="flex justify-center gap-2">
       {pages(page, total).map((p, i) =>
         p === "…" ? (
           <span key={`gap${i}`} className="grid size-10 place-items-center rounded-xl bg-card text-sm font-bold">

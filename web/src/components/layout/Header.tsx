@@ -1,13 +1,16 @@
 "use client";
 
 import { useAuth } from "@/lib/auth/AuthProvider";
+import type { MessageKey } from "@/lib/i18n/messages";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn, initials, userName } from "@/lib/utils";
 import { Heart, MapPin, MessageCircle, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LanguageSwitcher from "./LanguageSwitcher";
 import Logo from "./Logo";
 
-export const NAV = [
+export const NAV: { href: string; label: MessageKey }[] = [
   { href: "/cars", label: "Машин авах" },
   { href: "/sell", label: "Зарах" },
   { href: "/leasing", label: "Лизинг" },
@@ -21,17 +24,18 @@ export function isActive(pathname: string, href: string) {
 export default function Header() {
   const pathname = usePathname() ?? "/";
   const { user, status } = useAuth();
+  const { t } = useI18n();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-6 px-4 md:h-[76px] md:px-10">
-        <Link href="/" aria-label="Нүүр" className="shrink-0">
+        <Link href="/" aria-label={t("Нүүр")} className="shrink-0">
           <Logo />
         </Link>
 
         <span className="hidden items-center gap-1.5 text-sm font-medium text-foreground/80 xl:flex">
           <MapPin className="size-4" />
-          Улаанбаатар
+          {t("Улаанбаатар")}
         </span>
 
         <nav className="hidden h-full items-stretch gap-5 whitespace-nowrap md:flex lg:gap-7">
@@ -47,17 +51,18 @@ export default function Header() {
                   active ? "border-primary text-primary" : "border-transparent text-foreground/75 hover:text-foreground"
                 )}
               >
-                {item.label}
+                {t(item.label)}
               </Link>
             );
           })}
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <Link href="/chat" aria-label="Чат" className="hidden size-11 place-items-center rounded-xl bg-muted hover:bg-border md:grid">
+          <LanguageSwitcher />
+          <Link href="/chat" aria-label={t("Чат")} className="hidden size-11 place-items-center rounded-xl bg-muted hover:bg-border md:grid">
             <MessageCircle className="size-[18px]" />
           </Link>
-          <Link href="/saved" aria-label="Хадгалсан" className="grid size-11 place-items-center rounded-xl bg-muted hover:bg-border">
+          <Link href="/saved" aria-label={t("Хадгалсан")} className="grid size-11 place-items-center rounded-xl bg-muted hover:bg-border">
             <Heart className="size-[18px]" />
           </Link>
           {status === "authenticated" && user ? (
@@ -67,16 +72,16 @@ export default function Header() {
             </Link>
           ) : (
             <Link href="/login" className="hidden h-11 items-center rounded-xl bg-muted px-4 text-sm font-semibold hover:bg-border md:flex">
-              Нэвтрэх
+              {t("Нэвтрэх")}
             </Link>
           )}
           <Link
             href="/sell"
-            aria-label="Зар нэмэх"
+            aria-label={t("Зар нэмэх")}
             className="hidden h-11 items-center gap-1.5 rounded-xl bg-primary px-3.5 text-sm font-bold text-white hover:bg-primary-hover md:flex xl:px-4"
           >
             <Plus className="size-4" strokeWidth={2.6} />
-            <span className="hidden xl:inline">Зар нэмэх</span>
+            <span className="hidden xl:inline">{t("Зар нэмэх")}</span>
           </Link>
         </div>
       </div>

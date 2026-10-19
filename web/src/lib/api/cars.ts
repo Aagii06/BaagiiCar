@@ -1,3 +1,4 @@
+import type { MessageKey } from "../i18n/messages";
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
 import type { BodyType, Brand, Car, CarFile, CarModel, Location } from "./types";
 
@@ -36,7 +37,7 @@ export function searchConditions(s: CarSearch): Condition[] {
 export type CarSort = "new" | "old" | "priceAsc" | "priceDesc" | "views";
 
 /** Sort menu on /cars, in display order. */
-export const CAR_SORTS: { value: CarSort; label: string }[] = [
+export const CAR_SORTS: { value: CarSort; label: MessageKey }[] = [
   { value: "new", label: "Шинэ нь эхэндээ" },
   { value: "old", label: "Хуучин нь эхэндээ" },
   { value: "priceAsc", label: "Үнэ өсөхөөр" },

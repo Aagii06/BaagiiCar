@@ -10,6 +10,7 @@ import { CardGridSkeleton, EmptyState, ErrorState, LoadingState } from "@/compon
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
 import type { Brand } from "@/lib/api/types";
 import { FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { Check, SlidersHorizontal, X } from "lucide-react";
@@ -78,6 +79,7 @@ function Panel({ title, action, children }: { title: string; action?: React.Reac
 }
 
 function BrandChip({ brand, modelNames, onRemove }: { brand: Brand; modelNames: string; onRemove: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-3 rounded-xl border-[1.5px] border-foreground px-3 py-2.5">
       <span className="grid size-8 shrink-0 place-items-center rounded-full bg-muted text-sm font-bold">{brand.name[0]}</span>
@@ -85,7 +87,7 @@ function BrandChip({ brand, modelNames, onRemove }: { brand: Brand; modelNames: 
         <p className="truncate text-sm font-bold">{brand.name}</p>
         {modelNames && <p className="truncate text-xs text-muted-foreground">{modelNames}</p>}
       </div>
-      <button onClick={onRemove} aria-label={`${brand.name} хасах`} className="grid size-6 shrink-0 place-items-center rounded-full bg-dark text-white">
+      <button onClick={onRemove} aria-label={t("{name} хасах", { name: brand.name })} className="grid size-6 shrink-0 place-items-center rounded-full bg-dark text-white">
         <X className="size-3.5" strokeWidth={3} />
       </button>
     </div>
@@ -93,6 +95,7 @@ function BrandChip({ brand, modelNames, onRemove }: { brand: Brand; modelNames: 
 }
 
 function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void }) {
+  const { t, tv } = useI18n();
   const brands = useApi(getBrands);
   const singleBrand = p.brands.length === 1 ? p.brands[0] : undefined;
   const models = useApi(() => (singleBrand ? getModels(singleBrand) : Promise.resolve([])), String(singleBrand ?? ""));
@@ -107,7 +110,7 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
   return (
     <div className="space-y-4">
       <Panel
-        title="Үйлдвэр, загвар"
+        title={t("Үйлдвэр, загвар")}
         action={
           hasFilters ? (
             <button
@@ -118,7 +121,7 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
                 set({ brands: [], model: undefined, yearFrom: undefined, priceMin: undefined, priceMax: undefined, fuel: [], steering: undefined });
               }}
             >
-              Цэвэрлэх
+              {t("Цэвэрлэх")}
             </button>
           ) : null
         }
@@ -143,9 +146,9 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
               value=""
               onChange={(e) => e.target.value && set({ brands: [...p.brands, Number(e.target.value)], model: undefined })}
               className="border-0 bg-primary font-bold text-white [&>option]:text-foreground"
-              aria-label="Үйлдвэр сонгох"
+              aria-label={t("Үйлдвэр сонгох")}
             >
-              <option value="">Үйлдвэр сонгох</option>
+              <option value="">{t("Үйлдвэр сонгох")}</option>
               {available.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}
@@ -154,8 +157,8 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
             </Select>
           )}
           {singleBrand && (models.data?.length ?? 0) > 0 && (
-            <Select value={p.model ?? ""} onChange={(e) => set({ model: num(e.target.value) })} aria-label="Загвар">
-              <option value="">Бүх загвар</option>
+            <Select value={p.model ?? ""} onChange={(e) => set({ model: num(e.target.value) })} aria-label={t("Загвар")}>
+              <option value="">{t("Бүх загвар")}</option>
               {models.data!.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name}
@@ -166,7 +169,7 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
         </div>
       </Panel>
 
-      <Panel title="Үнэ">
+      <Panel title={t("Үнэ")}>
         <form
           className="grid grid-cols-2 gap-2"
           onSubmit={(e) => {
@@ -175,29 +178,29 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
           }}
         >
           <label className="rounded-xl bg-muted px-3 py-2">
-            <span className="block text-[11px] font-medium text-muted-foreground">Доод (сая ₮)</span>
+            <span className="block text-[11px] font-medium text-muted-foreground">{t("Доод (сая ₮)")}</span>
             <input inputMode="numeric" value={priceMin} onChange={(e) => setPriceMin(e.target.value.replace(/\D/g, ""))} onBlur={() => set({ priceMin: num(priceMin) })} placeholder="0" className="w-full bg-transparent text-sm font-bold outline-none" />
           </label>
           <label className="rounded-xl bg-muted px-3 py-2">
-            <span className="block text-[11px] font-medium text-muted-foreground">Дээд (сая ₮)</span>
+            <span className="block text-[11px] font-medium text-muted-foreground">{t("Дээд (сая ₮)")}</span>
             <input inputMode="numeric" value={priceMax} onChange={(e) => setPriceMax(e.target.value.replace(/\D/g, ""))} onBlur={() => set({ priceMax: num(priceMax) })} placeholder="∞" className="w-full bg-transparent text-sm font-bold outline-none" />
           </label>
           <button type="submit" hidden />
         </form>
       </Panel>
 
-      <Panel title="Он">
-        <Select value={p.yearFrom ?? ""} onChange={(e) => set({ yearFrom: num(e.target.value) })} aria-label="Үйлдвэрлэсэн он">
-          <option value="">Бүгд</option>
+      <Panel title={t("Он")}>
+        <Select value={p.yearFrom ?? ""} onChange={(e) => set({ yearFrom: num(e.target.value) })} aria-label={t("Үйлдвэрлэсэн он")}>
+          <option value="">{t("Бүгд")}</option>
           {[2022, 2020, 2018, 2015, 2012, 2010, 2005, 2000].map((y) => (
             <option key={y} value={y}>
-              {y} оноос хойш
+              {t("{y} оноос хойш", { y })}
             </option>
           ))}
         </Select>
       </Panel>
 
-      <Panel title="Түлш">
+      <Panel title={t("Түлш")}>
         <div className="space-y-3">
           {FUEL_TYPES.map((f) => {
             const on = p.fuel.includes(f);
@@ -212,14 +215,14 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
                 <span className={cn("grid size-5 place-items-center rounded-[5px] border-[1.5px]", on ? "border-primary bg-primary text-white" : "border-input bg-white")}>
                   {on && <Check className="size-3.5" strokeWidth={3.2} />}
                 </span>
-                {f}
+                {tv(f)}
               </label>
             );
           })}
         </div>
       </Panel>
 
-      <Panel title="Хүрд">
+      <Panel title={t("Хүрд")}>
         <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
           {[undefined, ...STEERINGS].map((s) => (
             <button
@@ -227,7 +230,7 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
               onClick={() => set({ steering: s })}
               className={cn("rounded-lg py-2 text-sm font-semibold", p.steering === s ? "bg-white shadow-sm" : "text-foreground/70")}
             >
-              {s ?? "Бүгд"}
+              {s ? tv(s) : t("Бүгд")}
             </button>
           ))}
         </div>
@@ -238,6 +241,7 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
 
 function CarsPageInner() {
   const router = useRouter();
+  const { t } = useI18n();
   const pathname = usePathname();
   const sp = useSearchParams();
   const p = useMemo(() => readParams(new URLSearchParams(sp.toString())), [sp]);
@@ -277,7 +281,7 @@ function CarsPageInner() {
 
   return (
     <Container className="pt-8 md:pt-12">
-      <PageTitle count={result.data?.count}>Машин авах</PageTitle>
+      <PageTitle count={result.data?.count}>{t("Машин авах")}</PageTitle>
 
       <BodyTypeTabs className="mt-6" items={bodyTypes.data ?? []} selectedId={p.body} onSelect={(id) => set({ body: id })} />
 
@@ -289,7 +293,7 @@ function CarsPageInner() {
             aria-expanded={showFilters}
           >
             <SlidersHorizontal className="size-4" />
-            Шүүлтүүр
+            {t("Шүүлтүүр")}
           </button>
           <div className={cn("mt-3 lg:mt-0 lg:block", showFilters ? "block" : "hidden")}>
             <Filters key={key} p={p} set={set} />
@@ -298,11 +302,11 @@ function CarsPageInner() {
 
         <div>
           <div className="mb-4 flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{result.data ? `${result.data.count} зар олдлоо` : " "}</p>
-            <Select value={p.sort} onChange={(e) => set({ sort: e.target.value as Params["sort"] })} className="h-10 w-48 text-sm" aria-label="Эрэмбэлэх">
+            <p className="text-sm text-muted-foreground">{result.data ? t("{n} зар олдлоо", { n: result.data.count }) : " "}</p>
+            <Select value={p.sort} onChange={(e) => set({ sort: e.target.value as Params["sort"] })} className="h-10 w-48 text-sm" aria-label={t("Эрэмбэлэх")}>
               {CAR_SORTS.map((o) => (
                 <option key={o.value} value={o.value}>
-                  {o.label}
+                  {t(o.label)}
                 </option>
               ))}
             </Select>
@@ -313,7 +317,7 @@ function CarsPageInner() {
           ) : result.error ? (
             <ErrorState message={result.error.message} onRetry={result.reload} />
           ) : rows.length === 0 ? (
-            <EmptyState title="Тохирох зар олдсонгүй" description="Шүүлтүүрээ өөрчлөөд дахин оролдоно уу." />
+            <EmptyState title={t("Тохирох зар олдсонгүй")} description={t("Шүүлтүүрээ өөрчлөөд дахин оролдоно уу.")} />
           ) : (
             <div className={cn("grid gap-4 sm:grid-cols-2 xl:grid-cols-3", result.loading && "opacity-60")}>
               {rest.slice(0, 3).map((car) => (

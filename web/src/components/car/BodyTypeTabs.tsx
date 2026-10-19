@@ -1,5 +1,8 @@
+"use client";
+
 import type { BodyType } from "@/lib/api/types";
 import { bodyTypeLabel } from "@/lib/constants";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import CarArt, { shapeFor } from "./CarArt";
 
@@ -15,6 +18,7 @@ export default function BodyTypeTabs({
   onSelect: (id: number | undefined) => void;
   className?: string;
 }) {
+  const { t } = useI18n();
   return (
     <div className={cn("no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0", className)}>
       {items.map((b) => {
@@ -31,7 +35,7 @@ export default function BodyTypeTabs({
             )}
           >
             <CarArt shape={shapeFor(b.name)} className="w-14" strokeWidth={2.6} />
-            {bodyTypeLabel(b.name)}
+            {bodyTypeLabel(b.name, t)}
           </button>
         );
       })}

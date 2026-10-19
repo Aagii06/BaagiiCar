@@ -2,6 +2,7 @@
 
 import { Select } from "@/components/common/Field";
 import { getBrands, getModels } from "@/lib/api/cars";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
@@ -33,6 +34,7 @@ const cellSelect = "h-9 border-0 bg-transparent px-0 text-[15px] font-semibold f
 /** White search card overlapping the bottom of the full-width hero. */
 export default function HeroSearch() {
   const router = useRouter();
+  const { t } = useI18n();
   const [tab, setTab] = useState<TabKey>("all");
   const [brandId, setBrandId] = useState("");
   const [modelId, setModelId] = useState("");
@@ -57,18 +59,18 @@ export default function HeroSearch() {
   return (
     <div>
       <div className="flex gap-1">
-        {TABS.map((t) => (
+        {TABS.map((tb) => (
           <button
-            key={t.key}
+            key={tb.key}
             type="button"
-            onClick={() => setTab(t.key)}
-            aria-pressed={tab === t.key}
+            onClick={() => setTab(tb.key)}
+            aria-pressed={tab === tb.key}
             className={cn(
               "rounded-t-xl px-4 py-2.5 text-xs font-bold uppercase tracking-[0.1em] transition-colors",
-              tab === t.key ? "bg-white text-foreground" : "bg-dark text-white hover:bg-dark-2"
+              tab === tb.key ? "bg-white text-foreground" : "bg-dark text-white hover:bg-dark-2"
             )}
           >
-            {t.label}
+            {t(tb.label)}
           </button>
         ))}
       </div>
@@ -76,7 +78,7 @@ export default function HeroSearch() {
         onSubmit={submit}
         className="grid overflow-hidden rounded-b-2xl rounded-tr-2xl bg-white shadow-2xl shadow-black/10 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]"
       >
-        <Cell label="Үйлдвэр">
+        <Cell label={t("Үйлдвэр")}>
           <Select
             className={cellSelect}
             value={brandId}
@@ -85,7 +87,7 @@ export default function HeroSearch() {
               setModelId("");
             }}
           >
-            <option value="">Бүгд</option>
+            <option value="">{t("Бүгд")}</option>
             {brands.data?.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -93,9 +95,9 @@ export default function HeroSearch() {
             ))}
           </Select>
         </Cell>
-        <Cell label="Загвар">
+        <Cell label={t("Загвар")}>
           <Select className={cellSelect} value={modelId} onChange={(e) => setModelId(e.target.value)} disabled={!brandId}>
-            <option value="">Бүгд</option>
+            <option value="">{t("Бүгд")}</option>
             {models.data?.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.name}
@@ -103,9 +105,9 @@ export default function HeroSearch() {
             ))}
           </Select>
         </Cell>
-        <Cell label="Он">
+        <Cell label={t("Он")}>
           <Select className={cellSelect} value={yearFrom} onChange={(e) => setYearFrom(e.target.value)}>
-            <option value="">Бүгд</option>
+            <option value="">{t("Бүгд")}</option>
             {YEAR_FROM_OPTIONS.map((y) => (
               <option key={y} value={y}>
                 {y} – {THIS_YEAR}
@@ -113,19 +115,19 @@ export default function HeroSearch() {
             ))}
           </Select>
         </Cell>
-        <Cell label="Үнэ">
+        <Cell label={t("Үнэ")}>
           <Select className={cellSelect} value={priceMax} onChange={(e) => setPriceMax(e.target.value)}>
-            <option value="">Хязгааргүй</option>
+            <option value="">{t("Хязгааргүй")}</option>
             {PRICE_MAX_OPTIONS.map((p) => (
               <option key={p} value={p}>
-                {p} сая ₮ хүртэл
+                {t("{n} сая ₮ хүртэл", { n: p })}
               </option>
             ))}
           </Select>
         </Cell>
         <button className="m-2 flex h-14 items-center justify-center gap-2 rounded-xl bg-primary px-10 font-display text-lg font-semibold text-white hover:bg-primary-hover sm:col-span-2 lg:col-span-1 lg:m-0 lg:h-auto lg:rounded-none">
           <Search className="size-5" strokeWidth={2.4} />
-          Хайх
+          {t("Хайх")}
         </button>
       </form>
     </div>

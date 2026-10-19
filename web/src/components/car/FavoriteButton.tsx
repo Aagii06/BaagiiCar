@@ -1,18 +1,20 @@
 "use client";
 
 import { useFavorites } from "@/lib/favorites/FavoritesProvider";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
 import { useState } from "react";
 
 export default function FavoriteButton({ carId, className }: { carId: number; className?: string }) {
   const { isFavorite, toggle } = useFavorites();
+  const { t } = useI18n();
   const [busy, setBusy] = useState(false);
   const on = isFavorite(carId);
   return (
     <button
       type="button"
-      aria-label={on ? "Хадгалснаас хасах" : "Хадгалах"}
+      aria-label={on ? t("Хадгалснаас хасах") : t("Хадгалах")}
       aria-pressed={on}
       disabled={busy}
       onClick={async (e) => {

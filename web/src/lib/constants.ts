@@ -1,11 +1,15 @@
+import type { MessageKey } from "./i18n/messages";
+import type { T } from "./i18n/translate";
+
+// Values are stored as is (Mongolian) — show them through `tv()`.
 // Must match backend/config/constants.js — the save endpoint validates these.
 export const FUEL_TYPES = ["Бензин", "Дизель", "Хайбрид", "Газ", "Цахилгаан"];
 export const TRANSMISSIONS = ["Автомат", "Механик", "CVT", "Типтроник"];
 export const DRIVE_TYPES = ["FWD", "RWD", "4WD", "AWD"];
 export const STEERINGS = ["Зүүн", "Баруун"];
 
-/** Seeded body types are English; the design shows them in Mongolian. */
-const BODY_TYPE_MN: Record<string, string> = {
+/** Seeded body types are English; their labels are translated. */
+const BODY_TYPE_LABEL: Record<string, MessageKey> = {
   SUV: "Жийп",
   Sedan: "Седан",
   Hatchback: "Хэтчбэк",
@@ -17,9 +21,10 @@ const BODY_TYPE_MN: Record<string, string> = {
   Electric: "Цахилгаан",
 };
 
-export function bodyTypeLabel(name: string | null | undefined) {
+export function bodyTypeLabel(name: string | null | undefined, t: T) {
   if (!name) return "";
-  return BODY_TYPE_MN[name] ?? name;
+  const key = BODY_TYPE_LABEL[name];
+  return key ? t(key) : name;
 }
 
 /** Leasing estimate: illustrative terms until a partner's real rates are wired in. */
