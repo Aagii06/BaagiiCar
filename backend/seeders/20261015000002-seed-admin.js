@@ -14,6 +14,15 @@ module.exports = {
       return;
     }
 
+    const [existing] = await queryInterface.sequelize.query(
+      "SELECT id FROM users WHERE phonenumber = ? AND status != 'deleted' LIMIT 1",
+      { replacements: [ADMIN_PHONENUMBER] },
+    );
+    if (existing.length) {
+      console.log(`${ADMIN_PHONENUMBER} дугаартай хэрэглэгч бүртгэлтэй тул алгаслаа`);
+      return;
+    }
+
     const password = await bcrypt.hash(ADMIN_PASSWORD, await bcrypt.genSalt(8));
     await queryInterface.bulkInsert("users", [
       {
