@@ -6,18 +6,20 @@ import RequireAuth from "@/components/common/RequireAuth";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import { getFavorites } from "@/lib/api/cars";
 import { useFavorites } from "@/lib/favorites/FavoritesProvider";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import Link from "next/link";
 
 function Saved() {
   const { ids, ready } = useFavorites();
+  const { t } = useI18n();
   const favorites = useApi(getFavorites);
   // Hide cards un-hearted on this page without refetching.
   const rows = (favorites.data ?? []).filter((c) => !ready || ids.has(c.id));
 
   return (
     <Container className="pt-8 md:pt-12">
-      <PageTitle count={favorites.data ? rows.length : undefined}>Хадгалсан</PageTitle>
+      <PageTitle count={favorites.data ? rows.length : undefined}>{t("Хадгалсан")}</PageTitle>
       <div className="mt-8">
         {favorites.loading && !favorites.data ? (
           <CardGridSkeleton count={3} />
@@ -31,9 +33,9 @@ function Saved() {
           </div>
         ) : (
           <EmptyState
-            title="Хадгалсан зар алга"
-            description="Таалагдсан машиныхаа ♡ дээр дарж хадгална уу."
-            action={<Link href="/cars" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">Машин хайх</Link>}
+            title={t("Хадгалсан зар алга")}
+            description={t("Таалагдсан машиныхаа ♡ дээр дарж хадгална уу.")}
+            action={<Link href="/cars" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">{t("Машин хайх")}</Link>}
           />
         )}
       </div>

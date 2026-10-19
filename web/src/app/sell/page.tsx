@@ -7,6 +7,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/common/States
 import { getCar, getCarFiles, type PhotoItem } from "@/lib/api/cars";
 import { uploadUrl } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -14,6 +15,7 @@ import { Suspense } from "react";
 function EditLoader({ id }: { id: string }) {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useI18n();
   const data = useApi(async () => {
     const car = await getCar(id);
     if (!car) return null;
@@ -26,20 +28,21 @@ function EditLoader({ id }: { id: string }) {
 
   if (data.loading && !data.data) return <LoadingState />;
   if (data.error) return <ErrorState message={data.error.message} onRetry={data.reload} />;
-  if (!data.data || data.data.car.status === "deleted") return <EmptyState title="Зар олдсонгүй" />;
+  if (!data.data || data.data.car.status === "deleted") return <EmptyState title={t("Зар олдсонгүй")} />;
   if (user && data.data.car.user_id !== user.id && user.role !== "Админ")
-    return <EmptyState title="Зөвхөн өөрийн зарыг засах боломжтой" />;
+    return <EmptyState title={t("Зөвхөн өөрийн зарыг засах боломжтой")} />;
   return <CarForm car={data.data.car} photos={data.data.photos} onSaved={(carId) => router.push(`/cars/${carId}`)} />;
 }
 
 function SellInner() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useI18n();
   const id = useSearchParams().get("id");
   return (
     <Container className="max-w-[960px] pt-8 md:pt-12">
-      <PageTitle>{id ? "Зар засах" : "Зар нэмэх"}</PageTitle>
-      <p className="mb-6 mt-3 text-sm text-muted-foreground">Зураг, мэдээллээ оруулаад нийтлэхэд зар тань шууд гарна.</p>
+      <PageTitle>{id ? t("Зар засах") : t("Зар нэмэх")}</PageTitle>
+      <p className="mb-6 mt-3 text-sm text-muted-foreground">{t("Зураг, мэдээллээ оруулаад нийтлэхэд зар тань шууд гарна.")}</p>
       {id ? <EditLoader id={id} /> : <CarForm defaultPhone={user?.phonenumber} onSaved={(carId) => router.push(`/cars/${carId}`)} />}
     </Container>
   );
