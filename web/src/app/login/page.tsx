@@ -152,7 +152,7 @@ function LoginForm() {
               setPhone(e.target.value.replace(/\D/g, ""));
               setError(null);
             }}
-            placeholder="99112233"
+            placeholder="Утасны дугаар"
             required
           />
         </Field>

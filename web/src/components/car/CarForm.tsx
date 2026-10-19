@@ -298,7 +298,7 @@ export default function CarForm({
             <textarea className={cn(inputClass, "h-auto min-h-32 py-3")} {...bind("description")} maxLength={5000} placeholder="Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…" />
           </Field>
           <Field label="Холбогдох утас" hint="Худалдан авагч энэ дугаар руу залгана">
-            <input className={cn(inputClass, "sm:max-w-xs")} {...digits("phonenumber")} maxLength={8} placeholder="99112233" />
+            <input className={cn(inputClass, "sm:max-w-xs")} {...digits("phonenumber")} maxLength={8} placeholder="Утасны дугаар" />
           </Field>
         </div>
       </Section>

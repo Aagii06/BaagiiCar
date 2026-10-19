@@ -121,7 +121,7 @@ function HelpInner() {
                 inputMode="numeric"
                 autoComplete="tel"
                 maxLength={8}
-                placeholder="99112233"
+                placeholder="Утасны дугаар"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })}
               />
