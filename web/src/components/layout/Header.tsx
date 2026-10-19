@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn, initials, userName } from "@/lib/utils";
@@ -58,7 +59,7 @@ export default function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <LanguageSwitcher />
+          {LANGUAGE_SWITCHING && <LanguageSwitcher />}
           <Link href="/chat" aria-label={t("Чат")} className="hidden size-11 place-items-center rounded-xl bg-muted hover:bg-border md:grid">
             <MessageCircle className="size-[18px]" />
           </Link>
