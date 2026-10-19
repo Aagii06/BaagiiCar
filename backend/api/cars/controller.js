@@ -8,6 +8,7 @@ const {
 } = require("../../models");
 
 const { uploadFiles } = require("../../helper/fileHelper");
+const { notifyNewCar } = require("../../helper/notifyHelper");
 const { saveLog } = require("../../utils/logHelper");
 const { roles, carStatuses } = require("../../config/constants");
 
@@ -119,6 +120,8 @@ module.exports.save = async (req, res) => {
     );
 
     await t.commit();
+    // Шинэ зарын мэдэгдлийг хариуг хүлээлгэлгүйгээр ар талд илгээнэ
+    if (!id) setImmediate(() => notifyNewCar(item.id));
     result.success = true;
     result.data = { id: item.id };
     return res.status(200).json(result);

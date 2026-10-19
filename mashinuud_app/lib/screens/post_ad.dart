@@ -435,7 +435,7 @@ class _PostAdScreenState extends State<PostAdScreen> {
         ),
         child: Row(
           children: [
-            Text(label, style: const TextStyle(fontSize: 16)),
+            Flexible(child: Text(label, style: const TextStyle(fontSize: 16))),
             const SizedBox(width: 16),
             Expanded(
               child: Align(alignment: Alignment.centerRight, child: trailing),
