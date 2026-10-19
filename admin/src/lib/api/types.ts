@@ -89,3 +89,15 @@ export interface User {
   status?: string | null;
   created_at?: string | null;
 }
+
+/** Visitor message from the web chat box. */
+export interface Message {
+  id: number;
+  name: string | null;
+  phonenumber: string;
+  message: string;
+  car_id: number | null;
+  page_url: string | null;
+  status: "new" | "done";
+  created_at: string | null;
+}

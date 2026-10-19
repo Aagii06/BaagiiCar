@@ -1,5 +1,5 @@
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
-import type { BodyType, Brand, Car, CarFile, CarModel, Location, User } from "./types";
+import type { BodyType, Brand, Car, CarFile, CarModel, Location, Message, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
 const NEWEST = [{ selector: "created_at", desc: true }];
@@ -187,3 +187,15 @@ export async function getUser(id: number | string) {
   const res = await apiFetch<ApiItemResponse<User | null>>(`/api/base/users/${id}`);
   return res.data;
 }
+
+// --- web chat messages -----------------------------------------------------
+
+export async function listMessages(status?: Message["status"]) {
+  const res = await apiFetch<ApiListResponse<Message>>(
+    `/api/base/messages${listQuery({ filter: status ? [["status", "=", status]] : [], sort: [...NEWEST, { selector: "id", desc: true }], take: 200 })}`
+  );
+  return res.data;
+}
+
+export const setMessageStatus = (id: number, status: Message["status"]) => updateRow("messages", id, { status });
+export const deleteMessage = (id: number) => deleteRows("messages", [id]);

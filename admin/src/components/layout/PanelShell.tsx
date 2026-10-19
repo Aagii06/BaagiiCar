@@ -29,7 +29,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
 
       {isTabPage && (
         <nav aria-label="Үндсэн цэс" className="fixed inset-x-0 bottom-0 z-30">
-          <div className="mx-auto grid max-w-md grid-cols-5 border-t border-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+          <div className="mx-auto grid max-w-md grid-cols-6 border-t border-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
             {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
               const active = isActivePath(pathname, href);
               return (

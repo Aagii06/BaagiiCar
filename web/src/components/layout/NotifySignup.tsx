@@ -10,8 +10,8 @@ const fieldClass =
   "h-11 min-w-0 flex-1 rounded-xl border border-white/15 bg-dark-2 px-4 text-sm text-white outline-none placeholder:text-white/40 focus:border-primary";
 const buttonClass = "h-11 shrink-0 rounded-xl bg-primary px-4 text-sm font-bold text-white hover:bg-primary-hover disabled:opacity-60";
 
-/** Email → 6-digit code → confirmed. Listings then arrive as a periodic digest. */
-function EmailSignup() {
+/** Email → 6-digit code → confirmed. Listings then arrive as a periodic digest. Styled for a dark background. */
+export function EmailSignup() {
   const { t } = useI18n();
   const [step, setStep] = useState<"email" | "code" | "done">("email");
   const [email, setEmail] = useState("");

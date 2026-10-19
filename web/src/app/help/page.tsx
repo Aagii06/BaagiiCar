@@ -3,12 +3,13 @@
 import Container from "@/components/common/Container";
 import { Field, inputClass } from "@/components/common/Field";
 import { LoadingState } from "@/components/common/States";
+import { EmailSignup } from "@/components/layout/NotifySignup";
 import { CONTACT } from "@/lib/api/config";
 import { openChat } from "@/lib/chat";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CreditCard, MessageCircle, Minus, Phone, Plus, Search, ShieldCheck } from "lucide-react";
+import { CreditCard, Mail, MessageCircle, Minus, Phone, Plus, Search, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
@@ -167,6 +168,20 @@ function HelpInner() {
             )}
           </div>
         </aside>
+      </Container>
+
+      <Container className="mt-10">
+        <section id="alerts" className="grid scroll-mt-24 gap-5 rounded-[28px] bg-dark px-6 py-8 text-white md:grid-cols-[1fr_1.2fr] md:items-center md:px-10 md:py-10">
+          <div>
+            <span className="eyebrow inline-flex items-center gap-1.5 rounded-full bg-dark-2 px-3 py-1.5 text-primary">
+              <Mail className="size-3.5" />
+              {t("И-мэйлээр мэдээлэл авах")}
+            </span>
+            <h2 className="mt-4 font-display text-2xl font-bold tracking-tight md:text-[30px]">{t("Шинэ зарын мэдээлэл")}</h2>
+            <p className="mt-2 text-sm text-white/70">{t("Шинээр орсон машинуудын жагсаалт и-мэйл рүү тань тогтмол очно. Хүссэн үедээ бүртгэлээс гарах боломжтой.")}</p>
+          </div>
+          <EmailSignup />
+        </section>
       </Container>
     </>
   );
