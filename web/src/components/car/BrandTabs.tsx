@@ -4,30 +4,30 @@ import { remoteImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
-/** Row of brand tiles above the body types; several can be on at once. */
+/** Row of brand tiles above the body types; one at a time, tap again to clear. */
 export default function BrandTabs({
   items,
-  selectedIds,
-  onToggle,
+  selectedId,
+  onSelect,
   className,
 }: {
   items: Brand[];
-  selectedIds: number[];
-  onToggle: (id: number) => void;
+  selectedId?: number;
+  onSelect: (id: number | undefined) => void;
   className?: string;
 }) {
   return (
     // One scrolling row at every width — there are too many brands to wrap.
     <div className={cn("no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 md:mx-0 md:px-0", className)}>
       {items.map((b) => {
-        const active = selectedIds.includes(b.id);
+        const active = b.id === selectedId;
         const logo = remoteImage(b.logo);
         return (
           <button
             key={b.id}
             type="button"
             aria-pressed={active}
-            onClick={() => onToggle(b.id)}
+            onClick={() => onSelect(active ? undefined : b.id)}
             className={cn(
               "group flex w-[118px] shrink-0 flex-col items-center gap-2 rounded-2xl border-2 bg-card px-3 pb-4 pt-5 text-sm font-semibold transition-colors md:w-[132px]",
               active ? "border-foreground" : "border-transparent hover:border-border"

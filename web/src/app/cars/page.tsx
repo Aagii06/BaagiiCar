@@ -9,22 +9,24 @@ import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
-import type { Brand } from "@/lib/api/types";
 import { FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { Check, SlidersHorizontal, X } from "lucide-react";
+import { Check, SlidersHorizontal } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 
 const MLN = 1_000_000;
 
 type Params = {
-  brands: number[];
+  brand?: number;
   model?: number;
   body?: number;
   yearFrom?: number;
+  yearTo?: number;
+  importFrom?: number;
+  importTo?: number;
   priceMin?: number; // сая ₮
   priceMax?: number;
   fuel: string[];
@@ -39,10 +41,14 @@ const list = (v: string | null) => (v ? v.split(",").filter(Boolean) : []);
 function readParams(sp: URLSearchParams): Params {
   const sort = sp.get("sort");
   return {
-    brands: list(sp.get("brand")).map(Number).filter(Boolean),
+    // Older links may carry several brands; only one is used now.
+    brand: num(list(sp.get("brand"))[0] ?? null),
     model: num(sp.get("model")),
     body: num(sp.get("body")),
     yearFrom: num(sp.get("yearFrom")),
+    yearTo: num(sp.get("yearTo")),
+    importFrom: num(sp.get("importFrom")),
+    importTo: num(sp.get("importTo")),
     priceMin: num(sp.get("priceMin")),
     priceMax: num(sp.get("priceMax")),
     fuel: list(sp.get("fuel")),
@@ -54,10 +60,13 @@ function readParams(sp: URLSearchParams): Params {
 
 function writeParams(p: Params) {
   const q = new URLSearchParams();
-  if (p.brands.length) q.set("brand", p.brands.join(","));
+  if (p.brand) q.set("brand", String(p.brand));
   if (p.model) q.set("model", String(p.model));
   if (p.body) q.set("body", String(p.body));
   if (p.yearFrom) q.set("yearFrom", String(p.yearFrom));
+  if (p.yearTo) q.set("yearTo", String(p.yearTo));
+  if (p.importFrom) q.set("importFrom", String(p.importFrom));
+  if (p.importTo) q.set("importTo", String(p.importTo));
   if (p.priceMin) q.set("priceMin", String(p.priceMin));
   if (p.priceMax) q.set("priceMax", String(p.priceMax));
   if (p.fuel.length) q.set("fuel", p.fuel.join(","));
@@ -67,141 +76,164 @@ function writeParams(p: Params) {
   return q.toString();
 }
 
-function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
+/** One titled block inside the filter card; blocks after the first get a divider. */
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl bg-card p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-bold">{title}</h2>
-        {action}
-      </div>
+    <div className="border-t border-border pt-4 first:border-t-0 first:pt-0">
+      <h3 className="mb-3 text-[13px] font-bold">{title}</h3>
       {children}
-    </section>
-  );
-}
-
-function BrandChip({ brand, modelNames, onRemove }: { brand: Brand; modelNames: string; onRemove: () => void }) {
-  const { t } = useI18n();
-  return (
-    <div className="flex items-center gap-3 rounded-xl border-[1.5px] border-foreground px-3 py-2.5">
-      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-muted text-sm font-bold">{brand.name[0]}</span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-bold">{brand.name}</p>
-        {modelNames && <p className="truncate text-xs text-muted-foreground">{modelNames}</p>}
-      </div>
-      <button onClick={onRemove} aria-label={t("{name} хасах", { name: brand.name })} className="grid size-6 shrink-0 place-items-center rounded-full bg-dark text-white">
-        <X className="size-3.5" strokeWidth={3} />
-      </button>
     </div>
   );
 }
 
+/** Min / max boxes; the value is applied on blur or Enter. */
+function Range({
+  min,
+  max,
+  minLabel,
+  maxLabel,
+  minPlaceholder,
+  maxPlaceholder,
+  maxLength,
+  onApply,
+}: {
+  min?: number;
+  max?: number;
+  minLabel: string;
+  maxLabel: string;
+  minPlaceholder: string;
+  maxPlaceholder: string;
+  maxLength?: number;
+  onApply: (min: number | undefined, max: number | undefined) => void;
+}) {
+  const [lo, setLo] = useState(min ? String(min) : "");
+  const [hi, setHi] = useState(max ? String(max) : "");
+  const apply = () => onApply(num(lo), num(hi));
+  const box = (label: string, value: string, setValue: (v: string) => void, placeholder: string) => (
+    <label className="rounded-xl bg-muted px-3 py-2">
+      <span className="block text-[11px] font-medium text-muted-foreground">{label}</span>
+      <input
+        inputMode="numeric"
+        maxLength={maxLength}
+        value={value}
+        onChange={(e) => setValue(e.target.value.replace(/\D/g, ""))}
+        onBlur={apply}
+        placeholder={placeholder}
+        className="w-full bg-transparent text-sm font-bold outline-none"
+      />
+    </label>
+  );
+  return (
+    <form
+      className="grid grid-cols-2 gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        apply();
+      }}
+    >
+      {box(minLabel, lo, setLo, minPlaceholder)}
+      {box(maxLabel, hi, setHi, maxPlaceholder)}
+      <button type="submit" hidden />
+    </form>
+  );
+}
+
+const THIS_YEAR = new Date().getFullYear();
+
 function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void }) {
   const { t, tv } = useI18n();
   const brands = useApi(getBrands);
-  const singleBrand = p.brands.length === 1 ? p.brands[0] : undefined;
-  const models = useApi(() => (singleBrand ? getModels(singleBrand) : Promise.resolve([])), String(singleBrand ?? ""));
-  const allModels = useApi(() => getModels());
-  const [priceMin, setPriceMin] = useState(p.priceMin ? String(p.priceMin) : "");
-  const [priceMax, setPriceMax] = useState(p.priceMax ? String(p.priceMax) : "");
-
-  const selected = (brands.data ?? []).filter((b) => p.brands.includes(b.id));
-  const available = (brands.data ?? []).filter((b) => !p.brands.includes(b.id));
-  const hasFilters = p.brands.length || p.model || p.yearFrom || p.priceMin || p.priceMax || p.fuel.length || p.steering;
+  const models = useApi(() => (p.brand ? getModels(p.brand) : Promise.resolve([])), String(p.brand ?? ""));
+  const hasFilters =
+    p.brand || p.model || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
 
   return (
-    <div className="space-y-4">
-      <Panel
-        title={t("Үйлдвэр, загвар")}
-        action={
-          hasFilters ? (
-            <button
-              className="text-[13px] font-semibold text-primary"
-              onClick={() => {
-                setPriceMin("");
-                setPriceMax("");
-                set({ brands: [], model: undefined, yearFrom: undefined, priceMin: undefined, priceMax: undefined, fuel: [], steering: undefined });
-              }}
-            >
-              {t("Цэвэрлэх")}
-            </button>
-          ) : null
-        }
-      >
+    <section className="space-y-4 rounded-2xl bg-card p-5">
+      <div className="flex items-center justify-between">
+        <h2 className="font-bold">{t("Шүүлтүүр")}</h2>
+        {hasFilters ? (
+          <button
+            className="text-[13px] font-semibold text-primary"
+            onClick={() =>
+              set({
+                brand: undefined,
+                model: undefined,
+                yearFrom: undefined,
+                yearTo: undefined,
+                importFrom: undefined,
+                importTo: undefined,
+                priceMin: undefined,
+                priceMax: undefined,
+                fuel: [],
+                steering: undefined,
+              })
+            }
+          >
+            {t("Цэвэрлэх")}
+          </button>
+        ) : null}
+      </div>
+
+      <Group title={t("Үйлдвэр, загвар")}>
         <div className="space-y-2.5">
-          {selected.map((b) => (
-            <BrandChip
-              key={b.id}
-              brand={b}
-              modelNames={(allModels.data ?? [])
-                .filter((m) => m.brand_id === b.id)
-                .slice(0, 3)
-                .map((m) => m.name)
-                .join(", ")}
-              onRemove={() => set({ brands: p.brands.filter((id) => id !== b.id), model: undefined })}
-            />
-          ))}
-          {brands.loading && !brands.data ? (
-            <LoadingState className="py-4" />
-          ) : (
-            <Select
-              value=""
-              onChange={(e) => e.target.value && set({ brands: [...p.brands, Number(e.target.value)], model: undefined })}
-              className="border-0 bg-primary font-bold text-white [&>option]:text-foreground"
-              aria-label={t("Үйлдвэр сонгох")}
-            >
-              <option value="">{t("Үйлдвэр сонгох")}</option>
-              {available.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </Select>
-          )}
-          {singleBrand && (models.data?.length ?? 0) > 0 && (
-            <Select value={p.model ?? ""} onChange={(e) => set({ model: num(e.target.value) })} aria-label={t("Загвар")}>
-              <option value="">{t("Бүх загвар")}</option>
-              {models.data!.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </Select>
-          )}
+          <Select value={p.brand ?? ""} onChange={(e) => set({ brand: num(e.target.value), model: undefined })} aria-label={t("Үйлдвэр")}>
+            <option value="">{t("Бүх үйлдвэр")}</option>
+            {brands.data?.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </Select>
+          <Select value={p.model ?? ""} onChange={(e) => set({ model: num(e.target.value) })} disabled={!p.brand} aria-label={t("Загвар")}>
+            <option value="">{t("Бүх загвар")}</option>
+            {models.data?.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </Select>
         </div>
-      </Panel>
+      </Group>
 
-      <Panel title={t("Үнэ")}>
-        <form
-          className="grid grid-cols-2 gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            set({ priceMin: num(priceMin), priceMax: num(priceMax) });
-          }}
-        >
-          <label className="rounded-xl bg-muted px-3 py-2">
-            <span className="block text-[11px] font-medium text-muted-foreground">{t("Доод (сая ₮)")}</span>
-            <input inputMode="numeric" value={priceMin} onChange={(e) => setPriceMin(e.target.value.replace(/\D/g, ""))} onBlur={() => set({ priceMin: num(priceMin) })} placeholder="0" className="w-full bg-transparent text-sm font-bold outline-none" />
-          </label>
-          <label className="rounded-xl bg-muted px-3 py-2">
-            <span className="block text-[11px] font-medium text-muted-foreground">{t("Дээд (сая ₮)")}</span>
-            <input inputMode="numeric" value={priceMax} onChange={(e) => setPriceMax(e.target.value.replace(/\D/g, ""))} onBlur={() => set({ priceMax: num(priceMax) })} placeholder="∞" className="w-full bg-transparent text-sm font-bold outline-none" />
-          </label>
-          <button type="submit" hidden />
-        </form>
-      </Panel>
+      <Group title={t("Үнэ (сая ₮)")}>
+        <Range
+          min={p.priceMin}
+          max={p.priceMax}
+          minLabel={t("Доод")}
+          maxLabel={t("Дээд")}
+          minPlaceholder="0"
+          maxPlaceholder="∞"
+          onApply={(priceMin, priceMax) => set({ priceMin, priceMax })}
+        />
+      </Group>
 
-      <Panel title={t("Он")}>
-        <Select value={p.yearFrom ?? ""} onChange={(e) => set({ yearFrom: num(e.target.value) })} aria-label={t("Үйлдвэрлэсэн он")}>
-          <option value="">{t("Бүгд")}</option>
-          {[2022, 2020, 2018, 2015, 2012, 2010, 2005, 2000].map((y) => (
-            <option key={y} value={y}>
-              {t("{y} оноос хойш", { y })}
-            </option>
-          ))}
-        </Select>
-      </Panel>
+      <Group title={t("Үйлдвэрлэсэн он")}>
+        <Range
+          min={p.yearFrom}
+          max={p.yearTo}
+          minLabel={t("Доод")}
+          maxLabel={t("Дээд")}
+          minPlaceholder="1990"
+          maxPlaceholder={String(THIS_YEAR)}
+          maxLength={4}
+          onApply={(yearFrom, yearTo) => set({ yearFrom, yearTo })}
+        />
+      </Group>
 
-      <Panel title={t("Түлш")}>
+      <Group title={t("Орж ирсэн он")}>
+        <Range
+          min={p.importFrom}
+          max={p.importTo}
+          minLabel={t("Доод")}
+          maxLabel={t("Дээд")}
+          minPlaceholder="1990"
+          maxPlaceholder={String(THIS_YEAR)}
+          maxLength={4}
+          onApply={(importFrom, importTo) => set({ importFrom, importTo })}
+        />
+      </Group>
+
+      <Group title={t("Түлш")}>
         <div className="space-y-3">
           {FUEL_TYPES.map((f) => {
             const on = p.fuel.includes(f);
@@ -221,9 +253,9 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
             );
           })}
         </div>
-      </Panel>
+      </Group>
 
-      <Panel title={t("Хүрд")}>
+      <Group title={t("Хүрд")}>
         <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
           {[undefined, ...STEERINGS].map((s) => (
             <button
@@ -235,8 +267,8 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
             </button>
           ))}
         </div>
-      </Panel>
-    </div>
+      </Group>
+    </section>
   );
 }
 
@@ -260,10 +292,13 @@ function CarsPageInner() {
   const result = useApi(
     () =>
       searchCars({
-        brandIds: p.brands,
+        brandIds: p.brand ? [p.brand] : undefined,
         modelId: p.model,
         bodyTypeId: p.body,
         yearFrom: p.yearFrom,
+        yearTo: p.yearTo,
+        importedFrom: p.importFrom,
+        importedTo: p.importTo,
         priceMin: p.priceMin && p.priceMin * MLN,
         priceMax: p.priceMax && p.priceMax * MLN,
         fuelTypes: p.fuel,
@@ -289,8 +324,8 @@ function CarsPageInner() {
       <BrandTabs
         className="mt-2"
         items={brands.data ?? []}
-        selectedIds={p.brands}
-        onToggle={(id) => set({ brands: p.brands.includes(id) ? p.brands.filter((b) => b !== id) : [...p.brands, id], model: undefined })}
+        selectedId={p.brand}
+        onSelect={(id) => set({ brand: id, model: undefined })}
       />
 
       <p className="mt-4 text-xs font-semibold text-muted-foreground">{t("Төрөл")}</p>

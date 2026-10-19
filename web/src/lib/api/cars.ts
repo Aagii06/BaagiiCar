@@ -10,6 +10,8 @@ export interface CarSearch {
   bodyTypeId?: number;
   yearFrom?: number;
   yearTo?: number;
+  importedFrom?: number;
+  importedTo?: number;
   /** In MNT. */
   priceMin?: number;
   priceMax?: number;
@@ -27,6 +29,8 @@ export function searchConditions(s: CarSearch): Condition[] {
   if (s.bodyTypeId) c.push(["body_type_id", "=", s.bodyTypeId]);
   if (s.yearFrom) c.push(["manufactured_year", ">=", s.yearFrom]);
   if (s.yearTo) c.push(["manufactured_year", "<=", s.yearTo]);
+  if (s.importedFrom) c.push(["imported_year", ">=", s.importedFrom]);
+  if (s.importedTo) c.push(["imported_year", "<=", s.importedTo]);
   if (s.priceMin) c.push(["price", ">=", s.priceMin]);
   if (s.priceMax) c.push(["price", "<=", s.priceMax]);
   if (s.fuelTypes?.length) c.push(["fuel_type", "in", s.fuelTypes]);
