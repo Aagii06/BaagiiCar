@@ -22,8 +22,15 @@ export function bodyTypeLabel(name: string | null | undefined) {
   return BODY_TYPE_MN[name] ?? name;
 }
 
-export const ROLES = { admin: "Админ", dealer: "Дилер", customer: "Хэрэглэгч" } as const;
+export const ROLES = { admin: "ADMIN", dealer: "DEALER", customer: "CUSTOMER" } as const;
 export const ROLE_LIST = Object.values(ROLES);
+
+const ROLE_MN: Record<string, string> = { [ROLES.admin]: "Админ", [ROLES.dealer]: "Дилер", [ROLES.customer]: "Хэрэглэгч" };
+
+export function roleLabel(role: string | null | undefined) {
+  if (!role) return "";
+  return ROLE_MN[role] ?? role;
+}
 
 export const CAR_STATUS: Record<string, { label: string; className: string }> = {
   active: { label: "Идэвхтэй", className: "bg-success-soft text-success" },

@@ -7,7 +7,7 @@ import { DetailHeader } from "@/components/layout/PageHeader";
 import { changePassword, createRow, deleteRows, getUser, updateRow } from "@/lib/api/admin";
 import type { User } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { ROLE_LIST, ROLES } from "@/lib/constants";
+import { ROLE_LIST, roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
 import Link from "next/link";
@@ -88,7 +88,7 @@ function UserForm({ user }: { user: User | null }) {
             <Select value={f.role} onChange={set("role")} disabled={isMe}>
               {ROLE_LIST.map((r) => (
                 <option key={r} value={r}>
-                  {r}
+                  {roleLabel(r)}
                 </option>
               ))}
             </Select>

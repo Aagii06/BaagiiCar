@@ -6,6 +6,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import { changePassword } from "@/lib/api/admin";
 import { WEB_URL } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { roleLabel } from "@/lib/constants";
 import { initials, userName } from "@/lib/utils";
 import { ExternalLink, LogOut } from "lucide-react";
 import { useState } from "react";
@@ -42,7 +43,7 @@ export default function ProfilePage() {
         <div className="min-w-0">
           <p className="truncate font-bold">{userName(user)}</p>
           <p className="text-sm text-white/70">
-            {user?.phonenumber} · {user?.role}
+            {user?.phonenumber} · {roleLabel(user?.role)}
           </p>
         </div>
       </section>

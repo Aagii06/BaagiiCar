@@ -179,7 +179,7 @@ module.exports.otpSend = async (req, res) => {
   return res.status(200).json({ success: true, data: { sent: true }, message: "Код илгээлээ" });
 };
 
-// Кодоор нэвтрэх. Бүртгэлгүй дугаар бол "Хэрэглэгч" эрхтэй шинэ хэрэглэгч үүсгэнэ.
+// Кодоор нэвтрэх. Бүртгэлгүй дугаар бол CUSTOMER эрхтэй шинэ хэрэглэгч үүсгэнэ.
 module.exports.otpLogin = async (req, res) => {
   let result = { success: false, data: null, message: "" };
   const { phonenumber, code, at } = req.body;

@@ -66,7 +66,7 @@ module.exports.checkMomentIsBefore = async (req, res) => {
 
 module.exports.checkOrWhere = async (req, res) => {
   await users.findAll({
-    where: { [op.or]: { role: "Admin" }, status: "active" },
+    where: { [op.or]: { role: "ADMIN" }, status: "active" },
     attrributes: ["id"],
     logging: (q) => console.log(q),
   });

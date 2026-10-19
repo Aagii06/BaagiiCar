@@ -4,7 +4,7 @@ import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listUsers } from "@/lib/api/admin";
-import { ROLES } from "@/lib/constants";
+import { roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, initials, userName } from "@/lib/utils";
 import { Plus } from "lucide-react";
@@ -59,7 +59,7 @@ export default function UsersPage() {
                 <p className="truncate text-xs text-muted-foreground">{[u.phonenumber, u.email].filter(Boolean).join(" · ")}</p>
               </div>
               <div className="flex flex-col items-end gap-1">
-                <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", ROLE_TONE[u.role ?? ""] ?? "bg-muted")}>{u.role}</span>
+                <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", ROLE_TONE[u.role ?? ""] ?? "bg-muted")}>{roleLabel(u.role)}</span>
                 {u.status !== "active" && <span className="text-[10px] font-semibold text-destructive">Идэвхгүй</span>}
               </div>
             </Link>

@@ -4,6 +4,7 @@
 // ADMIN_PHONENUMBER=99999999 ADMIN_PASSWORD=... npm run seed
 require("dotenv").config({ path: __dirname + "/../.env" });
 const bcrypt = require("bcrypt");
+const { roles } = require("../config/constants");
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -29,7 +30,7 @@ module.exports = {
         phonenumber: ADMIN_PHONENUMBER,
         firstname: "Админ",
         password,
-        role: "Админ",
+        role: roles.admin,
         status: "active",
         created_at: "2026-10-15 00:00:00",
       },
@@ -37,6 +38,6 @@ module.exports = {
   },
 
   async down(queryInterface) {
-    await queryInterface.bulkDelete("users", { role: "Админ" }, {});
+    await queryInterface.bulkDelete("users", { role: roles.admin }, {});
   },
 };

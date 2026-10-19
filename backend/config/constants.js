@@ -1,9 +1,9 @@
 const constant = {
   // Хэрэглэгчийн эрх
   roles: {
-    admin: "Админ",
-    dealer: "Дилер",
-    customer: "Хэрэглэгч",
+    admin: "ADMIN",
+    dealer: "DEALER",
+    customer: "CUSTOMER",
   },
 
   // Машины зарын төлөв
