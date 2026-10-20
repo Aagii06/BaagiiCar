@@ -30,11 +30,11 @@ export default function BodyTypeTabs({
             aria-pressed={active}
             onClick={() => onSelect(active ? undefined : b.id)}
             className={cn(
-              "flex w-[88px] shrink-0 flex-col items-center gap-1.5 rounded-xl border-2 bg-card px-2 pb-2.5 pt-3 text-[13px] font-semibold transition-colors md:w-[100px]",
+              "flex w-[72px] shrink-0 flex-col items-center gap-1 rounded-xl border-2 bg-card px-1.5 pb-2 pt-2.5 text-xs font-semibold transition-colors md:w-[84px]",
               active ? "border-foreground" : "border-transparent hover:border-border"
             )}
           >
-            <CarArt shape={shapeFor(b.name)} className="w-11" strokeWidth={2.6} />
+            <CarArt shape={shapeFor(b.name)} className="w-9" strokeWidth={2.6} />
             {bodyTypeLabel(b.name, t)}
           </button>
         );

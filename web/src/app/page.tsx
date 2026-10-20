@@ -66,28 +66,29 @@ function BrandGrid() {
   return (
     <Container className="mt-20 md:mt-28">
       <SectionTitle kicker={t("Бүх үйлдвэр")} light={t("Машины")} bold={t("брэнд")} action={<ViewAll href="/cars" />} />
-      <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+      <div className="mt-8 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
         {brands.data.slice(0, 16).map((b, i) => {
           const logo = remoteImage(b.logo);
           return (
             <Link
               key={b.id}
               href={`/cars?brand=${b.id}`}
+              title={b.name}
+              aria-label={b.name}
               className={cn(
-                "group flex-col items-center gap-3 rounded-2xl bg-card px-3 pb-4 pt-5 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5",
-                // 3×3 on phones; the full 16 from sm up.
-                i < 9 ? "flex" : "hidden sm:flex"
+                "group flex-col items-center justify-center rounded-xl bg-card p-3 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5",
+                // 4×2 on phones, 6×2 on tablets, the full 16 from lg up.
+                i < 8 ? "flex" : i < 12 ? "hidden sm:flex" : "hidden lg:flex"
               )}
             >
-              <span className="grid size-14 place-items-center">
+              <span className="grid size-10 place-items-center">
                 {logo ? (
                   // eslint-disable-next-line @next/next/no-img-element -- seeded remote logos
-                  <img src={logo} alt="" loading="lazy" className="max-h-12 max-w-12 object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0" />
+                  <img src={logo} alt="" loading="lazy" className="max-h-8 max-w-8 object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0" />
                 ) : (
-                  <span className="font-display text-3xl font-bold text-foreground/70">{b.name[0]}</span>
+                  <span className="font-display text-2xl font-bold text-foreground/70">{b.name[0]}</span>
                 )}
               </span>
-              <span className="text-center text-[13px] font-semibold text-foreground/80">{b.name}</span>
             </Link>
           );
         })}
