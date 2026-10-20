@@ -24,5 +24,7 @@ export const CAR_STATUS: Record<string, { label: string; className: string }> = 
   pending: { label: "Хүлээгдэж буй", className: "bg-amber-soft text-amber-ink" },
   active: { label: "Идэвхтэй", className: "bg-success-soft text-success" },
   sold: { label: "Зарагдсан", className: "bg-dark text-white" },
+  // Temporarily taken off the web by an admin; "Ил гаргах" brings it back.
+  hidden: { label: "Нуусан", className: "bg-muted text-muted-foreground" },
   deleted: { label: "Устгасан", className: "bg-destructive-soft text-destructive" },
 };

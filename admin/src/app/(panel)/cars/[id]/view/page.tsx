@@ -133,7 +133,7 @@ function StatusBanner({ car, onApprove }: { car: Car; onApprove: () => void }) {
     <div className={cn("flex items-center gap-3 rounded-2xl p-3.5", car.status === "pending" ? "bg-amber-soft text-amber-ink" : "bg-card")}>
       <div className="min-w-0 flex-1">
         <span className={cn("inline-block rounded-full px-2 py-0.5 text-[10px] font-bold", st.className)}>{st.label}</span>
-        <p className="mt-1 text-xs font-medium">{onWeb ? "Вэб сайт дээр нийтлэгдсэн" : car.status === "pending" ? "Батлагдаагүй тул вэб дээр харагдахгүй" : "Вэб дээр харагдахгүй"}</p>
+        <p className="mt-1 text-xs font-medium">{onWeb ? "Вэб сайт дээр нийтлэгдсэн" : car.status === "pending" ? "Батлагдаагүй тул вэб дээр харагдахгүй" : car.status === "hidden" ? "Түр нуусан тул вэб дээр харагдахгүй" : "Вэб дээр харагдахгүй"}</p>
       </div>
       {car.status === "pending" && isAdmin && (
         <button onClick={onApprove} className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white">

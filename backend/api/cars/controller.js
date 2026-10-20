@@ -10,7 +10,7 @@ const {
 const { uploadFiles } = require("../../helper/fileHelper");
 const { notifyNewCar } = require("../../helper/notifyHelper");
 const { saveLog } = require("../../utils/logHelper");
-const { roles, carStatuses } = require("../../config/constants");
+const { roles, carStatuses, nonPublicCarStatuses } = require("../../config/constants");
 
 // Зөвхөн админ өөрчилж болох талбарууд
 const adminOnlyFields = ["user_id", "is_featured", "view_count", "status", "sold_at"];
@@ -183,6 +183,51 @@ module.exports.approve = async (req, res) => {
   }
 };
 
+// Зарыг түр нуух / буцааж ил гаргах (зөвхөн админ). body: { id, hidden: true|false }
+module.exports.setHidden = async (req, res) => {
+  let result = { success: false, data: null, message: "Амжилттай" };
+  const { id, hidden, by, at } = req.body;
+  if (req.loggedUser?.role !== roles.admin)
+    return res.status(200).json({ ...result, message: "Танд энэ үйлдлийг хийх эрх байхгүй" });
+
+  const [from, to] = hidden
+    ? [carStatuses.active, carStatuses.hidden]
+    : [carStatuses.hidden, carStatuses.active];
+  const t = await sequelize.transaction();
+  try {
+    const [affected] = await cars.update(
+      { status: to, updated_by: by, updated_at: at },
+      { where: { id, status: from }, transaction: t },
+    );
+    if (!affected) {
+      await t.rollback();
+      return res.status(200).json({
+        ...result,
+        message: hidden ? "Зөвхөн идэвхтэй зарыг нуух боломжтой" : "Нуусан зар олдсонгүй",
+      });
+    }
+    await saveLog(
+      {
+        object_name: "cars",
+        object_id: id,
+        log_action: hidden ? "hidden" : "unhidden",
+        modify_data: JSON.stringify({ status: to }),
+        created_by: by,
+        created_at: at,
+      },
+      t,
+    );
+    await t.commit();
+    result.success = true;
+    return res.status(200).json(result);
+  } catch (error) {
+    await t.rollback();
+    console.log(error);
+    result.message = "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
 // Зарагдсан гэж тэмдэглэх
 module.exports.markSold = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
@@ -225,7 +270,7 @@ module.exports.toggleFavorite = async (req, res) => {
   const user_id = req.loggedUser.id;
   try {
     const car = await cars.findOne({
-      where: { id: car_id, status: { [op.notIn]: [carStatuses.deleted, carStatuses.pending] } },
+      where: { id: car_id, status: { [op.notIn]: nonPublicCarStatuses } },
       attributes: ["id"],
       raw: true,
     });
@@ -253,7 +298,7 @@ module.exports.getFavorites = async (req, res) => {
   try {
     const rows = await vwCars.findAll({
       where: {
-        status: { [op.notIn]: [carStatuses.deleted, carStatuses.pending] },
+        status: { [op.notIn]: nonPublicCarStatuses },
         id: {
           [op.in]: sequelize.literal(
             `(SELECT car_id FROM favorites WHERE user_id = ${Number(req.loggedUser.id)})`,

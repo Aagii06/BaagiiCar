@@ -7,13 +7,13 @@ import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
-import { approveCar, deleteCar, listCars, markSold, setFeatured, type CarFilter } from "@/lib/api/admin";
+import { approveCar, deleteCar, listCars, markSold, setFeatured, setHidden, type CarFilter } from "@/lib/api/admin";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPrice } from "@/lib/utils";
-import { BadgeCheck, Check, Plus, Search, Star, Trash2 } from "lucide-react";
+import { BadgeCheck, Check, Eye, EyeOff, Plus, Search, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -25,6 +25,7 @@ const TABS: { value: Tab; label: string }[] = [
   { value: "pending", label: "Хүлээгдэж буй" },
   { value: "active", label: "Идэвхтэй" },
   { value: "featured", label: "Онцлох" },
+  { value: "hidden", label: "Нуусан" },
   { value: "sold", label: "Зарагдсан" },
   { value: "deleted", label: "Устгасан" },
 ];
@@ -80,7 +81,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
         </div>
       </Link>
       {car.status !== "deleted" && (
-        <div className="mt-3 flex gap-2 border-t border-border pt-3">
+        <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
           {car.status === "pending" && isAdmin && (
             <button onClick={() => run(() => approveCar(car.id), "Баталлаа, вэб дээр нийтлэгдлээ")} className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white">
               <Check className="size-3.5" strokeWidth={3} />
@@ -107,6 +108,40 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
           {car.status === "active" && (
             <button onClick={() => run(() => markSold(car.id), "Зарагдсан гэж тэмдэглэлээ", { title: "Зарагдсан гэж тэмдэглэх үү?", message: "Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана.", confirmLabel: "Тэмдэглэх", icon: BadgeCheck })} className="rounded-lg bg-muted px-3 py-1.5 text-xs font-bold">
               Зарагдсан
+            </button>
+          )}
+          {car.status === "active" && (
+            <button
+              onClick={() =>
+                run(() => setHidden(car.id, true), "Нууллаа, вэб дээр харагдахгүй", {
+                  title: "Зарыг түр нуух уу?",
+                  message: "Вэб дээр харагдахаа болино. Дараа нь «Ил гаргах»-аар буцааж нийтэлж болно.",
+                  confirmLabel: "Нуух",
+                  tone: "amber",
+                  icon: EyeOff,
+                })
+              }
+              className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5 text-xs font-bold"
+            >
+              <EyeOff className="size-3.5" />
+              Нуух
+            </button>
+          )}
+          {car.status === "hidden" && (
+            <button
+              onClick={() =>
+                run(() => setHidden(car.id, false), "Ил гаргалаа, вэб дээр харагдана", {
+                  title: "Зарыг ил гаргах уу?",
+                  message: "Вэб дээр дахин харагдана.",
+                  confirmLabel: "Ил гаргах",
+                  tone: "success",
+                  icon: Eye,
+                })
+              }
+              className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white"
+            >
+              <Eye className="size-3.5" />
+              Ил гаргах
             </button>
           )}
           <button onClick={() => run(() => deleteCar(car.id), "Устгалаа", { title: "Зарыг устгах уу?", message: "Устгасан зар вэб дээр харагдахгүй болно.", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">

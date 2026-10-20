@@ -1,8 +1,8 @@
 const { vwCars, cars, op } = require("../../../../models");
-const { carStatuses } = require("../../../../config/constants");
+const { nonPublicCarStatuses } = require("../../../../config/constants");
 
-// Олон нийтэд устгагдсан болон батлагдаагүй зар харагдахгүй
-const hidden = [carStatuses.deleted, carStatuses.pending];
+// Олон нийтэд устгагдсан, батлагдаагүй, нуусан зар харагдахгүй
+const hidden = nonPublicCarStatuses;
 
 // Арлын дугаар (VIN) баазад хадгалагдах ч олон нийтэд буцаагдахгүй.
 // ?select=[...]-аар хүссэн ч зөвхөн нийтийн талбарууд гарна.
