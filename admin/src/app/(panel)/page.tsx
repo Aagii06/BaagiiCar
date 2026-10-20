@@ -7,7 +7,7 @@ import { countOf, recentCars } from "@/lib/api/admin";
 import { CAR_STATUS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPriceShort } from "@/lib/utils";
-import { ChevronRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 async function loadStats() {
@@ -28,10 +28,19 @@ export default function DashboardPage() {
   const recent = useApi(() => recentCars(6));
   const s = stats.data;
 
-  const tiles = s && [
-    { label: "Идэвхтэй зар", value: s.active, href: "/cars?status=active", className: "bg-primary text-white" },
+  // Ads by status (pending first: it's the one that needs action), then the catalog.
+  const carTiles = s && [
+    {
+      label: "Хүлээгдэж буй",
+      value: s.pending,
+      href: "/cars?status=pending",
+      className: s.pending > 0 ? "bg-amber-soft text-amber-ink ring-2 ring-amber" : "bg-white",
+    },
+    { label: "Идэвхтэй", value: s.active, href: "/cars?status=active", className: "bg-primary text-white" },
     { label: "Онцлох", value: s.featured, href: "/cars?status=featured", className: "bg-amber" },
     { label: "Зарагдсан", value: s.sold, href: "/cars?status=sold", className: "bg-dark text-white" },
+  ];
+  const tiles = s && [
     { label: "Хэрэглэгч", value: s.users, href: "/users", className: "bg-white" },
     { label: "Үйлдвэр", value: s.brands, href: "/catalog", className: "bg-white" },
     { label: "Загвар", value: s.models, href: "/catalog?tab=models", className: "bg-white" },
@@ -48,25 +57,28 @@ export default function DashboardPage() {
           </Link>
         }
       />
-      {s && s.pending > 0 && (
-        <Link href="/cars?status=pending" className="mb-3 flex items-center gap-3 rounded-2xl bg-amber-soft p-3.5 text-amber-ink">
-          <span className="font-display text-2xl font-bold">{s.pending}</span>
-          <span className="text-sm font-semibold">зар батлахыг хүлээж байна</span>
-          <ChevronRight className="ml-auto size-4" />
-        </Link>
-      )}
       {stats.loading && !s ? (
         <LoadingState />
       ) : stats.error ? (
         <ErrorState message={stats.error.message} onRetry={stats.reload} />
       ) : (
-        <div className="grid grid-cols-3 gap-2">
-          {tiles!.map((t) => (
-            <Link key={t.label} href={t.href} className={cn("rounded-2xl p-3.5", t.className)}>
-              <p className="font-display text-2xl font-bold">{t.value}</p>
-              <p className="mt-1 text-xs font-semibold opacity-80">{t.label}</p>
-            </Link>
-          ))}
+        <div className="space-y-2">
+          <div className="grid grid-cols-4 gap-2">
+            {carTiles!.map((t) => (
+              <Link key={t.label} href={t.href} className={cn("rounded-2xl px-2.5 py-3", t.className)}>
+                <p className="font-display text-2xl font-bold">{t.value}</p>
+                <p className="mt-1 text-[11px] font-semibold leading-tight opacity-80">{t.label}</p>
+              </Link>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {tiles!.map((t) => (
+              <Link key={t.label} href={t.href} className={cn("rounded-2xl p-3.5", t.className)}>
+                <p className="font-display text-2xl font-bold">{t.value}</p>
+                <p className="mt-1 text-xs font-semibold opacity-80">{t.label}</p>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 
