@@ -9,6 +9,7 @@ import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
+import type { Brand, CarModel } from "@/lib/api/types";
 import { FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
@@ -145,10 +146,22 @@ function SelectSpinner() {
   return <Spinner className="pointer-events-none absolute right-3 top-1/2 size-5 -translate-y-1/2 rounded-full bg-muted" />;
 }
 
-function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void }) {
+type Loaded<T> = { data: T | undefined; loading: boolean };
+
+// Brands and models come from the page: `Filters` remounts on every filter
+// change, and fetching here would reload them each time.
+function Filters({
+  p,
+  set,
+  brands,
+  models,
+}: {
+  p: Params;
+  set: (patch: Partial<Params>) => void;
+  brands: Loaded<Brand[]>;
+  models: Loaded<CarModel[]>;
+}) {
   const { t, tv } = useI18n();
-  const brands = useApi(getBrands);
-  const models = useApi(() => (p.brand ? getModels(p.brand) : Promise.resolve([])), String(p.brand ?? ""));
   // Brand picked but the URL (and so `p.brand`) has not caught up yet.
   const [pending, setPending] = useState<{ brand?: number } | null>(null);
   const brandPending = pending !== null && pending.brand !== p.brand;
@@ -322,6 +335,7 @@ function CarsPageInner() {
   };
 
   const brands = useApi(getBrands);
+  const models = useApi(() => (p.brand ? getModels(p.brand) : Promise.resolve([])), String(p.brand ?? ""));
   const bodyTypes = useApi(getBodyTypes);
   const key = writeParams(p);
   const result = useApi(
@@ -377,7 +391,7 @@ function CarsPageInner() {
             {t("Шүүлтүүр")}
           </button>
           <div className={cn("mt-3 lg:mt-0 lg:block", showFilters ? "block" : "hidden")}>
-            <Filters key={key} p={p} set={set} />
+            <Filters key={key} p={p} set={set} brands={brands} models={models} />
           </div>
         </aside>
 
