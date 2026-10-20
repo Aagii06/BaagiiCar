@@ -7,6 +7,7 @@ import Container, { SectionTitle, ViewAll } from "@/components/common/Container"
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import HeroCarousel from "@/components/home/HeroCarousel";
 import HeroSearch from "@/components/home/HeroSearch";
+import Img from "@/components/common/Img";
 import { featuredCars, getBodyTypes, getBrands, searchCars } from "@/lib/api/cars";
 import { catalogImage } from "@/lib/api/config";
 import type { BodyType } from "@/lib/api/types";
@@ -83,8 +84,12 @@ function BrandGrid() {
             >
               <span className="grid size-10 place-items-center">
                 {logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- seeded remote logos
-                  <img src={logo} alt="" loading="lazy" className="max-h-8 max-w-8 object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0" />
+                  <Img
+                    src={logo}
+                    loading="lazy"
+                    placeholderClassName="size-8 rounded-md"
+                    className="max-h-8 max-w-8 object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
+                  />
                 ) : (
                   <span className="font-display text-2xl font-bold text-foreground/70">{b.name[0]}</span>
                 )}

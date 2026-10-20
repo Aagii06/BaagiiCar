@@ -8,6 +8,7 @@ import LeasingCalculator from "@/components/car/LeasingCalculator";
 import Container from "@/components/common/Container";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import Img from "@/components/common/Img";
 import { getCar, getCarFiles, searchCars } from "@/lib/api/cars";
 import { uploadUrl } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
@@ -54,8 +55,7 @@ function Gallery({ car }: { car: Car }) {
           >
             {photos.map((name, i) => (
               <button key={name} type="button" onClick={() => setViewing(i)} aria-label={t("Зураг томоор харах")} className="aspect-[4/3] w-full shrink-0 snap-center">
-                {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-                <img src={uploadUrl(name, "grid")!} alt={i ? "" : alt} loading={i ? "lazy" : undefined} className="size-full object-cover" />
+                <Img src={uploadUrl(name, "grid")!} alt={i ? "" : alt} loading={i ? "lazy" : undefined} className="size-full object-cover" />
               </button>
             ))}
           </div>
@@ -73,8 +73,7 @@ function Gallery({ car }: { car: Car }) {
       {/* Desktop: smaller main photo with a thumbnail column beside it. */}
       <div className="hidden h-[420px] gap-2 md:flex">
         <button type="button" onClick={() => setViewing(index)} aria-label={t("Зураг томоор харах")} className="relative min-w-0 flex-1 overflow-hidden rounded-2xl bg-card">
-          {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-          <img src={uploadUrl(photos[index], "full")!} alt={alt} className="size-full object-cover" />
+          <Img src={uploadUrl(photos[index], "full")!} alt={alt} className="size-full object-cover" />
           {counter}
         </button>
         {total > 1 && (
@@ -87,8 +86,7 @@ function Gallery({ car }: { car: Car }) {
                 aria-label={t("Зураг {n}", { n: i + 1 })}
                 className={cn("aspect-[4/3] w-full shrink-0 overflow-hidden rounded-lg border-2", i === index ? "border-foreground" : "border-transparent opacity-80 hover:opacity-100")}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-                <img src={uploadUrl(name, "thumb")!} alt="" className="size-full object-cover" />
+                <Img src={uploadUrl(name, "thumb")!} className="size-full object-cover" />
               </button>
             ))}
           </div>

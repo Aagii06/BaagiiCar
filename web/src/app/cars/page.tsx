@@ -8,6 +8,7 @@ import Container from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
+import Img from "@/components/common/Img";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
 import { catalogImage } from "@/lib/api/config";
 import type { BodyType, Brand, CarModel } from "@/lib/api/types";
@@ -261,8 +262,7 @@ function Filters({
                     </span>
                   )}
                   {image ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- catalog images from the backend
-                    <img src={image} alt="" loading="lazy" className="h-8 w-full object-contain" />
+                    <Img src={image} loading="lazy" className="h-8 w-full rounded-md object-contain" />
                   ) : (
                     <CarArt shape={shapeFor(b.name)} className="h-8 w-auto" strokeWidth={2.6} />
                   )}

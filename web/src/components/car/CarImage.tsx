@@ -1,5 +1,6 @@
 "use client";
 
+import Img from "@/components/common/Img";
 import { uploadUrl, type ImageSize } from "@/lib/api/config";
 import { cn, tintFor } from "@/lib/utils";
 import { useState } from "react";
@@ -33,8 +34,7 @@ export default function CarImage({
   return (
     <div className={cn("relative grid place-items-center overflow-hidden rounded-xl", tintFor(id), className)}>
       {showPhoto ? (
-        // eslint-disable-next-line @next/next/no-img-element -- backend-served uploads, any host
-        <img src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} className="absolute inset-0 size-full object-cover" />
+        <Img src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} className="absolute inset-0 size-full object-cover" />
       ) : (
         <CarArt shape={shapeFor(bodyType)} className={cn("w-[62%]", artClassName)} />
       )}

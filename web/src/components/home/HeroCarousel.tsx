@@ -1,6 +1,7 @@
 "use client";
 
 import Container from "@/components/common/Container";
+import Img from "@/components/common/Img";
 import type { BodyType } from "@/lib/api/types";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -110,8 +111,7 @@ export default function HeroCarousel({ bodyTypes, className }: { bodyTypes: Body
     >
       {SLIDES.map((s, i) => (
         <div key={s.image} aria-hidden={i !== index} className={cn("absolute inset-0 transition-opacity duration-700", i === index ? "opacity-100" : "opacity-0")}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- static responsive photo */}
-          <img
+          <Img
             src={`/hero/${s.image}.webp`}
             srcSet={`/hero/${s.image}-sm.webp 900w, /hero/${s.image}.webp 1920w`}
             sizes="100vw"

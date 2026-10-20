@@ -1,5 +1,6 @@
 "use client";
 
+import Img from "@/components/common/Img";
 import { catalogImage } from "@/lib/api/config";
 import type { BodyType } from "@/lib/api/types";
 import { bodyTypeLabel } from "@/lib/constants";
@@ -40,8 +41,7 @@ export default function BodyTypeTabs({
             )}
           >
             {image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={image} alt="" className="h-7 w-11 object-contain" loading="lazy" />
+              <Img src={image} className="h-7 w-11 rounded-md object-contain" loading="lazy" />
             ) : (
               <CarArt shape={shapeFor(b.name)} className="w-9" strokeWidth={2.6} />
             )}

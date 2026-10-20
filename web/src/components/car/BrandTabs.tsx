@@ -1,5 +1,6 @@
 "use client";
 
+import Img from "@/components/common/Img";
 import { catalogImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
 import { useWheelScrollX } from "@/lib/useWheelScrollX";
@@ -40,11 +41,10 @@ export default function BrandTabs({
             {/* Square tile, logo only (name is in the label / tooltip). Flex, not grid: a grid's
                 auto row grows to the image's natural height, so h-full would not contain it. */}
             {logo ? (
-              // eslint-disable-next-line @next/next/no-img-element -- seeded remote logos
-              <img
+              <Img
                 src={logo}
-                alt=""
                 loading="lazy"
+                skeletonClassName="bg-foreground/10 rounded-md"
                 className={cn("h-full w-full object-contain transition", active ? "" : "opacity-80 grayscale group-hover:opacity-100 group-hover:grayscale-0")}
               />
             ) : (
