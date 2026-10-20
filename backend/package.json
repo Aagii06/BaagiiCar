@@ -11,6 +11,8 @@
     "generate-model": "node ./command/generate-model.js",
     "sync-db": "node ./command/sync-db.js",
     "seed": "npx sequelize-cli db:seed:all",
+    "seed:sample": "npx sequelize-cli db:seed --seeders-path dev/seeders --seed 20261020000001-seed-sample-cars.js",
+    "seed:sample:undo": "npx sequelize-cli db:seed:undo --seeders-path dev/seeders --seed 20261020000001-seed-sample-cars.js",
     "migrate:undo": "npx sequelize-cli db:migrate:undo",
     "migrate": "npx sequelize-cli db:migrate"
   },

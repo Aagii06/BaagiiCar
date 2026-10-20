@@ -34,9 +34,9 @@ const BODY: Record<Shape, { outline: string; window: string }> = {
 
 export function shapeFor(bodyType: string | null | undefined): Shape {
   const n = (bodyType ?? "").toLowerCase();
-  if (/suv|van|wagon|bus|жийп|микро|ван|вэн|кроссовер|универсал|автобус|кемпер/.test(n)) return "suv";
+  if (/suv|van|wagon|bus|жийп|гэр бүл|микро|ван|вэн|кроссовер|универсал|автобус|кемпер/.test(n)) return "suv";
   if (/hatch|хэтч|лифт/.test(n)) return "hatch";
-  if (/pickup|пикап/.test(n)) return "pickup";
+  if (/pickup|пикап|ачаа/.test(n)) return "pickup";
   if (/coupe|convertible|купе|кабри|родстер|тарга|спорт|супер|масл/.test(n)) return "coupe";
   return "sedan";
 }

@@ -41,27 +41,10 @@ const carModels = {
 
 // Зураг: public/uploads/bodyTypes/*.png — баазад зөвхөн файлын нэр хадгална
 const bodyTypes = [
-  ["Микро", "01-micro.png"],
-  ["Седан", "02-sedan.png"],
-  ["Хэтчбэк", "03-hatchback.png"],
-  ["Универсал", "04-universal.png"],
-  ["Лифтбэк", "05-liftback.png"],
-  ["Купе", "06-coupe.png"],
-  ["Кабриолет", "07-cabriolet.png"],
-  ["Родстер", "08-roadster.png"],
-  ["Тарга", "09-targa.png"],
-  ["Лимузин", "10-limousine.png"],
-  ["Масл кар", "11-muscle-car.png"],
-  ["Спорт", "12-sports-car.png"],
-  ["Супер кар", "13-super-car.png"],
   ["Жийп", "14-suv.png"],
-  ["Кроссовер", "15-crossover.png"],
-  ["Пикап", "16-pickup.png"],
-  ["Ван", "17-van.png"],
-  ["Минивэн", "18-minivan.png"],
-  ["Микроавтобус", "19-minibus.png"],
-  ["Кемпер", "20-campervan.png"],
-  ["Автобус", "21-bus.png"],
+  ["Суудлын тэрэг", "02-sedan.png"],
+  ["Гэр бүлийн", "18-minivan.png"],
+  ["Ачааны машин", "16-pickup.png"],
 ];
 
 // Дахин ажиллуулахад давхардахгүй: зөвхөн байхгүй нэрийг нэмнэ

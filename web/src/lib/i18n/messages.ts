@@ -60,6 +60,9 @@ export const MESSAGES = {
 
   // --- car values (stored in Mongolian / English by the backend) -------------
   "Жийп": { ru: "Внедорожник", en: "SUV" },
+  "Суудлын тэрэг": { ru: "Легковой", en: "Passenger car" },
+  "Гэр бүлийн": { ru: "Семейный", en: "Family" },
+  "Ачааны машин": { ru: "Грузовой", en: "Truck" },
   "Седан": { ru: "Седан", en: "Sedan" },
   "Хэтчбэк": { ru: "Хэтчбек", en: "Hatchback" },
   "Купе": { ru: "Купе", en: "Coupe" },
