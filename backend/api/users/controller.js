@@ -339,7 +339,8 @@ module.exports.changePassword = async (req, res) => {
         }
 
         let isPasswordMatch = true;
-        if (!isAdmin) {
+        // Өөрийн нууц үгийг солиход админ ч гэсэн хуучин нууц үгээ оруулна
+        if (!isAdmin || id + "" === loggedUser?.id + "") {
           if (old_password) {
             isPasswordMatch = await bcrypt.compare(old_password, user.password);
             if (!isPasswordMatch) {
