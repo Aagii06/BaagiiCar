@@ -31,25 +31,23 @@ export default function BrandTabs({
             title={b.name}
             onClick={() => onSelect(active ? undefined : b.id)}
             className={cn(
-              "group grid h-12 w-[72px] shrink-0 place-items-center overflow-hidden rounded-xl border-2 bg-card px-2 transition-colors md:w-20",
+              "group flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 bg-card p-2 transition-colors md:size-[72px]",
               active ? "border-foreground" : "border-transparent hover:border-border"
             )}
           >
-            {/* Logo only — the name is in the label / tooltip. Fixed box + object-contain:
-                a tall logo narrows, a wide one gets shorter, neither spills out. */}
-            <span className="grid h-7 w-12 place-items-center">
-              {logo ? (
-                // eslint-disable-next-line @next/next/no-img-element -- seeded remote logos
-                <img
-                  src={logo}
-                  alt=""
-                  loading="lazy"
-                  className={cn("size-full object-contain transition", active ? "" : "opacity-80 grayscale group-hover:opacity-100 group-hover:grayscale-0")}
-                />
-              ) : (
-                <span className="font-display text-base font-bold leading-none text-foreground/70">{b.name[0]}</span>
-              )}
-            </span>
+            {/* Square tile, logo only (name is in the label / tooltip). Flex, not grid: a grid's
+                auto row grows to the image's natural height, so h-full would not contain it. */}
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- seeded remote logos
+              <img
+                src={logo}
+                alt=""
+                loading="lazy"
+                className={cn("h-full w-full object-contain transition", active ? "" : "opacity-80 grayscale group-hover:opacity-100 group-hover:grayscale-0")}
+              />
+            ) : (
+              <span className="font-display text-base font-bold leading-none text-foreground/70">{b.name[0]}</span>
+            )}
           </button>
         );
       })}
