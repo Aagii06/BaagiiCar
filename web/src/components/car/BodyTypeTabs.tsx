@@ -4,6 +4,7 @@ import { catalogImage } from "@/lib/api/config";
 import type { BodyType } from "@/lib/api/types";
 import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useWheelScrollX } from "@/lib/useWheelScrollX";
 import { cn } from "@/lib/utils";
 import CarArt, { shapeFor } from "./CarArt";
 
@@ -27,8 +28,10 @@ export default function BodyTypeTabs({
   className?: string;
 }) {
   const { t } = useI18n();
+  const rowRef = useWheelScrollX<HTMLDivElement>();
   return (
-    <div className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0", className)}>
+    // One scrolling row at every width, like the brands above it.
+    <div ref={rowRef} className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0", className)}>
       {items.map((b) => {
         const active = selectedIds ? selectedIds.includes(b.id) : b.id === selectedId;
         const image = catalogImage(b.image, "bodyTypes");

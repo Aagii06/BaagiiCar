@@ -2,6 +2,7 @@
 
 import { catalogImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
+import { useWheelScrollX } from "@/lib/useWheelScrollX";
 import { cn } from "@/lib/utils";
 
 /** Row of brand tiles above the body types; one at a time, tap again to clear. */
@@ -16,9 +17,10 @@ export default function BrandTabs({
   onSelect: (id: number | undefined) => void;
   className?: string;
 }) {
+  const rowRef = useWheelScrollX<HTMLDivElement>();
   return (
     // One scrolling row at every width — there are too many brands to wrap.
-    <div className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0", className)}>
+    <div ref={rowRef} className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0", className)}>
       {items.map((b) => {
         const active = b.id === selectedId;
         const logo = catalogImage(b.logo, "brands");
