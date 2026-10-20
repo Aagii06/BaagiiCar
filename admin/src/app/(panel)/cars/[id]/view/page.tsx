@@ -52,7 +52,7 @@ export default function CarViewPage() {
     <>
       <DetailHeader
         title={car ? `#${car.id} ${car.name ?? ""}` : "Зар"}
-        back="/cars"
+        back={`/cars/${id}`}
         aside={
           car && car.status !== "deleted" ? (
             <Link href={`/cars/${car.id}`} aria-label="Засах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
