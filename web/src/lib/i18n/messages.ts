@@ -20,6 +20,8 @@ export const MESSAGES = {
   "Чат": { ru: "Чат", en: "Chat" },
   "Хадгалсан": { ru: "Избранное", en: "Saved" },
   "Улаанбаатар": { ru: "Улан-Батор", en: "Ulaanbaatar" },
+  "Бүх байршил": { ru: "Все регионы", en: "All locations" },
+  "Байршил": { ru: "Регион", en: "Location" },
   "Хайх": { ru: "Поиск", en: "Search" },
   "Буцах": { ru: "Назад", en: "Back" },
   "Үндсэн цэс": { ru: "Главное меню", en: "Main menu" },

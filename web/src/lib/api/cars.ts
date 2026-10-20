@@ -1,6 +1,6 @@
 import type { MessageKey } from "../i18n/messages";
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
-import type { BodyType, Brand, Car, CarFile, CarModel } from "./types";
+import type { BodyType, Brand, Car, CarFile, CarModel, Location } from "./types";
 
 const NEWEST = [{ selector: "created_at", desc: true }];
 
@@ -9,6 +9,7 @@ export interface CarSearch {
   modelId?: number;
   bodyTypeId?: number;
   bodyTypeIds?: number[];
+  locationId?: number;
   yearFrom?: number;
   yearTo?: number;
   importedFrom?: number;
@@ -29,6 +30,7 @@ export function searchConditions(s: CarSearch): Condition[] {
   if (s.modelId) c.push(["car_model_id", "=", s.modelId]);
   if (s.bodyTypeId) c.push(["body_type_id", "=", s.bodyTypeId]);
   if (s.bodyTypeIds?.length) c.push(["body_type_id", "in", s.bodyTypeIds]);
+  if (s.locationId) c.push(["location_id", "=", s.locationId]);
   if (s.yearFrom) c.push(["manufactured_year", ">=", s.yearFrom]);
   if (s.yearTo) c.push(["manufactured_year", "<=", s.yearTo]);
   if (s.importedFrom) c.push(["imported_year", ">=", s.importedFrom]);
@@ -107,6 +109,12 @@ export async function getModels(brandId?: number) {
   const q = brandId ? listQuery({ filter: [["brand_id", "=", brandId]] }) : "";
   const res = await apiFetch<ApiListResponse<CarModel>>(`/web/base/carModels${q}`);
   return [...res.data.rows].sort(byModelName);
+}
+
+/** Улаанбаатар first, then the aimags. */
+export async function getLocations() {
+  const res = await apiFetch<ApiListResponse<Location>>("/web/base/locations");
+  return [...res.data.rows].sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
 }
 
 export async function getBodyTypes() {

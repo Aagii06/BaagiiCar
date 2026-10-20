@@ -54,6 +54,12 @@ export interface CarModel {
   name: string;
 }
 
+export interface Location {
+  id: number;
+  name: string;
+  sort_order: number | null;
+}
+
 export interface BodyType {
   id: number;
   name: string;

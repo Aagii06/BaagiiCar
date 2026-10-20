@@ -4,10 +4,12 @@ import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Heart, MapPin } from "lucide-react";
+import { Heart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import LanguageSwitcher from "./LanguageSwitcher";
+import LocationPicker from "./LocationPicker";
 import Logo from "./Logo";
 
 export const NAV: { href: string; label: MessageKey }[] = [
@@ -31,10 +33,10 @@ export default function Header() {
           <Logo />
         </Link>
 
-        <span className="hidden items-center gap-1.5 text-sm font-medium text-foreground/80 xl:flex">
-          <MapPin className="size-4" />
-          {t("Улаанбаатар")}
-        </span>
+        {/* Reads the URL, so it needs its own Suspense boundary on static pages. */}
+        <Suspense fallback={null}>
+          <LocationPicker />
+        </Suspense>
 
         <nav className="hidden h-full items-stretch gap-5 whitespace-nowrap md:flex lg:gap-7">
           {NAV.map((item) => {

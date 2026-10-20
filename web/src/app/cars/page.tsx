@@ -26,6 +26,7 @@ type Params = {
   brand?: number;
   model?: number;
   body: number[];
+  location?: number;
   yearFrom?: number;
   yearTo?: number;
   importFrom?: number;
@@ -48,6 +49,7 @@ function readParams(sp: URLSearchParams): Params {
     brand: num(list(sp.get("brand"))[0] ?? null),
     model: num(sp.get("model")),
     body: list(sp.get("body")).map(Number).filter((n) => Number.isInteger(n) && n > 0),
+    location: num(sp.get("location")),
     yearFrom: num(sp.get("yearFrom")),
     yearTo: num(sp.get("yearTo")),
     importFrom: num(sp.get("importFrom")),
@@ -66,6 +68,7 @@ function writeParams(p: Params) {
   if (p.brand) q.set("brand", String(p.brand));
   if (p.model) q.set("model", String(p.model));
   if (p.body.length) q.set("body", p.body.join(","));
+  if (p.location) q.set("location", String(p.location));
   if (p.yearFrom) q.set("yearFrom", String(p.yearFrom));
   if (p.yearTo) q.set("yearTo", String(p.yearTo));
   if (p.importFrom) q.set("importFrom", String(p.importFrom));
@@ -405,6 +408,7 @@ function CarsPageInner() {
         brandIds: p.brand ? [p.brand] : undefined,
         modelId: p.model,
         bodyTypeIds: p.body,
+        locationId: p.location,
         yearFrom: p.yearFrom,
         yearTo: p.yearTo,
         importedFrom: p.importFrom,
