@@ -2,6 +2,7 @@
 
 import BodyTypeTabs from "@/components/car/BodyTypeTabs";
 import BrandTabs from "@/components/car/BrandTabs";
+import CarArt, { shapeFor } from "@/components/car/CarArt";
 import CarCard from "@/components/car/CarCard";
 import CarWideCard from "@/components/car/CarWideCard";
 import Container, { PageTitle } from "@/components/common/Container";
@@ -9,12 +10,12 @@ import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
-import type { Brand, CarModel } from "@/lib/api/types";
-import { FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
+import type { BodyType, Brand, CarModel } from "@/lib/api/types";
+import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { Check, SlidersHorizontal } from "lucide-react";
+import { Check, SlidersHorizontal, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 
@@ -23,7 +24,7 @@ const MLN = 1_000_000;
 type Params = {
   brand?: number;
   model?: number;
-  body?: number;
+  body: number[];
   yearFrom?: number;
   yearTo?: number;
   importFrom?: number;
@@ -45,7 +46,7 @@ function readParams(sp: URLSearchParams): Params {
     // Older links may carry several brands; only one is used now.
     brand: num(list(sp.get("brand"))[0] ?? null),
     model: num(sp.get("model")),
-    body: num(sp.get("body")),
+    body: list(sp.get("body")).map(Number).filter((n) => Number.isInteger(n) && n > 0),
     yearFrom: num(sp.get("yearFrom")),
     yearTo: num(sp.get("yearTo")),
     importFrom: num(sp.get("importFrom")),
@@ -63,7 +64,7 @@ function writeParams(p: Params) {
   const q = new URLSearchParams();
   if (p.brand) q.set("brand", String(p.brand));
   if (p.model) q.set("model", String(p.model));
-  if (p.body) q.set("body", String(p.body));
+  if (p.body.length) q.set("body", p.body.join(","));
   if (p.yearFrom) q.set("yearFrom", String(p.yearFrom));
   if (p.yearTo) q.set("yearTo", String(p.yearTo));
   if (p.importFrom) q.set("importFrom", String(p.importFrom));
@@ -155,11 +156,13 @@ function Filters({
   set,
   brands,
   models,
+  bodyTypes,
 }: {
   p: Params;
   set: (patch: Partial<Params>) => void;
   brands: Loaded<Brand[]>;
   models: Loaded<CarModel[]>;
+  bodyTypes: BodyType[];
 }) {
   const { t, tv } = useI18n();
   // Brand picked but the URL (and so `p.brand`) has not caught up yet.
@@ -169,7 +172,7 @@ function Filters({
   const brandsLoading = brandPending || !brands.data;
   const modelsLoading = (brandPending && !!pending.brand) || (!!p.brand && models.loading);
   const hasFilters =
-    p.brand || p.model || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
+    p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
 
   return (
     <section className="space-y-4 rounded-2xl bg-card p-5">
@@ -182,6 +185,7 @@ function Filters({
               set({
                 brand: undefined,
                 model: undefined,
+                body: [],
                 yearFrom: undefined,
                 yearTo: undefined,
                 importFrom: undefined,
@@ -241,6 +245,49 @@ function Filters({
             {modelsLoading && <SelectSpinner />}
           </div>
         </div>
+      </Group>
+
+      <Group title={t("Төрөл")}>
+        <Select
+          value=""
+          onChange={(e) => {
+            const id = num(e.target.value);
+            if (id) set({ body: [...p.body, id] });
+          }}
+          disabled={!bodyTypes.length || p.body.length === bodyTypes.length}
+          aria-label={t("Төрөл")}
+        >
+          <option value="">{bodyTypes.length ? t("Төрөл сонгох") : t("Ачаалж байна...")}</option>
+          {bodyTypes
+            .filter((b) => !p.body.includes(b.id))
+            .map((b) => (
+              <option key={b.id} value={b.id}>
+                {bodyTypeLabel(b.name, t)}
+              </option>
+            ))}
+        </Select>
+        {p.body.length > 0 && (
+          <ul className="mt-2.5 space-y-2">
+            {p.body.map((id) => {
+              const b = bodyTypes.find((x) => x.id === id);
+              if (!b) return null;
+              return (
+                <li key={id} className="flex items-center gap-3 rounded-xl bg-muted py-2 pl-3 pr-2">
+                  <CarArt shape={shapeFor(b.name)} className="w-12 shrink-0" strokeWidth={2.6} />
+                  <span className="flex-1 truncate text-sm font-semibold">{bodyTypeLabel(b.name, t)}</span>
+                  <button
+                    type="button"
+                    onClick={() => set({ body: p.body.filter((x) => x !== id) })}
+                    className="grid size-7 place-items-center rounded-lg text-muted-foreground hover:bg-white hover:text-foreground"
+                    aria-label={`${t("Хасах")}: ${bodyTypeLabel(b.name, t)}`}
+                  >
+                    <X className="size-4" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </Group>
 
       <Group title={t("Үнэ (сая ₮)")}>
@@ -343,7 +390,7 @@ function CarsPageInner() {
       searchCars({
         brandIds: p.brand ? [p.brand] : undefined,
         modelId: p.model,
-        bodyTypeId: p.body,
+        bodyTypeIds: p.body,
         yearFrom: p.yearFrom,
         yearTo: p.yearTo,
         importedFrom: p.importFrom,
@@ -378,7 +425,12 @@ function CarsPageInner() {
       />
 
       <p className="mt-4 text-xs font-semibold text-muted-foreground">{t("Төрөл")}</p>
-      <BodyTypeTabs className="mt-2" items={bodyTypes.data ?? []} selectedId={p.body} onSelect={(id) => set({ body: id })} />
+      <BodyTypeTabs
+        className="mt-2"
+        items={bodyTypes.data ?? []}
+        selectedIds={p.body}
+        onToggle={(id) => set({ body: p.body.includes(id) ? p.body.filter((x) => x !== id) : [...p.body, id] })}
+      />
 
       <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[296px_1fr]">
         <aside>
@@ -391,7 +443,7 @@ function CarsPageInner() {
             {t("Шүүлтүүр")}
           </button>
           <div className={cn("mt-3 lg:mt-0 lg:block", showFilters ? "block" : "hidden")}>
-            <Filters key={key} p={p} set={set} brands={brands} models={models} />
+            <Filters key={key} p={p} set={set} brands={brands} models={models} bodyTypes={bodyTypes.data ?? []} />
           </div>
         </aside>
 

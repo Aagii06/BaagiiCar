@@ -8,6 +8,7 @@ export interface CarSearch {
   brandIds?: number[];
   modelId?: number;
   bodyTypeId?: number;
+  bodyTypeIds?: number[];
   yearFrom?: number;
   yearTo?: number;
   importedFrom?: number;
@@ -27,6 +28,7 @@ export function searchConditions(s: CarSearch): Condition[] {
   if (s.brandIds?.length) c.push(["brand_id", "in", s.brandIds]);
   if (s.modelId) c.push(["car_model_id", "=", s.modelId]);
   if (s.bodyTypeId) c.push(["body_type_id", "=", s.bodyTypeId]);
+  if (s.bodyTypeIds?.length) c.push(["body_type_id", "in", s.bodyTypeIds]);
   if (s.yearFrom) c.push(["manufactured_year", ">=", s.yearFrom]);
   if (s.yearTo) c.push(["manufactured_year", "<=", s.yearTo]);
   if (s.importedFrom) c.push(["imported_year", ">=", s.importedFrom]);
@@ -97,10 +99,14 @@ export async function getBrands() {
   return [...res.data.rows].sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999) || a.name.localeCompare(b.name));
 }
 
+/** Alphabetical, with the "Other" catch-all model last. */
+const byModelName = (a: { name: string }, b: { name: string }) =>
+  Number(a.name === "Other") - Number(b.name === "Other") || a.name.localeCompare(b.name);
+
 export async function getModels(brandId?: number) {
   const q = brandId ? listQuery({ filter: [["brand_id", "=", brandId]] }) : "";
   const res = await apiFetch<ApiListResponse<CarModel>>(`/web/base/carModels${q}`);
-  return [...res.data.rows].sort((a, b) => a.name.localeCompare(b.name));
+  return [...res.data.rows].sort(byModelName);
 }
 
 export async function getBodyTypes() {

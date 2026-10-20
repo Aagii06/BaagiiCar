@@ -11,6 +11,12 @@ import { useEffect, useRef, useState } from "react";
 
 const MAX_PHOTOS = 12;
 const THIS_YEAR = new Date().getFullYear();
+const MIN_YEAR = 1950;
+/** Newest first; keeps an out-of-range value already saved on the car selectable. */
+const yearOptions = (current: string) => {
+  const years = Array.from({ length: THIS_YEAR - MIN_YEAR + 1 }, (_, i) => String(THIS_YEAR - i));
+  return current && !years.includes(current) ? [current, ...years] : years;
+};
 
 type FormState = Record<
   | "brand_id"
@@ -255,10 +261,24 @@ export default function CarForm({
             </Select>
           </Field>
           <Field label="Үйлдвэрлэсэн он *">
-            <input className={inputClass} {...digits("manufactured_year")} maxLength={4} placeholder={String(THIS_YEAR - 5)} required />
+            <Select {...bind("manufactured_year")} required>
+              <option value="">Сонгох</option>
+              {yearOptions(f.manufactured_year).map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </Select>
           </Field>
           <Field label="Орж ирсэн он">
-            <input className={inputClass} {...digits("imported_year")} maxLength={4} placeholder={String(THIS_YEAR - 2)} />
+            <Select {...bind("imported_year")}>
+              <option value="">Сонгох</option>
+              {yearOptions(f.imported_year).map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </Select>
           </Field>
           <Field label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : "Жишээ: 45000000"}>
             <input className={inputClass} {...digits("price")} placeholder="45000000" required />

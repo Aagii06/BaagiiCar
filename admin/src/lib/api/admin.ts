@@ -66,7 +66,11 @@ const bySort = <T extends { sort_order?: number | null; name: string }>(rows: T[
   [...rows].sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999) || a.name.localeCompare(b.name));
 
 export const getBrands = () => listAll<Brand>("vwBrands", [["status", "=", "active"]]).then(bySort);
-export const getModels = () => listAll<CarModel>("carModels").then((r) => [...r].sort((a, b) => a.name.localeCompare(b.name)));
+/** Alphabetical, with the "Other" catch-all model last. */
+const byModelName = (a: { name: string }, b: { name: string }) =>
+  Number(a.name === "Other") - Number(b.name === "Other") || a.name.localeCompare(b.name);
+
+export const getModels = () => listAll<CarModel>("carModels").then((r) => [...r].sort(byModelName));
 export const getBodyTypes = () => listAll<BodyType>("vwBodyTypes", [["status", "=", "active"]]).then(bySort);
 export const getLocations = () => listAll<Location>("locations").then(bySort);
 
