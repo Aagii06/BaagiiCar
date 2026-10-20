@@ -127,10 +127,13 @@ function urlBase64ToUint8Array(base64: string) {
   return Uint8Array.from(raw, (c) => c.charCodeAt(0));
 }
 
-type PushState = "unsupported" | "loading" | "off" | "on" | "denied";
+export type PushState = "unsupported" | "loading" | "off" | "on" | "denied";
 
-/** Browser notification for every new listing, through public/sw.js. */
-function PushToggle() {
+// Lets every usePush() on the page (footer toggle, visit prompt) pick up a change made by another.
+const PUSH_CHANGED = "push-changed";
+
+/** Browser-notification state and actions for new listings, through public/sw.js. */
+export function usePush() {
   const { t } = useI18n();
   const [state, setState] = useState<PushState>("loading");
   const [error, setError] = useState<string | null>(null);
@@ -140,28 +143,40 @@ function PushToggle() {
       Promise.resolve().then(() => setState("unsupported"));
       return;
     }
-    navigator.serviceWorker
-      .register("/sw.js", { scope: "/", updateViaCache: "none" })
-      .then((reg) => reg.pushManager.getSubscription())
-      .then((sub) => setState(sub ? "on" : Notification.permission === "denied" ? "denied" : "off"))
-      .catch(() => setState("unsupported"));
+    const check = () =>
+      navigator.serviceWorker
+        .register("/sw.js", { scope: "/", updateViaCache: "none" })
+        .then((reg) => reg.pushManager.getSubscription())
+        .then((sub) => setState(sub ? "on" : Notification.permission === "denied" ? "denied" : "off"))
+        .catch(() => setState("unsupported"));
+    check();
+    window.addEventListener(PUSH_CHANGED, check);
+    return () => window.removeEventListener(PUSH_CHANGED, check);
   }, []);
+
+  const changed = () => window.dispatchEvent(new Event(PUSH_CHANGED));
 
   const enable = async () => {
     setError(null);
     setState("loading");
     try {
       const permission = await Notification.requestPermission();
-      if (permission !== "granted") return setState(permission === "denied" ? "denied" : "off");
+      if (permission !== "granted") {
+        setState(permission === "denied" ? "denied" : "off");
+        return false;
+      }
       const key = await getPushKey();
       if (!key) throw new Error(t("Мэдэгдэл одоогоор боломжгүй байна"));
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(key) });
       await subscribePush(sub.toJSON());
       setState("on");
+      changed();
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : t("Алдаа гарлаа"));
       setState("off");
+      return false;
     }
   };
 
@@ -176,11 +191,20 @@ function PushToggle() {
         await sub.unsubscribe();
       }
       setState("off");
+      changed();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("Алдаа гарлаа"));
       setState("on");
     }
   };
+
+  return { state, error, enable, disable };
+}
+
+/** Footer on/off button for browser notifications. */
+function PushToggle() {
+  const { t } = useI18n();
+  const { state, error, enable, disable } = usePush();
 
   if (state === "unsupported") return null;
 

@@ -2,6 +2,7 @@ import ChatWidget from "@/components/chat/ChatWidget";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
+import PushPrompt from "@/components/layout/PushPrompt";
 import { FavoritesProvider } from "@/lib/favorites/FavoritesProvider";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getLocale } from "@/lib/i18n/server";
@@ -42,6 +43,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <div className="h-[calc(4.5rem+env(safe-area-inset-bottom))] bg-dark md:hidden" />
             <MobileNav />
             <ChatWidget />
+            <PushPrompt />
           </FavoritesProvider>
         </I18nProvider>
       </body>
