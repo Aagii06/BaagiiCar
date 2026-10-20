@@ -4,6 +4,7 @@ import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listUsers } from "@/lib/api/admin";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, initials, userName } from "@/lib/utils";
@@ -20,7 +21,8 @@ const ROLE_TONE: Record<string, string> = {
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
-  const users = useApi(() => listUsers(q), q);
+  const { user } = useAuth();
+  const users = useApi(() => listUsers(q, user?.id), `${q}|${user?.id ?? ""}`);
 
   return (
     <>
