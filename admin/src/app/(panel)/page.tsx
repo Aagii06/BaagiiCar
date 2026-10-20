@@ -85,7 +85,7 @@ export default function DashboardPage() {
           recent.data?.map((car) => {
             const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
             return (
-              <Link key={car.id} href={`/cars/${car.id}`} className="flex items-center gap-3 rounded-2xl bg-card p-2.5">
+              <Link key={car.id} href={`/cars/${car.id}/view`} className="flex items-center gap-3 rounded-2xl bg-card p-2.5">
                 <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} size="thumb" className="h-12 w-16 shrink-0" artClassName="w-[80%]" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{car.name}</p>

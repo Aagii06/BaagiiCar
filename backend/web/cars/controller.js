@@ -1,7 +1,3 @@
-const moment = require("moment");
-const { verifyPreview } = require("../../helper/previewHelper");
-const { approveCar } = require("../../api/cars/controller");
-
 // TODO: Тээврийн хэрэгслийн бүртгэлийн жинхэнэ сервис холбогдох хүртэл жишээ өгөгдөл буцаана.
 // Жинхэнэ сервис холбосны дараа энэ endpoint-ийг нэвтрэлттэй (protect) болгох хэрэгтэй.
 const mockVehicles = [
@@ -106,15 +102,4 @@ module.exports.vehicleLookup = async (req, res) => {
     result.message = "Алдаа";
     return res.status(200).json(result);
   }
-};
-
-// Админы урьдчилан харах түлхүүрээр батлах (вэб дээр нэвтрэлт байхгүй тул түлхүүр нь эрх болно)
-module.exports.approveByPreview = async (req, res) => {
-  const { id, key } = req.body || {};
-  const preview = verifyPreview(key, id);
-  if (!preview)
-    return res.status(200).json({ success: false, data: null, message: "Холбоосын хугацаа дууссан. Админаас дахин нээнэ үү" });
-  const at = moment().utcOffset("+0800").format("YYYY-MM-DD HH:mm:ss");
-  const error = await approveCar(Number(id), preview.by, at);
-  return res.status(200).json({ success: !error, data: null, message: error || "Амжилттай" });
 };
