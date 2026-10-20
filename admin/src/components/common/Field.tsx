@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, formatPhone } from "@/lib/utils";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
@@ -53,6 +53,41 @@ export function PasswordInput({ className, ...props }: Omit<React.InputHTMLAttri
       >
         {visible ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
       </button>
+    </span>
+  );
+}
+
+const PHONE_MASK = "____ ____";
+
+/** 8-digit phone input: `value`/`onChange` carry bare digits; shows "9911 2233" plus a "____ ____" guide while focused. */
+export function PhoneInput({
+  value,
+  onChange,
+  className,
+  ...props
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type"> & { value: string; onChange: (digits: string) => void }) {
+  const [focused, setFocused] = useState(false);
+  const shown = formatPhone(value);
+  return (
+    <span className="relative block">
+      <input
+        {...props}
+        type="tel"
+        inputMode="numeric"
+        maxLength={PHONE_MASK.length}
+        value={shown}
+        onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 8))}
+        onFocus={(e) => (setFocused(true), props.onFocus?.(e))}
+        onBlur={(e) => (setFocused(false), props.onBlur?.(e))}
+        className={cn(inputClass, "focus:placeholder:text-transparent", className)}
+      />
+      {focused && (
+        // Typed part is invisible so the remaining underscores line up right after the caret.
+        <span aria-hidden className="pointer-events-none absolute inset-y-0 left-[17px] flex items-center whitespace-pre text-[15px] text-muted-foreground/70">
+          <span className="invisible">{shown}</span>
+          {PHONE_MASK.slice(shown.length)}
+        </span>
+      )}
     </span>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
-import { Field, FormError, inputClass, PasswordInput } from "@/components/common/Field";
+import { Field, FormError, PasswordInput, PhoneInput } from "@/components/common/Field";
 import { LoadingState } from "@/components/common/States";
 import BrandMark from "@/components/layout/BrandMark";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { formatPhone } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -49,7 +48,7 @@ function LoginForm() {
       </div>
       <form onSubmit={submit} className="-mt-4 space-y-4 rounded-3xl bg-white p-5 shadow-xl shadow-black/5">
         <Field label="Утасны дугаар">
-          <input className={inputClass} type="tel" inputMode="numeric" autoComplete="tel" maxLength={9} placeholder="0000 0000" value={formatPhone(phone)} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))} required />
+          <PhoneInput autoComplete="tel" placeholder="0000 0000" value={phone} onChange={setPhone} required />
         </Field>
         <Field label="Нууц үг">
           <PasswordInput autoComplete="current-password" placeholder="Нууц үг" value={password} onChange={(e) => setPassword(e.target.value)} required />
