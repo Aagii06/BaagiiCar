@@ -67,48 +67,57 @@ export default function CarViewPage() {
       ) : !car ? (
         <EmptyState title="Зар олдсонгүй" />
       ) : (
-        <div className={cn("space-y-4", busy && "pointer-events-none opacity-60")}>
+        // Full-width like the web detail page: photos + specs left, price / seller right on desktop.
+        <div className={cn("mx-auto max-w-[1280px] md:px-6", busy && "pointer-events-none opacity-60")}>
           <StatusBanner car={car} onApprove={() => approve(car)} />
-          <Gallery car={car} photos={data.data!.photos} />
 
-          <section className="rounded-2xl bg-card p-4">
-            <h1 className="font-display text-xl font-bold leading-tight">{car.name}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{[car.manufactured_year, car.location_name].filter(Boolean).join(" · ")}</p>
-            <p className="mt-3 font-display text-2xl font-bold text-primary">{formatPrice(car.price)}</p>
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Eye className="size-3.5" />
-                {car.view_count ?? 0}
-              </span>
-              <span className="flex items-center gap-1">
-                <Heart className="size-3.5" />
-                {car.favorite_count ?? 0}
-              </span>
-              {car.created_at && <span>{timeAgo(car.created_at)}</span>}
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px] lg:items-start lg:gap-6">
+            <div className="min-w-0 lg:col-start-1">
+              <Gallery car={car} photos={data.data!.photos} />
             </div>
-          </section>
 
-          <Specs car={car} />
+            <aside className="space-y-4 lg:sticky lg:top-20 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+              <section className="rounded-2xl bg-card p-4 md:p-5">
+                <h1 className="font-display text-xl font-bold leading-tight md:text-2xl">{car.name}</h1>
+                <p className="mt-1 text-sm text-muted-foreground">{[car.manufactured_year, car.location_name].filter(Boolean).join(" · ")}</p>
+                <p className="mt-3 font-display text-2xl font-bold text-primary md:text-3xl">{formatPrice(car.price)}</p>
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Eye className="size-3.5" />
+                    {car.view_count ?? 0}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Heart className="size-3.5" />
+                    {car.favorite_count ?? 0}
+                  </span>
+                  {car.created_at && <span>{timeAgo(car.created_at)}</span>}
+                </div>
+              </section>
 
-          {car.description && (
-            <section className="rounded-2xl bg-card p-4">
-              <h2 className="font-bold">Тайлбар</h2>
-              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">{car.description}</p>
-            </section>
-          )}
+              <section className="flex items-center gap-3 rounded-2xl bg-card p-4 md:p-5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-muted-foreground">Зарын эзэн</p>
+                  <p className="truncate font-bold">{car.seller_name || "—"}</p>
+                </div>
+                {(car.phonenumber || car.seller_phone) && (
+                  <a href={`tel:${car.phonenumber || car.seller_phone}`} className="flex items-center gap-1.5 rounded-xl bg-dark px-3 py-2 text-sm font-bold text-white">
+                    <Phone className="size-4" />
+                    {car.phonenumber || car.seller_phone}
+                  </a>
+                )}
+              </section>
+            </aside>
 
-          <section className="flex items-center gap-3 rounded-2xl bg-card p-4">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-muted-foreground">Зарын эзэн</p>
-              <p className="truncate font-bold">{car.seller_name || "—"}</p>
+            <div className="min-w-0 space-y-4 lg:col-start-1">
+              <Specs car={car} />
+              {car.description && (
+                <section className="rounded-2xl bg-card p-4 md:p-5">
+                  <h2 className="font-bold">Тайлбар</h2>
+                  <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">{car.description}</p>
+                </section>
+              )}
             </div>
-            {(car.phonenumber || car.seller_phone) && (
-              <a href={`tel:${car.phonenumber || car.seller_phone}`} className="flex items-center gap-1.5 rounded-xl bg-dark px-3 py-2 text-sm font-bold text-white">
-                <Phone className="size-4" />
-                {car.phonenumber || car.seller_phone}
-              </a>
-            )}
-          </section>
+          </div>
         </div>
       )}
     </>
@@ -144,11 +153,11 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
   const [index, setIndex] = useState(0);
   const [viewing, setViewing] = useState<number | null>(null);
 
-  if (!photos.length) return <CarImage id={car.id} image={null} bodyType={car.body_type_name} className="aspect-[4/3] rounded-2xl" />;
+  if (!photos.length) return <CarImage id={car.id} image={null} bodyType={car.body_type_name} className="aspect-[4/3] rounded-2xl md:aspect-[16/10]" />;
 
   return (
     <section>
-      <button type="button" onClick={() => setViewing(index)} aria-label="Зураг томоор харах" className="relative block aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted">
+      <button type="button" onClick={() => setViewing(index)} aria-label="Зураг томоор харах" className="relative block aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted md:aspect-[16/10]">
         {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
         <img src={uploadUrl(photos[index], "grid")!} alt="" className="size-full object-cover" />
         <span className="absolute bottom-3 right-3 rounded-full bg-dark px-2.5 py-1 text-xs font-bold text-white">
@@ -163,7 +172,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
               type="button"
               onClick={() => setIndex(i)}
               aria-label={`${i + 1}-р зураг`}
-              className={cn("h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2", i === index ? "border-foreground" : "border-transparent")}
+              className={cn("h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 md:h-20 md:w-32", i === index ? "border-foreground" : "border-transparent")}
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
               <img src={uploadUrl(name, "thumb")!} alt="" className="size-full object-cover" />
@@ -191,9 +200,9 @@ function Specs({ car }: { car: Car }) {
     ["VIN", car.vin],
   ];
   return (
-    <section className="rounded-2xl bg-card p-4">
+    <section className="rounded-2xl bg-card p-4 md:p-5">
       <h2 className="font-bold">Үзүүлэлт</h2>
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
         {specs.map(([label, value]) => (
           <div key={label} className="rounded-xl bg-muted px-3 py-2.5">
             <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
