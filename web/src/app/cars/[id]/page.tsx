@@ -7,7 +7,7 @@ import FavoriteButton from "@/components/car/FavoriteButton";
 import LeasingCalculator from "@/components/car/LeasingCalculator";
 import Container from "@/components/common/Container";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
-import { getCar, getCarFiles, searchCars } from "@/lib/api/cars";
+import { approveByPreview, getCar, getCarFiles, searchCars } from "@/lib/api/cars";
 import { uploadUrl } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
 import { openChat } from "@/lib/chat";
@@ -15,9 +15,9 @@ import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, initials, timeAgo, tintFor } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 function Gallery({ car }: { car: Car }) {
@@ -136,7 +136,8 @@ function Similar({ car }: { car: Car }) {
 export default function CarDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useI18n();
-  const car = useApi(() => getCar(id), id);
+  const preview = useSearchParams().get("preview");
+  const car = useApi(() => getCar(id, preview), `${id}|${preview ?? ""}`);
 
   if (car.loading && !car.data) return <LoadingState className="min-h-[60vh]" />;
   if (car.error) return <Container className="pt-10"><ErrorState message={car.error.message} onRetry={car.reload} /></Container>;
@@ -153,6 +154,7 @@ export default function CarDetailPage() {
 
   return (
     <Container className="pt-6">
+      {preview && <AdminPreviewBar car={c} previewKey={preview} onApproved={car.reload} />}
       <nav aria-label={t("Зам")} className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-foreground">{t("Нүүр")}</Link>/
         {c.body_type_id ? (
@@ -191,6 +193,47 @@ export default function CarDetailPage() {
 
       <Similar car={c} />
     </Container>
+  );
+}
+
+/**
+ * Only on the admin's signed preview link (the site has no logins, so the key
+ * is the proof). Shows the ad's state and, while pending, the approve button.
+ */
+function AdminPreviewBar({ car, previewKey, onApproved }: { car: Car; previewKey: string; onApproved: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const pending = car.status === "pending";
+
+  const approve = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await approveByPreview(car.id, previewKey);
+      onApproved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Алдаа гарлаа");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className={cn("mb-5 flex flex-wrap items-center gap-3 rounded-2xl p-4", pending ? "bg-amber-soft text-amber-ink" : "bg-success-soft text-success")}>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold">{pending ? "Батлагдаагүй зар" : "Нийтлэгдсэн зар"}</p>
+        <p className="text-xs font-medium opacity-80">
+          {pending ? "Зөвхөн админы холбоосоор харагдаж байна. Батлахад вэб дээр нийтлэгдэнэ." : "Вэб сайт дээр бүх хүнд харагдаж байна."}
+        </p>
+        {error && <p className="mt-1 text-xs font-semibold text-destructive">{error}</p>}
+      </div>
+      {pending && (
+        <button onClick={approve} disabled={busy} className="flex items-center gap-1.5 rounded-xl bg-success px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">
+          <Check className="size-4" strokeWidth={3} />
+          {busy ? "Түр хүлээнэ үү…" : "Батлах"}
+        </button>
+      )}
+    </div>
   );
 }
 

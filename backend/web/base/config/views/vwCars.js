@@ -1,5 +1,6 @@
 const { vwCars, cars, op } = require("../../../../models");
 const { carStatuses } = require("../../../../config/constants");
+const { verifyPreview } = require("../../../../helper/previewHelper");
 
 // Олон нийтэд устгагдсан болон батлагдаагүй зар харагдахгүй
 const hidden = [carStatuses.deleted, carStatuses.pending];
@@ -14,6 +15,11 @@ const lookup = list;
 // Дэлгэрэнгүй үзэх бүрт үзсэн тоог нэмнэ
 const show = async (req, res, next) => {
   const { id } = req.params;
+  // Админы урьдчилан харах холбоос: батлагдаагүй зар ч харагдана, үзсэн тоо нэмэгдэхгүй
+  if (verifyPreview(req.query.preview, id)) {
+    const exists = await cars.count({ where: { id, status: { [op.ne]: carStatuses.deleted } } });
+    if (exists) return next();
+  }
   // MySQL дээр [[result, affectedRows]] буцаана
   const [[, affectedRows]] = await cars.increment("view_count", {
     where: { id, status: { [op.notIn]: hidden } },

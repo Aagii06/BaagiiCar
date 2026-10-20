@@ -1,4 +1,5 @@
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
+import { WEB_URL } from "./config";
 import type { BodyType, Brand, Car, CarFile, CarModel, Location, Message, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
@@ -119,6 +120,24 @@ export async function getCarFiles(carId: number) {
 
 export async function approveCar(id: number) {
   await apiFetch("/api/cars/approve", { method: "POST", body: { id } });
+}
+
+/**
+ * Opens the ad on the public site with a signed 2-hour preview key, so pending
+ * ads show too and the page offers "Батлах". The tab opens first (before the
+ * request) so popup blockers allow it.
+ */
+export async function openWebPreview(id: number) {
+  const tab = window.open("", "_blank");
+  if (!tab) throw new Error("Браузер шинэ цонх хаалаа. Popup зөвшөөрнө үү");
+  try {
+    const res = await apiFetch<ApiItemResponse<{ key: string }>>("/api/cars/preview-key", { method: "POST", body: { id } });
+    const url = `${WEB_URL}/cars/${id}?preview=${encodeURIComponent(res.data.key)}`;
+    tab.location.href = url;
+  } catch (err) {
+    tab.close();
+    throw err;
+  }
 }
 
 export async function markSold(id: number) {

@@ -82,9 +82,16 @@ export async function featuredCars(take = 6) {
   return (await searchCars({ pageSize: take })).rows;
 }
 
-export async function getCar(id: number | string) {
-  const res = await apiFetch<ApiItemResponse<Car | null>>(`/web/base/vwCars/${id}`);
+/** `preview` is the admin's signed link key; it unlocks a not-yet-approved ad. */
+export async function getCar(id: number | string, preview?: string | null) {
+  const qs = preview ? `?preview=${encodeURIComponent(preview)}` : "";
+  const res = await apiFetch<ApiItemResponse<Car | null>>(`/web/base/vwCars/${id}${qs}`);
   return res.data;
+}
+
+/** Approve a pending ad from the admin's preview link. */
+export async function approveByPreview(id: number, key: string) {
+  await apiFetch("/web/cars/approve", { method: "POST", body: { id, key } });
 }
 
 export async function getCarFiles(carId: number) {

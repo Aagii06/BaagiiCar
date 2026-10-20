@@ -10,6 +10,7 @@ const {
 const { uploadFiles } = require("../../helper/fileHelper");
 const { notifyNewCar } = require("../../helper/notifyHelper");
 const { saveLog } = require("../../utils/logHelper");
+const { signPreview } = require("../../helper/previewHelper");
 const { roles, carStatuses } = require("../../config/constants");
 
 // Зөвхөн админ өөрчилж болох талбарууд
@@ -141,13 +142,8 @@ module.exports.save = async (req, res) => {
   }
 };
 
-// Хүлээгдэж буй зарыг батлаж нийтлэх (зөвхөн админ)
-module.exports.approve = async (req, res) => {
-  let result = { success: false, data: null, message: "Амжилттай" };
-  const { id, by, at } = req.body;
-  if (req.loggedUser?.role !== roles.admin)
-    return res.status(200).json({ ...result, message: "Зөвхөн админ батлах боломжтой" });
-
+// Хүлээгдэж буй зарыг батлаж нийтлэнэ. Амжилттай бол null, үгүй бол алдааны текст.
+const approveCar = async (id, by, at) => {
   const t = await sequelize.transaction();
   try {
     const [affected] = await cars.update(
@@ -156,9 +152,7 @@ module.exports.approve = async (req, res) => {
     );
     if (!affected) {
       await t.rollback();
-      return res
-        .status(200)
-        .json({ ...result, message: "Батлах хүлээгдэж буй зар олдсонгүй" });
+      return "Батлах хүлээгдэж буй зар олдсонгүй";
     }
     await saveLog(
       {
@@ -173,14 +167,30 @@ module.exports.approve = async (req, res) => {
     );
     await t.commit();
     setImmediate(() => notifyNewCar(id));
-    result.success = true;
-    return res.status(200).json(result);
+    return null;
   } catch (error) {
     await t.rollback();
     console.log(error);
-    result.message = "Алдаа";
-    return res.status(200).json(result);
+    return "Алдаа";
   }
+};
+module.exports.approveCar = approveCar;
+
+// Хүлээгдэж буй зарыг батлах (зөвхөн админ)
+module.exports.approve = async (req, res) => {
+  const { id, by, at } = req.body;
+  if (req.loggedUser?.role !== roles.admin)
+    return res.status(200).json({ success: false, data: null, message: "Зөвхөн админ батлах боломжтой" });
+  const error = await approveCar(id, by, at);
+  return res.status(200).json({ success: !error, data: null, message: error || "Амжилттай" });
+};
+
+// Вэб дээр (батлагдаагүй ч) зарыг харах түлхүүр (зөвхөн админ)
+module.exports.previewKey = async (req, res) => {
+  const { id } = req.body;
+  if (req.loggedUser?.role !== roles.admin)
+    return res.status(200).json({ success: false, data: null, message: "Танд энэ үйлдлийг хийх эрх байхгүй" });
+  return res.status(200).json({ success: true, data: { key: signPreview(id, req.loggedUser.id) }, message: "Амжилттай" });
 };
 
 // Зарагдсан гэж тэмдэглэх

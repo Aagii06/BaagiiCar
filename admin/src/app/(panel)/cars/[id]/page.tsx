@@ -2,14 +2,13 @@
 
 import CarForm from "@/components/car/CarForm";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
-import { useToast } from "@/components/common/Toast";
+import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
-import { getCar, getCarFiles, type PhotoItem } from "@/lib/api/admin";
+import { getCar, getCarFiles, openWebPreview, type PhotoItem } from "@/lib/api/admin";
 import { uploadUrl } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useApi } from "@/lib/useApi";
-import { Eye } from "lucide-react";
-import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 
 /** `/cars/new` creates an ad under the admin's own account; `/cars/:id` edits any ad. */
@@ -40,10 +39,10 @@ export default function CarEditPage() {
         back="/cars"
         aside={
           !isNew ? (
-            // Preview works for pending ads too, unlike the public site.
-            <Link href={`/cars/${id}/view`} aria-label="Зарыг харах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
-              <Eye className="size-4" />
-            </Link>
+            // Signed preview link: works for pending ads too and shows "Батлах" there.
+            <button onClick={() => openWebPreview(Number(id)).catch((err) => toast(errorMessage(err), "error"))} aria-label="Вэб дээр харах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
+              <ExternalLink className="size-4" />
+            </button>
           ) : null
         }
       />
