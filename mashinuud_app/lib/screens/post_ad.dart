@@ -38,7 +38,7 @@ const _engines = [
   '4.6',
   '5.7',
 ];
-const _drives = ['FWD', 'RWD', '4WD', 'AWD'];
+const _drives = ['FWD', 'RWD', '4WD'];
 const _transmissions = ['Автомат', 'Механик', 'CVT', 'Типтроник'];
 const _steerings = ['Зүүн', 'Баруун'];
 const _doors = ['2', '3', '4', '5'];

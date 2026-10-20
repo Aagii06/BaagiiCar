@@ -88,89 +88,46 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-/** Min / max boxes; the value is applied on blur or Enter. */
-function Range({
-  min,
-  max,
-  minLabel,
-  maxLabel,
-  minPlaceholder,
-  maxPlaceholder,
-  onApply,
-}: {
-  min?: number;
-  max?: number;
-  minLabel: string;
-  maxLabel: string;
-  minPlaceholder: string;
-  maxPlaceholder: string;
-  onApply: (min: number | undefined, max: number | undefined) => void;
-}) {
-  const [lo, setLo] = useState(min ? String(min) : "");
-  const [hi, setHi] = useState(max ? String(max) : "");
-  const apply = () => onApply(num(lo), num(hi));
-  const box = (label: string, value: string, setValue: (v: string) => void, placeholder: string) => (
-    <label className="rounded-xl bg-muted px-3 py-2">
-      <span className="block text-[11px] font-medium text-muted-foreground">{label}</span>
-      <input
-        inputMode="numeric"
-        value={value}
-        onChange={(e) => setValue(e.target.value.replace(/\D/g, ""))}
-        onBlur={apply}
-        placeholder={placeholder}
-        className="w-full bg-transparent text-sm font-bold outline-none"
-      />
-    </label>
-  );
-  return (
-    <form
-      className="grid grid-cols-2 gap-2"
-      onSubmit={(e) => {
-        e.preventDefault();
-        apply();
-      }}
-    >
-      {box(minLabel, lo, setLo, minPlaceholder)}
-      {box(maxLabel, hi, setHi, maxPlaceholder)}
-      <button type="submit" hidden />
-    </form>
-  );
-}
-
 const THIS_YEAR = new Date().getFullYear();
 const FIRST_YEAR = 1950;
 // Newest first: recent years are the ones people pick.
 const YEARS = Array.from({ length: THIS_YEAR - FIRST_YEAR + 1 }, (_, i) => THIS_YEAR - i);
+// Million ₮ steps, as on unegui.mn's car listings.
+const PRICES = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 200, 300];
 
-/** From / to year dropdowns; each side only offers years that keep from ≤ to. */
-function YearRange({
+/**
+ * From / to dropdowns over a fixed list of steps (in display order); each side only
+ * offers values that keep from ≤ to. A value from an older link that is not a step
+ * is still listed, so the select can show it.
+ */
+function RangeSelect({
+  options,
   from,
   to,
   onChange,
 }: {
+  options: number[];
   from?: number;
   to?: number;
   onChange: (from: number | undefined, to: number | undefined) => void;
 }) {
   const { t } = useI18n();
+  const descending = options[0] > options[options.length - 1];
+  const all = [...new Set([...options, ...[from, to].filter((v): v is number => !!v)])].sort((a, b) => (descending ? b - a : a - b));
+  const side = (label: string, value: number | undefined, keep: (v: number) => boolean, pick: (v: number | undefined) => void) => (
+    <Select value={value ?? ""} onChange={(e) => pick(num(e.target.value))} aria-label={label} className="h-11 px-3 text-sm">
+      <option value="">{label}</option>
+      {all.filter(keep).map((v) => (
+        <option key={v} value={v}>
+          {v}
+        </option>
+      ))}
+    </Select>
+  );
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Select value={from ?? ""} onChange={(e) => onChange(num(e.target.value), to)} aria-label={t("Доод")} className="h-11 px-3 text-sm">
-        <option value="">{t("Доод")}</option>
-        {YEARS.filter((y) => !to || y <= to).map((y) => (
-          <option key={y} value={y}>
-            {y}
-          </option>
-        ))}
-      </Select>
-      <Select value={to ?? ""} onChange={(e) => onChange(from, num(e.target.value))} aria-label={t("Дээд")} className="h-11 px-3 text-sm">
-        <option value="">{t("Дээд")}</option>
-        {YEARS.filter((y) => !from || y >= from).map((y) => (
-          <option key={y} value={y}>
-            {y}
-          </option>
-        ))}
-      </Select>
+      {side(t("Доод"), from, (v) => !to || v <= to, (v) => onChange(v, to))}
+      {side(t("Дээд"), to, (v) => !from || v >= from, (v) => onChange(from, v))}
     </div>
   );
 }
@@ -320,23 +277,15 @@ function Filters({
       </Group>
 
       <Group title={t("Үнэ (сая ₮)")}>
-        <Range
-          min={p.priceMin}
-          max={p.priceMax}
-          minLabel={t("Доод")}
-          maxLabel={t("Дээд")}
-          minPlaceholder="0"
-          maxPlaceholder="∞"
-          onApply={(priceMin, priceMax) => set({ priceMin, priceMax })}
-        />
+        <RangeSelect options={PRICES} from={p.priceMin} to={p.priceMax} onChange={(priceMin, priceMax) => set({ priceMin, priceMax })} />
       </Group>
 
       <Group title={t("Үйлдвэрлэсэн он")}>
-        <YearRange from={p.yearFrom} to={p.yearTo} onChange={(yearFrom, yearTo) => set({ yearFrom, yearTo })} />
+        <RangeSelect options={YEARS} from={p.yearFrom} to={p.yearTo} onChange={(yearFrom, yearTo) => set({ yearFrom, yearTo })} />
       </Group>
 
       <Group title={t("Орж ирсэн он")}>
-        <YearRange from={p.importFrom} to={p.importTo} onChange={(importFrom, importTo) => set({ importFrom, importTo })} />
+        <RangeSelect options={YEARS} from={p.importFrom} to={p.importTo} onChange={(importFrom, importTo) => set({ importFrom, importTo })} />
       </Group>
 
       <Group title={t("Түлш")}>
@@ -419,7 +368,6 @@ function MobileFilters({
         </button>
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        {/* Keyed like the desktop panel, so "Clear" also resets the inputs' local state. */}
         <Filters
           key={writeParams(draft)}
           p={draft}

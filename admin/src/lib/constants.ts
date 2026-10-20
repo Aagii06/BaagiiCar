@@ -1,7 +1,7 @@
 // Must match backend/config/constants.js — the save endpoint validates these.
 export const FUEL_TYPES = ["Бензин", "Дизель", "Хайбрид", "Газ", "Цахилгаан"];
 export const TRANSMISSIONS = ["Автомат", "Механик", "CVT", "Типтроник"];
-export const DRIVE_TYPES = ["FWD", "RWD", "4WD", "AWD"];
+export const DRIVE_TYPES = ["FWD", "RWD", "4WD"];
 export const STEERINGS = ["Зүүн", "Баруун"];
 
 /** Body type names are stored in Mongolian, shown as is. */

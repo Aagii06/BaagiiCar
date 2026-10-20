@@ -34,7 +34,7 @@ const mockVehicles = [
     imported_year: 2019,
     fuel_type: "Дизель",
     transmission: "Автомат",
-    drive_type: "AWD",
+    drive_type: "4WD",
     steering: "Зүүн",
     engine_capacity: 2.0,
     door_count: 5,

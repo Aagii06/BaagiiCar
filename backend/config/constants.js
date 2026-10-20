@@ -15,7 +15,7 @@ const constant = {
 
   fuelTypes: ["Бензин", "Дизель", "Хайбрид", "Газ", "Цахилгаан"],
   transmissions: ["Автомат", "Механик", "CVT", "Типтроник"],
-  driveTypes: ["FWD", "RWD", "4WD", "AWD"],
+  driveTypes: ["FWD", "RWD", "4WD"],
   steerings: ["Зүүн", "Баруун"],
 };
 

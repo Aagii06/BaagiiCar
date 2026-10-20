@@ -175,9 +175,9 @@ export const MESSAGES = {
   "Өвөлд бэлэн": { ru: "Готовы к зиме", en: "Winter ready" },
   "Хүйтэнд ч": { ru: "Надёжны", en: "Reliable" },
   "найдвартай": { ru: "даже в мороз", en: "even in the cold" },
-  "4WD, AWD хөтлөгчтэй кроссовер, жийпүүд — хальтиргаатай замд итгэлтэй.": {
-    ru: "Кроссоверы и внедорожники с 4WD и AWD — уверенно на скользкой дороге.",
-    en: "4WD and AWD crossovers and SUVs — confident on slippery roads.",
+  "4WD хөтлөгчтэй кроссовер, жийпүүд — хальтиргаатай замд итгэлтэй.": {
+    ru: "Кроссоверы и внедорожники с 4WD — уверенно на скользкой дороге.",
+    en: "4WD crossovers and SUVs — confident on slippery roads.",
   },
   "Хэмнэлттэй": { ru: "Экономичные", en: "Economical" },
   "Хайбрид,": { ru: "Гибриды", en: "Hybrid" },

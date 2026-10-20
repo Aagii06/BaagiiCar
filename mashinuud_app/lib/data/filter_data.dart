@@ -66,7 +66,6 @@ class FilterData {
     'Урд хөтлөгч (FWD)',
     'Хойд хөтлөгч (RWD)',
     'Бүх дугуй хөтлөгч (4WD)',
-    'Бүх дугуй хөтлөгч (AWD)',
   ];
 
   static const List<String> transmissions = [
