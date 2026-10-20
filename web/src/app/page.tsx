@@ -65,7 +65,7 @@ function BrandGrid() {
   if (!brands.data?.length) return null;
   return (
     <Container className="mt-20 md:mt-28">
-      <SectionTitle kicker={t("Бүх үйлдвэр")} light={t("Машины")} bold={t("брэнд")} action={<ViewAll href="/cars" />} />
+      <SectionTitle kicker={t("Бүх үйлдвэр")} light={t("Машины")} bold={t("үйлдвэр")} action={<ViewAll href="/cars" />} />
       <div className="mt-8 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
         {brands.data.slice(0, 16).map((b, i) => {
           const logo = catalogImage(b.logo, "brands");
@@ -180,7 +180,7 @@ export default function HomePage() {
       <BrandGrid />
 
       <Container className="mt-20 md:mt-28">
-        <SectionTitle kicker={t("Биеийн хэлбэр")} light={t("Хэлбэрээр")} bold={t("хайх")} />
+        <SectionTitle kicker={t("Төрөл")} light={t("Төрлөөр")} bold={t("хайх")} />
         <BodyTypeTabs className="mt-8" items={bodyTypes.data ?? []} onSelect={(id) => id && router.push(`/cars?body=${id}`)} />
       </Container>
 

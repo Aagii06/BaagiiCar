@@ -240,7 +240,7 @@ export default function CarForm({
               ))}
             </Select>
           </Field>
-          <Field label="Биеийн хэлбэр">
+          <Field label="Төрөл">
             <Select {...bind("body_type_id")}>
               <option value="">Сонгох</option>
               {bodyTypes.data?.map((b) => (

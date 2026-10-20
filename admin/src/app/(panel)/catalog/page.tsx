@@ -18,7 +18,7 @@ type Tab = "brands" | "models" | "bodyTypes" | "locations";
 const TABS: { value: Tab; label: string }[] = [
   { value: "brands", label: "Үйлдвэр" },
   { value: "models", label: "Загвар" },
-  { value: "bodyTypes", label: "Биеийн хэлбэр" },
+  { value: "bodyTypes", label: "Төрөл" },
   { value: "locations", label: "Байршил" },
 ];
 
