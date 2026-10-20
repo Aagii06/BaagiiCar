@@ -8,23 +8,16 @@ import { useWheelScrollX } from "@/lib/useWheelScrollX";
 import { cn } from "@/lib/utils";
 import CarArt, { shapeFor } from "./CarArt";
 
-/**
- * Row of body-type tiles; selected ones get the heavy black outline.
- * Single-select via `selectedId`/`onSelect`, or multi via `selectedIds`/`onToggle`.
- */
+/** Row of body-type tiles; the selected one gets the heavy black outline. */
 export default function BodyTypeTabs({
   items,
   selectedId,
-  selectedIds,
   onSelect,
-  onToggle,
   className,
 }: {
   items: BodyType[];
   selectedId?: number;
-  selectedIds?: number[];
-  onSelect?: (id: number | undefined) => void;
-  onToggle?: (id: number) => void;
+  onSelect: (id: number | undefined) => void;
   className?: string;
 }) {
   const { t } = useI18n();
@@ -33,14 +26,14 @@ export default function BodyTypeTabs({
     // One scrolling row at every width, like the brands above it.
     <div ref={rowRef} className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0", className)}>
       {items.map((b) => {
-        const active = selectedIds ? selectedIds.includes(b.id) : b.id === selectedId;
+        const active = b.id === selectedId;
         const image = catalogImage(b.image, "bodyTypes");
         return (
           <button
             key={b.id}
             type="button"
             aria-pressed={active}
-            onClick={() => (onToggle ? onToggle(b.id) : onSelect?.(active ? undefined : b.id))}
+            onClick={() => onSelect(active ? undefined : b.id)}
             className={cn(
               "flex w-[72px] shrink-0 flex-col items-center gap-1 rounded-xl border-2 bg-card px-1.5 pb-2 pt-2.5 text-xs font-semibold transition-colors md:w-[84px]",
               active ? "border-foreground" : "border-transparent hover:border-border"

@@ -1,6 +1,5 @@
 "use client";
 
-import BodyTypeTabs from "@/components/car/BodyTypeTabs";
 import BrandTabs from "@/components/car/BrandTabs";
 import CarArt, { shapeFor } from "@/components/car/CarArt";
 import CarCard from "@/components/car/CarCard";
@@ -501,14 +500,6 @@ function CarsPageInner() {
         items={brands.data ?? []}
         selectedId={p.brand}
         onSelect={(id) => set({ brand: id, model: undefined })}
-      />
-
-      <p className="mt-4 text-xs font-semibold text-muted-foreground">{t("Төрөл")}</p>
-      <BodyTypeTabs
-        className="mt-2"
-        items={bodyTypes.data ?? []}
-        selectedIds={p.body}
-        onToggle={(id) => set({ body: p.body.includes(id) ? p.body.filter((x) => x !== id) : [...p.body, id] })}
       />
 
       <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[296px_1fr]">
