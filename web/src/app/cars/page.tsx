@@ -7,7 +7,7 @@ import CarWideCard from "@/components/car/CarWideCard";
 import Container, { PageTitle } from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
-import { CardGridSkeleton, EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
 import { FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -140,10 +140,21 @@ function Range({
 
 const THIS_YEAR = new Date().getFullYear();
 
+/** Covers a disabled Select's chevron while its options load. */
+function SelectSpinner() {
+  return <Spinner className="pointer-events-none absolute right-3 top-1/2 size-5 -translate-y-1/2 rounded-full bg-muted" />;
+}
+
 function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void }) {
   const { t, tv } = useI18n();
   const brands = useApi(getBrands);
   const models = useApi(() => (p.brand ? getModels(p.brand) : Promise.resolve([])), String(p.brand ?? ""));
+  // Brand picked but the URL (and so `p.brand`) has not caught up yet.
+  const [pending, setPending] = useState<{ brand?: number } | null>(null);
+  const brandPending = pending !== null && pending.brand !== p.brand;
+  // The selected brand can only be shown once the brand list is in.
+  const brandsLoading = brandPending || !brands.data;
+  const modelsLoading = (brandPending && !!pending.brand) || (!!p.brand && models.loading);
   const hasFilters =
     p.brand || p.model || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
 
@@ -176,22 +187,46 @@ function Filters({ p, set }: { p: Params; set: (patch: Partial<Params>) => void 
 
       <Group title={t("Үйлдвэр, загвар")}>
         <div className="space-y-2.5">
-          <Select value={p.brand ?? ""} onChange={(e) => set({ brand: num(e.target.value), model: undefined })} aria-label={t("Үйлдвэр")}>
-            <option value="">{t("Бүх үйлдвэр")}</option>
-            {brands.data?.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </Select>
-          <Select value={p.model ?? ""} onChange={(e) => set({ model: num(e.target.value) })} disabled={!p.brand} aria-label={t("Загвар")}>
-            <option value="">{t("Бүх загвар")}</option>
-            {models.data?.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </Select>
+          <div className="relative">
+            <Select
+              value={brandsLoading ? "" : (p.brand ?? "")}
+              onChange={(e) => {
+                const brand = num(e.target.value);
+                setPending({ brand });
+                set({ brand, model: undefined });
+              }}
+              disabled={brandsLoading}
+              aria-busy={brandsLoading}
+              aria-label={t("Үйлдвэр")}
+            >
+              <option value="">{brandsLoading ? t("Ачаалж байна...") : t("Бүх үйлдвэр")}</option>
+              {!brandsLoading &&
+                brands.data?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+            </Select>
+            {brandsLoading && <SelectSpinner />}
+          </div>
+          <div className="relative">
+            <Select
+              value={modelsLoading ? "" : (p.model ?? "")}
+              onChange={(e) => set({ model: num(e.target.value) })}
+              disabled={!p.brand || modelsLoading}
+              aria-busy={modelsLoading}
+              aria-label={t("Загвар")}
+            >
+              <option value="">{modelsLoading ? t("Ачаалж байна...") : t("Бүх загвар")}</option>
+              {!modelsLoading &&
+                models.data?.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+            </Select>
+            {modelsLoading && <SelectSpinner />}
+          </div>
         </div>
       </Group>
 

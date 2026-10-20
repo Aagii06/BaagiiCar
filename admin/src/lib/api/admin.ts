@@ -183,6 +183,22 @@ export async function listUsers(search?: string) {
   return res.data;
 }
 
+export interface CreateUserInput {
+  phonenumber: string;
+  firstname?: string | null;
+  lastname?: string | null;
+  email?: string | null;
+  role: string;
+  password: string;
+  password_confirm: string;
+}
+
+/** `POST /api/users/create` — admin only; any role, including ADMIN. */
+export async function createUser(body: CreateUserInput) {
+  const res = await apiFetch<ApiItemResponse<{ id: number }>>("/api/users/create", { method: "POST", body });
+  return res.data;
+}
+
 export async function getUser(id: number | string) {
   const res = await apiFetch<ApiItemResponse<User | null>>(`/api/base/users/${id}`);
   return res.data;

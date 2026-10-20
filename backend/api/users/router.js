@@ -1,13 +1,14 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect } = require("../../middleware/auth");
+const { protect, isAdmin } = require("../../middleware/auth");
 const { byAndAt } = require("../../middleware/timeStamp");
 
 const { extractFormData } = require("../../middleware/formData");
 
 const {
   saveValidation,
+  createValidation,
   changePasswordValidation,
   loginValidation,
   registerValidation,
@@ -17,6 +18,7 @@ const {
 
 const {
   save,
+  create,
   login,
   register,
   otpSend,
@@ -29,6 +31,11 @@ const {
 router
   .route("/save")
   .post(protect, extractFormData, saveValidation, byAndAt, save);
+
+// Админ шинэ хэрэглэгч нэмэх
+router
+  .route("/create")
+  .post(protect, isAdmin, createValidation, byAndAt, create);
 
 router.route("/login").post(loginValidation, login);
 // Вэб: утас + нэг удаагийн кодоор нэвтрэх

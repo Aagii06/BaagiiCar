@@ -4,7 +4,7 @@ import { Field, FormError, inputClass, Select } from "@/components/common/Field"
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
-import { changePassword, createRow, deleteRows, getUser, updateRow } from "@/lib/api/admin";
+import { changePassword, createUser, deleteRows, getUser, updateRow } from "@/lib/api/admin";
 import type { User } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLE_LIST, roleLabel, ROLES } from "@/lib/constants";
@@ -37,6 +37,7 @@ function UserForm({ user }: { user: User | null }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (f.password !== f.password_confirm) return setError("Нууц үгийн давталт таарахгүй байна");
+    if (!user && f.password.length < 6) return setError("Нууц үг хамгийн багадаа 6 тэмдэгт байна");
     setBusy(true);
     setError(null);
     const profile = { lastname: f.lastname || null, firstname: f.firstname || null, phonenumber: f.phonenumber, email: f.email || null, role: f.role, status: f.status };
@@ -45,7 +46,7 @@ function UserForm({ user }: { user: User | null }) {
         await updateRow("users", user.id, profile);
         if (f.password) await changePassword(user.id, f.password, f.password_confirm);
       } else {
-        await createRow("users", { ...profile, password: f.password, password_confirm: f.password_confirm });
+        await createUser({ ...profile, password: f.password, password_confirm: f.password_confirm });
       }
       toast("Хадгаллаа");
       router.push("/users");

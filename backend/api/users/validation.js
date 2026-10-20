@@ -48,6 +48,27 @@ module.exports.saveValidation = [
   validation,
 ];
 
+// Админ хэрэглэгч нэмэх
+module.exports.createValidation = [
+  phonenumberValidation("Утасны дугаар оруулна уу"),
+  body("email")
+    .isEmail()
+    .optional({ nullable: true, checkFalsy: true })
+    .withMessage("И-мэйл формат буруу байна"),
+  body("role")
+    .notEmpty()
+    .withMessage("Хэрэглэгчийн эрх сонгоно уу")
+    .isIn(Object.values(roles))
+    .withMessage("Хэрэглэгчийн эрх буруу байна"),
+  body("password")
+    .notEmpty()
+    .withMessage("Нууц үгээ оруулна уу")
+    .isLength({ min: 6 })
+    .withMessage("Нууц үг хамгийн багадаа 6 тэмдэгт байна"),
+  passwordConfirmValidation,
+  validation,
+];
+
 module.exports.registerValidation = [
   phonenumberValidation("Утасны дугаар оруулна уу"),
   body("firstname").notEmpty().withMessage("Нэр оруулна уу"),

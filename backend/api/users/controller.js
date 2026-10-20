@@ -118,6 +118,72 @@ module.exports.save = async (req, res) => {
   }
 };
 
+// Админ шинэ хэрэглэгч нэмэх (ямар ч эрхтэй, админ эрхтэй ч байж болно)
+module.exports.create = async (req, res) => {
+  let result = { success: false, data: null, message: "Амжилттай" };
+
+  const { phonenumber, firstname, lastname, email, role, password, by, at } =
+    req.body;
+  const body = {
+    phonenumber,
+    firstname: firstname || null,
+    lastname: lastname || null,
+    email: email || null,
+    role,
+    password,
+  };
+
+  const t = await sequelize.transaction();
+  try {
+    // Ижил утасны дугаартай устгагдсан хэрэглэгч байвал сэргээнэ
+    let item = await users.findOne({
+      where: { phonenumber, status: "deleted" },
+      transaction: t,
+    });
+
+    if (item) {
+      await item.update(
+        {
+          ...body,
+          status: "active",
+          updated_by: by,
+          updated_at: at,
+          deleted_by: null,
+          deleted_at: null,
+        },
+        { transaction: t },
+      );
+    } else {
+      item = await users.create(
+        { ...body, status: "active", created_by: by, created_at: at },
+        { transaction: t },
+      );
+    }
+
+    await saveLog(
+      {
+        object_name: "users",
+        object_id: item.id,
+        log_action: "created",
+        log_action_mn: "Админ нэмсэн",
+        created_by: by,
+        created_at: at,
+      },
+      t,
+    );
+
+    await t.commit();
+    result.success = true;
+    result.data = { id: item.id };
+    return res.status(200).json(result);
+  } catch (error) {
+    await t.rollback();
+    console.log(error);
+    result.message = typeof error === "string" ? error : "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
 module.exports.login = async (req, res) => {
   let result = { success: true, data: null, message: "" };
 

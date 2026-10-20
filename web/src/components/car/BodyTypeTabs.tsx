@@ -20,7 +20,7 @@ export default function BodyTypeTabs({
 }) {
   const { t } = useI18n();
   return (
-    <div className={cn("no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0", className)}>
+    <div className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0", className)}>
       {items.map((b) => {
         const active = b.id === selectedId;
         return (
@@ -30,11 +30,11 @@ export default function BodyTypeTabs({
             aria-pressed={active}
             onClick={() => onSelect(active ? undefined : b.id)}
             className={cn(
-              "flex w-[118px] shrink-0 flex-col items-center gap-2 rounded-2xl border-2 bg-card px-3 pb-4 pt-5 text-sm font-semibold transition-colors md:w-[132px]",
+              "flex w-[88px] shrink-0 flex-col items-center gap-1.5 rounded-xl border-2 bg-card px-2 pb-2.5 pt-3 text-[13px] font-semibold transition-colors md:w-[100px]",
               active ? "border-foreground" : "border-transparent hover:border-border"
             )}
           >
-            <CarArt shape={shapeFor(b.name)} className="w-14" strokeWidth={2.6} />
+            <CarArt shape={shapeFor(b.name)} className="w-11" strokeWidth={2.6} />
             {bodyTypeLabel(b.name, t)}
           </button>
         );
