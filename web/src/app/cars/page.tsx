@@ -9,12 +9,13 @@ import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
+import { catalogImage } from "@/lib/api/config";
 import type { BodyType, Brand, CarModel } from "@/lib/api/types";
 import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Check, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, Check, SlidersHorizontal } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
@@ -280,45 +281,41 @@ function Filters({
       </Group>
 
       <Group title={t("Төрөл")}>
-        <Select
-          value=""
-          onChange={(e) => {
-            const id = num(e.target.value);
-            if (id) set({ body: [...p.body, id] });
-          }}
-          disabled={!bodyTypes.length || p.body.length === bodyTypes.length}
-          aria-label={t("Төрөл")}
-        >
-          <option value="">{bodyTypes.length ? t("Төрөл сонгох") : t("Ачаалж байна...")}</option>
-          {bodyTypes
-            .filter((b) => !p.body.includes(b.id))
-            .map((b) => (
-              <option key={b.id} value={b.id}>
-                {bodyTypeLabel(b.name, t)}
-              </option>
-            ))}
-        </Select>
-        {p.body.length > 0 && (
-          <ul className="mt-2.5 space-y-2">
-            {p.body.map((id) => {
-              const b = bodyTypes.find((x) => x.id === id);
-              if (!b) return null;
+        {/* Toggle tiles, any number at once; the check marks what is on. */}
+        {bodyTypes.length ? (
+          <div className="grid grid-cols-2 gap-2">
+            {bodyTypes.map((b) => {
+              const on = p.body.includes(b.id);
+              const image = catalogImage(b.image, "bodyTypes");
               return (
-                <li key={id} className="flex items-center gap-3 rounded-xl bg-muted py-2 pl-3 pr-2">
-                  <CarArt shape={shapeFor(b.name)} className="w-12 shrink-0" strokeWidth={2.6} />
-                  <span className="flex-1 truncate text-sm font-semibold">{bodyTypeLabel(b.name, t)}</span>
-                  <button
-                    type="button"
-                    onClick={() => set({ body: p.body.filter((x) => x !== id) })}
-                    className="grid size-7 place-items-center rounded-lg text-muted-foreground hover:bg-white hover:text-foreground"
-                    aria-label={`${t("Хасах")}: ${bodyTypeLabel(b.name, t)}`}
-                  >
-                    <X className="size-4" />
-                  </button>
-                </li>
+                <button
+                  key={b.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => set({ body: on ? p.body.filter((x) => x !== b.id) : [...p.body, b.id] })}
+                  className={cn(
+                    "relative flex flex-col items-center gap-1.5 rounded-xl border-2 bg-muted px-2 pb-2.5 pt-3 text-[13px] font-semibold transition-colors",
+                    on ? "border-primary bg-primary-soft" : "border-transparent hover:border-border"
+                  )}
+                >
+                  {on && (
+                    <span className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-primary text-white">
+                      <Check className="size-3" strokeWidth={3.2} />
+                    </span>
+                  )}
+                  {image ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- catalog images from the backend
+                    <img src={image} alt="" loading="lazy" className="h-8 w-full object-contain" />
+                  ) : (
+                    <CarArt shape={shapeFor(b.name)} className="h-8 w-auto" strokeWidth={2.6} />
+                  )}
+                  <span className="w-full truncate text-center">{bodyTypeLabel(b.name, t)}</span>
+                </button>
               );
             })}
-          </ul>
+          </div>
+        ) : (
+          <Spinner className="mx-auto size-5" />
         )}
       </Group>
 
