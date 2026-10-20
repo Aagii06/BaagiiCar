@@ -6,12 +6,12 @@ import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
-import { deleteCar, listCars, markSold, setFeatured, type CarFilter } from "@/lib/api/admin";
+import { approveCar, deleteCar, listCars, markSold, setFeatured, type CarFilter } from "@/lib/api/admin";
 import type { Car } from "@/lib/api/types";
 import { CAR_STATUS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPrice } from "@/lib/utils";
-import { Plus, Search, Star } from "lucide-react";
+import { Check, Plus, Search, Star } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -20,6 +20,7 @@ const PAGE_SIZE = 20;
 type Tab = NonNullable<CarFilter["status"]> | "all";
 const TABS: { value: Tab; label: string }[] = [
   { value: "all", label: "Бүгд" },
+  { value: "pending", label: "Хүлээгдэж буй" },
   { value: "active", label: "Идэвхтэй" },
   { value: "featured", label: "Онцлох" },
   { value: "sold", label: "Зарагдсан" },
@@ -63,6 +64,12 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
       </Link>
       {car.status !== "deleted" && (
         <div className="mt-3 flex gap-2 border-t border-border pt-3">
+          {car.status === "pending" && (
+            <button onClick={() => run(() => approveCar(car.id), "Баталлаа, вэб дээр нийтлэгдлээ")} className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white">
+              <Check className="size-3.5" strokeWidth={3} />
+              Батлах
+            </button>
+          )}
           {car.status === "active" && (
             <button
               onClick={() => run(() => setFeatured(car, !featured), featured ? "Онцлохоос хаслаа" : "Онцоллоо")}

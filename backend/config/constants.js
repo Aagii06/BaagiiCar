@@ -8,6 +8,8 @@ const constant = {
 
   // Машины зарын төлөв
   carStatuses: {
+    // Админ биш хэрэглэгчийн шинэ зар админ батлах хүртэл вэб дээр гарахгүй
+    pending: "pending",
     active: "active",
     sold: "sold",
     deleted: "deleted",

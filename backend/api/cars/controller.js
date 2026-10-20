@@ -38,9 +38,12 @@ module.exports.save = async (req, res) => {
   if (loggedUser?.role !== roles.admin)
     adminOnlyFields.forEach((field) => delete body[field]);
 
+  const isAdmin = loggedUser?.role === roles.admin;
+  let prevStatus = null;
   if (id) {
-    const { error } = await findOwnCar(id, loggedUser);
+    const { car, error } = await findOwnCar(id, loggedUser);
     if (error) return res.status(200).json({ ...result, message: error });
+    prevStatus = car.status;
   }
 
   const t = await sequelize.transaction();
@@ -63,7 +66,8 @@ module.exports.save = async (req, res) => {
           user_id: loggedUser.id,
           phonenumber: loggedUser.phonenumber,
           ...body,
-          status: carStatuses.active,
+          // Админ шууд нийтэлнэ, бусдынх админ батлахыг хүлээнэ
+          status: isAdmin ? carStatuses.active : carStatuses.pending,
           created_by: by,
           created_at: at,
         },
@@ -120,8 +124,11 @@ module.exports.save = async (req, res) => {
     );
 
     await t.commit();
-    // Шинэ зарын мэдэгдлийг хариуг хүлээлгэлгүйгээр ар талд илгээнэ
-    if (!id) setImmediate(() => notifyNewCar(item.id));
+    // Шинэ зар нийтлэгдэх (шууд эсвэл батлагдах) үед мэдэгдлийг ар талд илгээнэ
+    const published = id
+      ? prevStatus === carStatuses.pending && item.status === carStatuses.active
+      : item.status === carStatuses.active;
+    if (published) setImmediate(() => notifyNewCar(item.id));
     result.success = true;
     result.data = { id: item.id };
     return res.status(200).json(result);
@@ -130,6 +137,48 @@ module.exports.save = async (req, res) => {
     console.log(error);
     result.success = false;
     result.message = typeof error === "string" ? error : "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
+// Хүлээгдэж буй зарыг батлаж нийтлэх (зөвхөн админ)
+module.exports.approve = async (req, res) => {
+  let result = { success: false, data: null, message: "Амжилттай" };
+  const { id, by, at } = req.body;
+  if (req.loggedUser?.role !== roles.admin)
+    return res.status(200).json({ ...result, message: "Зөвхөн админ батлах боломжтой" });
+
+  const t = await sequelize.transaction();
+  try {
+    const [affected] = await cars.update(
+      { status: carStatuses.active, updated_by: by, updated_at: at },
+      { where: { id, status: carStatuses.pending }, transaction: t },
+    );
+    if (!affected) {
+      await t.rollback();
+      return res
+        .status(200)
+        .json({ ...result, message: "Батлах хүлээгдэж буй зар олдсонгүй" });
+    }
+    await saveLog(
+      {
+        object_name: "cars",
+        object_id: id,
+        log_action: "approved",
+        modify_data: JSON.stringify({ status: carStatuses.active }),
+        created_by: by,
+        created_at: at,
+      },
+      t,
+    );
+    await t.commit();
+    setImmediate(() => notifyNewCar(id));
+    result.success = true;
+    return res.status(200).json(result);
+  } catch (error) {
+    await t.rollback();
+    console.log(error);
+    result.message = "Алдаа";
     return res.status(200).json(result);
   }
 };
@@ -176,7 +225,7 @@ module.exports.toggleFavorite = async (req, res) => {
   const user_id = req.loggedUser.id;
   try {
     const car = await cars.findOne({
-      where: { id: car_id, status: { [op.ne]: carStatuses.deleted } },
+      where: { id: car_id, status: { [op.notIn]: [carStatuses.deleted, carStatuses.pending] } },
       attributes: ["id"],
       raw: true,
     });
@@ -204,7 +253,7 @@ module.exports.getFavorites = async (req, res) => {
   try {
     const rows = await vwCars.findAll({
       where: {
-        status: { [op.ne]: carStatuses.deleted },
+        status: { [op.notIn]: [carStatuses.deleted, carStatuses.pending] },
         id: {
           [op.in]: sequelize.literal(
             `(SELECT car_id FROM favorites WHERE user_id = ${Number(req.loggedUser.id)})`,

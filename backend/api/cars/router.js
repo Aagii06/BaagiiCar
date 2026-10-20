@@ -15,6 +15,7 @@ const {
 const {
   save,
   markSold,
+  approve,
   toggleFavorite,
   getFavorites,
 } = require("./controller");
@@ -22,6 +23,7 @@ const {
 router
   .route("/save")
   .post(protect, extractFormData, saveValidation, byAndAt, save);
+router.route("/approve").post(protect, idValidation, byAndAt, approve);
 router.route("/mark-sold").post(protect, idValidation, byAndAt, markSold);
 router
   .route("/favorite")

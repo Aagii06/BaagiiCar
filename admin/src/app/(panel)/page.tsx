@@ -7,11 +7,12 @@ import { countOf, recentCars } from "@/lib/api/admin";
 import { CAR_STATUS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPriceShort } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 
 async function loadStats() {
-  const [active, sold, featured, users, brands, models] = await Promise.all([
+  const [pending, active, sold, featured, users, brands, models] = await Promise.all([
+    countOf("cars", [["status", "=", "pending"]]),
     countOf("cars", [["status", "=", "active"]]),
     countOf("cars", [["status", "=", "sold"]]),
     countOf("cars", [["status", "=", "active"], ["is_featured", "=", 1]]),
@@ -19,7 +20,7 @@ async function loadStats() {
     countOf("brands", [["status", "=", "active"]]),
     countOf("carModels", [["status", "=", "active"]]),
   ]);
-  return { active, sold, featured, users, brands, models };
+  return { pending, active, sold, featured, users, brands, models };
 }
 
 export default function DashboardPage() {
@@ -47,6 +48,13 @@ export default function DashboardPage() {
           </Link>
         }
       />
+      {s && s.pending > 0 && (
+        <Link href="/cars?status=pending" className="mb-3 flex items-center gap-3 rounded-2xl bg-amber-soft p-3.5 text-amber-ink">
+          <span className="font-display text-2xl font-bold">{s.pending}</span>
+          <span className="text-sm font-semibold">зар батлахыг хүлээж байна</span>
+          <ChevronRight className="ml-auto size-4" />
+        </Link>
+      )}
       {stats.loading && !s ? (
         <LoadingState />
       ) : stats.error ? (

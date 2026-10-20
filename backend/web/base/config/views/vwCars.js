@@ -1,9 +1,11 @@
 const { vwCars, cars, op } = require("../../../../models");
 const { carStatuses } = require("../../../../config/constants");
 
-// Нэвтрээгүй хэрэглэгчид устгагдсан зар харагдахгүй
+// Олон нийтэд устгагдсан болон батлагдаагүй зар харагдахгүй
+const hidden = [carStatuses.deleted, carStatuses.pending];
+
 const list = (req, res, next) => {
-  req.where.push({ status: { [op.ne]: carStatuses.deleted } });
+  req.where.push({ status: { [op.notIn]: hidden } });
   next();
 };
 
@@ -14,7 +16,7 @@ const show = async (req, res, next) => {
   const { id } = req.params;
   // MySQL дээр [[result, affectedRows]] буцаана
   const [[, affectedRows]] = await cars.increment("view_count", {
-    where: { id, status: { [op.ne]: carStatuses.deleted } },
+    where: { id, status: { [op.notIn]: hidden } },
   });
   if (!affectedRows)
     return res

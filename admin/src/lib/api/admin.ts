@@ -77,7 +77,7 @@ export const getLocations = () => listAll<Location>("locations").then(bySort);
 // --- cars ------------------------------------------------------------------
 
 export interface CarFilter {
-  status?: "active" | "sold" | "deleted" | "featured";
+  status?: "pending" | "active" | "sold" | "deleted" | "featured";
   search?: string;
   page: number;
   pageSize: number;
@@ -115,6 +115,10 @@ export async function getCarFiles(carId: number) {
     `/api/base/allFiles${listQuery({ filter: [["object_name", "=", "cars"], ["data_id", "=", carId], NOT_DELETED] })}`
   );
   return [...res.data.rows].sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.id - b.id);
+}
+
+export async function approveCar(id: number) {
+  await apiFetch("/api/cars/approve", { method: "POST", body: { id } });
 }
 
 export async function markSold(id: number) {

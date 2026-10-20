@@ -1,6 +1,7 @@
 "use client";
 
 import { Field, FormError, inputClass, Select } from "@/components/common/Field";
+import PhotoViewer from "@/components/common/PhotoViewer";
 import { getBodyTypes, getBrands, getLocations, getModels, saveCar, type CarInput, type PhotoItem } from "@/lib/api/cars";
 import type { Car } from "@/lib/api/types";
 import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, FUEL_TYPES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
@@ -138,6 +139,7 @@ export default function CarForm({
   const [photos, setPhotos] = useState<PhotoItem[]>(initialPhotos);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [viewing, setViewing] = useState<number | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const brands = useApi(getBrands);
@@ -195,9 +197,11 @@ export default function CarForm({
         <div className="grid grid-cols-3 gap-2">
           {photos.map((p, i) => (
             <div key={p.url} className="relative aspect-square overflow-hidden rounded-xl bg-muted">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local previews / backend uploads */}
-              <img src={p.url} alt="" className="size-full object-cover" />
-              {i === 0 && <span className="absolute bottom-1.5 left-1.5 rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold text-white">Нүүр</span>}
+              <button type="button" onClick={() => setViewing(i)} aria-label="Зураг томоор харах" className="size-full">
+                {/* eslint-disable-next-line @next/next/no-img-element -- local previews / backend uploads */}
+                <img src={p.url} alt="" className="size-full object-cover" />
+              </button>
+              {i === 0 && <span className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold text-white">Нүүр</span>}
               <button type="button" onClick={() => removePhoto(i)} aria-label="Зураг хасах" className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-dark/80 text-white">
                 <X className="size-3.5" strokeWidth={3} />
               </button>
@@ -215,6 +219,7 @@ export default function CarForm({
           )}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">JPG, PNG, WEBP · {MAX_PHOTOS} хүртэл зураг. Эхний зураг нүүр зураг болно.</p>
+        {viewing !== null && <PhotoViewer urls={photos.map((p) => p.url)} start={viewing} onClose={() => setViewing(null)} />}
         <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => (addFiles(e.target.files), (e.target.value = ""))} />
       </Section>
 
