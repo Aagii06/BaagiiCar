@@ -53,13 +53,13 @@ export async function deleteRows(target: string, ids: number[]) {
 
 // --- catalog ---------------------------------------------------------------
 
-/** `POST /api/upload/image` (admin): saves the file, returns its path ("uploads/bodyTypes/…png") for an image/logo column. */
+/** `POST /api/upload/image` (admin): saves into `uploads/<folder>`, returns the file name for the image/logo column. */
 export async function uploadCatalogImage(folder: "bodyTypes" | "brands", file: File) {
   const form = new FormData();
   form.append("folder", folder);
   form.append("image", file);
-  const res = await apiFetch<ApiItemResponse<{ path: string }>>("/api/upload/image", { method: "POST", body: form });
-  return res.data.path;
+  const res = await apiFetch<ApiItemResponse<{ fileName: string }>>("/api/upload/image", { method: "POST", body: form });
+  return res.data.fileName;
 }
 
 const bySort = <T extends { sort_order?: number | null; name: string }>(rows: T[]) =>

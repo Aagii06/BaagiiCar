@@ -8,7 +8,7 @@ import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/St
 import HeroCarousel from "@/components/home/HeroCarousel";
 import HeroSearch from "@/components/home/HeroSearch";
 import { featuredCars, getBodyTypes, getBrands, searchCars } from "@/lib/api/cars";
-import { remoteImage } from "@/lib/api/config";
+import { catalogImage } from "@/lib/api/config";
 import type { BodyType } from "@/lib/api/types";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -68,7 +68,7 @@ function BrandGrid() {
       <SectionTitle kicker={t("Бүх үйлдвэр")} light={t("Машины")} bold={t("брэнд")} action={<ViewAll href="/cars" />} />
       <div className="mt-8 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
         {brands.data.slice(0, 16).map((b, i) => {
-          const logo = remoteImage(b.logo);
+          const logo = catalogImage(b.logo, "brands");
           return (
             <Link
               key={b.id}

@@ -10,11 +10,9 @@ export function uploadUrl(fileName: string | null | undefined, size: ImageSize =
   return `${API_BASE_URL}/uploads/${folder}/${prefix}${fileName}`;
 }
 
-/** Brand logos / body-type icons: absolute URLs, or paths served from the backend's public folder (e.g. "logos/lexus.png"). */
-export function remoteImage(url: string | null | undefined) {
-  if (!url) return null;
-  if (/^https?:\/\//.test(url)) return url;
-  return `${API_BASE_URL}/${url.replace(/^\//, "")}`;
+/** Brand logos / body-type icons: the DB keeps only the file name, stored in `<backend>/uploads/<folder>`; absolute URLs pass through. */
+export function catalogImage(fileName: string | null | undefined, folder: "brands" | "bodyTypes") {
+  return uploadUrl(fileName?.trim(), "full", folder);
 }
 
 /** Public site, for "open on site" links. */

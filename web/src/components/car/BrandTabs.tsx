@@ -1,6 +1,6 @@
 "use client";
 
-import { remoteImage } from "@/lib/api/config";
+import { catalogImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +21,7 @@ export default function BrandTabs({
     <div className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0", className)}>
       {items.map((b) => {
         const active = b.id === selectedId;
-        const logo = remoteImage(b.logo);
+        const logo = catalogImage(b.logo, "brands");
         return (
           <button
             key={b.id}

@@ -1,6 +1,6 @@
 "use client";
 
-import { remoteImage } from "@/lib/api/config";
+import { catalogImage } from "@/lib/api/config";
 import type { BodyType } from "@/lib/api/types";
 import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -24,7 +24,7 @@ export default function BodyTypeTabs({
     <div className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0", className)}>
       {items.map((b) => {
         const active = b.id === selectedId;
-        const image = remoteImage(b.image);
+        const image = catalogImage(b.image, "bodyTypes");
         return (
           <button
             key={b.id}

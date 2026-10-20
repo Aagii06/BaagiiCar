@@ -6,7 +6,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/common/States
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, getModels, updateRow, uploadCatalogImage } from "@/lib/api/admin";
-import { remoteImage } from "@/lib/api/config";
+import { catalogImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
@@ -39,7 +39,7 @@ const FIELDS: Record<Tab, FieldDef[]> = {
   brands: [
     { key: "name", label: "Нэр", required: true, placeholder: "Toyota" },
     { key: "country", label: "Улс", placeholder: "Japan" },
-    { key: "logo", label: "Лого", type: "image", folder: "brands", placeholder: "https://…" },
+    { key: "logo", label: "Лого", type: "image", folder: "brands", placeholder: "Файлын нэр эсвэл https://…" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
   models: [
@@ -48,7 +48,7 @@ const FIELDS: Record<Tab, FieldDef[]> = {
   ],
   bodyTypes: [
     { key: "name", label: "Нэр", required: true, placeholder: "Жийп" },
-    { key: "image", label: "Дүрс", type: "image", folder: "bodyTypes", placeholder: "https://…" },
+    { key: "image", label: "Дүрс", type: "image", folder: "bodyTypes", placeholder: "Файлын нэр эсвэл https://…" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
   locations: [
@@ -64,7 +64,7 @@ async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
     const brands = await getBrands();
     return {
       brands,
-      rows: brands.map((b) => ({ id: b.id, name: b.name, subtitle: [b.country, b.car_count != null && `${b.car_count} зар`].filter(Boolean).join(" · "), image: remoteImage(b.logo), values: { ...b } })),
+      rows: brands.map((b) => ({ id: b.id, name: b.name, subtitle: [b.country, b.car_count != null && `${b.car_count} зар`].filter(Boolean).join(" · "), image: catalogImage(b.logo, "brands"), values: { ...b } })),
     };
   }
   if (tab === "models") {
@@ -81,18 +81,18 @@ async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
     const rows = await getBodyTypes();
     return {
       brands: [],
-      rows: rows.map((b) => ({ id: b.id, name: b.name, subtitle: b.car_count != null ? `${b.car_count} зар` : undefined, image: remoteImage(b.image), values: { ...b } })),
+      rows: rows.map((b) => ({ id: b.id, name: b.name, subtitle: b.car_count != null ? `${b.car_count} зар` : undefined, image: catalogImage(b.image, "bodyTypes"), values: { ...b } })),
     };
   }
   const rows = await getLocations();
   return { brands: [], rows: rows.map((l) => ({ id: l.id, name: l.name, values: { ...l } })) };
 }
 
-/** Preview + file upload; the URL/path can still be typed by hand. */
+/** Preview + file upload (stores the returned file name); an https URL can still be typed by hand. */
 function ImageInput({ value, folder, placeholder, onChange }: { value: string; folder: NonNullable<FieldDef["folder"]>; placeholder?: string; onChange: (v: string) => void }) {
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
-  const preview = remoteImage(value.trim());
+  const preview = catalogImage(value, folder);
 
   const pick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

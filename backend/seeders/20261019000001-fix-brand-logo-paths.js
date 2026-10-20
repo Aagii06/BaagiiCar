@@ -1,18 +1,15 @@
 "use strict";
 
-// Апп-ын "assets/logos/x" замыг backend-ийн public/logos/x руу шилжүүлнэ (web, admin-д харагдуулахын тулд)
+// Хуучин "assets/logos/x", "logos/x" замыг зөвхөн файлын нэр болгоно
+// (файл public/uploads/brands дотор, фронт URL-ийг угсарна)
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface) {
     await queryInterface.sequelize.query(
-      "UPDATE brands SET logo = SUBSTRING(logo, 8) WHERE logo LIKE 'assets/logos/%'",
+      "UPDATE brands SET logo = SUBSTRING_INDEX(logo, '/', -1) WHERE logo LIKE 'assets/logos/%' OR logo LIKE 'logos/%'",
     );
   },
 
-  async down(queryInterface) {
-    await queryInterface.sequelize.query(
-      "UPDATE brands SET logo = CONCAT('assets/', logo) WHERE logo LIKE 'logos/%'",
-    );
-  },
+  async down() {},
 };

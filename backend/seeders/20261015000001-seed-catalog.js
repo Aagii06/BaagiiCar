@@ -2,11 +2,12 @@
 
 // Апп-ын lib/data/car_brands.dart, car_body_types.dart, filter_data.dart-аас авсан анхны өгөгдөл
 
+// Лого: http(s) URL эсвэл public/uploads/brands доторх файлын нэр
 const brands = [
   ["Toyota", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/toyota&w=128&h=128"],
   ["Honda", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/honda&w=128&h=128"],
   ["Nissan", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/nissan&w=128&h=128"],
-  ["Lexus", "Japan", "logos/lexus.png"],
+  ["Lexus", "Japan", "lexus.png"],
   ["Mazda", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/mazda&w=128&h=128"],
   ["Subaru", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/subaru&w=128&h=128"],
   ["Suzuki", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/suzuki&w=128&h=128"],
@@ -27,7 +28,7 @@ const brands = [
   ["Ferrari", "Italy", "https://images.weserv.nl/?url=cdn.simpleicons.org/ferrari&w=128&h=128"],
   ["Lamborghini", "Italy", "https://images.weserv.nl/?url=cdn.simpleicons.org/lamborghini&w=128&h=128"],
   ["Volvo", "Sweden", "https://images.weserv.nl/?url=cdn.simpleicons.org/volvo&w=128&h=128"],
-  ["BYD", "China", "logos/byd.png"],
+  ["BYD", "China", "byd.png"],
 ];
 
 const carModels = {
@@ -38,29 +39,29 @@ const carModels = {
   Kia: ["Sorento", "Sportage", "K5", "Carnival"],
 };
 
-// Зураг: public/uploads/bodyTypes/*.png (migrations/20261020000010-replace-bodyTypes.js-тэй ижил)
+// Зураг: public/uploads/bodyTypes/*.png — баазад зөвхөн файлын нэр хадгална
 const bodyTypes = [
-  ["Микро", "uploads/bodyTypes/01-micro.png"],
-  ["Седан", "uploads/bodyTypes/02-sedan.png"],
-  ["Хэтчбэк", "uploads/bodyTypes/03-hatchback.png"],
-  ["Универсал", "uploads/bodyTypes/04-universal.png"],
-  ["Лифтбэк", "uploads/bodyTypes/05-liftback.png"],
-  ["Купе", "uploads/bodyTypes/06-coupe.png"],
-  ["Кабриолет", "uploads/bodyTypes/07-cabriolet.png"],
-  ["Родстер", "uploads/bodyTypes/08-roadster.png"],
-  ["Тарга", "uploads/bodyTypes/09-targa.png"],
-  ["Лимузин", "uploads/bodyTypes/10-limousine.png"],
-  ["Масл кар", "uploads/bodyTypes/11-muscle-car.png"],
-  ["Спорт", "uploads/bodyTypes/12-sports-car.png"],
-  ["Супер кар", "uploads/bodyTypes/13-super-car.png"],
-  ["Жийп", "uploads/bodyTypes/14-suv.png"],
-  ["Кроссовер", "uploads/bodyTypes/15-crossover.png"],
-  ["Пикап", "uploads/bodyTypes/16-pickup.png"],
-  ["Ван", "uploads/bodyTypes/17-van.png"],
-  ["Минивэн", "uploads/bodyTypes/18-minivan.png"],
-  ["Микроавтобус", "uploads/bodyTypes/19-minibus.png"],
-  ["Кемпер", "uploads/bodyTypes/20-campervan.png"],
-  ["Автобус", "uploads/bodyTypes/21-bus.png"],
+  ["Микро", "01-micro.png"],
+  ["Седан", "02-sedan.png"],
+  ["Хэтчбэк", "03-hatchback.png"],
+  ["Универсал", "04-universal.png"],
+  ["Лифтбэк", "05-liftback.png"],
+  ["Купе", "06-coupe.png"],
+  ["Кабриолет", "07-cabriolet.png"],
+  ["Родстер", "08-roadster.png"],
+  ["Тарга", "09-targa.png"],
+  ["Лимузин", "10-limousine.png"],
+  ["Масл кар", "11-muscle-car.png"],
+  ["Спорт", "12-sports-car.png"],
+  ["Супер кар", "13-super-car.png"],
+  ["Жийп", "14-suv.png"],
+  ["Кроссовер", "15-crossover.png"],
+  ["Пикап", "16-pickup.png"],
+  ["Ван", "17-van.png"],
+  ["Минивэн", "18-minivan.png"],
+  ["Микроавтобус", "19-minibus.png"],
+  ["Кемпер", "20-campervan.png"],
+  ["Автобус", "21-bus.png"],
 ];
 
 // Дахин ажиллуулахад давхардахгүй: зөвхөн байхгүй нэрийг нэмнэ

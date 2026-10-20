@@ -2,8 +2,8 @@ const fs = require("fs");
 const { saveFile } = require("../../helper/fileHelper");
 
 // Админаас каталогийн зураг (биеийн хэлбэрийн дүрс, үйлдвэрийн лого) солих.
-// Хадгалсан файлын харьцангуй замыг буцаана ("uploads/bodyTypes/....png"),
-// түүнийгээ мөрийн image/logo баганад хадгална.
+// public/uploads/<folder> дотор хадгалаад зөвхөн файлын нэрийг буцаана,
+// түүнийгээ мөрийн image/logo баганад хадгална (фронт URL-ийг угсарна).
 const folders = ["bodyTypes", "brands"];
 
 module.exports.uploadImage = async (req, res) => {
@@ -26,7 +26,7 @@ module.exports.uploadImage = async (req, res) => {
     // Дүрс жижиг тул хэмжээ өөрчлөхгүй, шууд хадгална (тунгалаг дэвсгэр хадгалагдана)
     const { fileName } = await saveFile(file, folder, { resize: false });
     result.success = true;
-    result.data = { path: `uploads/${folder}/${fileName}` };
+    result.data = { fileName };
     return res.status(200).json(result);
   } catch (error) {
     console.log(error);
