@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, formatPhone } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
@@ -57,9 +57,9 @@ export function PasswordInput({ className, ...props }: Omit<React.InputHTMLAttri
   );
 }
 
-const PHONE_MASK = "____ ____";
+const PHONE_MASK = "________";
 
-/** 8-digit phone input: `value`/`onChange` carry bare digits; shows "9911 2233" plus a "____ ____" guide while focused. */
+/** 8-digit phone input: `value`/`onChange` carry bare digits; shows a "________" guide while focused. */
 export function PhoneInput({
   value,
   onChange,
@@ -67,7 +67,7 @@ export function PhoneInput({
   ...props
 }: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type"> & { value: string; onChange: (digits: string) => void }) {
   const [focused, setFocused] = useState(false);
-  const shown = formatPhone(value);
+  const shown = value.replace(/\D/g, "").slice(0, PHONE_MASK.length);
   return (
     <span className="relative block">
       <input
@@ -76,7 +76,7 @@ export function PhoneInput({
         inputMode="numeric"
         maxLength={PHONE_MASK.length}
         value={shown}
-        onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 8))}
+        onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, PHONE_MASK.length))}
         onFocus={(e) => (setFocused(true), props.onFocus?.(e))}
         onBlur={(e) => (setFocused(false), props.onBlur?.(e))}
         className={cn(inputClass, "focus:placeholder:text-transparent", className)}

@@ -1,7 +1,7 @@
 "use strict";
 
-// Биеийн хэлбэрийг шинэ жагсаалтаар солино. Зураг: public/bodyTypes/*.png
-// (сервер static-аар /bodyTypes/... гэж өгнө, image баганад харьцангуй зам хадгална)
+// Биеийн хэлбэрийг шинэ жагсаалтаар солино. Зураг: public/uploads/bodyTypes/*.png
+// (сервер static-аар /uploads/bodyTypes/... гэж өгнө, image баганад харьцангуй зам хадгална)
 
 const bodyTypes = [
   ["Микро", "01-micro.png"],
@@ -39,7 +39,7 @@ module.exports = {
       "bodyTypes",
       bodyTypes.map(([name, file], i) => ({
         name,
-        image: `bodyTypes/${file}`,
+        image: `uploads/bodyTypes/${file}`,
         sort_order: i + 1,
         status: "active",
         created_at: "2026-10-20 00:00:00",

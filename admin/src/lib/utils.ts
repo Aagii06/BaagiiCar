@@ -28,11 +28,6 @@ export function formatNumber(value: string | number | null | undefined) {
   return toNumber(value).toLocaleString("en-US");
 }
 
-/** "99112233" → "9911 2233" (8-digit Mongolian number mask). */
-export function formatPhone(value: string | null | undefined) {
-  return (value ?? "").replace(/\D/g, "").slice(0, 8).replace(/^(\d{4})(\d)/, "$1 $2");
-}
-
 export function formatEngine(value: string | number | null | undefined) {
   const n = toNumber(value);
   return n ? `${n} л` : "—";

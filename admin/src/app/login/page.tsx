@@ -48,7 +48,7 @@ function LoginForm() {
       </div>
       <form onSubmit={submit} className="-mt-4 space-y-4 rounded-3xl bg-white p-5 shadow-xl shadow-black/5">
         <Field label="Утасны дугаар">
-          <PhoneInput autoComplete="tel" placeholder="0000 0000" value={phone} onChange={setPhone} required />
+          <PhoneInput autoComplete="tel" placeholder="00000000" value={phone} onChange={setPhone} required />
         </Field>
         <Field label="Нууц үг">
           <PasswordInput autoComplete="current-password" placeholder="Нууц үг" value={password} onChange={(e) => setPassword(e.target.value)} required />
