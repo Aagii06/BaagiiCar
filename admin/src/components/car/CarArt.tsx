@@ -34,10 +34,10 @@ const BODY: Record<Shape, { outline: string; window: string }> = {
 
 export function shapeFor(bodyType: string | null | undefined): Shape {
   const n = (bodyType ?? "").toLowerCase();
-  if (/suv|van|wagon|жийп|микро/.test(n)) return "suv";
-  if (/hatch|хэтч/.test(n)) return "hatch";
+  if (/suv|van|wagon|bus|жийп|микро|ван|вэн|кроссовер|универсал|автобус|кемпер/.test(n)) return "suv";
+  if (/hatch|хэтч|лифт/.test(n)) return "hatch";
   if (/pickup|пикап/.test(n)) return "pickup";
-  if (/coupe|convertible|купе|кабри/.test(n)) return "coupe";
+  if (/coupe|convertible|купе|кабри|родстер|тарга|спорт|супер|масл/.test(n)) return "coupe";
   return "sedan";
 }
 

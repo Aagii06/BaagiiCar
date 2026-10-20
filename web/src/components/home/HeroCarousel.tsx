@@ -34,7 +34,7 @@ const SLIDES: Slide[] = [
     bold: "жийпээ олоорой",
     text: "Land Cruiser, Prado, Lexus LX — Монголын замд тэсвэртэй машинууд нэг дор.",
     cta: "Жийп үзэх",
-    bodyType: "SUV",
+    bodyType: "Жийп",
   },
   {
     image: "crossover-snow",

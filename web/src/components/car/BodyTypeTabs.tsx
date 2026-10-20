@@ -1,5 +1,6 @@
 "use client";
 
+import { remoteImage } from "@/lib/api/config";
 import type { BodyType } from "@/lib/api/types";
 import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -23,6 +24,7 @@ export default function BodyTypeTabs({
     <div className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0", className)}>
       {items.map((b) => {
         const active = b.id === selectedId;
+        const image = remoteImage(b.image);
         return (
           <button
             key={b.id}
@@ -34,7 +36,12 @@ export default function BodyTypeTabs({
               active ? "border-foreground" : "border-transparent hover:border-border"
             )}
           >
-            <CarArt shape={shapeFor(b.name)} className="w-9" strokeWidth={2.6} />
+            {image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={image} alt="" className="h-7 w-11 object-contain" loading="lazy" />
+            ) : (
+              <CarArt shape={shapeFor(b.name)} className="w-9" strokeWidth={2.6} />
+            )}
             {bodyTypeLabel(b.name, t)}
           </button>
         );

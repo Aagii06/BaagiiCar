@@ -38,15 +38,29 @@ const carModels = {
   Kia: ["Sorento", "Sportage", "K5", "Carnival"],
 };
 
+// Зураг: public/bodyTypes/*.png (migrations/20261020000010-replace-bodyTypes.js-тэй ижил)
 const bodyTypes = [
-  ["SUV", "https://img.icons8.com/ios-filled/100/suv.png"],
-  ["Sedan", "https://img.icons8.com/ios-filled/100/sedan.png"],
-  ["Hatchback", "https://img.icons8.com/ios-filled/100/hatchback.png"],
-  ["Coupe", "https://img.icons8.com/ios-filled/100/sport-car.png"],
-  ["Pickup", "https://img.icons8.com/ios-filled/100/pickup.png"],
-  ["Van", "https://img.icons8.com/ios-filled/100/van.png"],
-  ["Wagon", "https://img.icons8.com/ios-filled/100/station-wagon.png"],
-  ["Convertible", "https://img.icons8.com/ios-filled/100/convertible.png"],
+  ["Микро", "bodyTypes/01-micro.png"],
+  ["Седан", "bodyTypes/02-sedan.png"],
+  ["Хэтчбэк", "bodyTypes/03-hatchback.png"],
+  ["Универсал", "bodyTypes/04-universal.png"],
+  ["Лифтбэк", "bodyTypes/05-liftback.png"],
+  ["Купе", "bodyTypes/06-coupe.png"],
+  ["Кабриолет", "bodyTypes/07-cabriolet.png"],
+  ["Родстер", "bodyTypes/08-roadster.png"],
+  ["Тарга", "bodyTypes/09-targa.png"],
+  ["Лимузин", "bodyTypes/10-limousine.png"],
+  ["Масл кар", "bodyTypes/11-muscle-car.png"],
+  ["Спорт", "bodyTypes/12-sports-car.png"],
+  ["Супер кар", "bodyTypes/13-super-car.png"],
+  ["Жийп", "bodyTypes/14-suv.png"],
+  ["Кроссовер", "bodyTypes/15-crossover.png"],
+  ["Пикап", "bodyTypes/16-pickup.png"],
+  ["Ван", "bodyTypes/17-van.png"],
+  ["Минивэн", "bodyTypes/18-minivan.png"],
+  ["Микроавтобус", "bodyTypes/19-minibus.png"],
+  ["Кемпер", "bodyTypes/20-campervan.png"],
+  ["Автобус", "bodyTypes/21-bus.png"],
 ];
 
 // Дахин ажиллуулахад давхардахгүй: зөвхөн байхгүй нэрийг нэмнэ

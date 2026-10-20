@@ -4,22 +4,9 @@ export const TRANSMISSIONS = ["Автомат", "Механик", "CVT", "Тип
 export const DRIVE_TYPES = ["FWD", "RWD", "4WD", "AWD"];
 export const STEERINGS = ["Зүүн", "Баруун"];
 
-/** Seeded body types are English; the design shows them in Mongolian. */
-const BODY_TYPE_MN: Record<string, string> = {
-  SUV: "Жийп",
-  Sedan: "Седан",
-  Hatchback: "Хэтчбэк",
-  Coupe: "Купе",
-  Pickup: "Пикап",
-  Van: "Микро",
-  Wagon: "Универсал",
-  Convertible: "Кабриолет",
-  Electric: "Цахилгаан",
-};
-
+/** Body type names are stored in Mongolian, shown as is. */
 export function bodyTypeLabel(name: string | null | undefined) {
-  if (!name) return "";
-  return BODY_TYPE_MN[name] ?? name;
+  return name ?? "";
 }
 
 export const ROLES = { admin: "ADMIN", dealer: "DEALER", customer: "CUSTOMER" } as const;

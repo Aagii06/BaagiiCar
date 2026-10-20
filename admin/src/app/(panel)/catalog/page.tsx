@@ -8,7 +8,6 @@ import PageHeader from "@/components/layout/PageHeader";
 import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, getModels, updateRow } from "@/lib/api/admin";
 import { remoteImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
-import { bodyTypeLabel } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
@@ -40,8 +39,8 @@ const FIELDS: Record<Tab, FieldDef[]> = {
     { key: "name", label: "Нэр", required: true, placeholder: "Land Cruiser" },
   ],
   bodyTypes: [
-    { key: "name", label: "Нэр", required: true, placeholder: "SUV" },
-    { key: "image", label: "Дүрс (URL)", placeholder: "https://…" },
+    { key: "name", label: "Нэр", required: true, placeholder: "Жийп" },
+    { key: "image", label: "Дүрс (URL)", placeholder: "bodyTypes/14-suv.png эсвэл https://…" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
   locations: [
@@ -74,7 +73,7 @@ async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
     const rows = await getBodyTypes();
     return {
       brands: [],
-      rows: rows.map((b) => ({ id: b.id, name: b.name, subtitle: [bodyTypeLabel(b.name) !== b.name && bodyTypeLabel(b.name), b.car_count != null && `${b.car_count} зар`].filter(Boolean).join(" · "), image: remoteImage(b.image), values: { ...b } })),
+      rows: rows.map((b) => ({ id: b.id, name: b.name, subtitle: b.car_count != null ? `${b.car_count} зар` : undefined, image: remoteImage(b.image), values: { ...b } })),
     };
   }
   const rows = await getLocations();
