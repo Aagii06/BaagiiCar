@@ -16,7 +16,6 @@ export interface Car {
   steering: string | null;
   engine_capacity: string | number | null;
   color: string | null;
-  vin: string | null;
   phonenumber: string | null;
   description: string | null;
   view_count: number | null;

@@ -232,7 +232,6 @@ function Specs({ car }: { car: Car }) {
     ["Хөтлөгч", car.drive_type],
     ["Өнгө", car.color],
     ["Төрөл", bodyTypeLabel(car.body_type_name)],
-    ["VIN", car.vin],
   ];
   return (
     <section className="rounded-2xl bg-card p-4 md:p-5">

@@ -87,6 +87,7 @@ function toInput(f: FormState): CarInput {
     steering: f.steering || null,
     engine_capacity: f.engine_capacity ? f.engine_capacity : null,
     color: f.color.trim() || null,
+    // Арлын дугаар баазад хадгалагдах ч UI-д харуулахгүй — засахад байсан утгыг хэвээр илгээнэ
     vin: f.vin.trim() || null,
     phonenumber: f.phonenumber || null,
     description: f.description.trim() || null,
@@ -327,9 +328,6 @@ export default function CarForm({
             </Field>
             <Field label="Өнгө">
               <input className={inputClass} {...bind("color")} placeholder="Цагаан" />
-            </Field>
-            <Field label="VIN / Арлын дугаар">
-              <input className={inputClass} {...bind("vin")} />
             </Field>
           </div>
         </div>

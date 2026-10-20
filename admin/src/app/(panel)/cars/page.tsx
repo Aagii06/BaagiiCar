@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPrice } from "@/lib/utils";
-import { Check, Pencil, Plus, Search, Star } from "lucide-react";
+import { Check, Plus, Search, Star } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -51,7 +51,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
 
   return (
     <div className={cn("rounded-2xl bg-card p-3", busy && "pointer-events-none opacity-60")}>
-      <Link href={`/cars/${car.id}/view`} className="flex gap-3">
+      <Link href={`/cars/${car.id}`} className="flex gap-3">
         <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} size="thumb" className="h-16 w-20 shrink-0" artClassName="w-[80%]" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
@@ -86,10 +86,6 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
               Зарагдсан
             </button>
           )}
-          <Link href={`/cars/${car.id}`} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5 text-xs font-bold">
-            <Pencil className="size-3.5" />
-            Засах
-          </Link>
           <button onClick={() => run(() => deleteCar(car.id), "Устгалаа", `#${car.id} зарыг устгах уу?`)} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">
             Устгах
           </button>
