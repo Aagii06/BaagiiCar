@@ -1,3 +1,4 @@
+import AppColumn from "@/components/layout/AppColumn";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import type { Metadata, Viewport } from "next";
 import { Inter, Oswald } from "next/font/google";
@@ -20,10 +21,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="mn" className={`${inter.variable} ${oswald.variable}`}>
       <body className="bg-[#e4e6ea] font-sans antialiased">
-        {/* Phone-width column like the shop admin; keep max-w-md in sync with PanelShell's bars. */}
-        <div className="relative mx-auto min-h-screen w-full max-w-md bg-background sm:shadow-xl">
+        <AppColumn>
           <AuthProvider>{children}</AuthProvider>
-        </div>
+        </AppColumn>
       </body>
     </html>
   );
