@@ -155,33 +155,66 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
   const [index, setIndex] = useState(0);
   const [viewing, setViewing] = useState<number | null>(null);
 
-  if (!photos.length) return <CarImage id={car.id} image={null} bodyType={car.body_type_name} className="aspect-[4/3] rounded-2xl md:aspect-[16/10]" />;
+  if (!photos.length) return <CarImage id={car.id} image={null} bodyType={car.body_type_name} className="aspect-[4/3] rounded-2xl md:aspect-auto md:h-[360px]" />;
+
+  const counter = (
+    <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-dark/80 px-2.5 py-1 text-xs font-bold text-white">
+      {index + 1} / {photos.length}
+    </span>
+  );
 
   return (
     <section>
-      <button type="button" onClick={() => setViewing(index)} aria-label="Зураг томоор харах" className="relative block aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted md:aspect-[16/10]">
-        {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-        <img src={uploadUrl(photos[index], "grid")!} alt="" className="size-full object-cover" />
-        <span className="absolute bottom-3 right-3 rounded-full bg-dark px-2.5 py-1 text-xs font-bold text-white">
-          {index + 1} / {photos.length}
-        </span>
-      </button>
-      {photos.length > 1 && (
-        <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto">
-          {photos.map((name, i) => (
-            <button
-              key={name}
-              type="button"
-              onClick={() => setIndex(i)}
-              aria-label={`${i + 1}-р зураг`}
-              className={cn("h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 md:h-20 md:w-32", i === index ? "border-foreground" : "border-transparent")}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-              <img src={uploadUrl(name, "thumb")!} alt="" className="size-full object-cover" />
-            </button>
-          ))}
+      {/* Mobile: swipe between photos, dots show how many there are. */}
+      <div className="md:hidden">
+        <div className="relative">
+          <div
+            onScroll={(e) => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
+            className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto rounded-2xl bg-muted"
+          >
+            {photos.map((name, i) => (
+              <button key={name} type="button" onClick={() => setViewing(i)} aria-label="Зураг томоор харах" className="aspect-[4/3] w-full shrink-0 snap-center">
+                {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
+                <img src={uploadUrl(name, "grid")!} alt="" loading={i ? "lazy" : undefined} className="size-full object-cover" />
+              </button>
+            ))}
+          </div>
+          {counter}
         </div>
-      )}
+        {photos.length > 1 && (
+          <div className="mt-2.5 flex justify-center gap-1.5">
+            {photos.map((name, i) => (
+              <span key={name} className={cn("h-1.5 rounded-full transition-all", i === index ? "w-5 bg-foreground" : "w-1.5 bg-foreground/25")} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop: smaller main photo with a thumbnail column beside it. */}
+      <div className="hidden h-[360px] gap-2 md:flex">
+        <button type="button" onClick={() => setViewing(index)} aria-label="Зураг томоор харах" className="relative min-w-0 flex-1 overflow-hidden rounded-2xl bg-muted">
+          {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
+          <img src={uploadUrl(photos[index], "grid")!} alt="" className="size-full object-cover" />
+          {counter}
+        </button>
+        {photos.length > 1 && (
+          <div className="no-scrollbar flex w-28 shrink-0 flex-col gap-2 overflow-y-auto">
+            {photos.map((name, i) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setIndex(i)}
+                aria-label={`${i + 1}-р зураг`}
+                className={cn("aspect-[4/3] w-full shrink-0 overflow-hidden rounded-lg border-2", i === index ? "border-foreground" : "border-transparent opacity-80 hover:opacity-100")}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
+                <img src={uploadUrl(name, "thumb")!} alt="" className="size-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {viewing !== null && <PhotoViewer urls={photos.map((n) => uploadUrl(n, "full")!)} start={viewing} onClose={() => setViewing(null)} />}
     </section>
   );

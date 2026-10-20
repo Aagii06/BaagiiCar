@@ -218,6 +218,8 @@ export const MESSAGES = {
   "Өмнөх зураг": { ru: "Предыдущее фото", en: "Previous photo" },
   "Дараах зураг": { ru: "Следующее фото", en: "Next photo" },
   "Зураг {n}": { ru: "Фото {n}", en: "Photo {n}" },
+  "Зураг": { ru: "Фото", en: "Photo" },
+  "Зураг томоор харах": { ru: "Открыть фото", en: "View photo" },
   "Үзүүлэлт": { ru: "Характеристики", en: "Specifications" },
   "Төстэй машинууд": { ru: "Похожие авто", en: "Similar cars" },
   "Зар олдсонгүй": { ru: "Объявление не найдено", en: "Ad not found" },

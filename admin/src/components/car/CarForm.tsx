@@ -11,6 +11,8 @@ import { ImagePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const MAX_PHOTOS = 12;
+/** Lets a button outside the form (the page header) submit it via `form={CAR_FORM_ID}`. */
+export const CAR_FORM_ID = "car-form";
 const THIS_YEAR = new Date().getFullYear();
 const MIN_YEAR = 1950;
 /** Newest first; keeps an out-of-range value already saved on the car selectable. */
@@ -129,11 +131,14 @@ export default function CarForm({
   photos: initialPhotos = [],
   defaultPhone,
   onSaved,
+  onBusyChange,
 }: {
   car?: Car | null;
   photos?: PhotoItem[];
   defaultPhone?: string | null;
   onSaved: (id: number) => void;
+  /** Mirrors the saving state to the header's save button. */
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const [f, setF] = useState<FormState>(() => initialState(car, defaultPhone));
   const [photos, setPhotos] = useState<PhotoItem[]>(initialPhotos);
@@ -175,8 +180,16 @@ export default function CarForm({
       return prev.filter((_, j) => j !== i);
     });
 
+  const errorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => onBusyChange?.(busy), [busy, onBusyChange]);
+  // The header button submits from the top; bring the message into view.
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [error]);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     if (!f.brand_id) return setError("Үйлдвэр сонгоно уу");
     if (!f.manufactured_year) return setError("Үйлдвэрлэсэн он оруулна уу");
     if (!f.price) return setError("Үнэ оруулна уу");
@@ -192,7 +205,7 @@ export default function CarForm({
   };
 
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form id={CAR_FORM_ID} onSubmit={submit} className="space-y-5">
       <Section title="Зураг">
         <div className="grid grid-cols-3 gap-2">
           {photos.map((p, i) => (
@@ -358,7 +371,9 @@ export default function CarForm({
         </div>
       </Section>
 
-      <FormError message={error} />
+      <div ref={errorRef}>
+        <FormError message={error} />
+      </div>
       <div className="flex justify-end">
         <button disabled={busy} className="h-12 w-full rounded-xl bg-primary px-8 font-bold text-white hover:bg-primary-hover disabled:opacity-60">
           {busy ? "Хадгалж байна…" : car ? "Хадгалах" : "Зар нийтлэх"}

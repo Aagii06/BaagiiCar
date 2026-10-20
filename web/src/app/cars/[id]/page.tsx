@@ -6,6 +6,7 @@ import CarImage from "@/components/car/CarImage";
 import FavoriteButton from "@/components/car/FavoriteButton";
 import LeasingCalculator from "@/components/car/LeasingCalculator";
 import Container from "@/components/common/Container";
+import PhotoViewer from "@/components/common/PhotoViewer";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { getCar, getCarFiles, searchCars } from "@/lib/api/cars";
 import { uploadUrl } from "@/lib/api/config";
@@ -15,7 +16,7 @@ import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, initials, timeAgo, tintFor } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, MapPin, MessageCircle, Phone } from "lucide-react";
+import { MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -25,50 +26,76 @@ function Gallery({ car }: { car: Car }) {
   const files = useApi(() => getCarFiles(car.id), String(car.id));
   const photos = (files.data ?? []).map((f) => f.generated_name).filter(Boolean) as string[];
   const [index, setIndex] = useState(0);
+  const [viewing, setViewing] = useState<number | null>(null);
   const total = photos.length;
-  const current = photos[Math.min(index, Math.max(total - 1, 0))];
-  const go = (d: number) => setIndex((i) => (i + d + total) % total);
+  const alt = carTitle(car, t);
+
+  if (!total)
+    return (
+      <div className={cn("grid aspect-[4/3] place-items-center rounded-2xl md:aspect-auto md:h-[420px]", tintFor(car.id))}>
+        <CarArt shape={shapeFor(car.body_type_name)} className="w-[58%] md:w-[48%]" strokeWidth={1.6} />
+      </div>
+    );
+
+  const counter = (
+    <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-dark/80 px-2.5 py-1 text-xs font-bold text-white">
+      {index + 1} / {total}
+    </span>
+  );
 
   return (
-    <section className="rounded-2xl bg-card p-3">
-      <div className={cn("relative grid aspect-[16/10] place-items-center overflow-hidden rounded-xl", tintFor(car.id))}>
-        {current ? (
-          // eslint-disable-next-line @next/next/no-img-element -- backend-served uploads
-          <img src={uploadUrl(current, "full")!} alt={carTitle(car, t)} className="absolute inset-0 size-full object-cover" />
-        ) : (
-          <CarArt shape={shapeFor(car.body_type_name)} className="w-[58%]" strokeWidth={1.6} />
-        )}
+    <section>
+      {/* Mobile: swipe between photos, dots show how many there are. */}
+      <div className="md:hidden">
+        <div className="relative">
+          <div
+            onScroll={(e) => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
+            className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto rounded-2xl bg-card"
+          >
+            {photos.map((name, i) => (
+              <button key={name} type="button" onClick={() => setViewing(i)} aria-label={t("Зураг томоор харах")} className="aspect-[4/3] w-full shrink-0 snap-center">
+                {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
+                <img src={uploadUrl(name, "grid")!} alt={i ? "" : alt} loading={i ? "lazy" : undefined} className="size-full object-cover" />
+              </button>
+            ))}
+          </div>
+          {counter}
+        </div>
         {total > 1 && (
-          <>
-            <button onClick={() => go(-1)} aria-label={t("Өмнөх зураг")} className="absolute left-4 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white shadow">
-              <ChevronLeft className="size-5" />
-            </button>
-            <button onClick={() => go(1)} aria-label={t("Дараах зураг")} className="absolute right-4 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white shadow">
-              <ChevronRight className="size-5" />
-            </button>
-          </>
-        )}
-        {total > 0 && (
-          <span className="absolute bottom-4 right-4 rounded-full bg-dark px-2.5 py-1 text-xs font-bold text-white">
-            {Math.min(index, total - 1) + 1} / {total}
-          </span>
+          <div className="mt-2.5 flex justify-center gap-1.5">
+            {photos.map((name, i) => (
+              <span key={name} className={cn("h-1.5 rounded-full transition-all", i === index ? "w-5 bg-foreground" : "w-1.5 bg-foreground/25")} />
+            ))}
+          </div>
         )}
       </div>
-      {total > 1 && (
-        <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
-          {photos.map((name, i) => (
-            <button
-              key={name}
-              onClick={() => setIndex(i)}
-              aria-label={t("Зураг {n}", { n: i + 1 })}
-              className={cn("h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 md:h-20 md:w-32", i === index ? "border-foreground" : "border-transparent")}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-              <img src={uploadUrl(name, "thumb")!} alt="" className="size-full object-cover" />
-            </button>
-          ))}
-        </div>
-      )}
+
+      {/* Desktop: smaller main photo with a thumbnail column beside it. */}
+      <div className="hidden h-[420px] gap-2 md:flex">
+        <button type="button" onClick={() => setViewing(index)} aria-label={t("Зураг томоор харах")} className="relative min-w-0 flex-1 overflow-hidden rounded-2xl bg-card">
+          {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
+          <img src={uploadUrl(photos[index], "full")!} alt={alt} className="size-full object-cover" />
+          {counter}
+        </button>
+        {total > 1 && (
+          <div className="no-scrollbar flex w-28 shrink-0 flex-col gap-2 overflow-y-auto lg:w-32">
+            {photos.map((name, i) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setIndex(i)}
+                aria-label={t("Зураг {n}", { n: i + 1 })}
+                className={cn("aspect-[4/3] w-full shrink-0 overflow-hidden rounded-lg border-2", i === index ? "border-foreground" : "border-transparent opacity-80 hover:opacity-100")}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
+                <img src={uploadUrl(name, "thumb")!} alt="" className="size-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {viewing !== null && <PhotoViewer urls={photos.map((n) => uploadUrl(n, "full")!)} start={viewing} onClose={() => setViewing(null)} />}
     </section>
   );
 }

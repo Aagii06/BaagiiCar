@@ -1,6 +1,6 @@
 "use client";
 
-import CarForm from "@/components/car/CarForm";
+import CarForm, { CAR_FORM_ID } from "@/components/car/CarForm";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
@@ -8,9 +8,10 @@ import { getCar, getCarFiles, type PhotoItem } from "@/lib/api/admin";
 import { uploadUrl } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useApi } from "@/lib/useApi";
-import { Eye } from "lucide-react";
+import { Check, Eye } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 /** `/cars/new` creates an ad under the admin's own account; `/cars/:id` edits any ad. */
 export default function CarEditPage() {
@@ -18,6 +19,7 @@ export default function CarEditPage() {
   const isNew = id === "new";
   const router = useRouter();
   const toast = useToast();
+  const [saving, setSaving] = useState(false);
   const { user } = useAuth();
 
   const data = useApi(async () => {
@@ -39,12 +41,21 @@ export default function CarEditPage() {
         title={title}
         back="/cars"
         aside={
-          !isNew ? (
-            // Preview works for pending ads too, unlike the public site.
-            <Link href={`/cars/${id}/view`} aria-label="Зарыг харах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
-              <Eye className="size-4" />
-            </Link>
-          ) : null
+          <div className="flex items-center gap-1">
+            {!isNew && (
+              // Preview works for pending ads too, unlike the public site.
+              <Link href={`/cars/${id}/view`} aria-label="Зарыг харах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
+                <Eye className="size-4" />
+              </Link>
+            )}
+            {/* Same as the save button at the bottom of the form. */}
+            {data.data && data.data.car?.status !== "deleted" && (
+              <button type="submit" form={CAR_FORM_ID} disabled={saving} className="flex h-9 items-center gap-1 rounded-xl bg-primary px-3 text-sm font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+                <Check className="size-4" strokeWidth={3} />
+                {saving ? "Хадгалж байна…" : isNew ? "Нийтлэх" : "Хадгалах"}
+              </button>
+            )}
+          </div>
         }
       />
       {data.loading && !data.data ? (
@@ -59,6 +70,7 @@ export default function CarEditPage() {
           car={data.data.car}
           photos={data.data.photos}
           defaultPhone={user?.phonenumber}
+          onBusyChange={setSaving}
           onSaved={() => {
             toast("Хадгаллаа");
             router.push("/cars");
