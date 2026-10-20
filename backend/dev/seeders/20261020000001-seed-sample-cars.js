@@ -23,7 +23,14 @@ const sellers = [
 
 // [зураг, борлуулагч, брэнд, загвар, биеийн хэлбэр, үйлдвэрлэсэн, орж ирсэн, үнэ (сая ₮), гүйлт (км),
 //  шатахуун, хурдны хайрцаг, хөтлөгч, хүрд, хөдөлгүүр (л), өнгө, байршил, тэмдэглэгээ]
+// тэмдэглэгээ: featured — онцлох, sold — зарагдсан, pending — админ батлахыг хүлээж буй (хамгийн шинэ)
 const listings = [
+  ["prius30", "person", "Toyota", "Prius", "Суудлын тэрэг", 2012, 2019, 16.5, 168000, "Хайбрид", "CVT", "FWD", "Баруун", 1.8, "Мөнгөлөг", "Улаанбаатар", "pending"],
+  ["aqua", "person", "Toyota", "Aqua", "Суудлын тэрэг", 2014, 2021, 12.8, 142000, "Хайбрид", "CVT", "FWD", "Баруун", 1.5, "Цагаан", "Улаанбаатар", "pending"],
+  ["xtrail", "person", "Nissan", "X-Trail", "Жийп", 2016, 2023, 26, 98000, "Бензин", "CVT", "4WD", "Баруун", 2.0, "Хар", "Дархан-Уул", "pending"],
+  ["sonata", "dealer2", "Hyundai", "Sonata", "Суудлын тэрэг", 2021, 2025, 44, 52000, "Газ", "Автомат", "FWD", "Зүүн", 2.0, "Саарал", "Улаанбаатар", "pending"],
+  ["prado150", "dealer1", "Toyota", "Land Cruiser Prado", "Жийп", 2019, 2024, 118, 76000, "Дизель", "Автомат", "4WD", "Зүүн", 2.8, "Цагаан", "Улаанбаатар", "pending"],
+  ["fit", "person", "Honda", "Fit", "Суудлын тэрэг", 2017, 2024, 17.5, 89000, "Хайбрид", "Автомат", "FWD", "Баруун", 1.5, "Цэнхэр", "Орхон", "pending"],
   ["lc300", "dealer1", "Toyota", "Land Cruiser", "Жийп", 2023, 2025, 299, 12000, "Бензин", "Автомат", "4WD", "Зүүн", 3.4, "Цагаан", "Улаанбаатар", "featured"],
   ["prado150", "dealer1", "Toyota", "Land Cruiser Prado", "Жийп", 2023, 2025, 158, 18000, "Бензин", "Автомат", "4WD", "Зүүн", 2.7, "Хар", "Улаанбаатар", "featured"],
   ["prius30", "person", "Toyota", "Prius", "Суудлын тэрэг", 2014, 2025, 21, 112000, "Хайбрид", "CVT", "FWD", "Баруун", 1.8, "Цагаан", "Улаанбаатар"],
@@ -138,10 +145,10 @@ module.exports = {
           color,
           phonenumber: sellerPhone,
           description: description(l),
-          view_count: 40 + ((i * 137) % 900),
+          view_count: flag === "pending" ? 0 : 40 + ((i * 137) % 900),
           is_featured: flag === "featured",
           sold_at: flag === "sold" ? at : null,
-          status: flag === "sold" ? "sold" : "active",
+          status: flag === "sold" ? "sold" : flag === "pending" ? "pending" : "active",
           created_by: sellerIds[seller],
           created_at: at,
         },
