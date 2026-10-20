@@ -2,6 +2,7 @@
 
 import CarImage from "@/components/car/CarImage";
 import ChipTabs from "@/components/common/ChipTabs";
+import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
@@ -12,7 +13,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPrice } from "@/lib/utils";
-import { Check, Plus, Search, Star } from "lucide-react";
+import { BadgeCheck, Check, Plus, Search, Star, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -30,13 +31,27 @@ const TABS: { value: Tab; label: string }[] = [
 
 function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const isAdmin = useAuth().user?.role === ROLES.admin;
   const [busy, setBusy] = useState(false);
   const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
   const featured = Boolean(Number(car.is_featured));
 
-  const run = async (action: () => Promise<void>, done: string, confirmText?: string) => {
-    if (confirmText && !window.confirm(confirmText)) return;
+  // The ad being changed, shown inside the confirm sheet.
+  const detail = (
+    <div className="flex items-center gap-3 rounded-2xl bg-muted p-2.5 text-left">
+      <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} size="thumb" className="h-12 w-16 shrink-0 rounded-lg" artClassName="w-[80%]" />
+      <div className="min-w-0">
+        <p className="truncate text-sm font-bold">{car.name}</p>
+        <p className="text-xs font-semibold text-primary">
+          {formatPrice(car.price)} <span className="font-medium text-muted-foreground">· #{car.id}</span>
+        </p>
+      </div>
+    </div>
+  );
+
+  const run = async (action: () => Promise<void>, done: string, ask?: ConfirmOptions) => {
+    if (ask && !(await confirm({ detail, ...ask }))) return;
     setBusy(true);
     try {
       await action();
@@ -74,7 +89,15 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
           )}
           {car.status === "active" && (
             <button
-              onClick={() => run(() => setFeatured(car, !featured), featured ? "Онцлохоос хаслаа" : "Онцоллоо")}
+              onClick={() =>
+                run(
+                  () => setFeatured(car, !featured),
+                  featured ? "Онцлохоос хаслаа" : "Онцоллоо",
+                  featured
+                    ? { title: "Онцлохоос хасах уу?", message: "Нүүр хуудас болон хайлтын эхэнд гарахаа болино.", confirmLabel: "Хасах", tone: "amber", icon: Star }
+                    : { title: "Онцлох зар болгох уу?", message: "Нүүр хуудсанд болон хайлтын эхэнд гарна.", confirmLabel: "Онцлох", tone: "amber", icon: Star }
+                )
+              }
               className={cn("flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold", featured ? "bg-amber" : "bg-muted")}
             >
               <Star className={cn("size-3.5", featured && "fill-current")} />
@@ -82,11 +105,11 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
             </button>
           )}
           {car.status === "active" && (
-            <button onClick={() => run(() => markSold(car.id), "Зарагдсан гэж тэмдэглэлээ", "Зарагдсан гэж тэмдэглэх үү?")} className="rounded-lg bg-muted px-3 py-1.5 text-xs font-bold">
+            <button onClick={() => run(() => markSold(car.id), "Зарагдсан гэж тэмдэглэлээ", { title: "Зарагдсан гэж тэмдэглэх үү?", message: "Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана.", confirmLabel: "Тэмдэглэх", icon: BadgeCheck })} className="rounded-lg bg-muted px-3 py-1.5 text-xs font-bold">
               Зарагдсан
             </button>
           )}
-          <button onClick={() => run(() => deleteCar(car.id), "Устгалаа", `#${car.id} зарыг устгах уу?`)} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">
+          <button onClick={() => run(() => deleteCar(car.id), "Устгалаа", { title: "Зарыг устгах уу?", message: "Устгасан зар вэб дээр харагдахгүй болно.", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">
             Устгах
           </button>
         </div>

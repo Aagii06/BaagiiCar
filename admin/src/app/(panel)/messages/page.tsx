@@ -2,6 +2,7 @@
 
 import ChipTabs from "@/components/common/ChipTabs";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import { deleteMessage, listMessages, setMessageStatus } from "@/lib/api/admin";
@@ -24,8 +25,9 @@ function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void 
   const [busy, setBusy] = useState(false);
   const isNew = item.status === "new";
 
-  const run = async (action: () => Promise<void>, done: string, confirmText?: string) => {
-    if (confirmText && !window.confirm(confirmText)) return;
+  const confirm = useConfirm();
+  const run = async (action: () => Promise<void>, done: string, ask?: ConfirmOptions) => {
+    if (ask && !(await confirm(ask))) return;
     setBusy(true);
     try {
       await action();
@@ -72,7 +74,7 @@ function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void 
           </button>
         )}
         <button
-          onClick={() => run(() => deleteMessage(item.id), "Устгалаа", "Мессежийг устгах уу?")}
+          onClick={() => run(() => deleteMessage(item.id), "Устгалаа", { title: "Мессежийг устгах уу?", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })}
           aria-label="Устгах"
           className="ml-auto grid size-8 place-items-center rounded-lg text-destructive hover:bg-destructive-soft"
         >

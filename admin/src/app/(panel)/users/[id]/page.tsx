@@ -2,6 +2,7 @@
 
 import { Field, FormError, inputClass, Select } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
 import { changePassword, createUser, deleteRows, getUser, updateRow } from "@/lib/api/admin";
@@ -10,6 +11,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLE_LIST, roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
+import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -17,6 +19,7 @@ import { useState } from "react";
 function UserForm({ user }: { user: User | null }) {
   const router = useRouter();
   const toast = useToast();
+  const confirm = useConfirm();
   const { user: me } = useAuth();
   const [f, setF] = useState({
     lastname: user?.lastname ?? "",
@@ -57,7 +60,15 @@ function UserForm({ user }: { user: User | null }) {
   };
 
   const remove = async () => {
-    if (!user || !window.confirm(`${userName(user)} хэрэглэгчийг устгах уу? Түүний идэвхтэй зарууд мөн устгагдана.`)) return;
+    if (!user) return;
+    const ok = await confirm({
+      title: "Хэрэглэгчийг устгах уу?",
+      message: `${userName(user)} — түүний идэвхтэй зарууд мөн устгагдана.`,
+      confirmLabel: "Устгах",
+      tone: "danger",
+      icon: Trash2,
+    });
+    if (!ok) return;
     try {
       await deleteRows("users", [user.id]);
       toast("Устгалаа");

@@ -3,6 +3,7 @@
 import ChipTabs from "@/components/common/ChipTabs";
 import { Field, FormError, inputClass, Select } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, getModels, updateRow, uploadCatalogImage } from "@/lib/api/admin";
@@ -203,6 +204,7 @@ function CatalogInner() {
   const pathname = usePathname();
   const sp = useSearchParams();
   const toast = useToast();
+  const confirm = useConfirm();
   const tab = (TABS.find((t) => t.value === sp.get("tab"))?.value ?? "brands") as Tab;
   const data = useApi(() => loadTab(tab), tab);
   const [editing, setEditing] = useState<Row | "new" | null>(null);
@@ -215,7 +217,7 @@ function CatalogInner() {
   }, [data.data, query]);
 
   const remove = async (row: Row) => {
-    if (!window.confirm(`"${row.name}" устгах уу?`)) return;
+    if (!(await confirm({ title: `"${row.name}" устгах уу?`, confirmLabel: "Устгах", tone: "danger", icon: Trash2 }))) return;
     try {
       await deleteRows(TARGET[tab], [row.id]);
       toast("Устгалаа");

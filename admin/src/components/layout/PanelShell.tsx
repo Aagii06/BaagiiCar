@@ -1,5 +1,6 @@
 "use client";
 
+import { ConfirmProvider } from "@/components/common/Confirm";
 import { ToastProvider } from "@/components/common/Toast";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
@@ -18,6 +19,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
 
   return (
     <ToastProvider>
+      <ConfirmProvider>
       {isTabPage && (
         <header className="sticky top-0 z-30 border-b border-border bg-white/95 px-4 py-3 backdrop-blur">
           <Link href="/" aria-label="Самбар">
@@ -72,6 +74,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
           </div>
         </nav>
       )}
+      </ConfirmProvider>
     </ToastProvider>
   );
 }
