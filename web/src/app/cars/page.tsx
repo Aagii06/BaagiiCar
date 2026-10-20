@@ -5,7 +5,7 @@ import BrandTabs from "@/components/car/BrandTabs";
 import CarArt, { shapeFor } from "@/components/car/CarArt";
 import CarCard from "@/components/car/CarCard";
 import CarWideCard from "@/components/car/CarWideCard";
-import Container, { PageTitle } from "@/components/common/Container";
+import Container from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
@@ -15,9 +15,9 @@ import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { Check, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, Check, SlidersHorizontal, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 const MLN = 1_000_000;
 
@@ -96,7 +96,6 @@ function Range({
   maxLabel,
   minPlaceholder,
   maxPlaceholder,
-  maxLength,
   onApply,
 }: {
   min?: number;
@@ -105,7 +104,6 @@ function Range({
   maxLabel: string;
   minPlaceholder: string;
   maxPlaceholder: string;
-  maxLength?: number;
   onApply: (min: number | undefined, max: number | undefined) => void;
 }) {
   const [lo, setLo] = useState(min ? String(min) : "");
@@ -116,7 +114,6 @@ function Range({
       <span className="block text-[11px] font-medium text-muted-foreground">{label}</span>
       <input
         inputMode="numeric"
-        maxLength={maxLength}
         value={value}
         onChange={(e) => setValue(e.target.value.replace(/\D/g, ""))}
         onBlur={apply}
@@ -141,6 +138,42 @@ function Range({
 }
 
 const THIS_YEAR = new Date().getFullYear();
+const FIRST_YEAR = 1950;
+// Newest first: recent years are the ones people pick.
+const YEARS = Array.from({ length: THIS_YEAR - FIRST_YEAR + 1 }, (_, i) => THIS_YEAR - i);
+
+/** From / to year dropdowns; each side only offers years that keep from ≤ to. */
+function YearRange({
+  from,
+  to,
+  onChange,
+}: {
+  from?: number;
+  to?: number;
+  onChange: (from: number | undefined, to: number | undefined) => void;
+}) {
+  const { t } = useI18n();
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <Select value={from ?? ""} onChange={(e) => onChange(num(e.target.value), to)} aria-label={t("Доод")} className="h-11 px-3 text-sm">
+        <option value="">{t("Доод")}</option>
+        {YEARS.filter((y) => !to || y <= to).map((y) => (
+          <option key={y} value={y}>
+            {y}
+          </option>
+        ))}
+      </Select>
+      <Select value={to ?? ""} onChange={(e) => onChange(from, num(e.target.value))} aria-label={t("Дээд")} className="h-11 px-3 text-sm">
+        <option value="">{t("Дээд")}</option>
+        {YEARS.filter((y) => !from || y >= from).map((y) => (
+          <option key={y} value={y}>
+            {y}
+          </option>
+        ))}
+      </Select>
+    </div>
+  );
+}
 
 /** Covers a disabled Select's chevron while its options load. */
 function SelectSpinner() {
@@ -303,29 +336,11 @@ function Filters({
       </Group>
 
       <Group title={t("Үйлдвэрлэсэн он")}>
-        <Range
-          min={p.yearFrom}
-          max={p.yearTo}
-          minLabel={t("Доод")}
-          maxLabel={t("Дээд")}
-          minPlaceholder="1990"
-          maxPlaceholder={String(THIS_YEAR)}
-          maxLength={4}
-          onApply={(yearFrom, yearTo) => set({ yearFrom, yearTo })}
-        />
+        <YearRange from={p.yearFrom} to={p.yearTo} onChange={(yearFrom, yearTo) => set({ yearFrom, yearTo })} />
       </Group>
 
       <Group title={t("Орж ирсэн он")}>
-        <Range
-          min={p.importFrom}
-          max={p.importTo}
-          minLabel={t("Доод")}
-          maxLabel={t("Дээд")}
-          minPlaceholder="1990"
-          maxPlaceholder={String(THIS_YEAR)}
-          maxLength={4}
-          onApply={(importFrom, importTo) => set({ importFrom, importTo })}
-        />
+        <YearRange from={p.importFrom} to={p.importTo} onChange={(importFrom, importTo) => set({ importFrom, importTo })} />
       </Group>
 
       <Group title={t("Түлш")}>
@@ -364,6 +379,61 @@ function Filters({
         </div>
       </Group>
     </section>
+  );
+}
+
+/**
+ * Phone-size filters: a full-screen sheet over a draft copy of the params.
+ * "Search" applies the draft; the back arrow drops it.
+ */
+function MobileFilters({
+  p,
+  brands,
+  bodyTypes,
+  onApply,
+  onClose,
+}: {
+  p: Params;
+  brands: Loaded<Brand[]>;
+  bodyTypes: BodyType[];
+  onApply: (next: Params) => void;
+  onClose: () => void;
+}) {
+  const { t } = useI18n();
+  const [draft, setDraft] = useState(p);
+  const models = useApi(() => (draft.brand ? getModels(draft.brand) : Promise.resolve([])), String(draft.brand ?? ""));
+
+  // The page behind must not scroll while the sheet is up.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  return (
+    <div role="dialog" aria-modal="true" aria-label={t("Шүүлтүүр")} className="fixed inset-0 z-[60] flex flex-col bg-muted lg:hidden">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-white px-2 pt-[env(safe-area-inset-top)]">
+        <button type="button" onClick={onClose} aria-label={t("Буцах")} className="grid size-10 place-items-center rounded-xl hover:bg-muted">
+          <ArrowLeft className="size-5" />
+        </button>
+        <button type="button" onClick={() => onApply(draft)} className="h-10 rounded-xl bg-primary px-5 text-sm font-bold text-white hover:bg-primary-hover">
+          {t("Хайх")}
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        {/* Keyed like the desktop panel, so "Clear" also resets the inputs' local state. */}
+        <Filters
+          key={writeParams(draft)}
+          p={draft}
+          set={(patch) => setDraft((d) => ({ ...d, ...patch }))}
+          brands={brands}
+          models={models}
+          bodyTypes={bodyTypes}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -413,8 +483,15 @@ function CarsPageInner() {
   const rest = rows.filter((c) => c !== wide);
 
   return (
-    <Container className="pt-8 md:pt-12">
-      <PageTitle count={result.data?.count}>{t("Машин авах")}</PageTitle>
+    <Container className="pt-3 md:pt-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-card px-4 py-2.5 md:px-5">
+        <h1 className="font-display text-xl font-bold leading-none md:text-2xl">{t("Машин хайх")}</h1>
+        {/* Status-style total; pulses while the first page is loading. */}
+        <span aria-live="polite" className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1.5 text-sm font-semibold text-primary">
+          <span className={cn("size-2 rounded-full bg-primary", result.loading && "animate-pulse")} />
+          {result.data ? t("{n} машин", { n: result.data.count.toLocaleString("en-US") }) : "…"}
+        </span>
+      </div>
 
       <p className="mt-6 text-xs font-semibold text-muted-foreground">{t("Үйлдвэр")}</p>
       <BrandTabs
@@ -435,16 +512,28 @@ function CarsPageInner() {
       <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[296px_1fr]">
         <aside>
           <button
-            onClick={() => setShowFilters((v) => !v)}
+            onClick={() => setShowFilters(true)}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-card py-3 text-sm font-bold lg:hidden"
-            aria-expanded={showFilters}
+            aria-haspopup="dialog"
           >
             <SlidersHorizontal className="size-4" />
             {t("Шүүлтүүр")}
           </button>
-          <div className={cn("mt-3 lg:mt-0 lg:block", showFilters ? "block" : "hidden")}>
+          <div className="hidden lg:block">
             <Filters key={key} p={p} set={set} brands={brands} models={models} bodyTypes={bodyTypes.data ?? []} />
           </div>
+          {showFilters && (
+            <MobileFilters
+              p={p}
+              brands={brands}
+              bodyTypes={bodyTypes.data ?? []}
+              onClose={() => setShowFilters(false)}
+              onApply={(next) => {
+                setShowFilters(false);
+                set({ ...next, page: 1 });
+              }}
+            />
+          )}
         </aside>
 
         <div>

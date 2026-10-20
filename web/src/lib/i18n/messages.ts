@@ -21,6 +21,7 @@ export const MESSAGES = {
   "Хадгалсан": { ru: "Избранное", en: "Saved" },
   "Улаанбаатар": { ru: "Улан-Батор", en: "Ulaanbaatar" },
   "Хайх": { ru: "Поиск", en: "Search" },
+  "Буцах": { ru: "Назад", en: "Back" },
   "Үндсэн цэс": { ru: "Главное меню", en: "Main menu" },
   "Хэл": { ru: "Язык", en: "Language" },
   "Машин": { ru: "Авто", en: "Cars" },
