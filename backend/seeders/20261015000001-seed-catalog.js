@@ -6,7 +6,7 @@ const brands = [
   ["Toyota", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/toyota&w=128&h=128"],
   ["Honda", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/honda&w=128&h=128"],
   ["Nissan", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/nissan&w=128&h=128"],
-  ["Lexus", "Japan", "logos/lexus.jpg"],
+  ["Lexus", "Japan", "logos/lexus.png"],
   ["Mazda", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/mazda&w=128&h=128"],
   ["Subaru", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/subaru&w=128&h=128"],
   ["Suzuki", "Japan", "https://images.weserv.nl/?url=cdn.simpleicons.org/suzuki&w=128&h=128"],

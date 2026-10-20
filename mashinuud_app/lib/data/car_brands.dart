@@ -37,7 +37,7 @@ const List<CarBrand> carBrands = [
   CarBrand(
     brand: "Lexus",
     country: "Japan",
-    logo: "assets/logos/lexus.jpg",
+    logo: "assets/logos/lexus.png",
     asset: true,
   ),
   CarBrand(

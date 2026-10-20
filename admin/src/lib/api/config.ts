@@ -10,7 +10,7 @@ export function uploadUrl(fileName: string | null | undefined, size: ImageSize =
   return `${API_BASE_URL}/uploads/${folder}/${prefix}${fileName}`;
 }
 
-/** Brand logos / body-type icons: absolute URLs, or paths served from the backend's public folder (e.g. "logos/lexus.jpg"). */
+/** Brand logos / body-type icons: absolute URLs, or paths served from the backend's public folder (e.g. "logos/lexus.png"). */
 export function remoteImage(url: string | null | undefined) {
   if (!url) return null;
   if (/^https?:\/\//.test(url)) return url;

@@ -5,12 +5,12 @@ import { Field, FormError, inputClass, Select } from "@/components/common/Field"
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
-import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, getModels, updateRow } from "@/lib/api/admin";
+import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, getModels, updateRow, uploadCatalogImage } from "@/lib/api/admin";
 import { remoteImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { ImageUp, Pencil, Plus, Trash2, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 
@@ -25,13 +25,21 @@ const TABS: { value: Tab; label: string }[] = [
 /** Backend table each tab writes to (`/api/base/:target`). */
 const TARGET: Record<Tab, string> = { brands: "brands", models: "carModels", bodyTypes: "bodyTypes", locations: "locations" };
 
-type FieldDef = { key: string; label: string; type?: "text" | "number" | "brand"; required?: boolean; placeholder?: string };
+type FieldDef = {
+  key: string;
+  label: string;
+  type?: "text" | "number" | "brand" | "image";
+  required?: boolean;
+  placeholder?: string;
+  /** `type: "image"` — upload folder under backend public/uploads. */
+  folder?: "bodyTypes" | "brands";
+};
 
 const FIELDS: Record<Tab, FieldDef[]> = {
   brands: [
     { key: "name", label: "Нэр", required: true, placeholder: "Toyota" },
     { key: "country", label: "Улс", placeholder: "Japan" },
-    { key: "logo", label: "Лого (URL)", placeholder: "https://…" },
+    { key: "logo", label: "Лого", type: "image", folder: "brands", placeholder: "https://…" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
   models: [
@@ -40,7 +48,7 @@ const FIELDS: Record<Tab, FieldDef[]> = {
   ],
   bodyTypes: [
     { key: "name", label: "Нэр", required: true, placeholder: "Жийп" },
-    { key: "image", label: "Дүрс (URL)", placeholder: "bodyTypes/14-suv.png эсвэл https://…" },
+    { key: "image", label: "Дүрс", type: "image", folder: "bodyTypes", placeholder: "https://…" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
   locations: [
@@ -78,6 +86,44 @@ async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
   }
   const rows = await getLocations();
   return { brands: [], rows: rows.map((l) => ({ id: l.id, name: l.name, values: { ...l } })) };
+}
+
+/** Preview + file upload; the URL/path can still be typed by hand. */
+function ImageInput({ value, folder, placeholder, onChange }: { value: string; folder: NonNullable<FieldDef["folder"]>; placeholder?: string; onChange: (v: string) => void }) {
+  const toast = useToast();
+  const [uploading, setUploading] = useState(false);
+  const preview = remoteImage(value.trim());
+
+  const pick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    try {
+      onChange(await uploadCatalogImage(folder, file));
+    } catch (err) {
+      toast(errorMessage(err), "error");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted">
+        {preview && (
+          // eslint-disable-next-line @next/next/no-img-element -- uploaded / remote catalog images
+          <img src={preview} alt="" className="size-9 object-contain" />
+        )}
+      </span>
+      <input className={cn(inputClass, "min-w-0 flex-1")} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+      <label className={cn("flex h-12 shrink-0 cursor-pointer items-center gap-1 rounded-xl bg-primary-soft px-3 text-sm font-bold text-primary", uploading && "pointer-events-none opacity-60")}>
+        <ImageUp className="size-4" />
+        {uploading ? "…" : "Оруулах"}
+        <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={pick} disabled={uploading} />
+      </label>
+    </div>
+  );
 }
 
 function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | null; brands: Brand[]; onClose: () => void; onSaved: () => void }) {
@@ -130,6 +176,8 @@ function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | n
                   </option>
                 ))}
               </Select>
+            ) : f.type === "image" && f.folder ? (
+              <ImageInput value={values[f.key]} folder={f.folder} placeholder={f.placeholder} onChange={(v) => setValues({ ...values, [f.key]: v })} />
             ) : (
               <input
                 className={inputClass}
