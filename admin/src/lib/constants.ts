@@ -22,6 +22,8 @@ export function roleLabel(role: string | null | undefined) {
 export const CAR_STATUS: Record<string, { label: string; className: string }> = {
   // Dealer ads wait here until an admin approves them; hidden from the web.
   pending: { label: "Хүлээгдэж буй", className: "bg-amber-soft text-amber-ink" },
+  // Sent back to the owner with a reason; saving their edit resubmits it.
+  rejected: { label: "Буцаасан", className: "bg-destructive-soft text-destructive" },
   active: { label: "Идэвхтэй", className: "bg-success-soft text-success" },
   sold: { label: "Зарагдсан", className: "bg-dark text-white" },
   // Temporarily taken off the web by an admin; "Ил гаргах" brings it back.

@@ -1,6 +1,7 @@
 "use client";
 
 import CarImage from "@/components/car/CarImage";
+import { useRejectCar } from "@/components/car/useRejectCar";
 import ChipTabs from "@/components/common/ChipTabs";
 import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { inputClass } from "@/components/common/Field";
@@ -13,7 +14,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPrice } from "@/lib/utils";
-import { BadgeCheck, Check, Eye, EyeOff, Plus, Search, Star, Trash2 } from "lucide-react";
+import { BadgeCheck, Check, Eye, EyeOff, Plus, Search, Star, Trash2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -23,6 +24,7 @@ type Tab = NonNullable<CarFilter["status"]> | "all";
 const TABS: { value: Tab; label: string }[] = [
   { value: "all", label: "Бүгд" },
   { value: "pending", label: "Хүлээгдэж буй" },
+  { value: "rejected", label: "Буцаасан" },
   { value: "active", label: "Идэвхтэй" },
   { value: "featured", label: "Онцлох" },
   { value: "hidden", label: "Нуусан" },
@@ -33,6 +35,7 @@ const TABS: { value: Tab; label: string }[] = [
 function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
   const toast = useToast();
   const confirm = useConfirm();
+  const reject = useRejectCar();
   const isAdmin = useAuth().user?.role === ROLES.admin;
   const [busy, setBusy] = useState(false);
   const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
@@ -78,6 +81,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
           <p className="truncate text-xs text-muted-foreground">
             #{car.id} · {car.seller_name || "—"} · {car.phonenumber || car.seller_phone}
           </p>
+          {car.status === "rejected" && car.reject_reason && <p className="mt-1 line-clamp-2 text-xs text-destructive">↩ {car.reject_reason}</p>}
         </div>
       </Link>
       {car.status !== "deleted" && (
@@ -86,6 +90,19 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
             <button onClick={() => run(() => approveCar(car.id), "Баталлаа, вэб дээр нийтлэгдлээ")} className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white">
               <Check className="size-3.5" strokeWidth={3} />
               Батлах
+            </button>
+          )}
+          {car.status === "pending" && isAdmin && (
+            <button
+              onClick={async () => {
+                setBusy(true);
+                if (await reject(car, detail)) onChanged();
+                setBusy(false);
+              }}
+              className="flex items-center gap-1 rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive"
+            >
+              <Undo2 className="size-3.5" />
+              Буцаах
             </button>
           )}
           {car.status === "active" && (

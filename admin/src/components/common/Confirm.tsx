@@ -17,6 +17,11 @@ export interface ConfirmOptions {
   icon?: LucideIcon;
 }
 
+export interface PromptOptions extends ConfirmOptions {
+  label?: string;
+  placeholder?: string;
+}
+
 const TONES: Record<Tone, { icon: string; button: string }> = {
   primary: { icon: "bg-primary-soft text-primary", button: "bg-primary hover:bg-primary-hover text-white" },
   amber: { icon: "bg-amber-soft text-amber-ink", button: "bg-amber hover:brightness-95 text-foreground" },
@@ -24,45 +29,66 @@ const TONES: Record<Tone, { icon: string; button: string }> = {
   danger: { icon: "bg-destructive-soft text-destructive", button: "bg-destructive hover:brightness-95 text-white" },
 };
 
-const ConfirmContext = createContext<((options: ConfirmOptions) => Promise<boolean>) | null>(null);
+type Open = (PromptOptions & { input: boolean; resolve: (value: string | null) => void }) | null;
 
-/** Bottom-sheet confirm dialog; `await confirm({...})` resolves true on confirm. */
+const ConfirmContext = createContext<{
+  confirm: (options: ConfirmOptions) => Promise<boolean>;
+  prompt: (options: PromptOptions) => Promise<string | null>;
+} | null>(null);
+
+/**
+ * Bottom-sheet dialogs: `await confirm({...})` resolves true on confirm;
+ * `await prompt({...})` asks for required text and resolves it (null on cancel).
+ */
 export function ConfirmProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState<(ConfirmOptions & { resolve: (ok: boolean) => void }) | null>(null);
+  const [open, setOpen] = useState<Open>(null);
 
-  const confirm = useCallback((options: ConfirmOptions) => new Promise<boolean>((resolve) => setOpen({ ...options, resolve })), []);
+  const prompt = useCallback((options: PromptOptions) => new Promise<string | null>((resolve) => setOpen({ ...options, input: true, resolve })), []);
+  const confirm = useCallback(
+    (options: ConfirmOptions) => new Promise<boolean>((resolve) => setOpen({ ...options, input: false, resolve: (v) => resolve(v !== null) })),
+    []
+  );
 
-  const close = (ok: boolean) => {
-    open?.resolve(ok);
-    setOpen(null);
-  };
+  const close = useCallback((value: string | null) => {
+    setOpen((current) => {
+      current?.resolve(value);
+      return null;
+    });
+  }, []);
 
   return (
-    <ConfirmContext.Provider value={confirm}>
+    <ConfirmContext.Provider value={{ confirm, prompt }}>
       {children}
       {open && <Sheet options={open} onClose={close} />}
     </ConfirmContext.Provider>
   );
 }
 
-function Sheet({ options, onClose }: { options: ConfirmOptions; onClose: (ok: boolean) => void }) {
-  const { title, message, detail, confirmLabel = "Тийм", cancelLabel = "Болих", tone = "primary", icon: Icon = CircleAlert } = options;
+function Sheet({ options, onClose }: { options: NonNullable<Open>; onClose: (value: string | null) => void }) {
+  const { title, message, detail, confirmLabel = "Тийм", cancelLabel = "Болих", tone = "primary", icon: Icon = CircleAlert, input, label, placeholder } = options;
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [text, setText] = useState("");
+  const canConfirm = !input || text.trim().length > 0;
 
   useEffect(() => {
-    confirmRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose(false);
+    (input ? inputRef.current : confirmRef.current)?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose(null);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [input, onClose]);
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 animate-fade-in bg-dark/50 backdrop-blur-[2px]" onClick={() => onClose(false)} />
-      <div
+      <div className="absolute inset-0 animate-fade-in bg-dark/50 backdrop-blur-[2px]" onClick={() => onClose(null)} />
+      <form
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (canConfirm) onClose(input ? text.trim() : "");
+        }}
         className="absolute inset-x-0 bottom-0 mx-auto max-w-md animate-sheet-up rounded-t-3xl bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl"
       >
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
@@ -76,21 +102,42 @@ function Sheet({ options, onClose }: { options: ConfirmOptions; onClose: (ok: bo
           {message && <p className="mt-1 text-sm text-muted-foreground">{message}</p>}
         </div>
         {detail && <div className="mt-4">{detail}</div>}
+        {input && (
+          <label className="mt-4 block">
+            {label && <span className="mb-1.5 block text-[13px] font-semibold">{label}</span>}
+            <textarea
+              ref={inputRef}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={placeholder}
+              rows={3}
+              className="w-full resize-none rounded-xl border border-input bg-white px-4 py-3 text-[15px] outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
+            />
+          </label>
+        )}
         <div className="mt-5 grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => onClose(false)} className="h-12 rounded-xl bg-muted font-bold hover:bg-border">
+          <button type="button" onClick={() => onClose(null)} className="h-12 rounded-xl bg-muted font-bold hover:bg-border">
             {cancelLabel}
           </button>
-          <button ref={confirmRef} type="button" onClick={() => onClose(true)} className={cn("h-12 rounded-xl font-bold outline-none focus-visible:ring-4 focus-visible:ring-black/10", TONES[tone].button)}>
+          <button
+            ref={confirmRef}
+            type="submit"
+            disabled={!canConfirm}
+            className={cn("h-12 rounded-xl font-bold outline-none focus-visible:ring-4 focus-visible:ring-black/10 disabled:opacity-50", TONES[tone].button)}
+          >
             {confirmLabel}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
 
-export function useConfirm() {
+function useDialogs() {
   const ctx = useContext(ConfirmContext);
-  if (!ctx) throw new Error("useConfirm must be used inside <ConfirmProvider>");
+  if (!ctx) throw new Error("useConfirm/usePrompt must be used inside <ConfirmProvider>");
   return ctx;
 }
+
+export const useConfirm = () => useDialogs().confirm;
+export const usePrompt = () => useDialogs().prompt;

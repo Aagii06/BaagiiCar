@@ -10,6 +10,8 @@ const constant = {
   carStatuses: {
     // Админ биш хэрэглэгчийн шинэ зар админ батлах хүртэл вэб дээр гарахгүй
     pending: "pending",
+    // Админ тайлбартай буцаасан — эзэн нь засаж хадгалахад дахин "pending" болно
+    rejected: "rejected",
     active: "active",
     sold: "sold",
     // Админ түр нуусан — вэб дээр харагдахгүй, дараа нь буцааж ил гаргаж болно
@@ -17,7 +19,7 @@ const constant = {
     deleted: "deleted",
   },
   // Вэб (олон нийт) дээр харагдахгүй төлөвүүд
-  nonPublicCarStatuses: ["pending", "hidden", "deleted"],
+  nonPublicCarStatuses: ["pending", "rejected", "hidden", "deleted"],
 
   fuelTypes: ["Бензин", "Дизель", "Хайбрид", "Газ", "Цахилгаан"],
   transmissions: ["Автомат", "Механик", "CVT", "Типтроник"],

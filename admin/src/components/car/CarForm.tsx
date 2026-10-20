@@ -2,6 +2,7 @@
 
 import { Field, FormError, inputClass, Select } from "@/components/common/Field";
 import PhotoViewer from "@/components/common/PhotoViewer";
+import { RejectNote } from "./useRejectCar";
 import { getBodyTypes, getBrands, getLocations, getModels, saveCar, type CarInput, type PhotoItem } from "@/lib/api/cars";
 import type { Car } from "@/lib/api/types";
 import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, FUEL_TYPES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
@@ -207,6 +208,7 @@ export default function CarForm({
 
   return (
     <form id={CAR_FORM_ID} onSubmit={submit} className="space-y-5">
+      {car && <RejectNote car={car} />}
       <Section title="Зураг">
         <div className="grid grid-cols-3 gap-2">
           {photos.map((p, i) => (

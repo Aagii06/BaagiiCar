@@ -40,6 +40,10 @@ module.exports = (sequelize, DataTypes) => {
       view_count: { type: DataTypes.INTEGER, defaultValue: 0 },
       is_featured: { type: DataTypes.BOOLEAN, defaultValue: false },
       sold_at: { type: DataTypes.STRING },
+      // Админ буцаасан тайлбар (status = "rejected")
+      reject_reason: { type: DataTypes.TEXT },
+      rejected_by: { type: DataTypes.INTEGER },
+      rejected_at: { type: DataTypes.STRING },
 
       status: { type: DataTypes.STRING },
       created_by: { type: DataTypes.INTEGER },

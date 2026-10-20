@@ -13,7 +13,7 @@ const { saveLog } = require("../../utils/logHelper");
 const { roles, carStatuses, nonPublicCarStatuses } = require("../../config/constants");
 
 // Зөвхөн админ өөрчилж болох талбарууд
-const adminOnlyFields = ["user_id", "is_featured", "view_count", "status", "sold_at"];
+const adminOnlyFields = ["user_id", "is_featured", "view_count", "status", "sold_at", "reject_reason", "rejected_by", "rejected_at"];
 
 // Зар олдох бөгөөд нэвтэрсэн хэрэглэгч засах эрхтэй эсэх
 const findOwnCar = async (id, loggedUser) => {
@@ -52,10 +52,12 @@ module.exports.save = async (req, res) => {
 
     let item = null;
     if (id) {
+      // Буцаасан зарыг эзэн нь засаж хадгалбал дахин батлуулах хүсэлт болно
+      const resubmit = !isAdmin && prevStatus === carStatuses.rejected ? { status: carStatuses.pending } : {};
       // update
       item = await cars
         .update(
-          { ...body, updated_by: by, updated_at: at },
+          { ...body, ...resubmit, updated_by: by, updated_at: at },
           { where: { id }, transaction: t, individualHooks: true },
         )
         .then(async () => await cars.findByPk(id, { raw: true, transaction: t }));
@@ -151,7 +153,7 @@ module.exports.approve = async (req, res) => {
   const t = await sequelize.transaction();
   try {
     const [affected] = await cars.update(
-      { status: carStatuses.active, updated_by: by, updated_at: at },
+      { status: carStatuses.active, reject_reason: null, rejected_by: null, rejected_at: null, updated_by: by, updated_at: at },
       { where: { id, status: carStatuses.pending }, transaction: t },
     );
     if (!affected) {
@@ -173,6 +175,47 @@ module.exports.approve = async (req, res) => {
     );
     await t.commit();
     setImmediate(() => notifyNewCar(id));
+    result.success = true;
+    return res.status(200).json(result);
+  } catch (error) {
+    await t.rollback();
+    console.log(error);
+    result.message = "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
+// Хүлээгдэж буй зарыг тайлбартай буцаах (зөвхөн админ). body: { id, reason }
+module.exports.reject = async (req, res) => {
+  let result = { success: false, data: null, message: "Амжилттай" };
+  const { id, by, at } = req.body;
+  const reason = String(req.body.reason || "").trim();
+  if (req.loggedUser?.role !== roles.admin)
+    return res.status(200).json({ ...result, message: "Танд энэ үйлдлийг хийх эрх байхгүй" });
+  if (!reason) return res.status(200).json({ ...result, message: "Буцаах шалтгаанаа бичнэ үү" });
+
+  const t = await sequelize.transaction();
+  try {
+    const [affected] = await cars.update(
+      { status: carStatuses.rejected, reject_reason: reason, rejected_by: by, rejected_at: at, updated_by: by, updated_at: at },
+      { where: { id, status: carStatuses.pending }, transaction: t },
+    );
+    if (!affected) {
+      await t.rollback();
+      return res.status(200).json({ ...result, message: "Буцаах хүлээгдэж буй зар олдсонгүй" });
+    }
+    await saveLog(
+      {
+        object_name: "cars",
+        object_id: id,
+        log_action: "rejected",
+        modify_data: JSON.stringify({ status: carStatuses.rejected, reason }),
+        created_by: by,
+        created_at: at,
+      },
+      t,
+    );
+    await t.commit();
     result.success = true;
     return res.status(200).json(result);
   } catch (error) {

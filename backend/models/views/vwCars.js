@@ -36,6 +36,8 @@ module.exports = (sequelize, DataTypes) => {
       view_count: { type: DataTypes.INTEGER },
       is_featured: { type: DataTypes.BOOLEAN },
       sold_at: { type: DataTypes.STRING },
+      reject_reason: { type: DataTypes.TEXT },
+      rejected_at: { type: DataTypes.STRING },
 
       status: { type: DataTypes.STRING },
       created_by: { type: DataTypes.INTEGER },

@@ -77,7 +77,7 @@ export const getLocations = () => listAll<Location>("locations").then(bySort);
 // --- cars ------------------------------------------------------------------
 
 export interface CarFilter {
-  status?: "pending" | "active" | "hidden" | "sold" | "deleted" | "featured";
+  status?: "pending" | "rejected" | "active" | "hidden" | "sold" | "deleted" | "featured";
   search?: string;
   page: number;
   pageSize: number;
@@ -119,6 +119,11 @@ export async function getCarFiles(carId: number) {
 
 export async function approveCar(id: number) {
   await apiFetch("/api/cars/approve", { method: "POST", body: { id } });
+}
+
+/** Send a pending ad back to its owner with a reason. */
+export async function rejectCar(id: number, reason: string) {
+  await apiFetch("/api/cars/reject", { method: "POST", body: { id, reason } });
 }
 
 /** Temporarily take an active ad off the web (or put a hidden one back). */

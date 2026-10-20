@@ -6,7 +6,7 @@ const hidden = nonPublicCarStatuses;
 
 // Арлын дугаар (VIN) баазад хадгалагдах ч олон нийтэд буцаагдахгүй.
 // ?select=[...]-аар хүссэн ч зөвхөн нийтийн талбарууд гарна.
-const privateFields = ["vin"];
+const privateFields = ["vin", "reject_reason", "rejected_at"];
 const publicFields = Object.keys(vwCars.rawAttributes).filter((f) => !privateFields.includes(f));
 const publicSelect = (req) => {
   const requested = Array.isArray(req.select) ? req.select.filter((f) => publicFields.includes(f)) : [];

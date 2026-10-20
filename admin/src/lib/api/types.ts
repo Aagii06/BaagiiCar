@@ -22,6 +22,9 @@ export interface Car {
   view_count: number | null;
   is_featured: boolean | number | null;
   sold_at: string | null;
+  /** Admin's note when the ad was returned (status "rejected"). */
+  reject_reason?: string | null;
+  rejected_at?: string | null;
   status: string;
   created_at: string | null;
   updated_at: string | null;

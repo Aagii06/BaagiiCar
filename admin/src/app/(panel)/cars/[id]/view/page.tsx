@@ -1,6 +1,7 @@
 "use client";
 
 import CarImage from "@/components/car/CarImage";
+import { RejectNote, useRejectCar } from "@/components/car/useRejectCar";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
@@ -12,7 +13,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { bodyTypeLabel, CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, timeAgo } from "@/lib/utils";
-import { Check, ExternalLink, Eye, Heart, Pencil, Phone } from "lucide-react";
+import { Check, ExternalLink, Eye, Heart, Pencil, Phone, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -70,7 +71,8 @@ export default function CarViewPage() {
       ) : (
         // Full-width like the web detail page: photos + specs left, price / seller right on desktop.
         <div className={cn("mx-auto max-w-[1280px] md:px-6", busy && "pointer-events-none opacity-60")}>
-          <StatusBanner car={car} onApprove={() => approve(car)} />
+          <StatusBanner car={car} onApprove={() => approve(car)} onRejected={data.reload} />
+          <RejectNote car={car} className="mt-3" />
 
           <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px] lg:items-start lg:gap-6">
             <div className="min-w-0 lg:col-start-1">
@@ -125,16 +127,23 @@ export default function CarViewPage() {
   );
 }
 
-function StatusBanner({ car, onApprove }: { car: Car; onApprove: () => void }) {
+function StatusBanner({ car, onApprove, onRejected }: { car: Car; onApprove: () => void; onRejected: () => void }) {
   const isAdmin = useAuth().user?.role === ROLES.admin;
+  const reject = useRejectCar();
   const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
   const onWeb = car.status === "active" || car.status === "sold";
   return (
-    <div className={cn("flex items-center gap-3 rounded-2xl p-3.5", car.status === "pending" ? "bg-amber-soft text-amber-ink" : "bg-card")}>
+    <div className={cn("flex flex-wrap items-center gap-3 rounded-2xl p-3.5", car.status === "pending" ? "bg-amber-soft text-amber-ink" : "bg-card")}>
       <div className="min-w-0 flex-1">
         <span className={cn("inline-block rounded-full px-2 py-0.5 text-[10px] font-bold", st.className)}>{st.label}</span>
-        <p className="mt-1 text-xs font-medium">{onWeb ? "Вэб сайт дээр нийтлэгдсэн" : car.status === "pending" ? "Батлагдаагүй тул вэб дээр харагдахгүй" : car.status === "hidden" ? "Түр нуусан тул вэб дээр харагдахгүй" : "Вэб дээр харагдахгүй"}</p>
+        <p className="mt-1 text-xs font-medium">{onWeb ? "Вэб сайт дээр нийтлэгдсэн" : car.status === "pending" ? "Батлагдаагүй тул вэб дээр харагдахгүй" : car.status === "rejected" ? "Буцаасан — эзэн нь засаж дахин илгээнэ" : car.status === "hidden" ? "Түр нуусан тул вэб дээр харагдахгүй" : "Вэб дээр харагдахгүй"}</p>
       </div>
+      {car.status === "pending" && isAdmin && (
+        <button onClick={async () => (await reject(car)) && onRejected()} className="flex shrink-0 items-center gap-1 rounded-xl bg-destructive-soft px-3 py-2 text-sm font-bold text-destructive">
+          <Undo2 className="size-4" />
+          Буцаах
+        </button>
+      )}
       {car.status === "pending" && isAdmin && (
         <button onClick={onApprove} className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white">
           <Check className="size-4" strokeWidth={3} />
