@@ -486,9 +486,11 @@ function CarsPageInner() {
     <Container className="pt-3 md:pt-5">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-card px-4 py-2.5 md:px-5">
         <h1 className="font-display text-xl font-bold leading-none md:text-2xl">{t("Машин хайх")}</h1>
-        {/* Status-style total; pulses while the first page is loading. */}
-        <span aria-live="polite" className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1.5 text-sm font-semibold text-primary">
-          <span className={cn("size-2 rounded-full bg-primary", result.loading && "animate-pulse")} />
+        {/* Total; pulses while results are loading. */}
+        <span
+          aria-live="polite"
+          className={cn("inline-flex items-center rounded-full bg-primary-soft px-3 py-1.5 text-sm font-semibold text-primary", result.loading && "animate-pulse")}
+        >
           {result.data ? t("{n} машин", { n: result.data.count.toLocaleString("en-US") }) : "…"}
         </span>
       </div>
