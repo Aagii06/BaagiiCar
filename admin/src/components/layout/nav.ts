@@ -1,4 +1,4 @@
-import { CarFront, ChartNoAxesColumn, LibraryBig, MessageCircle, UserRound, Users, type LucideIcon } from "lucide-react";
+import { CarFront, ChartNoAxesColumn, MessageCircle, UserRound, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -10,8 +10,6 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Самбар", icon: ChartNoAxesColumn },
   { href: "/cars", label: "Зарууд", icon: CarFront },
   { href: "/messages", label: "Мессеж", icon: MessageCircle },
-  { href: "/catalog", label: "Каталог", icon: LibraryBig },
-  { href: "/users", label: "Хэрэглэгч", icon: Users },
   { href: "/profile", label: "Профайл", icon: UserRound },
 ];
 

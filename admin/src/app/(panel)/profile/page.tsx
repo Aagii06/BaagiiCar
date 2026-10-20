@@ -5,7 +5,7 @@ import { WEB_URL } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel } from "@/lib/constants";
 import { initials, userName } from "@/lib/utils";
-import { ChevronRight, ExternalLink, LogOut } from "lucide-react";
+import { ChevronRight, ExternalLink, LibraryBig, LogOut, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -23,6 +23,20 @@ export default function ProfilePage() {
           </p>
         </div>
       </section>
+
+      <div className="mt-4 space-y-2">
+        {/* Moved out of the bottom nav to keep it at four tabs. */}
+        <Link href="/catalog" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
+          <LibraryBig className="size-5 text-muted-foreground" />
+          Каталог
+          <ChevronRight className="ml-auto size-4" />
+        </Link>
+        <Link href="/users" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
+          <Users className="size-5 text-muted-foreground" />
+          Хэрэглэгч
+          <ChevronRight className="ml-auto size-4" />
+        </Link>
+      </div>
 
       <div className="mt-4 space-y-2">
         <Link href="/profile/password" className="flex items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold">

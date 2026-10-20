@@ -229,6 +229,7 @@ function CatalogInner() {
     <>
       <PageHeader
         title="Каталог"
+        back="/profile"
         aside={
           <button onClick={() => setEditing("new")} className="flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white">
             <Plus className="size-4" strokeWidth={2.6} />
