@@ -10,12 +10,13 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { useApi } from "@/lib/useApi";
 import { Check, Eye } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useRouteId } from "@/lib/useRouteId";
 import { useState } from "react";
 
 /** `/cars/new` creates an ad under the admin's own account; `/cars/:id` edits any ad. */
 export default function CarEditPage() {
-  const { id } = useParams<{ id: string }>();
+  const id = useRouteId();
   const isNew = id === "new";
   const router = useRouter();
   const toast = useToast();

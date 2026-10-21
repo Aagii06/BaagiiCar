@@ -6,7 +6,7 @@ export const DEFAULT_LOCALE: Locale = "mn";
 /** Off: everyone gets Mongolian and the header hides the language picker. */
 export const LANGUAGE_SWITCHING = false;
 
-/** Cookie holding the visitor's chosen language; read by the root layout. */
+/** Cookie holding the visitor's chosen language; read by I18nProvider. */
 export const LOCALE_COOKIE = "lang";
 
 export const LOCALE_NAMES: Record<Locale, string> = {

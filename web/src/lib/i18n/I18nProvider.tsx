@@ -1,8 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { LOCALE_COOKIE, type Locale } from "./config";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { LOCALE_COOKIE, pickLocale, type Locale } from "./config";
 import { translate, translateValue, type T } from "./translate";
 
 interface I18nValue {
@@ -15,20 +14,29 @@ interface I18nValue {
 
 const I18nContext = createContext<I18nValue | null>(null);
 
-export function I18nProvider({ locale: initial, children }: { locale: Locale; children: React.ReactNode }) {
-  const router = useRouter();
-  const [locale, setLocaleState] = useState(initial);
+/** The visitor's saved choice, else their browser language (see pickLocale). */
+function browserLocale() {
+  const cookie = document.cookie.match(new RegExp(`(?:^|; )${LOCALE_COOKIE}=([^;]*)`))?.[1];
+  return pickLocale(cookie, navigator.languages.join(","));
+}
 
-  const setLocale = useCallback(
-    (next: Locale) => {
-      document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
-      document.documentElement.lang = next;
-      setLocaleState(next);
-      // Server-rendered bits (page title, <html lang>) pick the cookie up on refresh.
-      router.refresh();
-    },
-    [router]
-  );
+const subscribeNever = () => () => {};
+
+export function I18nProvider({ locale: initial, children }: { locale: Locale; children: React.ReactNode }) {
+  // The static export is built in the default language (`initial`); switch to
+  // the browser's pick after hydration, until the visitor chooses one.
+  const detected = useSyncExternalStore(subscribeNever, browserLocale, () => initial);
+  const [chosen, setChosen] = useState<Locale | null>(null);
+  const locale = chosen ?? detected;
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
+  const setLocale = useCallback((next: Locale) => {
+    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
+    setChosen(next);
+  }, []);
 
   const value = useMemo<I18nValue>(
     () => ({

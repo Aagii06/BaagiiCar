@@ -19,7 +19,7 @@ import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, initials, timeAgo, tintFor } from "@/lib/utils";
 import { MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useRouteId } from "@/lib/useRouteId";
 import { useState } from "react";
 
 function Gallery({ car }: { car: Car }) {
@@ -159,7 +159,7 @@ function Similar({ car }: { car: Car }) {
 }
 
 export default function CarDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const id = useRouteId();
   const { t } = useI18n();
   const car = useApi(() => getCar(id), id);
 

@@ -15,7 +15,7 @@ import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, timeAgo } from "@/lib/utils";
 import { Check, ExternalLink, Eye, Heart, Pencil, Phone, Undo2 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useRouteId } from "@/lib/useRouteId";
 import { useState } from "react";
 
 /**
@@ -23,7 +23,7 @@ import { useState } from "react";
  * serves active/sold ads, so this is where pending ones can be checked.
  */
 export default function CarViewPage() {
-  const { id } = useParams<{ id: string }>();
+  const id = useRouteId();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
 

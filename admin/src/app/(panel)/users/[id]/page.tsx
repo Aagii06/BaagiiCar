@@ -13,7 +13,8 @@ import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useRouteId } from "@/lib/useRouteId";
 import { useState } from "react";
 
 function UserForm({ user }: { user: User | null }) {
@@ -145,7 +146,7 @@ function UserForm({ user }: { user: User | null }) {
 }
 
 export default function UserPage() {
-  const { id } = useParams<{ id: string }>();
+  const id = useRouteId();
   const isNew = id === "new";
   const data = useApi(() => (isNew ? Promise.resolve(null) : getUser(id)), id);
 

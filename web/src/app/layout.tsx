@@ -4,8 +4,8 @@ import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
 import PushPrompt from "@/components/layout/PushPrompt";
 import { FavoritesProvider } from "@/lib/favorites/FavoritesProvider";
+import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
-import { getLocale } from "@/lib/i18n/server";
 import { translate } from "@/lib/i18n/translate";
 import type { Metadata, Viewport } from "next";
 import { Inter, Oswald } from "next/font/google";
@@ -16,21 +16,20 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "cyrillic"], 
 // Condensed display face for uppercase titles.
 const oswald = Oswald({ variable: "--font-oswald", subsets: ["latin", "cyrillic"], display: "swap" });
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
-  return {
-    title: { default: `Baagii Car Dealer — ${translate(locale, "Машин авах, зарах")}`, template: "%s · Baagii Car Dealer" },
-    description: translate(locale, "Монголын машин авах, зарах платформ. Оношилгоотой зар, зээлийн тооцоолуур, зарлагчтай шууд холбогдох."),
-  };
-}
+// Static export: rendered once at build time, in the default language.
+const locale = DEFAULT_LOCALE;
+
+export const metadata: Metadata = {
+  title: { default: `Baagii Car Dealer — ${translate(locale, "Машин авах, зарах")}`, template: "%s · Baagii Car Dealer" },
+  description: translate(locale, "Монголын машин авах, зарах платформ. Оношилгоотой зар, зээлийн тооцоолуур, зарлагчтай шууд холбогдох."),
+};
 
 export const viewport: Viewport = {
   themeColor: "#ffffff",
   viewportFit: "cover",
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const locale = await getLocale();
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang={locale} className={`${inter.variable} ${oswald.variable}`}>
       <body className="font-sans antialiased">
