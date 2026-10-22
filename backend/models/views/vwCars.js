@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       code: { type: DataTypes.STRING },
 
       user_id: { type: DataTypes.INTEGER },
+      dealer_id: { type: DataTypes.INTEGER },
       brand_id: { type: DataTypes.INTEGER },
       car_model_id: { type: DataTypes.INTEGER },
       body_type_id: { type: DataTypes.INTEGER },
@@ -56,6 +57,8 @@ module.exports = (sequelize, DataTypes) => {
       location_name: { type: DataTypes.STRING },
       seller_name: { type: DataTypes.STRING },
       seller_phone: { type: DataTypes.STRING },
+      dealer_name: { type: DataTypes.STRING },
+      dealer_logo: { type: DataTypes.STRING },
       image: { type: DataTypes.STRING },
       image_count: { type: DataTypes.INTEGER },
       favorite_count: { type: DataTypes.INTEGER },

@@ -4,8 +4,9 @@ const moment = require("moment");
 
 module.exports = (sequelize, DataTypes) => {
   class cars extends Sequelize.Model {
-    static associate({ brands, carModels, bodyTypes, locations, favorites, users }) {
+    static associate({ brands, carModels, bodyTypes, dealers, locations, favorites, users }) {
       this.belongsTo(users, { as: "seller", foreignKey: "user_id" });
+      this.belongsTo(dealers, { as: "dealer", foreignKey: "dealer_id" });
       this.belongsTo(brands, { as: "brand", foreignKey: "brand_id" });
       this.belongsTo(carModels, { as: "carModel", foreignKey: "car_model_id" });
       this.belongsTo(bodyTypes, { as: "bodyType", foreignKey: "body_type_id" });
@@ -24,6 +25,8 @@ module.exports = (sequelize, DataTypes) => {
       code: { type: DataTypes.STRING(12) },
 
       user_id: { type: DataTypes.INTEGER },
+      // Зар харьяалагдах дилер (хоосон бол хувь хүний / админы зар)
+      dealer_id: { type: DataTypes.INTEGER },
       brand_id: { type: DataTypes.INTEGER },
       car_model_id: { type: DataTypes.INTEGER },
       body_type_id: { type: DataTypes.INTEGER },

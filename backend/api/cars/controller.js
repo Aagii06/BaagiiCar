@@ -1,5 +1,6 @@
 const {
   cars,
+  dealers,
   users,
   vwCars,
   favorites,
@@ -14,36 +15,46 @@ const { saveLog } = require("../../utils/logHelper");
 const { roles, carStatuses, nonPublicCarStatuses } = require("../../config/constants");
 
 // Зөвхөн админ өөрчилж болох талбарууд
-const adminOnlyFields = ["user_id", "is_featured", "view_count", "status", "sold_at", "reject_reason", "rejected_by", "rejected_at"];
+const adminOnlyFields = ["user_id", "dealer_id", "is_featured", "view_count", "status", "sold_at", "reject_reason", "rejected_by", "rejected_at"];
 
-// Зар олдох бөгөөд нэвтэрсэн хэрэглэгч засах эрхтэй эсэх
+// Нэвтэрсэн хэрэглэгчийн дилер (токен хуучин байж болох тул баазаас уншина)
+const dealerIdOf = async (loggedUser) => {
+  if (!loggedUser?.id) return null;
+  const user = await users.findByPk(loggedUser.id, { attributes: ["dealer_id"], raw: true });
+  return user?.dealer_id || null;
+};
+
+// Зар олдох бөгөөд нэвтэрсэн хэрэглэгч засах эрхтэй эсэх:
+// админ бүгдийг, бусад нь өөрийн эсвэл өөрийн дилерийн зарыг
 const findOwnCar = async (id, loggedUser) => {
   const car = await cars.findOne({
     where: { id, status: { [op.ne]: carStatuses.deleted } },
     raw: true,
   });
   if (!car) return { error: "Зарын мэдээлэл олдсонгүй" };
-  if (loggedUser?.role !== roles.admin && car.user_id !== loggedUser?.id)
-    return { error: "Зөвхөн өөрийн зарыг засах боломжтой" };
+  if (loggedUser?.role !== roles.admin && car.user_id !== loggedUser?.id) {
+    const dealerId = car.dealer_id ? await dealerIdOf(loggedUser) : null;
+    if (!dealerId || dealerId !== car.dealer_id) return { error: "Зөвхөн өөрийн зарыг засах боломжтой" };
+  }
   return { car };
 };
 
-// Админ зарыг дилерт харьяалуулах үед: user_id нь идэвхтэй DEALER байх ёстой.
-// Хоосон эсвэл админы өөрийн id бол админы өөрийн зар болно.
-const resolveOwner = async (userId, loggedUser) => {
-  if (!userId || userId + "" === loggedUser.id + "") return { owner: loggedUser };
-  const dealer = await users.findOne({
-    where: { id: userId, role: roles.dealer, status: "active" },
+// Админ зарыг дилерт харьяалуулах үед: идэвхтэй дилер байх ёстой. Хоосон бол дилергүй зар.
+const resolveDealer = async (dealerId) => {
+  if (!dealerId) return { dealer: null };
+  const dealer = await dealers.findOne({
+    where: { id: dealerId, status: "active" },
     attributes: ["id", "phonenumber"],
     raw: true,
   });
   if (!dealer) return { error: "Сонгосон дилер олдсонгүй эсвэл идэвхгүй байна" };
-  return { owner: dealer };
+  return { dealer };
 };
 
 // Шинэ зар нэмэх / засах (зурагтай хамт multipart-аар)
-// Админ: user_id-аар дилер сонгоно (сонгохгүй бол өөрийн зар), шууд нийтлэгдэнэ.
-// Дилер / бусад: зар автоматаар өөрт нь харьяалагдана, админ батлахыг хүлээнэ.
+// Зарын эзэн (user_id) нь оруулсан хэрэглэгч, засахад өөрчлөгдөхгүй.
+// Админ: dealer_id-аар дилер сонгоно (хоосон бол дилергүй), шууд нийтлэгдэнэ.
+// Бусад: зар өөрийн дилерт харьяалагдана, админ батлахыг хүлээнэ.
 // fields: data = JSON, file0..N = зураг, file0Info..N = { id } (хуучин) эсвэл { original_name } (шинэ)
 module.exports.save = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
@@ -62,13 +73,16 @@ module.exports.save = async (req, res) => {
     prevStatus = car.status;
   }
 
-  // Зарын эзэн. Засахдаа user_id ирээгүй бол эзэн өөрчлөгдөхгүй.
-  let owner = loggedUser;
-  if (isAdmin && (!id || body.user_id !== undefined)) {
-    const resolved = await resolveOwner(body.user_id, loggedUser);
+  delete body.user_id;
+  // Дилер. Засахдаа dealer_id ирээгүй бол өөрчлөгдөхгүй.
+  let dealer = null;
+  if (isAdmin && (!id || body.dealer_id !== undefined)) {
+    const resolved = await resolveDealer(body.dealer_id);
     if (resolved.error) return res.status(200).json({ ...result, message: resolved.error });
-    owner = resolved.owner;
-    body.user_id = owner.id;
+    dealer = resolved.dealer;
+    body.dealer_id = dealer?.id ?? null;
+  } else if (!isAdmin && !id) {
+    body.dealer_id = await dealerIdOf(loggedUser);
   }
 
   const t = await sequelize.transaction();
@@ -91,9 +105,9 @@ module.exports.save = async (req, res) => {
       item = await cars.create(
         {
           ...body,
-          user_id: owner.id,
-          // Утас оруулаагүй бол зарын эзний (дилерийн) дугаар
-          phonenumber: body.phonenumber || owner.phonenumber,
+          user_id: loggedUser.id,
+          // Утас оруулаагүй бол дилерийн, эсвэл оруулсан хэрэглэгчийн дугаар
+          phonenumber: body.phonenumber || dealer?.phonenumber || loggedUser.phonenumber,
           // Админ шууд нийтэлнэ, бусдынх админ батлахыг хүлээнэ
           status: isAdmin ? carStatuses.active : carStatuses.pending,
           created_by: by,

@@ -1,4 +1,4 @@
-const { users } = require("../../../models");
+const { users, dealers } = require("../../../models");
 const { body } = require("express-validator");
 const { isAdmin } = require("../../../middleware/auth");
 const { roles } = require("../../../config/constants");
@@ -16,13 +16,26 @@ const lookup = (req, res, next) => {
   isAdmin(req, res, next);
 };
 
+// Дилерт зөвхөн ADMIN / DEALER эрхтэй хэрэглэгч харьяалагдана; дилер нь устгагдаагүй байх ёстой
+const checkDealer = async (req, res, next) => {
+  const { role } = req.body;
+  if (role && ![roles.admin, roles.dealer].includes(role)) req.body.dealer_id = null;
+  else if (req.body.dealer_id) {
+    const found = await dealers.count({ where: { id: req.body.dealer_id, status: ["active", "inactive"] } });
+    if (!found) return res.status(200).json({ success: false, message: "Сонгосон дилер олдсонгүй" });
+  } else if (req.body.dealer_id !== undefined) req.body.dealer_id = null;
+  next();
+};
+
 const create = async (req, res, next) => {
   req.body.status = "active";
-  isAdmin(req, res, next);
+  isAdmin(req, res, () => checkDealer(req, res, next));
 };
 
 const update = async (req, res, next) => {
-  isAdmin(req, res, next);
+  // Лого дилерийн бүртгэл рүү шилжсэн
+  delete req.body.logo;
+  isAdmin(req, res, () => checkDealer(req, res, next));
 };
 
 const destroy = async (req, res, next) => {

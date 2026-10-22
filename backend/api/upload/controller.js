@@ -4,8 +4,8 @@ const { saveFile } = require("../../helper/fileHelper");
 // Админаас каталогийн зураг (биеийн хэлбэрийн дүрс, үйлдвэрийн лого) солих.
 // public/uploads/<folder> дотор хадгалаад зөвхөн файлын нэрийг буцаана,
 // түүнийгээ мөрийн image/logo баганад хадгална (фронт URL-ийг угсарна).
-// users - дилерийн лого (users.logo баганад хадгална)
-const folders = ["bodyTypes", "brands", "users"];
+// users - хэрэглэгчийн профайл зураг (users.profile), dealers - дилерийн лого (dealers.logo)
+const folders = ["bodyTypes", "brands", "users", "dealers"];
 
 module.exports.uploadImage = async (req, res) => {
   let result = { success: false, data: null, message: "" };

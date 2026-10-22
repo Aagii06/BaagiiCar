@@ -1,16 +1,13 @@
 const bcrypt = require("bcrypt");
 const moment = require("moment");
 
-const { users, sequelize, op } = require("../../models");
+const { users, dealers, sequelize, op } = require("../../models");
 
-const fs = require("fs");
-const { uploadImage, saveFile } = require("../../helper/fileHelper");
+const { uploadImage } = require("../../helper/fileHelper");
 const { authLogin } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
 const { roles } = require("../../config/constants");
 const { sendEmailOtp, verifyEmailOtp } = require("../../helper/otpHelper");
-
-const isLogo = (file) => /^image\/(png|jpeg|webp|svg\+xml)$/.test(file.mimetype);
 
 module.exports.save = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
@@ -40,29 +37,9 @@ module.exports.save = async (req, res) => {
     const image = await uploadImage("users", files);
     if (image) body = Object.assign(body, { profile: image });
 
-    // Лого зөвхөн DEALER эрхтэй хэрэглэгчид. Файл (files.logo) ирвэл хадгалж нэрийг нь бичнэ,
-    // body.logo = null бол логог арилгана.
-    const current = id ? await users.findByPk(id, { attributes: ["role"], raw: true, transaction: t }) : null;
-    const targetRole = body.role || current?.role;
-    let logoFile = files?.logo;
-    if (Array.isArray(logoFile)) logoFile = logoFile[0];
-    if (targetRole !== roles.dealer) {
-      delete body.logo;
-      if (logoFile) await fs.promises.rm(logoFile.filepath, { force: true });
-    } else if (logoFile) {
-      if (!isLogo(logoFile)) {
-        await fs.promises.rm(logoFile.filepath, { force: true });
-        await t.rollback();
-        result.message = "Лого PNG, JPG, WEBP эсвэл SVG зураг байна";
-        return res.status(200).json(result);
-      }
-      // Тунгалаг дэвсгэр, SVG хадгалагдахаар хэмжээ өөрчлөхгүй
-      const { fileName } = await saveFile(logoFile, "users", { resize: false });
-      body.logo = fileName;
-    } else if (body.logo && loggedUser?.role !== roles.admin) {
-      // Файлын нэрийг зөвхөн админ шууд бичнэ (/api/upload/image-ээр хадгалсны дараа)
-      delete body.logo;
-    }
+    // Хэрэглэгч өөрийн дилерийг сольж чадахгүй, лого дилерийн бүртгэл рүү шилжсэн
+    if (loggedUser?.role !== roles.admin) delete body.dealer_id;
+    delete body.logo;
 
     let item = null;
     if (id) {
@@ -150,7 +127,7 @@ module.exports.save = async (req, res) => {
 module.exports.create = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
 
-  const { phonenumber, firstname, lastname, email, role, logo, password, by, at } =
+  const { phonenumber, firstname, lastname, email, role, profile, dealer_id, password, by, at } =
     req.body;
   const body = {
     phonenumber,
@@ -158,10 +135,17 @@ module.exports.create = async (req, res) => {
     lastname: lastname || null,
     email: email || null,
     role,
-    // Дилерийн лого (/api/upload/image-ээр хадгалсан файлын нэр)
-    logo: role === roles.dealer ? logo || null : null,
+    // Профайл зураг (/api/upload/image-ээр uploads/users-д хадгалсан файлын нэр)
+    profile: profile || null,
+    // Дилерт зөвхөн ADMIN / DEALER харьяалагдана
+    dealer_id: [roles.admin, roles.dealer].includes(role) ? dealer_id || null : null,
     password,
   };
+
+  if (body.dealer_id) {
+    const found = await dealers.count({ where: { id: body.dealer_id, status: ["active", "inactive"] } });
+    if (!found) return res.status(200).json({ ...result, message: "Сонгосон дилер олдсонгүй" });
+  }
 
   const t = await sequelize.transaction();
   try {

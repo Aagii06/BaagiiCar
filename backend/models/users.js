@@ -4,9 +4,10 @@ const bcrypt = require("bcrypt");
 
 module.exports = (sequelize, DataTypes) => {
   class users extends Sequelize.Model {
-    static associate({ cars, favorites, users }) {
+    static associate({ cars, dealers, favorites, users }) {
       this.hasMany(cars, { as: "cars", foreignKey: "user_id" });
       this.hasMany(favorites, { as: "favorites", foreignKey: "user_id" });
+      this.belongsTo(dealers, { as: "dealer", foreignKey: "dealer_id" });
       this.belongsTo(users, { as: "createdBy", foreignKey: "created_by" });
       this.belongsTo(users, { as: "updatedBy", foreignKey: "updated_by" });
       this.belongsTo(users, { as: "deletedBy", foreignKey: "deleted_by" });
@@ -23,8 +24,6 @@ module.exports = (sequelize, DataTypes) => {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 
       profile: { type: DataTypes.STRING },
-      // Зөвхөн DEALER эрхтэй хэрэглэгчийн лого (public/uploads/users)
-      logo: { type: DataTypes.STRING },
       username: { type: DataTypes.STRING },
       phonenumber: { type: DataTypes.STRING },
       firstname: { type: DataTypes.STRING },
@@ -35,6 +34,8 @@ module.exports = (sequelize, DataTypes) => {
       forgot_pass_expire_date: { type: DataTypes.STRING },
       language: { type: DataTypes.STRING },
       role: { type: DataTypes.STRING },
+      // ADMIN / DEALER эрхтэй хэрэглэгчийн харьяалах дилер
+      dealer_id: { type: DataTypes.INTEGER },
 
       status: { type: DataTypes.STRING },
       created_by: { type: DataTypes.INTEGER },
