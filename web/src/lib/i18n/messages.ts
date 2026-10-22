@@ -385,6 +385,11 @@ export const MESSAGES = {
     en: "Enter the 4-digit code sent to {phone}.",
   },
   "← Дугаар солих": { ru: "← Изменить номер", en: "← Change number" },
+  // --- dealers ---------------------------------------------------------------
+  "Дилерүүд": { ru: "Дилеры", en: "Dealers" },
+  "Дилер": { ru: "Дилер", en: "Dealer" },
+  "{n} зар": { ru: "Объявлений: {n}", en: "{n} listings" },
+  "Бүртгэлтэй дилер алга": { ru: "Дилеров пока нет", en: "No dealers yet" },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;

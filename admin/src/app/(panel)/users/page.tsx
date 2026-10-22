@@ -1,12 +1,13 @@
 "use client";
 
+import ChipTabs from "@/components/common/ChipTabs";
 import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listUsers } from "@/lib/api/admin";
 import { catalogImage } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { roleLabel, ROLES } from "@/lib/constants";
+import { ROLE_LIST, roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, initials, userName } from "@/lib/utils";
 import { Plus } from "lucide-react";
@@ -19,11 +20,14 @@ const ROLE_TONE: Record<string, string> = {
   [ROLES.customer]: "bg-muted",
 };
 
+const ROLE_TABS = [{ value: "", label: "Бүгд" }, ...ROLE_LIST.map((r) => ({ value: r as string, label: roleLabel(r) }))];
+
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
+  const [role, setRole] = useState("");
   const { user } = useAuth();
-  const users = useApi(() => listUsers(q, user?.id), `${q}|${user?.id ?? ""}`);
+  const users = useApi(() => listUsers(q, user?.id, role || undefined), `${q}|${role}|${user?.id ?? ""}`);
 
   return (
     <>
@@ -45,6 +49,7 @@ export default function UsersPage() {
         >
           <input className={inputClass} value={search} onChange={(e) => setSearch(e.target.value)} onBlur={() => setQ(search)} placeholder="Нэр эсвэл утас" />
         </form>
+        <ChipTabs items={ROLE_TABS} value={role} onChange={setRole} />
       </PageHeader>
 
       {users.loading && !users.data ? (

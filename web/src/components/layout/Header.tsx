@@ -17,6 +17,7 @@ export const NAV: { href: string; label: MessageKey }[] = [
   { href: "/cars", label: "Машин авах" },
   { href: "/leasing", label: "Лизинг" },
   { href: "/help", label: "Тусламж" },
+  { href: "/dealers", label: "Дилерүүд" },
 ];
 
 export function isActive(pathname: string, href: string) {

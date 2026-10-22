@@ -203,9 +203,10 @@ export async function deleteCar(id: number) {
 // --- users -----------------------------------------------------------------
 
 /** `excludeId` leaves the signed-in user out (they manage themselves from Профайл). */
-export async function listUsers(search?: string, excludeId?: number) {
+export async function listUsers(search?: string, excludeId?: number, role?: string) {
   const filter: Condition[] = [NOT_DELETED];
   if (excludeId) filter.push(["id", "<>", excludeId]);
+  if (role) filter.push(["role", "=", role]);
   const q = search?.trim();
   if (q) filter.push(/^\d+$/.test(q) ? ["phonenumber", "contains", q] : ["firstname", "contains", q]);
   const res = await apiFetch<ApiListResponse<User>>(`/api/base/users${listQuery({ filter, sort: NEWEST, take: 200 })}`);

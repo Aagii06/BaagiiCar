@@ -1,7 +1,7 @@
 "use client";
 
 import Container from "@/components/common/Container";
-import { Field, inputClass } from "@/components/common/Field";
+import { Field, inputClass, PhoneInput } from "@/components/common/Field";
 import { LoadingState } from "@/components/common/States";
 import { loginWithCode, sendLoginCode } from "@/lib/api/auth";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -81,18 +81,7 @@ function LoginInner() {
         >
           <p className="text-sm text-muted-foreground">{t("Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.")}</p>
           <Field label={t("Утасны дугаар")}>
-            <span className="relative block">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] text-muted-foreground">+976</span>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                inputMode="numeric"
-                autoComplete="tel-national"
-                placeholder="99112233"
-                autoFocus
-                className={cn(inputClass, "pl-16 tracking-wider")}
-              />
-            </span>
+            <PhoneInput value={phone} onChange={setPhone} autoComplete="tel" placeholder={t("Утасны дугаар")} autoFocus required />
           </Field>
           <button disabled={busy || phone.length !== 8} className={buttonClass}>
             {t("Код авах")}
