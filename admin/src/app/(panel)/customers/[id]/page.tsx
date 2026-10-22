@@ -1,5 +1,6 @@
 "use client";
 
+import { CustomerAvatar, customerName } from "@/components/customer/CustomerAvatar";
 import { Field, FormError, inputClass, PhoneInput, Select } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
@@ -13,7 +14,6 @@ import { timeAgo } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CustomerAvatar, customerName } from "../page";
 
 function CustomerForm({ customer }: { customer: Customer }) {
   const router = useRouter();

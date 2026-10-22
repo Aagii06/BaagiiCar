@@ -3,12 +3,12 @@
 import ChipTabs from "@/components/common/ChipTabs";
 import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { CustomerAvatar, customerName } from "@/components/customer/CustomerAvatar";
 import PageHeader from "@/components/layout/PageHeader";
 import { listCustomers } from "@/lib/api/admin";
-import { catalogImage } from "@/lib/api/config";
 import type { Customer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
-import { initials, timeAgo } from "@/lib/utils";
+import { timeAgo } from "@/lib/utils";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -17,19 +17,6 @@ const STATUS_TABS: { value: "" | Customer["status"]; label: string }[] = [
   { value: "active", label: "Идэвхтэй" },
   { value: "inactive", label: "Идэвхгүй" },
 ];
-
-export const customerName = (c: Pick<Customer, "firstname" | "lastname" | "phonenumber" | "email">) =>
-  [c.lastname, c.firstname].filter(Boolean).join(" ") || c.phonenumber || c.email || "Нэргүй";
-
-export function CustomerAvatar({ customer, className = "size-10" }: { customer: Customer; className?: string }) {
-  const photo = catalogImage(customer.profile, "users");
-  return photo ? (
-    // eslint-disable-next-line @next/next/no-img-element -- uploaded profile photo
-    <img src={photo} alt="" className={`${className} shrink-0 rounded-full bg-muted object-cover`} />
-  ) : (
-    <span className={`${className} grid shrink-0 place-items-center rounded-full bg-muted text-sm font-bold`}>{initials(customerName(customer))}</span>
-  );
-}
 
 /** Web visitors (`customers` table): they sign up themselves with a one-time code. */
 export default function CustomersPage() {
