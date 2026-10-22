@@ -4,6 +4,7 @@ import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { catalogImage } from "@/lib/api/config";
 import type { Dealer } from "@/lib/api/types";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { useApi } from "@/lib/useApi";
 import { initials } from "@/lib/utils";
 import { getDealers } from "@/lib/api/cars";
@@ -23,12 +24,25 @@ export function DealerAvatar({ dealer, className = "size-11" }: { dealer: Pick<D
 /** First step of `/cars/new`: which dealer the ad belongs to. `null` = no dealer (the admin's own ad). */
 export default function DealerPicker({ onPick }: { onPick: (dealer: Dealer | null) => void }) {
   const dealers = useApi(getDealers);
+  const { user } = useAuth();
+  // The signed-in user's own dealer (Профайл засах), offered first.
+  const mine = dealers.data?.find((d) => d.id === user?.dealer_id);
   const [q, setQ] = useState("");
   const needle = q.trim().toLowerCase();
   const rows = (dealers.data ?? []).filter((d) => !needle || d.name.toLowerCase().includes(needle) || (d.phonenumber ?? "").includes(needle));
 
   return (
     <div className="space-y-4">
+      {mine && (
+        <button type="button" onClick={() => onPick(mine)} className="flex w-full items-center gap-3 rounded-2xl bg-card p-4 text-left ring-2 ring-primary hover:bg-muted/60">
+          <DealerAvatar dealer={mine} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-bold">{mine.name}</span>
+            <span className="block text-xs text-muted-foreground">Миний дилер</span>
+          </span>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </button>
+      )}
       <button type="button" onClick={() => onPick(null)} className="flex w-full items-center gap-3 rounded-2xl bg-card p-4 text-left hover:bg-muted/60">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
           <UserRound className="size-5" />
