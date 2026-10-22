@@ -2,7 +2,7 @@
 import * as admin from "./admin";
 
 export type { CarInput, PhotoItem } from "./admin";
-export const { getBrands, getBodyTypes, getLocations, saveCar } = admin;
+export const { getBrands, getBodyTypes, getLocations, getDealers, saveCar } = admin;
 
 export async function getModels(brandId?: number) {
   const rows = await admin.getModels();

@@ -1,4 +1,5 @@
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
+import { ROLES } from "@/lib/constants";
 import type { BodyType, Brand, Car, CarFile, CarModel, Location, Message, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
@@ -220,7 +221,7 @@ export async function listUsers(search?: string, excludeId?: number, role?: stri
 /** Active dealers, for assigning an ad to one. */
 export async function getDealers() {
   const res = await apiFetch<ApiListResponse<User>>(
-    `/api/base/users${listQuery({ filter: [["role", "=", ROLES.dealer], ["status", "=", "active"]], sort: [["firstname", "ASC"]], take: 500 })}`
+    `/api/base/users${listQuery({ filter: [["role", "=", ROLES.dealer], ["status", "=", "active"]], sort: [{ selector: "firstname", desc: false }], take: 500 })}`
   );
   return res.data.rows;
 }

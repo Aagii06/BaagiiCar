@@ -3,12 +3,14 @@
 import { Field, FormError, inputClass, Select } from "@/components/common/Field";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { RejectNote } from "./useRejectCar";
-import { getBodyTypes, getBrands, getLocations, getModels, saveCar, type CarInput, type PhotoItem } from "@/lib/api/cars";
-import type { Car } from "@/lib/api/types";
+import { DealerAvatar } from "./DealerPicker";
+import { getBodyTypes, getBrands, getDealers, getLocations, getModels, saveCar, type CarInput, type PhotoItem } from "@/lib/api/cars";
+import type { Car, User } from "@/lib/api/types";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, FUEL_TYPES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { cn } from "@/lib/utils";
-import { ImagePlus, X } from "lucide-react";
+import { cn, userName } from "@/lib/utils";
+import { ImagePlus, UserRound, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const MAX_PHOTOS = 12;
@@ -23,6 +25,7 @@ const yearOptions = (current: string) => {
 };
 
 type FormState = Record<
+  | "user_id"
   | "brand_id"
   | "car_model_id"
   | "body_type_id"
@@ -46,8 +49,9 @@ type FormState = Record<
 
 const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
 
-function initialState(car?: Car | null, phone?: string | null): FormState {
+function initialState(car: Car | null | undefined, phone: string | null | undefined, ownerId: number | undefined): FormState {
   return {
+    user_id: str(car?.user_id ?? ownerId),
     brand_id: str(car?.brand_id),
     car_model_id: str(car?.car_model_id),
     body_type_id: str(car?.body_type_id),
@@ -72,8 +76,10 @@ function initialState(car?: Car | null, phone?: string | null): FormState {
 
 const intOrNull = (v: string) => (v.trim() ? Number(v) : null);
 
-function toInput(f: FormState): CarInput {
+function toInput(f: FormState, car?: Car | null): CarInput {
   return {
+    // Засахад эзэн өөрчлөгдсөн үед л илгээнэ (хуучин эзэн нь дилер биш байж болно)
+    ...((!car || f.user_id !== str(car.user_id)) && { user_id: intOrNull(f.user_id) }),
     brand_id: Number(f.brand_id),
     car_model_id: intOrNull(f.car_model_id),
     body_type_id: intOrNull(f.body_type_id),
@@ -128,21 +134,67 @@ function Chips({ options, value, onChange }: { options: string[]; value: string;
  * Create / edit an ad. Photos already on the server are passed in as
  * `existing` items and kept by id; new files are uploaded with the save.
  */
+/** Whose ad it is: the admin, an active dealer, or (when editing) whoever owns it now. */
+function OwnerSection({ car, value, dealers, onChange }: { car?: Car | null; value: string; dealers: User[]; onChange: (id: string, phone: string | null) => void }) {
+  const { user: me } = useAuth();
+  const dealer = dealers.find((d) => String(d.id) === value);
+  const isMine = value === String(me?.id ?? "");
+  // Current owner that is neither the admin nor an active dealer (e.g. a customer's ad).
+  const other = car && !isMine && !dealer && value === String(car.user_id);
+
+  return (
+    <Section title="Зарын эзэн">
+      <div className="flex items-center gap-3">
+        {dealer ? (
+          <DealerAvatar dealer={dealer} className="size-12" />
+        ) : (
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+            <UserRound className="size-5" />
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <Select
+            value={value}
+            onChange={(e) => {
+              const id = e.target.value;
+              const next = dealers.find((d) => String(d.id) === id);
+              onChange(id, next ? next.phonenumber : id === String(me?.id) ? (me?.phonenumber ?? null) : null);
+            }}
+          >
+            {other && <option value={value}>{car.seller_name || car.seller_phone || `#${car.user_id}`} (одоогийн)</option>}
+            <option value={String(me?.id ?? "")}>Миний зар (админ)</option>
+            {dealers.map((d) => (
+              <option key={d.id} value={d.id}>
+                {userName(d)} · {d.phonenumber}
+              </option>
+            ))}
+          </Select>
+          <p className="mt-1 text-xs text-muted-foreground">{dealer ? "Зар энэ дилерт харьяалагдана" : isMine ? "Админы өөрийн зар" : "Одоогийн эзэмшигч хэвээр үлдэнэ"}</p>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 export default function CarForm({
   car,
   photos: initialPhotos = [],
   defaultPhone,
+  owner,
   onSaved,
   onBusyChange,
 }: {
   car?: Car | null;
   photos?: PhotoItem[];
   defaultPhone?: string | null;
+  /** New ad only: the dealer picked in the first step, or the admin themselves. */
+  owner?: User | null;
   onSaved: (id: number) => void;
   /** Mirrors the saving state to the header's save button. */
   onBusyChange?: (busy: boolean) => void;
 }) {
-  const [f, setF] = useState<FormState>(() => initialState(car, defaultPhone));
+  const { user: me } = useAuth();
+  const [f, setF] = useState<FormState>(() => initialState(car, owner?.phonenumber ?? defaultPhone, owner?.id ?? me?.id));
   const [photos, setPhotos] = useState<PhotoItem[]>(initialPhotos);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -153,6 +205,7 @@ export default function CarForm({
   const models = useApi(() => (f.brand_id ? getModels(Number(f.brand_id)) : Promise.resolve([])), f.brand_id);
   const bodyTypes = useApi(getBodyTypes);
   const locations = useApi(getLocations);
+  const dealers = useApi(getDealers);
 
   // Revoke object URLs of new photos when they leave the editor.
   const photosRef = useRef(photos);
@@ -198,7 +251,7 @@ export default function CarForm({
     setBusy(true);
     setError(null);
     try {
-      const id = await saveCar({ ...toInput(f), ...(car ? { id: car.id } : {}) }, photos);
+      const id = await saveCar({ ...toInput(f, car), ...(car ? { id: car.id } : {}) }, photos);
       onSaved(id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Хадгалах үед алдаа гарлаа");
@@ -209,6 +262,19 @@ export default function CarForm({
   return (
     <form id={CAR_FORM_ID} onSubmit={submit} className="space-y-5">
       {car && <RejectNote car={car} />}
+      <OwnerSection
+        car={car}
+        value={f.user_id}
+        dealers={dealers.data ?? (owner ? [owner] : [])}
+        onChange={(id, phone) =>
+          // Утас хоосон эсвэл өмнөх эзний дугаар байвал шинэ эзний дугаараар солино
+          setF((p) => {
+            const prevPhone = dealers.data?.find((d) => String(d.id) === p.user_id)?.phonenumber ?? (p.user_id === String(me?.id) ? me?.phonenumber : null);
+            const keepPhone = p.phonenumber && p.phonenumber !== prevPhone;
+            return { ...p, user_id: id, phonenumber: keepPhone ? p.phonenumber : (phone ?? p.phonenumber) };
+          })
+        }
+      />
       <Section title="Зураг">
         <div className="grid grid-cols-3 gap-2">
           {photos.map((p, i) => (
