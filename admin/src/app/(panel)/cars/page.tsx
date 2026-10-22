@@ -208,10 +208,8 @@ function CarsInner() {
   const isAdmin = user?.role === ROLES.admin;
   // Every non-deleted dealer, so ads of a since-deactivated one can still be filtered.
   const dealers = useApi(() => (isAdmin ? listDealers().then((r) => r.rows) : Promise.resolve([])), String(isAdmin));
-  // Admins browse the dealer in the URL ("all" = every dealer), else their own, else the first.
-  const allDealers = sp.get("dealer") === "all";
-  const fallbackDealer = dealers.data?.find((d) => d.id === user?.dealer_id) ?? dealers.data?.[0];
-  const dealerId = isAdmin && !allDealers ? Number(sp.get("dealer")) || fallbackDealer?.id : undefined;
+  // Admins see every dealer's ads (Бүгд) unless one is picked in the URL.
+  const dealerId = isAdmin ? Number(sp.get("dealer")) || undefined : undefined;
   const [take, setTake] = useState(PAGE_SIZE);
 
   const setParam = (patch: Record<string, string>) => {
@@ -223,16 +221,14 @@ function CarsInner() {
 
   const cars = useApi(
     () =>
-      isAdmin && !allDealers && !dealerId
-        ? Promise.resolve(null)
-        : listCars({
-            statuses,
-            dealerId,
-            search: q,
-            page: 1,
-            pageSize: take,
-          }),
-    `${statuses.join(",")}|${q}|${allDealers ? "all" : dealerId ?? ""}|${take}`
+      listCars({
+        statuses,
+        dealerId,
+        search: q,
+        page: 1,
+        pageSize: take,
+      }),
+    `${statuses.join(",")}|${q}|${dealerId ?? ""}|${take}`
   );
 
   return (
@@ -253,8 +249,8 @@ function CarsInner() {
           {/* Dealers only ever see their own dealer's ads, so the filter is for admins. */}
           {isAdmin && (
             <span className="w-36 shrink-0">
-              <Select title="Дилер" value={allDealers ? "all" : dealerId ? String(dealerId) : ""} onChange={(e) => setParam({ dealer: e.target.value })} className={dealerId || allDealers ? "font-semibold text-foreground" : undefined}>
-                <option value="all">Бүгд</option>
+              <Select title="Дилер" value={dealerId ? String(dealerId) : ""} onChange={(e) => setParam({ dealer: e.target.value })} className={dealerId ? "font-semibold text-foreground" : undefined}>
+                <option value="">Бүгд</option>
                 {dealers.data?.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -267,9 +263,7 @@ function CarsInner() {
         <ChipTabs items={TABS} value={statuses.length ? statuses : ["all"]} onChange={toggleStatus} />
       </PageHeader>
 
-      {isAdmin && !allDealers && !dealerId ? (
-        dealers.loading ? <LoadingState /> : dealers.error ? <ErrorState message={dealers.error.message} onRetry={dealers.reload} /> : <EmptyState title="Дилер алга" />
-      ) : cars.loading && !cars.data ? (
+      {cars.loading && !cars.data ? (
         <LoadingState />
       ) : cars.error ? (
         <ErrorState message={cars.error.message} onRetry={cars.reload} />
@@ -280,7 +274,7 @@ function CarsInner() {
           <p className="mb-2 text-xs font-semibold text-muted-foreground">{cars.data.count} зар</p>
           <div className="space-y-3">
             {cars.data.rows.map((car) => (
-              <CarRow key={car.id} car={car} onChanged={cars.reload} showDealer={allDealers} />
+              <CarRow key={car.id} car={car} onChanged={cars.reload} showDealer={isAdmin && !dealerId} />
             ))}
           </div>
           {cars.data.rows.length < cars.data.count && (
