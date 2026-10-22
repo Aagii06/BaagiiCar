@@ -10,7 +10,7 @@ import PublishChoiceSheet from "./PublishChoiceSheet";
 import { getBodyTypes, getBrands, getDealers, getLocations, getModels, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
 import type { Car, CarModel, Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, FUEL_TYPES, ROLES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
+import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, ROLES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ImagePlus, Store, X } from "lucide-react";
@@ -52,6 +52,9 @@ type FormState = Record<
   | "status",
   string
 > & { is_featured: boolean };
+
+/** Keeps a value saved before the list existed selectable. */
+const withCurrent = (list: string[], current: string) => (current && !list.includes(current) ? [current, ...list] : list);
 
 const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
 
@@ -313,7 +316,7 @@ export default function CarForm({
     put("steering", info.steering, STEERINGS);
     put("engine_capacity", info.engine_capacity);
     put("mileage", info.mileage);
-    put("color", info.color);
+    put("color", info.color, EXTERIOR_COLORS);
     put("vin", info.vin);
     setF((p) => ({ ...p, ...fill, ...(brand && brand.id !== Number(p.brand_id) ? { car_model_id: "" } : {}) }));
     pickModel.then((model) => model && setF((p) => (p.brand_id === String(brand!.id) ? { ...p, car_model_id: String(model.id) } : p)));
@@ -558,11 +561,25 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Өнгө">
-              <input className={inputClass} {...bind("color")} placeholder="Цагаан" />
+            <Field label="Гадна өнгө">
+              <Select {...bind("color")}>
+                <option value="">Сонгох</option>
+                {withCurrent(EXTERIOR_COLORS, f.color).map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </Select>
             </Field>
             <Field label="Дотор өнгө">
-              <input className={inputClass} {...bind("interior_color")} placeholder="Хар" />
+              <Select {...bind("interior_color")}>
+                <option value="">Сонгох</option>
+                {withCurrent(INTERIOR_COLORS, f.interior_color).map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </Select>
             </Field>
           </div>
         </Section>

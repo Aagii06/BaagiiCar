@@ -239,7 +239,7 @@ function Specs({ car }: { car: Car }) {
     ["Хурдны хайрцаг", car.transmission],
     ["Хүрд", car.steering],
     ["Хөтлөгч", car.drive_type],
-    ["Өнгө", car.color],
+    ["Гадна өнгө", car.color],
     ["Дотор өнгө", car.interior_color],
     ["Төрөл", bodyTypeLabel(car.body_type_name)],
   ];

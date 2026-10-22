@@ -5,6 +5,8 @@ const {
   transmissions,
   driveTypes,
   steerings,
+  exteriorColors,
+  interiorColors,
 } = require("../../config/constants");
 
 const maxYear = new Date().getFullYear() + 1;
@@ -50,6 +52,14 @@ module.exports.saveValidation = [
     .optional(optional)
     .isIn(steerings)
     .withMessage("Жолооны хүрд буруу байна"),
+  body("color")
+    .optional(optional)
+    .isIn(exteriorColors)
+    .withMessage("Гадна өнгө буруу байна"),
+  body("interior_color")
+    .optional(optional)
+    .isIn(interiorColors)
+    .withMessage("Дотор өнгө буруу байна"),
   body("user_id")
     .optional(optional)
     .isInt({ min: 1 })

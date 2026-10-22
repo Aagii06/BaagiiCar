@@ -111,6 +111,7 @@ export const MESSAGES = {
   "Хүрд": { ru: "Руль", en: "Steering" },
   "Хөтлөгч": { ru: "Привод", en: "Drive" },
   "Өнгө": { ru: "Цвет", en: "Color" },
+  "Гадна өнгө": { ru: "Цвет кузова", en: "Exterior color" },
   "Дотор өнгө": { ru: "Цвет салона", en: "Interior color" },
   "Төрөл": { ru: "Тип", en: "Type" },
   "Тайлбар": { ru: "Описание", en: "Description" },
