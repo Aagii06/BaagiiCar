@@ -2,19 +2,23 @@
 
 import { Field, FormError, inputClass, PhoneInput, Select } from "@/components/common/Field";
 import PhotoViewer from "@/components/common/PhotoViewer";
+import Stepper from "@/components/common/Stepper";
 import { RejectNote } from "./useRejectCar";
 import { DealerAvatar } from "./DealerPicker";
 import PlateLookup from "./PlateLookup";
+import PublishChoiceSheet from "./PublishChoiceSheet";
 import { getBodyTypes, getBrands, getDealers, getLocations, getModels, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
 import type { Car, CarModel, Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, FUEL_TYPES, ROLES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ImagePlus, Store, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImagePlus, Store, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const MAX_PHOTOS = 12;
+/** Wizard steps of a new ad (the last one is labelled Нийтлэх / Илгээх by role). */
+const FORM_STEPS = ["Мэдээлэл", "Зураг", "Нийтлэх"];
 /** Lets a button outside the form (the page header) submit it via `form={CAR_FORM_ID}`. */
 export const CAR_FORM_ID = "car-form";
 const THIS_YEAR = new Date().getFullYear();
@@ -217,6 +221,8 @@ export default function CarForm({
   photos: initialPhotos = [],
   defaultPhone,
   dealer,
+  leadingSteps = [],
+  onBackToLead,
   onSaved,
   onBusyChange,
 }: {
@@ -225,6 +231,10 @@ export default function CarForm({
   defaultPhone?: string | null;
   /** New ad only: the admin's pick from the first step, or the signed-in dealer's own dealer. */
   dealer?: Dealer | null;
+  /** New ad: steps shown before the form's own in the stepper (the admin's "Дилер"). */
+  leadingSteps?: string[];
+  /** New ad: go back to the leading step (re-pick the dealer); the form keeps what was entered. */
+  onBackToLead?: () => void;
   onSaved: (id: number) => void;
   /** Mirrors the saving state to the header's save button. */
   onBusyChange?: (busy: boolean) => void;
@@ -237,6 +247,12 @@ export default function CarForm({
   const [busy, setBusy] = useState(false);
   const [viewing, setViewing] = useState<number | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  // A new ad is a wizard (Мэдээлэл → Зураг → Нийтлэх); editing keeps one long form.
+  const wizard = !car;
+  const [step, setStep] = useState(0);
+  const lastStep = FORM_STEPS.length - 1;
+  const show = (n: number) => !wizard || step === n;
+  const [choosing, setChoosing] = useState(false);
 
   const brands = useApi(getBrands);
   const models = useApi(() => (f.brand_id ? getModels(Number(f.brand_id)) : Promise.resolve([])), f.brand_id);
@@ -304,6 +320,20 @@ export default function CarForm({
     return `${name} — мэдээлэл бөглөгдлөө. Загвар, хурдны хайрцгийг шалгана уу`;
   };
 
+  // The admin went back and picked another dealer: switch to it, and to its phone unless one was typed in.
+  const dealerId = dealer?.id;
+  const dealerPhone = dealer?.phonenumber;
+  const prevDealer = useRef(dealer);
+  useEffect(() => {
+    const prev = prevDealer.current;
+    prevDealer.current = dealer;
+    if (!wizard || !dealerId || prev?.id === dealerId) return;
+    setF((p) => {
+      const keepPhone = p.phonenumber && p.phonenumber !== (prev?.phonenumber || defaultPhone);
+      return { ...p, dealer_id: String(dealerId), phonenumber: keepPhone ? p.phonenumber : (dealerPhone || defaultPhone || "") };
+    });
+  }, [wizard, dealer, dealerId, dealerPhone, defaultPhone]);
+
   const errorRef = useRef<HTMLDivElement>(null);
   useEffect(() => onBusyChange?.(busy), [busy, onBusyChange]);
   // The header button submits from the top; bring the message into view.
@@ -311,17 +341,45 @@ export default function CarForm({
     if (error) errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [error]);
 
+  /** Required fields of the Мэдээлэл step (and of the whole form when editing); returns the first problem. */
+  const detailsError = () => {
+    if (!f.brand_id) return "Үйлдвэр сонгоно уу";
+    if (!f.manufactured_year) return "Үйлдвэрлэсэн он оруулна уу";
+    if (!f.price) return "Үнэ оруулна уу";
+    return null;
+  };
+
+  const goTo = (next: number) => {
+    setError(null);
+    setStep(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
+    // Enter / "Дараах" on an earlier step moves forward instead of saving.
+    if (wizard && step < lastStep) {
+      const problem = step === 0 ? detailsError() : null;
+      return problem ? setError(problem) : goTo(step + 1);
+    }
     if (!f.dealer_id && isAdmin) return setError("Дилер сонгоно уу");
-    if (!f.brand_id) return setError("Үйлдвэр сонгоно уу");
-    if (!f.manufactured_year) return setError("Үйлдвэрлэсэн он оруулна уу");
-    if (!f.price) return setError("Үнэ оруулна уу");
+    const problem = detailsError();
+    if (problem) {
+      if (wizard) setStep(0);
+      return setError(problem);
+    }
+    // An admin publishing a new ad chooses featured / normal first.
+    if (wizard && isAdmin) return setChoosing(true);
+    save();
+  };
+
+  const save = async (featured?: boolean) => {
     setBusy(true);
     setError(null);
     try {
-      const id = await saveCar({ ...toInput(f, car), ...(car ? { id: car.id } : {}) }, photos);
+      const input = { ...toInput(f, car), ...(featured !== undefined && { is_featured: featured }) };
+      const id = await saveCar({ ...input, ...(car ? { id: car.id } : {}) }, photos);
       onSaved(id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Хадгалах үед алдаа гарлаа");
@@ -329,162 +387,183 @@ export default function CarForm({
     }
   };
 
+  const finalLabel = isAdmin ? "Нийтлэх" : "Илгээх";
+
   return (
     <form id={CAR_FORM_ID} onSubmit={submit} className="space-y-5">
+      {wizard && (
+        <Stepper
+          steps={[...leadingSteps, ...FORM_STEPS.slice(0, lastStep), finalLabel]}
+          current={leadingSteps.length + step}
+          onStepClick={(i) => (i < leadingSteps.length ? onBackToLead?.() : goTo(i - leadingSteps.length))}
+        />
+      )}
       {car && <RejectNote car={car} />}
-      <PlateLookup onFound={applyLookup} />
-      <DealerSection
-        car={car}
-        value={f.dealer_id}
-        dealers={dealers.data ?? (dealer ? [dealer] : [])}
-        editable={isAdmin}
-        onChange={(id, phone) =>
-          // Утас хоосон эсвэл өмнөх дилерийн / өөрийн дугаар байвал шинэ дилерийн дугаараар солино
-          setF((p) => {
-            const prevPhone = dealers.data?.find((d) => String(d.id) === p.dealer_id)?.phonenumber || me?.phonenumber;
-            const keepPhone = p.phonenumber && p.phonenumber !== prevPhone;
-            return { ...p, dealer_id: id, phonenumber: keepPhone ? p.phonenumber : (phone || me?.phonenumber || p.phonenumber) };
-          })
-        }
-      />
-      <Section title="Зураг">
-        <div className="grid grid-cols-3 gap-2">
-          {photos.map((p, i) => (
-            <div key={p.url} className="relative aspect-square overflow-hidden rounded-xl bg-muted">
-              <button type="button" onClick={() => setViewing(i)} aria-label="Зураг томоор харах" className="size-full">
-                {/* eslint-disable-next-line @next/next/no-img-element -- local previews / backend uploads */}
-                <img src={p.url} alt="" className="size-full object-cover" />
+      {show(0) && <PlateLookup onFound={applyLookup} />}
+      {/* In the wizard the dealer was settled before the form (admin's pick / the dealer's own). */}
+      {!wizard && isAdmin && (
+        <DealerSection
+          car={car}
+          value={f.dealer_id}
+          dealers={dealers.data ?? (dealer ? [dealer] : [])}
+          editable={isAdmin}
+          onChange={(id, phone) =>
+            // Утас хоосон эсвэл өмнөх дилерийн / өөрийн дугаар байвал шинэ дилерийн дугаараар солино
+            setF((p) => {
+              const prevPhone = dealers.data?.find((d) => String(d.id) === p.dealer_id)?.phonenumber || me?.phonenumber;
+              const keepPhone = p.phonenumber && p.phonenumber !== prevPhone;
+              return { ...p, dealer_id: id, phonenumber: keepPhone ? p.phonenumber : (phone || me?.phonenumber || p.phonenumber) };
+            })
+          }
+        />
+      )}
+      {show(1) && (
+        <Section title="Зураг">
+          <div className="grid grid-cols-3 gap-2">
+            {photos.map((p, i) => (
+              <div key={p.url} className="relative aspect-square overflow-hidden rounded-xl bg-muted">
+                <button type="button" onClick={() => setViewing(i)} aria-label="Зураг томоор харах" className="size-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- local previews / backend uploads */}
+                  <img src={p.url} alt="" className="size-full object-cover" />
+                </button>
+                {i === 0 && <span className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold text-white">Нүүр</span>}
+                <button type="button" onClick={() => removePhoto(i)} aria-label="Зураг хасах" className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-dark/80 text-white">
+                  <X className="size-3.5" strokeWidth={3} />
+                </button>
+              </div>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-input text-xs font-semibold text-muted-foreground hover:border-primary hover:text-primary"
+              >
+                <ImagePlus className="size-6" />
+                Зураг нэмэх
               </button>
-              {i === 0 && <span className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold text-white">Нүүр</span>}
-              <button type="button" onClick={() => removePhoto(i)} aria-label="Зураг хасах" className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-dark/80 text-white">
-                <X className="size-3.5" strokeWidth={3} />
-              </button>
-            </div>
-          ))}
-          {photos.length < MAX_PHOTOS && (
-            <button
-              type="button"
-              onClick={() => fileInput.current?.click()}
-              className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-input text-xs font-semibold text-muted-foreground hover:border-primary hover:text-primary"
-            >
-              <ImagePlus className="size-6" />
-              Зураг нэмэх
-            </button>
-          )}
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">JPG, PNG, WEBP · {MAX_PHOTOS} хүртэл зураг. Эхний зураг нүүр зураг болно.</p>
-        {viewing !== null && <PhotoViewer urls={photos.map((p) => p.url)} start={viewing} onClose={() => setViewing(null)} />}
-        <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => (addFiles(e.target.files), (e.target.value = ""))} />
-      </Section>
+            )}
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">JPG, PNG, WEBP · {MAX_PHOTOS} хүртэл зураг. Эхний зураг нүүр зураг болно.</p>
+          {viewing !== null && <PhotoViewer urls={photos.map((p) => p.url)} start={viewing} onClose={() => setViewing(null)} />}
+          <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => (addFiles(e.target.files), (e.target.value = ""))} />
+        </Section>
+      )}
 
-      <Section title="Үндсэн мэдээлэл">
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Үйлдвэр *">
-            <Select value={f.brand_id} onChange={(e) => setF((p) => ({ ...p, brand_id: e.target.value, car_model_id: "" }))} required>
-              <option value="">Сонгох</option>
-              {brands.data?.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Загвар">
-            <Select {...bind("car_model_id")} disabled={!f.brand_id}>
-              <option value="">Сонгох</option>
-              {models.data?.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Төрөл">
-            <Select {...bind("body_type_id")}>
-              <option value="">Сонгох</option>
-              {bodyTypes.data?.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {bodyTypeLabel(b.name)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Байршил">
-            <Select {...bind("location_id")}>
-              <option value="">Сонгох</option>
-              {locations.data?.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Үйлдвэрлэсэн он *">
-            <Select {...bind("manufactured_year")} required>
-              <option value="">Сонгох</option>
-              {yearOptions(f.manufactured_year).map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Орж ирсэн он">
-            <Select {...bind("imported_year")}>
-              <option value="">Сонгох</option>
-              {yearOptions(f.imported_year).map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : "Жишээ: 45000000"}>
-            <input className={inputClass} {...digits("price")} placeholder="45000000" required />
-          </Field>
-          <Field label="Гүйлт (км)">
-            <input className={inputClass} {...digits("mileage")} placeholder="120000" />
-          </Field>
-        </div>
-      </Section>
-
-      <Section title="Техникийн үзүүлэлт">
-        <div className="space-y-5">
-          <Field label="Түлш">
-            <Chips options={FUEL_TYPES} value={f.fuel_type} onChange={(v) => set("fuel_type", v)} />
-          </Field>
-          <Field label="Хурдны хайрцаг">
-            <Chips options={TRANSMISSIONS} value={f.transmission} onChange={(v) => set("transmission", v)} />
-          </Field>
-          <Field label="Хөтлөгч">
-            <Chips options={DRIVE_TYPES} value={f.drive_type} onChange={(v) => set("drive_type", v)} />
-          </Field>
-          <Field label="Хүрд">
-            <Chips options={STEERINGS} value={f.steering} onChange={(v) => set("steering", v)} />
-          </Field>
+      {show(0) && (
+        <Section title="Үндсэн мэдээлэл">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Хөдөлгүүр (л)">
-              <input className={inputClass} inputMode="decimal" value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder="2.5" />
+            <Field label="Үйлдвэр *">
+              <Select value={f.brand_id} onChange={(e) => setF((p) => ({ ...p, brand_id: e.target.value, car_model_id: "" }))} required>
+                <option value="">Сонгох</option>
+                {brands.data?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </Select>
             </Field>
-            <Field label="Өнгө">
-              <input className={inputClass} {...bind("color")} placeholder="Цагаан" />
+            <Field label="Загвар">
+              <Select {...bind("car_model_id")} disabled={!f.brand_id}>
+                <option value="">Сонгох</option>
+                {models.data?.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Төрөл">
+              <Select {...bind("body_type_id")}>
+                <option value="">Сонгох</option>
+                {bodyTypes.data?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {bodyTypeLabel(b.name)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Байршил">
+              <Select {...bind("location_id")}>
+                <option value="">Сонгох</option>
+                {locations.data?.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Үйлдвэрлэсэн он *">
+              <Select {...bind("manufactured_year")} required>
+                <option value="">Сонгох</option>
+                {yearOptions(f.manufactured_year).map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Орж ирсэн он">
+              <Select {...bind("imported_year")}>
+                <option value="">Сонгох</option>
+                {yearOptions(f.imported_year).map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : "Жишээ: 45000000"}>
+              <input className={inputClass} {...digits("price")} placeholder="45000000" required />
+            </Field>
+            <Field label="Гүйлт (км)">
+              <input className={inputClass} {...digits("mileage")} placeholder="120000" />
             </Field>
           </div>
-        </div>
-      </Section>
+        </Section>
+      )}
 
-      <Section title="Тайлбар, холбоо барих">
-        <div className="space-y-4">
-          <Field label="Тайлбар">
-            <textarea className={cn(inputClass, "h-auto min-h-32 py-3")} {...bind("description")} maxLength={5000} placeholder="Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…" />
-          </Field>
-          <Field label="Холбогдох утас" hint="Худалдан авагч энэ дугаар руу залгана">
-            <PhoneInput className="sm:max-w-xs" autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(v) => set("phonenumber", v)} />
-          </Field>
-        </div>
-      </Section>
+      {show(0) && (
+        <Section title="Техникийн үзүүлэлт">
+          <div className="space-y-5">
+            <Field label="Түлш">
+              <Chips options={FUEL_TYPES} value={f.fuel_type} onChange={(v) => set("fuel_type", v)} />
+            </Field>
+            <Field label="Хурдны хайрцаг">
+              <Chips options={TRANSMISSIONS} value={f.transmission} onChange={(v) => set("transmission", v)} />
+            </Field>
+            <Field label="Хөтлөгч">
+              <Chips options={DRIVE_TYPES} value={f.drive_type} onChange={(v) => set("drive_type", v)} />
+            </Field>
+            <Field label="Хүрд">
+              <Chips options={STEERINGS} value={f.steering} onChange={(v) => set("steering", v)} />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Хөдөлгүүр (л)">
+                <input className={inputClass} inputMode="decimal" value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder="2.5" />
+              </Field>
+              <Field label="Өнгө">
+                <input className={inputClass} {...bind("color")} placeholder="Цагаан" />
+              </Field>
+            </div>
+          </div>
+        </Section>
+      )}
 
-      {isAdmin && (
+      {show(lastStep) && (
+        <Section title="Тайлбар, холбоо барих">
+          <div className="space-y-4">
+            <Field label="Тайлбар">
+              <textarea className={cn(inputClass, "h-auto min-h-32 py-3")} {...bind("description")} maxLength={5000} placeholder="Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…" />
+            </Field>
+            <Field label="Холбогдох утас" hint="Худалдан авагч энэ дугаар руу залгана">
+              <PhoneInput className="sm:max-w-xs" autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(v) => set("phonenumber", v)} />
+            </Field>
+          </div>
+        </Section>
+      )}
+
+      {/* New ads ask featured / normal on publish (PublishChoiceSheet) instead. */}
+      {isAdmin && !wizard && (
         <Section title="Админ">
           <div className="space-y-4">
             <label className="flex items-center justify-between gap-4">
@@ -494,19 +573,17 @@ export default function CarForm({
               </span>
               <input type="checkbox" className="size-5 accent-[var(--primary)]" checked={f.is_featured} onChange={(e) => setF((p) => ({ ...p, is_featured: e.target.checked }))} />
             </label>
-            {car && (
-              <Field label="Төлөв">
-                <Select {...bind("status")}>
-                  {Object.entries(CAR_STATUS)
-                    .filter(([k]) => k !== "deleted")
-                    .map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v.label}
-                      </option>
-                    ))}
-                </Select>
-              </Field>
-            )}
+            <Field label="Төлөв">
+              <Select {...bind("status")}>
+                {Object.entries(CAR_STATUS)
+                  .filter(([k]) => k !== "deleted")
+                  .map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v.label}
+                    </option>
+                  ))}
+              </Select>
+            </Field>
           </div>
         </Section>
       )}
@@ -514,11 +591,39 @@ export default function CarForm({
       <div ref={errorRef}>
         <FormError message={error} />
       </div>
-      <div className="flex justify-end">
-        <button disabled={busy} className="h-12 w-full rounded-xl bg-primary px-8 font-bold text-white hover:bg-primary-hover disabled:opacity-60">
-          {busy ? "Хадгалж байна…" : car ? "Хадгалах" : isAdmin ? "Зар нийтлэх" : "Батлуулахаар илгээх"}
-        </button>
-      </div>
+      {wizard ? (
+        <div className="flex gap-2">
+          {(step > 0 || (leadingSteps.length > 0 && onBackToLead)) && (
+            <button
+              type="button"
+              onClick={() => (step > 0 ? goTo(step - 1) : onBackToLead?.())}
+              className="flex h-12 items-center justify-center gap-1 rounded-xl bg-card px-5 font-bold hover:bg-muted"
+            >
+              <ChevronLeft className="size-4" />
+              Буцах
+            </button>
+          )}
+          <button disabled={busy} className="flex h-12 flex-1 items-center justify-center gap-1 rounded-xl bg-primary px-6 font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+            {busy ? "Хадгалж байна…" : step < lastStep ? "Дараах" : isAdmin ? "Зар нийтлэх" : "Батлуулахаар илгээх"}
+            {!busy && step < lastStep && <ChevronRight className="size-4" />}
+          </button>
+        </div>
+      ) : (
+        <div className="flex justify-end">
+          <button disabled={busy} className="h-12 w-full rounded-xl bg-primary px-8 font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+            {busy ? "Хадгалж байна…" : "Хадгалах"}
+          </button>
+        </div>
+      )}
+      {choosing && (
+        <PublishChoiceSheet
+          onClose={() => setChoosing(false)}
+          onChoose={(featured) => {
+            setChoosing(false);
+            save(featured);
+          }}
+        />
+      )}
     </form>
   );
 }
