@@ -11,7 +11,9 @@ import { ChevronDown, Store } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-/** Header "Dealers" item: opens on hover (or click / keyboard) with the dealer list; the list is fetched on first open. */
+const MENU_DEALERS = 5;
+
+/** Header "Dealers" item: opens on hover (or click / keyboard) with the top dealers; the list is fetched on first open. */
 export default function DealersMenu({ className }: { className?: string }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -37,7 +39,8 @@ export default function DealersMenu({ className }: { className?: string }) {
     };
   }, [open]);
 
-  const rows = dealers.data?.rows ?? [];
+  // Only the busiest few; the rest are on /dealers ("view all").
+  const rows = dealers.data?.rows.slice(0, MENU_DEALERS) ?? [];
 
   return (
     <div ref={ref} className="relative flex" onMouseEnter={show} onMouseLeave={() => setOpen(false)}>

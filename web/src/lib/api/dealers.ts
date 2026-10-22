@@ -18,9 +18,11 @@ export function dealerName(dealer: Dealer) {
   return dealer.firstname ?? "";
 }
 
+/** Most listings first, then by name. */
 export async function getDealers() {
   const res = await apiFetch<ApiListResponse<Dealer>>("/web/dealers");
-  return res.data;
+  const rows = [...res.data.rows].sort((a, b) => b.car_count - a.car_count || dealerName(a).localeCompare(dealerName(b)));
+  return { ...res.data, rows };
 }
 
 export async function getDealer(id: number) {
