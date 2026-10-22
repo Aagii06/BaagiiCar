@@ -9,6 +9,6 @@ export default function UserAvatar({ user, className = "size-10" }: { user: User
     // eslint-disable-next-line @next/next/no-img-element -- uploaded profile photo
     <img src={photo} alt="" className={cn("shrink-0 rounded-full bg-muted object-cover", className)} />
   ) : (
-    <span className={cn("grid shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary", className)}>{initials(userName(user))}</span>
+    <span className={cn("grid shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary", className)}>{initials(userName(user ?? null))}</span>
   );
 }

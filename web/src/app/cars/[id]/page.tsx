@@ -221,6 +221,7 @@ export default function CarDetailPage() {
 
 function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold: boolean }) {
   const { t } = useI18n();
+  const dealerLogo = uploadUrl(c.dealer_logo, "full", "dealers");
   return (
     <section className="rounded-2xl bg-card p-5 md:p-6">
       <div className="flex flex-wrap gap-2">
@@ -255,11 +256,28 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
       </div>
 
       <div className="mt-5 flex items-center gap-3 border-t border-border pt-5">
-        <span className="grid size-11 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{initials(c.seller_name)}</span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-bold">{c.seller_name || t("Зарлагч")}</p>
-          <p className="text-xs text-muted-foreground">{t("Зарлагч")}</p>
-        </div>
+        {c.dealer_id && c.dealer_name ? (
+          // Dealer ad: logo + name open the dealer's page.
+          <Link href={`/dealers?d=${c.dealer_id}`} className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80">
+            {dealerLogo ? (
+              <Img src={dealerLogo} className="size-11 shrink-0 rounded-full border border-border bg-white object-contain p-1" />
+            ) : (
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{initials(c.dealer_name)}</span>
+            )}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-bold">{c.dealer_name}</span>
+              <span className="block text-xs text-muted-foreground">{t("Дилер")}</span>
+            </span>
+          </Link>
+        ) : (
+          <>
+            <span className="grid size-11 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{initials(c.seller_name)}</span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-bold">{c.seller_name || t("Зарлагч")}</p>
+              <p className="text-xs text-muted-foreground">{t("Зарлагч")}</p>
+            </div>
+          </>
+        )}
         <span className="text-xs text-muted-foreground">{t("{n} үзсэн", { n: c.view_count ?? 0 })}</span>
       </div>
     </section>

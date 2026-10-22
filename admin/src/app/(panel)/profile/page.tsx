@@ -4,8 +4,9 @@ import PageHeader from "@/components/layout/PageHeader";
 import { WEB_URL } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
-import { initials, userName } from "@/lib/utils";
-import { ChevronRight, ExternalLink, LibraryBig, LogOut, Users } from "lucide-react";
+import UserAvatar from "@/components/common/UserAvatar";
+import { userName } from "@/lib/utils";
+import { ChevronRight, ExternalLink, LibraryBig, LogOut, Store, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -15,7 +16,7 @@ export default function ProfilePage() {
     <>
       <PageHeader title="Профайл" />
       <section className="flex items-center gap-3 rounded-2xl bg-dark p-4 text-white">
-        <span className="grid size-12 place-items-center rounded-xl bg-primary font-bold">{initials(userName(user))}</span>
+        <UserAvatar user={user} className="size-12 bg-primary text-white" />
         <div className="min-w-0">
           <p className="truncate font-bold">{userName(user)}</p>
           <p className="text-sm text-white/70">
@@ -30,6 +31,11 @@ export default function ProfilePage() {
           <Link href="/catalog" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
             <LibraryBig className="size-5 text-muted-foreground" />
             Каталог
+            <ChevronRight className="ml-auto size-4" />
+          </Link>
+          <Link href="/dealers" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
+            <Store className="size-5 text-muted-foreground" />
+            Дилерүүд
             <ChevronRight className="ml-auto size-4" />
           </Link>
           <Link href="/users" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">

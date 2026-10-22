@@ -100,7 +100,7 @@ export default function CarViewPage() {
               <section className="flex items-center gap-3 rounded-2xl bg-card p-4 md:p-5">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-muted-foreground">Зарын эзэн</p>
-                  <p className="truncate font-bold">{car.seller_name || "—"}</p>
+                  <p className="truncate font-bold">{car.dealer_name || car.seller_name || "—"}</p>
                 </div>
                 {(car.phonenumber || car.seller_phone) && (
                   <a href={`tel:${car.phonenumber || car.seller_phone}`} className="flex items-center gap-1.5 rounded-xl bg-dark px-3 py-2 text-sm font-bold text-white">

@@ -102,7 +102,7 @@ export default function DashboardPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{car.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatPriceShort(car.price)} · {car.seller_name || car.phonenumber}
+                    {formatPriceShort(car.price)} · {car.dealer_name || car.seller_name || car.phonenumber}
                   </p>
                 </div>
                 <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", st.className)}>{st.label}</span>

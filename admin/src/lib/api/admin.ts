@@ -82,14 +82,16 @@ export interface CarFilter {
   status?: "pending" | "rejected" | "active" | "hidden" | "sold" | "deleted" | "featured";
   /** Only ads this user entered (`created_by`). */
   createdBy?: number;
+  dealerId?: number;
   search?: string;
   page: number;
   pageSize: number;
 }
 
-export async function listCars({ status, createdBy, search, page, pageSize }: CarFilter) {
+export async function listCars({ status, createdBy, dealerId, search, page, pageSize }: CarFilter) {
   const filter: Condition[] = [];
   if (createdBy) filter.push(["created_by", "=", createdBy]);
+  if (dealerId) filter.push(["dealer_id", "=", dealerId]);
   if (status === "featured") filter.push(["status", "=", "active"], ["is_featured", "=", 1]);
   else if (status) filter.push(["status", "=", status]);
   else filter.push(NOT_DELETED);

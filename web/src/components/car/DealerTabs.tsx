@@ -16,7 +16,7 @@ export default function DealerTabs({ items, loading, className }: { items: Deale
       {loading && <TileRowSkeleton />}
       {items.map((d) => {
         const name = dealerName(d);
-        const logo = uploadUrl(d.logo, "full", "users");
+        const logo = uploadUrl(d.logo, "full", "dealers");
         return (
           <Link
             key={d.id}

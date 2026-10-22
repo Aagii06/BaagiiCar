@@ -32,6 +32,10 @@ export interface Car {
   body_type_name: string | null;
   location_name: string | null;
   seller_name: string | null;
+  /** Set when the ad belongs to a dealer. */
+  dealer_id?: number | null;
+  dealer_name?: string | null;
+  dealer_logo?: string | null;
   seller_phone: string | null;
   image: string | null;
   image_count: number | null;

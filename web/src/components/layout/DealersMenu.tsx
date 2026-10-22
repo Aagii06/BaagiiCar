@@ -68,7 +68,7 @@ export default function DealersMenu({ className }: { className?: string }) {
               ) : rows.length ? (
                 rows.map((dealer) => {
                   const name = dealerName(dealer) || t("Дилер");
-                  const logo = uploadUrl(dealer.logo, "full", "users");
+                  const logo = uploadUrl(dealer.logo, "full", "dealers");
                   return (
                     <Link
                       key={dealer.id}

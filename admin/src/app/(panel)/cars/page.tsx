@@ -14,15 +14,17 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPrice } from "@/lib/utils";
-import { BadgeCheck, Check, Eye, EyeOff, Plus, Search, Star, Trash2, Undo2 } from "lucide-react";
+import { BadgeCheck, Check, Eye, EyeOff, Plus, Search, Star, Trash2, Undo2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 const PAGE_SIZE = 20;
-type Tab = NonNullable<CarFilter["status"]> | "all";
+type Tab = NonNullable<CarFilter["status"]> | "all" | "mine";
 const TABS: { value: Tab; label: string }[] = [
   { value: "all", label: "Бүгд" },
+  // Ads the signed-in admin entered themselves, any status but deleted.
+  { value: "mine", label: "Миний" },
   { value: "pending", label: "Хүлээгдэж буй" },
   { value: "rejected", label: "Буцаасан" },
   { value: "active", label: "Идэвхтэй" },
@@ -79,7 +81,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
           </div>
           <p className="text-sm font-semibold text-primary">{formatPrice(car.price)}</p>
           <p className="truncate text-xs text-muted-foreground">
-            #{car.code ?? car.id} · {car.seller_name || "—"} · {car.phonenumber || car.seller_phone}
+            #{car.code ?? car.id} · {car.dealer_name || car.seller_name || "—"} · {car.phonenumber || car.seller_phone}
           </p>
           {car.status === "rejected" && car.reject_reason && <p className="mt-1 line-clamp-2 text-xs text-destructive">↩ {car.reject_reason}</p>}
         </div>
@@ -177,6 +179,8 @@ function CarsInner() {
   const tab = (TABS.find((t) => t.value === sp.get("status"))?.value ?? "all") as Tab;
   const [search, setSearch] = useState(sp.get("q") ?? "");
   const q = sp.get("q") ?? "";
+  const dealerId = Number(sp.get("dealer")) || undefined;
+  const { user } = useAuth();
   const [take, setTake] = useState(PAGE_SIZE);
 
   const setParam = (patch: Record<string, string>) => {
@@ -186,7 +190,18 @@ function CarsInner() {
     router.replace(`${pathname}?${next}`);
   };
 
-  const cars = useApi(() => listCars({ status: tab === "all" ? undefined : tab, search: q, page: 1, pageSize: take }), `${tab}|${q}|${take}`);
+  const cars = useApi(
+    () =>
+      listCars({
+        status: tab === "all" || tab === "mine" ? undefined : tab,
+        createdBy: tab === "mine" ? user?.id : undefined,
+        dealerId,
+        search: q,
+        page: 1,
+        pageSize: take,
+      }),
+    `${tab}|${q}|${dealerId ?? ""}|${take}`
+  );
 
   return (
     <>
@@ -210,6 +225,12 @@ function CarsInner() {
           <input className={cn(inputClass, "pl-10")} value={search} onChange={(e) => setSearch(e.target.value)} onBlur={() => search !== q && setParam({ q: search })} placeholder="Нэр, утас эсвэл #дугаар" />
         </form>
         <ChipTabs items={TABS} value={tab} onChange={(v) => setParam({ status: v === "all" ? "" : v })} />
+        {dealerId && (
+          <button type="button" onClick={() => setParam({ dealer: "" })} className="flex items-center gap-1.5 rounded-full bg-amber px-3 py-1.5 text-xs font-bold">
+            {cars.data?.rows[0]?.dealer_name ?? `Дилер #${dealerId}`}
+            <X className="size-3.5" strokeWidth={3} />
+          </button>
+        )}
       </PageHeader>
 
       {cars.loading && !cars.data ? (

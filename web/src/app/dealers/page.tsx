@@ -18,7 +18,7 @@ import { Suspense } from "react";
 const PAGE_SIZE = 12;
 
 function DealerLogo({ dealer, className }: { dealer: Dealer; className?: string }) {
-  const logo = uploadUrl(dealer.logo, "full", "users");
+  const logo = uploadUrl(dealer.logo, "full", "dealers");
   return (
     <div className={cn("grid shrink-0 place-items-center overflow-hidden rounded-xl bg-muted", className)}>
       {logo ? <Img src={logo} alt="" className="size-full object-contain" /> : <Store className="size-1/2 text-muted-foreground" />}
