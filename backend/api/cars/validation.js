@@ -58,6 +58,10 @@ module.exports.saveValidation = [
     .optional(optional)
     .isIn(steerings)
     .withMessage("Жолооны хүрд буруу байна"),
+  body("vehicle_type")
+    .optional(optional)
+    .isLength({ max: 100 })
+    .withMessage("Ангилал 100-с илүү урттай байж болохгүй"),
   body("color")
     .optional(optional)
     .isIn(exteriorColors)

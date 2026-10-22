@@ -39,6 +39,8 @@ module.exports = (sequelize, DataTypes) => {
       transmission: { type: DataTypes.STRING },
       drive_type: { type: DataTypes.STRING },
       steering: { type: DataTypes.STRING },
+      // Бүртгэлийн ангилал (autobox vehicleTypeName)
+      vehicle_type: { type: DataTypes.STRING },
       engine_capacity: { type: DataTypes.DECIMAL(4, 1) },
       color: { type: DataTypes.STRING },
       // Салоны (дотор) өнгө

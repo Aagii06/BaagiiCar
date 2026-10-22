@@ -122,6 +122,8 @@ module.exports.getVehicleInfo = async ({ plate, vin }) => {
       transmission: null,
       drive_type: mapDrive(v.steeringTypeName),
       steering: mapSteering(v.wheelName),
+      // "Туулах чадвар сайтай", "Суудлын" гэх мэт бүртгэлийн ангилал
+      vehicle_type: v.vehicleTypeName?.trim() || null,
       engine_capacity: mapEngine(v.engineCapacity),
       door_count: null,
       seat_count: toInt(v.seatCount),

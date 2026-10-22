@@ -18,6 +18,8 @@ export interface Car {
   transmission: string | null;
   drive_type: string | null;
   steering: string | null;
+  /** Бүртгэлийн ангилал (autobox), жш "Туулах чадвар сайтай". */
+  vehicle_type: string | null;
   engine_capacity: string | number | null;
   color: string | null;
   /** Салоны өнгө. */

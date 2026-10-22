@@ -43,6 +43,7 @@ type FormState = Record<
   | "transmission"
   | "drive_type"
   | "steering"
+  | "vehicle_type"
   | "engine_capacity"
   | "color"
   | "interior_color"
@@ -73,6 +74,7 @@ function initialState(car: Car | null | undefined, phone: string | null | undefi
     transmission: str(car?.transmission),
     drive_type: str(car?.drive_type),
     steering: str(car?.steering),
+    vehicle_type: str(car?.vehicle_type),
     engine_capacity: str(car?.engine_capacity ? Number(car.engine_capacity) : ""),
     color: str(car?.color),
     interior_color: str(car?.interior_color),
@@ -102,6 +104,7 @@ function toInput(f: FormState, car?: Car | null): CarInput {
     transmission: f.transmission || null,
     drive_type: f.drive_type || null,
     steering: f.steering || null,
+    vehicle_type: f.vehicle_type.trim() || null,
     engine_capacity: f.engine_capacity ? f.engine_capacity : null,
     color: f.color.trim() || null,
     interior_color: f.interior_color.trim() || null,
@@ -314,6 +317,7 @@ export default function CarForm({
     put("transmission", info.transmission, TRANSMISSIONS);
     put("drive_type", info.drive_type, DRIVE_TYPES);
     put("steering", info.steering, STEERINGS);
+    put("vehicle_type", info.vehicle_type);
     put("engine_capacity", info.engine_capacity);
     put("mileage", info.mileage);
     put("color", info.color, EXTERIOR_COLORS);
@@ -562,6 +566,9 @@ export default function CarForm({
                   </option>
                 ))}
               </Select>
+            </Field>
+            <Field className="col-span-2" label="Ангилал" hint="Бүртгэлээс бөглөгдөнө">
+              <input className={inputClass} {...bind("vehicle_type")} maxLength={100} placeholder="Туулах чадвар сайтай" />
             </Field>
             <Field label="Гадна өнгө">
               <Select {...bind("color")}>
