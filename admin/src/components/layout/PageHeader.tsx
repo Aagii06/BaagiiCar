@@ -2,20 +2,23 @@ import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
 /** Title block at the top of a list page; `children` holds search / filters, `back` adds a back button. */
-export default function PageHeader({ title, back, aside, children }: { title: string; back?: string; aside?: React.ReactNode; children?: React.ReactNode }) {
+export default function PageHeader({ title, back, aside, children }: { title?: string; back?: string; aside?: React.ReactNode; children?: React.ReactNode }) {
   return (
     <div className="-mx-4 mb-4 space-y-4 border-b border-border bg-white px-4 pb-4 pt-5">
-      <div className="flex min-h-10 items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-1">
-          {back && (
-            <Link href={back} aria-label="Буцах" className="-ml-2 grid size-10 shrink-0 place-items-center rounded-xl hover:bg-muted">
-              <ChevronLeft className="size-5" />
-            </Link>
-          )}
-          <h1 className="min-w-0 truncate font-display text-[22px] font-bold tracking-tight">{title}</h1>
+      {/* Without a title (e.g. Зарууд, whose action lives in the top bar) only the filters show. */}
+      {(title || back || aside) && (
+        <div className="flex min-h-10 items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-1">
+            {back && (
+              <Link href={back} aria-label="Буцах" className="-ml-2 grid size-10 shrink-0 place-items-center rounded-xl hover:bg-muted">
+                <ChevronLeft className="size-5" />
+              </Link>
+            )}
+            <h1 className="min-w-0 truncate font-display text-[22px] font-bold tracking-tight">{title}</h1>
+          </div>
+          {aside}
         </div>
-        {aside}
-      </div>
+      )}
       {children}
     </div>
   );

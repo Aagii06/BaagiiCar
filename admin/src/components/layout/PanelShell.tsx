@@ -20,15 +20,22 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
   const isTabPage = TAB_PATHS.has(pathname);
   const isAdmin = useAuth().user?.role === ROLES.admin;
   const navItems = NAV_ITEMS.filter((item) => isAdmin || !item.adminOnly);
+  const action = navItems.find((item) => item.href === pathname)?.action;
 
   return (
     <ToastProvider>
       <ConfirmProvider>
       {isTabPage && (
-        <header className="sticky top-0 z-30 border-b border-border bg-white/95 px-4 py-3 backdrop-blur">
+        <header className="sticky top-0 z-30 flex min-h-[61px] items-center justify-between gap-3 border-b border-border bg-white/95 px-4 py-3 backdrop-blur">
           <Link href="/" aria-label="Самбар">
             <BrandMark />
           </Link>
+          {action && (
+            <Link href={action.href} className="flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white hover:bg-primary-hover">
+              <Plus className="size-4" strokeWidth={2.6} />
+              {action.label}
+            </Link>
+          )}
         </header>
       )}
 

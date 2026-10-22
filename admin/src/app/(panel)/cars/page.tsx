@@ -15,7 +15,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPrice } from "@/lib/utils";
-import { BadgeCheck, Check, Eye, EyeOff, Plus, Search, Star, Store, Trash2, Undo2 } from "lucide-react";
+import { BadgeCheck, Check, Eye, EyeOff, Search, Star, Store, Trash2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -75,15 +75,15 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
 
   return (
     <div className={cn("overflow-hidden rounded-2xl bg-card", busy && "pointer-events-none opacity-60")}>
-      {/* Dealer title bar across the card's top, like a status bar, in a muted grey with a soft shadow onto the card. */}
-      <div className="relative z-10 flex items-center gap-2 bg-muted px-3 py-2 text-foreground/80 shadow-[0_3px_6px_-2px_rgb(0_0_0/0.1)]">
+      {/* Dealer title bar across the card's top, like a status bar, in a muted slate with a soft shadow onto the card. */}
+      <div className="relative z-10 flex items-center gap-2 bg-slate-500 px-3 py-2 text-white shadow-[0_3px_6px_-2px_rgb(0_0_0/0.18)]">
         {dealerLogo ? (
           // eslint-disable-next-line @next/next/no-img-element -- uploaded dealer logo
-          <img src={dealerLogo} alt="" className="size-5 shrink-0 rounded-md border border-border bg-white object-contain" />
+          <img src={dealerLogo} alt="" className="size-5 shrink-0 rounded-md bg-white object-contain" />
         ) : (
-          <Store className="size-4 shrink-0 text-muted-foreground" />
+          <Store className="size-4 shrink-0 text-white/70" />
         )}
-        <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-muted-foreground")}>{car.dealer_name || "Дилергүй"}</span>
+        <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-white/70")}>{car.dealer_name || "Дилергүй"}</span>
       </div>
       <div className="p-3">
         <Link href={`/cars/${car.id}`} className="flex gap-3">
@@ -226,15 +226,8 @@ function CarsInner() {
 
   return (
     <>
-      <PageHeader
-        title="Зарууд"
-        aside={
-          <Link href="/cars/new" className="flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white">
-            <Plus className="size-4" strokeWidth={2.6} />
-            Нэмэх
-          </Link>
-        }
-      >
+      {/* No title: the tab bar says where we are, and "Зар нэмэх" sits in the top app bar. */}
+      <PageHeader>
         <div className="flex gap-2">
           <form
             onSubmit={(e) => {
