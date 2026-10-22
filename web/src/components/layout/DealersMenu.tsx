@@ -53,10 +53,9 @@ export default function DealersMenu({ className }: { className?: string }) {
       </button>
 
       {open && (
-        // pt-2 instead of a margin keeps the pointer inside while moving down to the panel.
-        <div className="absolute left-1/2 top-full z-50 w-80 -translate-x-1/2 pt-2">
-          <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-lg">
-            <div className="max-h-[60vh] overflow-y-auto p-2">
+        <div className="absolute left-1/2 top-full z-50 w-80 -translate-x-1/2">
+          <div className="overflow-hidden border border-border bg-white shadow-lg">
+            <div className="max-h-[60vh] overflow-y-auto">
               {dealers.loading && !dealers.data ? (
                 <div className="grid place-items-center py-8">
                   <Spinner />
@@ -72,9 +71,9 @@ export default function DealersMenu({ className }: { className?: string }) {
                       key={dealer.id}
                       href={`/dealers?d=${dealer.id}`}
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-2.5 py-2 normal-case tracking-normal hover:bg-muted"
+                      className="flex items-center gap-3 px-4 py-2.5 normal-case tracking-normal hover:bg-muted"
                     >
-                      <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted">
+                      <span className="grid size-10 shrink-0 place-items-center overflow-hidden bg-muted">
                         {logo ? <Img src={logo} alt="" className="size-full object-contain" /> : <Store className="size-5 text-muted-foreground" />}
                       </span>
                       <span className="min-w-0 flex-1">
