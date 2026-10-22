@@ -7,6 +7,7 @@ const { uploadImage } = require("../../helper/fileHelper");
 const { authLogin } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
 const { roles } = require("../../config/constants");
+const { sendEmailOtp, verifyEmailOtp } = require("../../helper/otpHelper");
 
 module.exports.save = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
@@ -283,6 +284,80 @@ module.exports.otpLogin = async (req, res) => {
         object_id: created.id,
         log_action: "registered",
         log_action_mn: "Кодоор бүртгүүлсэн",
+        created_by: created.id,
+        created_at: at,
+      });
+      user = { id: created.id };
+    }
+
+    const { success, user: loggedUser, message } = await findUserData(user.id);
+    if (!success) {
+      result.message = message;
+      return res.status(200).json(result);
+    }
+    authLogin(loggedUser, (token) => {
+      result.success = true;
+      result.data = { token, loggedUser };
+      return res.status(200).json(result);
+    });
+  } catch (error) {
+    console.log(error);
+    result.message = typeof error === "string" ? error : "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
+// --- Имэйл + нэг удаагийн код (OTP) ----------------------------------------
+module.exports.emailOtpSend = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const result = await sendEmailOtp(email, "login");
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Код илгээж чадсангүй" });
+  }
+};
+
+// Имэйл + кодоор нэвтрэх. Бүртгэлгүй имэйл бол CUSTOMER эрхтэй шинэ хэрэглэгч үүсгэнэ.
+module.exports.emailOtpLogin = async (req, res) => {
+  let result = { success: false, data: null, message: "" };
+  const { email, code, at } = req.body;
+  try {
+    let user = await users.findOne({
+      where: { email, status: { [op.ne]: "deleted" } },
+      attributes: ["id", "role", "status"],
+      raw: true,
+    });
+
+    // Админ самбар нууц үгээр нэвтэрнэ
+    if (user && user.role === roles.admin) {
+      result.message = "Админ эрхтэй хэрэглэгч нууц үгээр нэвтэрнэ үү";
+      return res.status(200).json(result);
+    }
+    if (user && user.status !== "active") {
+      result.message = "Таны бүртгэл идэвхгүй байна";
+      return res.status(200).json(result);
+    }
+
+    const verified = await verifyEmailOtp(email, "login", code);
+    if (!verified.success) {
+      result.message = verified.message;
+      return res.status(200).json(result);
+    }
+
+    if (!user) {
+      const created = await users.create({
+        email,
+        role: roles.customer,
+        status: "active",
+        created_at: at,
+      });
+      await saveLog({
+        object_name: "users",
+        object_id: created.id,
+        log_action: "registered",
+        log_action_mn: "Имэйл кодоор бүртгүүлсэн",
         created_by: created.id,
         created_at: at,
       });

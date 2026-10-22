@@ -14,6 +14,8 @@ const {
   registerValidation,
   otpSendValidation,
   otpLoginValidation,
+  emailOtpSendValidation,
+  emailOtpLoginValidation,
 } = require("./validation");
 
 const {
@@ -23,6 +25,8 @@ const {
   register,
   otpSend,
   otpLogin,
+  emailOtpSend,
+  emailOtpLogin,
   logout,
   getUserData,
   changePassword,
@@ -41,6 +45,9 @@ router.route("/login").post(loginValidation, login);
 // Вэб: утас + нэг удаагийн кодоор нэвтрэх
 router.route("/otp-send").post(otpSendValidation, otpSend);
 router.route("/otp-login").post(otpLoginValidation, byAndAt, otpLogin);
+// Имэйл + нэг удаагийн кодоор нэвтрэх
+router.route("/email-otp-send").post(emailOtpSendValidation, emailOtpSend);
+router.route("/email-otp-login").post(emailOtpLoginValidation, byAndAt, emailOtpLogin);
 router.route("/register").post(registerValidation, byAndAt, register);
 router.route("/logout").post(protect, logout);
 router.route("/get-user-data").post(protect, getUserData);

@@ -1,6 +1,7 @@
 const { body } = require("express-validator");
 const validation = require("../../middleware/validation");
 const { roles } = require("../../config/constants");
+const { isValidEmail } = require("../../helper/mailHelper");
 
 const phonenumberValidation = (message) =>
   body("phonenumber")
@@ -110,6 +111,25 @@ module.exports.otpLoginValidation = [
     .withMessage("Баталгаажуулах код оруулна уу")
     .matches(/^\d{4}$/)
     .withMessage("Код 4 оронтой тоо байна"),
+  validation,
+];
+
+const emailOtpField = () =>
+  body("email")
+    .trim()
+    .toLowerCase()
+    .custom((email) => {
+      if (!isValidEmail(email)) throw new Error("Имэйл хаяг буруу байна");
+      return true;
+    });
+
+// Имэйлээр код илгээх
+module.exports.emailOtpSendValidation = [emailOtpField(), validation];
+
+// Имэйл + кодоор нэвтрэх
+module.exports.emailOtpLoginValidation = [
+  emailOtpField(),
+  body("code").trim().matches(/^\d{6}$/).withMessage("6 оронтой код оруулна уу"),
   validation,
 ];
 
