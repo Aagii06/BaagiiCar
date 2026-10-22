@@ -166,7 +166,7 @@ export type CarInput = Partial<
     Car,
     | "brand_id" | "car_model_id" | "body_type_id" | "location_id" | "manufactured_year" | "imported_year"
     | "price" | "mileage" | "fuel_type" | "transmission" | "drive_type" | "steering" | "engine_capacity"
-    | "color" | "vin" | "phonenumber" | "description" | "is_featured" | "status"
+    | "color" | "interior_color" | "vin" | "phonenumber" | "description" | "is_featured" | "status"
   >
 > & {
   id?: number;
@@ -234,6 +234,7 @@ export function carInputFrom(car: Car): CarInput {
     steering: car.steering,
     engine_capacity: car.engine_capacity,
     color: car.color,
+    interior_color: car.interior_color,
     vin: car.vin,
     phonenumber: car.phonenumber,
     description: car.description,

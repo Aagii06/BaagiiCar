@@ -240,6 +240,7 @@ function Specs({ car }: { car: Car }) {
     ["Хүрд", car.steering],
     ["Хөтлөгч", car.drive_type],
     ["Өнгө", car.color],
+    ["Дотор өнгө", car.interior_color],
     ["Төрөл", bodyTypeLabel(car.body_type_name)],
   ];
   return (

@@ -45,6 +45,7 @@ type FormState = Record<
   | "steering"
   | "engine_capacity"
   | "color"
+  | "interior_color"
   | "vin"
   | "phonenumber"
   | "description"
@@ -71,6 +72,7 @@ function initialState(car: Car | null | undefined, phone: string | null | undefi
     steering: str(car?.steering),
     engine_capacity: str(car?.engine_capacity ? Number(car.engine_capacity) : ""),
     color: str(car?.color),
+    interior_color: str(car?.interior_color),
     vin: str(car?.vin),
     phonenumber: str(car?.phonenumber ?? phone),
     description: str(car?.description),
@@ -99,6 +101,7 @@ function toInput(f: FormState, car?: Car | null): CarInput {
     steering: f.steering || null,
     engine_capacity: f.engine_capacity ? f.engine_capacity : null,
     color: f.color.trim() || null,
+    interior_color: f.interior_color.trim() || null,
     // Арлын дугаар баазад хадгалагдах ч UI-д харуулахгүй — засахад байсан утгыг хэвээр илгээнэ
     vin: f.vin.trim() || null,
     phonenumber: f.phonenumber || null,
@@ -456,6 +459,7 @@ export default function CarForm({
       {show(0) && (
         <Section title="Үндсэн мэдээлэл">
           <div className="grid grid-cols-2 gap-3">
+            {/* Both years on one row: buyers compare them. */}
             <Field label="Үйлдвэр *">
               <Select value={f.brand_id} onChange={(e) => setF((p) => ({ ...p, brand_id: e.target.value, car_model_id: "" }))} required>
                 <option value="">Сонгох</option>
@@ -476,16 +480,6 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Төрөл">
-              <Select {...bind("body_type_id")}>
-                <option value="">Сонгох</option>
-                {bodyTypes.data?.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {bodyTypeLabel(b.name)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
             <Field label="Үйлдвэрлэсэн он *">
               <Select {...bind("manufactured_year")} required>
                 <option value="">Сонгох</option>
@@ -496,11 +490,31 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : "Жишээ: 45000000"}>
-              <input className={inputClass} {...digits("price")} placeholder="45000000" required />
+            <Field label="Орж ирсэн он">
+              <Select {...bind("imported_year")}>
+                <option value="">Сонгох</option>
+                {yearOptions(f.imported_year).map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Байршил">
+              <Select value={locationId} onChange={(e) => set("location_id", e.target.value)}>
+                <option value="">Сонгох</option>
+                {locations.data?.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </Select>
             </Field>
             <Field label="Гүйлт (км)">
               <input className={inputClass} {...digits("mileage")} placeholder="120000" />
+            </Field>
+            <Field className="col-span-2" label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : "Жишээ: 45000000"}>
+              <input className={inputClass} {...digits("price")} placeholder="45000000" required />
             </Field>
           </div>
         </Section>
@@ -534,28 +548,21 @@ export default function CarForm({
       {show(0) && (
         <Section title="Бусад мэдээлэл">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Байршил">
-              <Select value={locationId} onChange={(e) => set("location_id", e.target.value)}>
+            <Field className="col-span-2" label="Төрөл">
+              <Select {...bind("body_type_id")}>
                 <option value="">Сонгох</option>
-                {locations.data?.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Орж ирсэн он">
-              <Select {...bind("imported_year")}>
-                <option value="">Сонгох</option>
-                {yearOptions(f.imported_year).map((y) => (
-                  <option key={y} value={y}>
-                    {y}
+                {bodyTypes.data?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {bodyTypeLabel(b.name)}
                   </option>
                 ))}
               </Select>
             </Field>
             <Field label="Өнгө">
               <input className={inputClass} {...bind("color")} placeholder="Цагаан" />
+            </Field>
+            <Field label="Дотор өнгө">
+              <input className={inputClass} {...bind("interior_color")} placeholder="Хар" />
             </Field>
           </div>
         </Section>

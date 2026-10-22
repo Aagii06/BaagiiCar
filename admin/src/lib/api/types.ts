@@ -20,6 +20,8 @@ export interface Car {
   steering: string | null;
   engine_capacity: string | number | null;
   color: string | null;
+  /** Салоны өнгө. */
+  interior_color: string | null;
   vin: string | null;
   phonenumber: string | null;
   description: string | null;
