@@ -135,7 +135,7 @@ function UserForm({ user }: { user: User | null }) {
         {canHaveDealer && (
           <Field label="Дилер" hint={f.role === ROLES.dealer ? "Энэ хэрэглэгчийн оруулсан зар уг дилерт харьяалагдана" : "Админ аль дилерийнх болох"}>
             <Select value={f.dealer_id} onChange={set("dealer_id")}>
-              <option value="">Дилергүй</option>
+              <option value="">-- Сонгох --</option>
               {/* A dealer that's since been deactivated stays selectable for users already in it. */}
               {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}
               {dealers.data?.map((d) => (

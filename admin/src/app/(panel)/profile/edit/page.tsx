@@ -70,7 +70,7 @@ function ProfileForm({ me }: { me: User }) {
         </Field>
         <Field label="Дилер" hint="Шинэ зар нэмэхэд энэ дилер санал болгогдоно">
           <Select value={f.dealer_id} onChange={(e) => setF({ ...f, dealer_id: e.target.value })}>
-            <option value="">Дилергүй</option>
+            <option value="" className="text-gray-200">-- Сонгох --</option>
             {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}
             {dealers.data?.map((d) => (
               <option key={d.id} value={d.id}>
