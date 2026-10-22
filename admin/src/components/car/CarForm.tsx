@@ -126,7 +126,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Chips({ options, value, onChange }: { options: string[]; value: string; onChange: (v: string) => void }) {
+function Chips({ options, value, onChange, disabled }: { options: string[]; value: string; onChange: (v: string) => void; disabled?: boolean }) {
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((o) => (
@@ -135,7 +135,11 @@ function Chips({ options, value, onChange }: { options: string[]; value: string;
           type="button"
           onClick={() => onChange(o === value ? "" : o)}
           aria-pressed={o === value}
-          className={cn("rounded-xl border-[1.5px] px-3.5 py-2 text-sm font-semibold", o === value ? "border-foreground bg-foreground text-white" : "border-border bg-white hover:border-foreground/40")}
+          disabled={disabled}
+          className={cn(
+            "rounded-xl border-[1.5px] px-3.5 py-2 text-sm font-semibold disabled:cursor-not-allowed",
+            o === value ? "border-foreground bg-foreground text-white" : "border-border bg-white hover:border-foreground/40 disabled:opacity-40 disabled:hover:border-border"
+          )}
         >
           {o}
         </button>
@@ -255,6 +259,9 @@ export default function CarForm({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [viewing, setViewing] = useState<number | null>(null);
+  /** Fields filled from the registry (autobox) lookup; read-only so they match the official record. */
+  const [locked, setLocked] = useState<ReadonlySet<keyof FormState>>(new Set());
+  const isLocked = (k: keyof FormState) => locked.has(k);
   const fileInput = useRef<HTMLInputElement>(null);
   // A new ad is a wizard (Мэдээлэл → Зураг → Нийтлэх); editing keeps one long form.
   const wizard = !car;
@@ -277,8 +284,8 @@ export default function CarForm({
   useEffect(() => () => photosRef.current.forEach((p) => p.kind === "new" && URL.revokeObjectURL(p.url)), []);
 
   const set = (k: Exclude<keyof FormState, "is_featured">, v: string) => setF((prev) => ({ ...prev, [k]: v }));
-  const bind = (k: Exclude<keyof FormState, "is_featured">) => ({ value: f[k], onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set(k, e.target.value) });
-  const digits = (k: Exclude<keyof FormState, "is_featured">) => ({ value: f[k], inputMode: "numeric" as const, onChange: (e: React.ChangeEvent<HTMLInputElement>) => set(k, e.target.value.replace(/\D/g, "")) });
+  const bind = (k: Exclude<keyof FormState, "is_featured">) => ({ value: f[k], disabled: isLocked(k), onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set(k, e.target.value) });
+  const digits = (k: Exclude<keyof FormState, "is_featured">) => ({ value: f[k], disabled: isLocked(k), inputMode: "numeric" as const, onChange: (e: React.ChangeEvent<HTMLInputElement>) => set(k, e.target.value.replace(/\D/g, "")) });
 
   const addFiles = (files: FileList | null) => {
     if (!files) return;
@@ -323,11 +330,18 @@ export default function CarForm({
     put("color", info.color, EXTERIOR_COLORS);
     put("vin", info.vin);
     setF((p) => ({ ...p, ...fill, ...(brand && brand.id !== Number(p.brand_id) ? { car_model_id: "" } : {}) }));
-    pickModel.then((model) => model && setF((p) => (p.brand_id === String(brand!.id) ? { ...p, car_model_id: String(model.id) } : p)));
+    // A new lookup replaces the previous lock; fields the registry left empty stay editable.
+    const lock = new Set(Object.keys(fill) as (keyof FormState)[]);
+    setLocked(lock);
+    pickModel.then((model) => {
+      if (!model) return;
+      setF((p) => (p.brand_id === String(brand!.id) ? { ...p, car_model_id: String(model.id) } : p));
+      setLocked((prev) => (prev === lock ? new Set([...lock, "car_model_id"]) : prev));
+    });
 
     const name = [info.brand, info.model, info.manufactured_year].filter(Boolean).join(" ");
     if (!brand) return `${name} олдлоо. "${info.brand ?? "—"}" үйлдвэр каталогид алга, гараар сонгоно уу`;
-    return `${name} — мэдээлэл бөглөгдлөө. Загвар, хурдны хайрцгийг шалгана уу`;
+    return `${name} — бүртгэлийн мэдээлэл бөглөгдөж түгжигдлээ. Хурдны хайрцгийг сонгоно уу`;
   };
 
   // New ad: location shows / saves as Улаанбаатар until another one is picked.
@@ -471,7 +485,7 @@ export default function CarForm({
           <div className="grid grid-cols-2 gap-3">
             {/* Both years on one row: buyers compare them. */}
             <Field label="Үйлдвэр *">
-              <Select value={f.brand_id} onChange={(e) => setF((p) => ({ ...p, brand_id: e.target.value, car_model_id: "" }))} required>
+              <Select value={f.brand_id} onChange={(e) => setF((p) => ({ ...p, brand_id: e.target.value, car_model_id: "" }))} disabled={isLocked("brand_id")} required>
                 <option value="">Сонгох</option>
                 {brands.data?.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -481,7 +495,7 @@ export default function CarForm({
               </Select>
             </Field>
             <Field label="Загвар">
-              <Select {...bind("car_model_id")} disabled={!f.brand_id}>
+              <Select {...bind("car_model_id")} disabled={!f.brand_id || isLocked("car_model_id")}>
                 <option value="">Сонгох</option>
                 {models.data?.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -534,20 +548,20 @@ export default function CarForm({
         <Section title="Техникийн үзүүлэлт">
           <div className="space-y-5">
             <Field label="Түлш">
-              <Chips options={FUEL_TYPES} value={f.fuel_type} onChange={(v) => set("fuel_type", v)} />
+              <Chips options={FUEL_TYPES} value={f.fuel_type} onChange={(v) => set("fuel_type", v)} disabled={isLocked("fuel_type")} />
             </Field>
             <Field label="Хурдны хайрцаг *">
-              <Chips options={TRANSMISSIONS} value={f.transmission} onChange={(v) => set("transmission", v)} />
+              <Chips options={TRANSMISSIONS} value={f.transmission} onChange={(v) => set("transmission", v)} disabled={isLocked("transmission")} />
             </Field>
             <Field label="Хөтлөгч">
-              <Chips options={DRIVE_TYPES} value={f.drive_type} onChange={(v) => set("drive_type", v)} />
+              <Chips options={DRIVE_TYPES} value={f.drive_type} onChange={(v) => set("drive_type", v)} disabled={isLocked("drive_type")} />
             </Field>
             <Field label="Хүрд">
-              <Chips options={STEERINGS} value={f.steering} onChange={(v) => set("steering", v)} />
+              <Chips options={STEERINGS} value={f.steering} onChange={(v) => set("steering", v)} disabled={isLocked("steering")} />
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Хөдөлгүүр (л)">
-                <input className={inputClass} inputMode="decimal" value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder="2.5" />
+                <input className={inputClass} inputMode="decimal" disabled={isLocked("engine_capacity")} value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder="2.5" />
               </Field>
             </div>
           </div>
