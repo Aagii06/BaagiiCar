@@ -1,5 +1,6 @@
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
-import type { BodyType, Brand, Car, CarFile, CarModel, Dealer, Location, Message, User } from "./types";
+import { ROLES } from "@/lib/constants";
+import type { BodyType, Brand, Car, CarFile, CarModel, Customer, Dealer, Location, Message, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
 const NEWEST = [{ selector: "created_at", desc: true }];
@@ -240,7 +241,8 @@ export async function deleteCar(id: number) {
 
 /** `excludeId` leaves the signed-in user out (they manage themselves from Профайл). */
 export async function listUsers(search?: string, excludeId?: number, role?: string) {
-  const filter: Condition[] = [NOT_DELETED];
+  // Leftover CUSTOMER rows (web sign-ups) belong on the Хэрэглэгч page, not here.
+  const filter: Condition[] = [NOT_DELETED, ["role", "<>", ROLES.customer]];
   if (excludeId) filter.push(["id", "<>", excludeId]);
   if (role) filter.push(["role", "=", role]);
   const q = search?.trim();
@@ -304,6 +306,26 @@ export type DealerInput = Pick<Dealer, "name" | "logo" | "phonenumber" | "email"
 export const createDealer = (body: DealerInput) => createRow("dealers", body);
 export const updateDealer = (id: number, body: DealerInput) => updateRow("dealers", id, body);
 export const deleteDealer = (id: number) => deleteRows("dealers", [id]);
+
+// --- customers (web visitors) ----------------------------------------------
+
+export async function listCustomers(search?: string, status?: Customer["status"]) {
+  const filter: Condition[] = [status ? ["status", "=", status] : NOT_DELETED];
+  const q = search?.trim();
+  if (q) filter.push(/^\d+$/.test(q) ? ["phonenumber", "contains", q] : q.includes("@") ? ["email", "contains", q] : ["firstname", "contains", q]);
+  const res = await apiFetch<ApiListResponse<Customer>>(`/api/base/customers${listQuery({ filter, sort: NEWEST, take: 200 })}`);
+  return res.data;
+}
+
+export async function getCustomer(id: number | string) {
+  const res = await apiFetch<ApiItemResponse<Customer | null>>(`/api/base/customers/${id}`);
+  return res.data;
+}
+
+export type CustomerInput = Pick<Customer, "firstname" | "lastname" | "phonenumber" | "email"> & { status: "active" | "inactive" };
+
+export const updateCustomer = (id: number, body: CustomerInput) => updateRow("customers", id, body);
+export const deleteCustomer = (id: number) => deleteRows("customers", [id]);
 
 // --- web chat messages -----------------------------------------------------
 

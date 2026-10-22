@@ -10,7 +10,8 @@ export function bodyTypeLabel(name: string | null | undefined) {
 }
 
 export const ROLES = { admin: "ADMIN", dealer: "DEALER", customer: "CUSTOMER" } as const;
-export const ROLE_LIST = Object.values(ROLES);
+/** Roles of `users` accounts; web visitors live in the separate `customers` table. */
+export const ROLE_LIST = [ROLES.admin, ROLES.dealer];
 
 const ROLE_MN: Record<string, string> = { [ROLES.admin]: "Админ", [ROLES.dealer]: "Дилер", [ROLES.customer]: "Хэрэглэгч" };
 

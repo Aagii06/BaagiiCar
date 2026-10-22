@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
 import UserAvatar from "@/components/common/UserAvatar";
 import { userName } from "@/lib/utils";
-import { ChevronRight, ExternalLink, LibraryBig, LogOut, Store, Users } from "lucide-react";
+import { ChevronRight, ExternalLink, LibraryBig, LogOut, ShieldUser, Store, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -39,6 +39,11 @@ export default function ProfilePage() {
             <ChevronRight className="ml-auto size-4" />
           </Link>
           <Link href="/users" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
+            <ShieldUser className="size-5 text-muted-foreground" />
+            Admin &amp; Dealer
+            <ChevronRight className="ml-auto size-4" />
+          </Link>
+          <Link href="/customers" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
             <Users className="size-5 text-muted-foreground" />
             Хэрэглэгч
             <ChevronRight className="ml-auto size-4" />

@@ -17,7 +17,6 @@ import { useState } from "react";
 const ROLE_TONE: Record<string, string> = {
   [ROLES.admin]: "bg-dark text-white",
   [ROLES.dealer]: "bg-amber",
-  [ROLES.customer]: "bg-muted",
 };
 
 const ROLE_TABS = [{ value: "", label: "Бүгд" }, ...ROLE_LIST.map((r) => ({ value: r as string, label: roleLabel(r) }))];
@@ -34,7 +33,7 @@ export default function UsersPage() {
   return (
     <>
       <PageHeader
-        title="Хэрэглэгч"
+        title="Admin & Dealer"
         back="/profile"
         aside={
           <Link href="/users/new" className="flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white">

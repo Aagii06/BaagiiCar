@@ -16,7 +16,7 @@ async function loadStats() {
     countOf("cars", [["status", "=", "active"]]),
     countOf("cars", [["status", "=", "sold"]]),
     countOf("cars", [["status", "=", "active"], ["is_featured", "=", 1]]),
-    countOf("users", [["status", "<>", "deleted"]]),
+    countOf("customers", [["status", "<>", "deleted"]]),
     countOf("brands", [["status", "=", "active"]]),
     countOf("carModels", [["status", "=", "active"]]),
   ]);
@@ -41,7 +41,7 @@ export default function DashboardPage() {
     { label: "Зарагдсан", value: s.sold, href: "/cars?status=sold", className: "bg-dark text-white" },
   ];
   const tiles = s && [
-    { label: "Хэрэглэгч", value: s.users, href: "/users", className: "bg-white" },
+    { label: "Хэрэглэгч", value: s.users, href: "/customers", className: "bg-white" },
     { label: "Үйлдвэр", value: s.brands, href: "/catalog", className: "bg-white" },
     { label: "Загвар", value: s.models, href: "/catalog?tab=models", className: "bg-white" },
   ];

@@ -28,7 +28,7 @@ function UserForm({ user }: { user: User | null }) {
     firstname: user?.firstname ?? "",
     phonenumber: user?.phonenumber ?? "",
     email: user?.email ?? "",
-    role: user?.role ?? ROLES.customer,
+    role: user?.role ?? ROLES.dealer,
     status: user?.status ?? "active",
     profile: user?.profile ?? "",
     dealer_id: user?.dealer_id ? String(user.dealer_id) : "",
@@ -185,7 +185,7 @@ export default function UserPage() {
 
   return (
     <>
-      <DetailHeader title={isNew ? "Шинэ хэрэглэгч" : data.data ? userName(data.data) : "Хэрэглэгч"} back="/users" />
+      <DetailHeader title={isNew ? "Шинэ админ, дилер" : data.data ? userName(data.data) : "Admin & Dealer"} back="/users" />
       {isNew ? (
         <UserForm user={null} />
       ) : data.loading && !data.data ? (

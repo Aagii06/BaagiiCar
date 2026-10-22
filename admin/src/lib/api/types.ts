@@ -102,6 +102,19 @@ export interface User {
   created_at?: string | null;
 }
 
+/** Web visitor account (`customers` table): signs in with a one-time code, saves ads, chats. */
+export interface Customer {
+  id: number;
+  phonenumber: string | null;
+  email: string | null;
+  firstname: string | null;
+  lastname: string | null;
+  profile: string | null;
+  status: "active" | "inactive" | "deleted";
+  created_at: string | null;
+  last_login_at: string | null;
+}
+
 /** Dealer (car showroom) registry row; users and ads point at it by `dealer_id`. */
 export interface Dealer {
   id: number;
