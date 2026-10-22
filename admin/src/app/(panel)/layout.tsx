@@ -1,7 +1,7 @@
 "use client";
 
-import { LoadingState } from "@/components/common/States";
 import PanelShell from "@/components/layout/PanelShell";
+import SplashScreen from "@/components/layout/SplashScreen";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -20,6 +20,7 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
     }
   }, [status, pathname, router]);
 
-  if (status !== "authenticated") return <LoadingState className="min-h-screen" />;
+  // Splash while the session is checked, and while an anonymous visitor is sent to /login.
+  if (status !== "authenticated") return <SplashScreen />;
   return <PanelShell>{children}</PanelShell>;
 }

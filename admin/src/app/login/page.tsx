@@ -1,8 +1,8 @@
 "use client";
 
 import { Field, FormError, PasswordInput, PhoneInput } from "@/components/common/Field";
-import { LoadingState } from "@/components/common/States";
 import BrandMark from "@/components/layout/BrandMark";
+import SplashScreen from "@/components/layout/SplashScreen";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -37,6 +37,10 @@ function LoginForm() {
     }
   };
 
+  // The form appears only once the saved session turned out to be missing / invalid;
+  // a signed-in user keeps the splash until the redirect above lands.
+  if (status !== "anonymous") return <SplashScreen />;
+
   return (
     <div className="flex min-h-screen flex-col justify-center px-5">
       <div className="rounded-3xl bg-dark px-6 pb-8 pt-7 text-white">
@@ -64,7 +68,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<LoadingState className="min-h-screen" />}>
+    <Suspense fallback={<SplashScreen />}>
       <LoginForm />
     </Suspense>
   );

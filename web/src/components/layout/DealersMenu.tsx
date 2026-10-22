@@ -74,11 +74,11 @@ export default function DealersMenu({ className }: { className?: string }) {
                       onClick={() => setOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 normal-case tracking-normal hover:bg-muted"
                     >
-                      <span className="grid size-10 shrink-0 place-items-center overflow-hidden bg-muted">
+                      <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-muted">
                         <DealerAvatar
                           logo={dealer.logo}
                           name={name}
-                          imgClassName="size-full object-contain"
+                          imgClassName="size-full object-cover"
                           letterClassName="font-display text-base font-bold text-foreground/60"
                         />
                       </span>

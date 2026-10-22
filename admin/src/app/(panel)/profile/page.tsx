@@ -8,7 +8,7 @@ import UserAvatar from "@/components/common/UserAvatar";
 import { getDealers } from "@/lib/api/admin";
 import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
-import { ChevronRight, ExternalLink, LibraryBig, LogOut, ShieldUser, Store, Users } from "lucide-react";
+import { ChevronRight, ExternalLink, LibraryBig, LogOut, Pencil, ShieldUser, Store, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -28,6 +28,9 @@ export default function ProfilePage() {
           </p>
           {dealer && <p className="truncate text-sm font-semibold text-white">{dealer.name}</p>}
         </div>
+        <Link href="/profile/edit" aria-label="Профайл засах" title="Профайл засах" className="ml-auto grid size-10 shrink-0 place-items-center rounded-xl bg-white/10 hover:bg-white/20">
+          <Pencil className="size-4" />
+        </Link>
       </section>
 
       {/* Moved out of the bottom nav to keep it at four tabs; admins only. */}
@@ -57,10 +60,6 @@ export default function ProfilePage() {
       )}
 
       <div className="mt-4 space-y-2">
-        <Link href="/profile/edit" className="flex items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold">
-          Профайл засах
-          <ChevronRight className="size-4" />
-        </Link>
         <Link href="/profile/password" className="flex items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold">
           Нууц үг солих
           <ChevronRight className="size-4" />
