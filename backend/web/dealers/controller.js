@@ -1,4 +1,4 @@
-const { users, vwCars, sequelize, op } = require("../../models");
+const { users, vwCars, vwDealers, sequelize, op } = require("../../models");
 const { roles, carStatuses } = require("../../config/constants");
 
 // Дилерийн машин: дилерт хамаарах (user_id) эсвэл дилерийн өөрийн оруулсан (created_by)
@@ -17,17 +17,11 @@ const publicAttributes = (dealerIdSql) => [
 
 const activeDealer = { role: roles.dealer, status: "active" };
 
-// Идэвхтэй DEALER эрхтэй хэрэглэгчид, вэб дээр харагдах зарын тоотой нь.
-// Зөвхөн идэвхтэй зартай (car_count > 0) дилерүүд жагсаалтад орно.
+// Вэб дээр харагдах дилерүүд (vwDealers: идэвхтэй зартай идэвхтэй DEALER), зарын тоогоор
 module.exports.list = async (req, res) => {
   try {
-    const rows = await users.findAll({
-      where: {
-        ...activeDealer,
-        [op.and]: [sequelize.literal(`EXISTS (SELECT 1 FROM cars WHERE ${dealerCarsSql("users.id")})`)],
-      },
-      attributes: publicAttributes("users.id"),
-      order: [[sequelize.literal("car_count"), "DESC"], ["firstname", "ASC"]],
+    const rows = await vwDealers.findAll({
+      order: [["car_count", "DESC"], ["firstname", "ASC"]],
       raw: true,
     });
     return res.status(200).json({ success: true, data: { rows, count: rows.length }, message: "" });
