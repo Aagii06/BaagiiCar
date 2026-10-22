@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPriceShort } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
 
 async function loadStats(isAdmin: boolean) {
@@ -91,8 +91,9 @@ export default function DashboardPage() {
 
       <div className="mt-6 flex items-center justify-between">
         <h2 className="font-bold">Сүүлд нэмэгдсэн</h2>
-        <Link href="/cars" className="text-sm font-semibold text-primary">
+        <Link href="/cars" className="flex items-center gap-1 text-sm font-semibold text-primary">
           Бүгд
+          <ArrowRight className="size-4" />
         </Link>
       </div>
       <div className="mt-3 space-y-2">

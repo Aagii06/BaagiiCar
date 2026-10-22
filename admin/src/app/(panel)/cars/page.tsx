@@ -2,7 +2,7 @@
 
 import CarImage from "@/components/car/CarImage";
 import { useRejectCar } from "@/components/car/useRejectCar";
-import ChipTabs from "@/components/common/ChipTabs";
+import ChipTabs, { type ChipTab } from "@/components/common/ChipTabs";
 import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { inputClass, Select } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
@@ -22,15 +22,16 @@ import { Suspense, useState } from "react";
 
 const PAGE_SIZE = 20;
 type Tab = CarStatusFilter | "all";
-const TABS: { value: Tab; label: string }[] = [
+// Each status in its own colour: soft while off, solid once picked.
+const TABS: ChipTab<Tab>[] = [
   { value: "all", label: "Бүгд" },
-  { value: "pending", label: "Хүлээгдэж буй" },
-  { value: "rejected", label: "Буцаасан" },
-  { value: "active", label: "Идэвхтэй" },
-  { value: "featured", label: "Онцлох" },
-  { value: "hidden", label: "Нуусан" },
-  { value: "sold", label: "Зарагдсан" },
-  { value: "deleted", label: "Устгасан" },
+  { value: "pending", label: "Хүлээгдэж буй", tone: { on: "bg-amber text-dark", off: "bg-amber-soft text-amber-ink" } },
+  { value: "rejected", label: "Буцаасан", tone: { on: "bg-destructive text-white", off: "bg-destructive-soft text-destructive" } },
+  { value: "active", label: "Идэвхтэй", tone: { on: "bg-success text-white", off: "bg-success-soft text-success" } },
+  { value: "featured", label: "Онцлох", tone: { on: "bg-primary text-white", off: "bg-primary-soft text-primary" } },
+  { value: "hidden", label: "Нуусан", tone: { on: "bg-slate-500 text-white", off: "bg-slate-100 text-slate-600" } },
+  { value: "sold", label: "Зарагдсан", tone: { on: "bg-sky-600 text-white", off: "bg-tint-blue text-sky-700" } },
+  { value: "deleted", label: "Устгасан", tone: { on: "bg-rose-800 text-white", off: "bg-tint-rose text-rose-800" } },
 ];
 
 function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => void; showDealer: boolean }) {
