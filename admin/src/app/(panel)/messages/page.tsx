@@ -41,7 +41,7 @@ function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void 
   };
 
   return (
-    <div className={cn("rounded-2xl bg-card p-4", busy && "pointer-events-none opacity-60")}>
+    <div className={cn("px-4 py-3.5", busy && "pointer-events-none opacity-60")}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate font-bold">{item.name || "Нэргүй"}</p>
@@ -103,7 +103,8 @@ export default function MessagesPage() {
       ) : !messages.data?.rows.length ? (
         <EmptyState title={tab === "new" ? "Шинэ мессеж алга" : "Мессеж алга"} />
       ) : (
-        <div className="space-y-3">
+        // Edge to edge, right under the header, like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
+        <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
           {messages.data.rows.map((m) => (
             <MessageRow key={m.id} item={m} onChanged={messages.reload} />
           ))}
