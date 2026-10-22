@@ -367,6 +367,24 @@ export const MESSAGES = {
   "Та бүртгэлээс гарлаа": { ru: "Вы отписались", en: "You're unsubscribed" },
   "Бүртгэлээс гарч чадсангүй": { ru: "Не удалось отписаться", en: "Couldn't unsubscribe" },
   "Цаашид шинэ зарын имэйл ирэхгүй.": { ru: "Письма о новых объявлениях больше не будут приходить.", en: "You won't get new-listing emails anymore." },
+  // --- sign-in ---------------------------------------------------------------
+  "Нэвтрэх": { ru: "Войти", en: "Sign in" },
+  "Гарах": { ru: "Выйти", en: "Sign out" },
+  "Миний бүртгэл": { ru: "Мой аккаунт", en: "My account" },
+  "Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.": {
+    ru: "Введите номер телефона. Мы отправим 4-значный код.",
+    en: "Enter your phone number and we'll text you a 4-digit code.",
+  },
+  "Код авах": { ru: "Получить код", en: "Get code" },
+  "Бүртгэлгүй дугаар бол автоматаар бүртгэгдэнэ.": {
+    ru: "Если номер не зарегистрирован, аккаунт будет создан автоматически.",
+    en: "New numbers are registered automatically.",
+  },
+  "{phone} дугаар руу илгээсэн 4 оронтой кодыг оруулна уу.": {
+    ru: "Введите 4-значный код, отправленный на {phone}.",
+    en: "Enter the 4-digit code sent to {phone}.",
+  },
+  "← Дугаар солих": { ru: "← Изменить номер", en: "← Change number" },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;

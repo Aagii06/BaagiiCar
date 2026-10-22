@@ -8,6 +8,7 @@ import { Heart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
+import AccountMenu from "./AccountMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
 import LocationPicker from "./LocationPicker";
 import Logo from "./Logo";
@@ -62,6 +63,7 @@ export default function Header() {
           <Link href="/saved" aria-label={t("Хадгалсан")} className="grid size-11 place-items-center rounded-xl bg-muted hover:bg-border">
             <Heart className="size-[18px]" />
           </Link>
+          <AccountMenu />
         </div>
       </div>
     </header>

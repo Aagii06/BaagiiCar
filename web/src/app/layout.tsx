@@ -3,6 +3,7 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
 import PushPrompt from "@/components/layout/PushPrompt";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { FavoritesProvider } from "@/lib/favorites/FavoritesProvider";
 import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
@@ -34,16 +35,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang={locale} className={`${inter.variable} ${oswald.variable}`}>
       <body className="font-sans antialiased">
         <I18nProvider locale={locale}>
-          <FavoritesProvider>
-            <Header />
-            <main className="min-h-[60vh]">{children}</main>
-            <Footer />
-            {/* Room for the mobile tab bar. */}
-            <div className="h-[calc(4.5rem+env(safe-area-inset-bottom))] bg-dark md:hidden" />
-            <MobileNav />
-            <ChatWidget />
-            <PushPrompt />
-          </FavoritesProvider>
+          <AuthProvider>
+            <FavoritesProvider>
+              <Header />
+              <main className="min-h-[60vh]">{children}</main>
+              <Footer />
+              {/* Room for the mobile tab bar. */}
+              <div className="h-[calc(4.5rem+env(safe-area-inset-bottom))] bg-dark md:hidden" />
+              <MobileNav />
+              <ChatWidget />
+              <PushPrompt />
+            </FavoritesProvider>
+          </AuthProvider>
         </I18nProvider>
       </body>
     </html>
