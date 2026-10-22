@@ -57,9 +57,9 @@ export default function UsersPage() {
         <div className="divide-y divide-border overflow-hidden rounded-2xl bg-card">
           {users.data.rows.map((u) => (
             <Link key={u.id} href={`/users/${u.id}`} className="flex items-center gap-3 px-3 py-3 hover:bg-muted/60">
-              {u.role === ROLES.dealer && u.profile ? (
+              {u.role === ROLES.dealer && u.logo ? (
                 // eslint-disable-next-line @next/next/no-img-element -- uploaded dealer logo
-                <img src={catalogImage(u.profile, "users") ?? ""} alt="" className="size-10 shrink-0 rounded-full bg-muted object-contain" />
+                <img src={catalogImage(u.logo, "users") ?? ""} alt="" className="size-10 shrink-0 rounded-full bg-muted object-contain" />
               ) : (
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{initials(userName(u))}</span>
               )}

@@ -219,7 +219,7 @@ export interface CreateUserInput {
   email?: string | null;
   role: string;
   /** Dealer logo file name (uploads/users). */
-  profile?: string | null;
+  logo?: string | null;
   password: string;
   password_confirm: string;
 }

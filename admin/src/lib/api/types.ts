@@ -89,6 +89,8 @@ export interface User {
   email: string | null;
   role: string | null;
   profile: string | null;
+  /** Dealer logo file name (uploads/users); only DEALER users have one. */
+  logo: string | null;
   status?: string | null;
   created_at?: string | null;
 }

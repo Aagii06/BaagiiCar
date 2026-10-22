@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
 import { useState } from "react";
 
-/** Dealer logo: uploads into `uploads/users`, the file name goes to `users.profile`. */
+/** Dealer logo: uploads into `uploads/users`, the file name goes to `users.logo`. */
 function LogoInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
@@ -74,7 +74,7 @@ function UserForm({ user }: { user: User | null }) {
     email: user?.email ?? "",
     role: user?.role ?? ROLES.customer,
     status: user?.status ?? "active",
-    profile: user?.profile ?? "",
+    logo: user?.logo ?? "",
     password: "",
     password_confirm: "",
   });
@@ -97,8 +97,8 @@ function UserForm({ user }: { user: User | null }) {
       email: f.email || null,
       role: f.role,
       status: f.status,
-      // Logo is a dealer thing; other roles keep whatever profile they had.
-      ...(f.role === ROLES.dealer && { profile: f.profile || null }),
+      // Logo is a dealer thing; other roles keep whatever logo they had.
+      ...(f.role === ROLES.dealer && { logo: f.logo || null }),
     };
     try {
       if (user) {
@@ -170,7 +170,7 @@ function UserForm({ user }: { user: User | null }) {
         </div>
         {f.role === ROLES.dealer && (
           <Field label="Лого" hint="PNG, JPG, WEBP эсвэл SVG">
-            <LogoInput value={f.profile} onChange={(profile) => setF({ ...f, profile })} />
+            <LogoInput value={f.logo} onChange={(logo) => setF({ ...f, logo })} />
           </Field>
         )}
       </section>
