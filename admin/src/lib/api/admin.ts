@@ -54,7 +54,7 @@ export async function deleteRows(target: string, ids: number[]) {
 // --- catalog ---------------------------------------------------------------
 
 /** `POST /api/upload/image` (admin): saves into `uploads/<folder>`, returns the file name for the image/logo column. */
-export async function uploadCatalogImage(folder: "bodyTypes" | "brands", file: File) {
+export async function uploadCatalogImage(folder: "bodyTypes" | "brands" | "users", file: File) {
   const form = new FormData();
   form.append("folder", folder);
   form.append("image", file);
@@ -218,6 +218,8 @@ export interface CreateUserInput {
   lastname?: string | null;
   email?: string | null;
   role: string;
+  /** Dealer logo file name (uploads/users). */
+  profile?: string | null;
   password: string;
   password_confirm: string;
 }

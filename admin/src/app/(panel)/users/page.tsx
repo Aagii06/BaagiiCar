@@ -4,6 +4,7 @@ import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listUsers } from "@/lib/api/admin";
+import { catalogImage } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
@@ -56,7 +57,12 @@ export default function UsersPage() {
         <div className="divide-y divide-border overflow-hidden rounded-2xl bg-card">
           {users.data.rows.map((u) => (
             <Link key={u.id} href={`/users/${u.id}`} className="flex items-center gap-3 px-3 py-3 hover:bg-muted/60">
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{initials(userName(u))}</span>
+              {u.role === ROLES.dealer && u.profile ? (
+                // eslint-disable-next-line @next/next/no-img-element -- uploaded dealer logo
+                <img src={catalogImage(u.profile, "users") ?? ""} alt="" className="size-10 shrink-0 rounded-full bg-muted object-contain" />
+              ) : (
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{initials(userName(u))}</span>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{userName(u)}</p>
                 <p className="truncate text-xs text-muted-foreground">{[u.phonenumber, u.email].filter(Boolean).join(" · ")}</p>

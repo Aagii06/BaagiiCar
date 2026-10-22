@@ -23,14 +23,14 @@ const {
   create,
   login,
   register,
-  otpSend,
-  otpLogin,
   emailOtpSend,
   emailOtpLogin,
   logout,
   getUserData,
   changePassword,
 } = require("./controller");
+// Утас + кодоор нэвтрэх логик вэбтэй нэг (web/auth)
+const { otpSend, otpLogin } = require("../../web/auth/controller");
 
 router
   .route("/save")
