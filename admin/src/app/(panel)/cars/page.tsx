@@ -75,15 +75,15 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
 
   return (
     <div className={cn("overflow-hidden rounded-2xl bg-card", busy && "pointer-events-none opacity-60")}>
-      {/* Dealer title bar across the card's top, like a status bar, with a soft shadow onto the card. */}
-      <div className="relative z-10 flex items-center gap-2 bg-dark px-3 py-2 text-white shadow-[0_3px_6px_-2px_rgb(0_0_0/0.25)]">
+      {/* Dealer title bar across the card's top, like a status bar, in a muted grey with a soft shadow onto the card. */}
+      <div className="relative z-10 flex items-center gap-2 bg-muted px-3 py-2 text-foreground/80 shadow-[0_3px_6px_-2px_rgb(0_0_0/0.1)]">
         {dealerLogo ? (
           // eslint-disable-next-line @next/next/no-img-element -- uploaded dealer logo
-          <img src={dealerLogo} alt="" className="size-5 shrink-0 rounded-md bg-white object-contain" />
+          <img src={dealerLogo} alt="" className="size-5 shrink-0 rounded-md border border-border bg-white object-contain" />
         ) : (
-          <Store className="size-4 shrink-0 text-white/60" />
+          <Store className="size-4 shrink-0 text-muted-foreground" />
         )}
-        <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-white/60")}>{car.dealer_name || "Дилергүй"}</span>
+        <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-muted-foreground")}>{car.dealer_name || "Дилергүй"}</span>
       </div>
       <div className="p-3">
         <Link href={`/cars/${car.id}`} className="flex gap-3">
