@@ -3,7 +3,10 @@ const { brands, carModels, op } = require("../models");
 
 // autobox.mn (ХУР / Xyp) - улсын дугаар эсвэл арлын дугаараар тээврийн хэрэгслийн мэдээлэл.
 // Нэвтрэлт шаардахгүй нийтийн API.
-const AUTOBOX_URL = "https://www.autobox.mn/api/services/app/Xyp/GetAutoboxInfo";
+// Хаяг солигдвол .env-ийн AUTOBOX_URL-ийг солиод restart хийхэд хангалттай
+const AUTOBOX_URL =
+  process.env.AUTOBOX_URL ||
+  "https://www.autobox.mn/api/services/app/Xyp/GetAutoboxInfo";
 const TIMEOUT_MS = 15000;
 
 // Нэг дугаарыг дахин дахин асуухгүйн тулд түр санах ой
