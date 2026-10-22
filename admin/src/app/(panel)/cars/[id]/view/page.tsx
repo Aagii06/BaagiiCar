@@ -2,18 +2,19 @@
 
 import CarImage from "@/components/car/CarImage";
 import { RejectNote, useRejectCar } from "@/components/car/useRejectCar";
+import { useConfirm } from "@/components/common/Confirm";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
-import { approveCar, getCar, getCarFiles } from "@/lib/api/admin";
+import { approveCar, getCar, getCarFiles, setHidden } from "@/lib/api/admin";
 import type { Car } from "@/lib/api/types";
 import { uploadUrl, WEB_URL } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { bodyTypeLabel, CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, timeAgo } from "@/lib/utils";
-import { Check, ExternalLink, Eye, Heart, Pencil, Phone, Undo2 } from "lucide-react";
+import { Check, ExternalLink, Eye, EyeOff, Heart, Pencil, Phone, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
 import { useState } from "react";
@@ -34,11 +35,11 @@ export default function CarViewPage() {
     return { car, photos: files.map((f) => f.generated_name).filter((n): n is string => Boolean(n)) };
   }, id);
 
-  const approve = async (car: Car) => {
+  const run = async (action: () => Promise<void>, done: string) => {
     setBusy(true);
     try {
-      await approveCar(car.id);
-      toast("Баталлаа, вэб дээр нийтлэгдлээ");
+      await action();
+      toast(done);
       data.reload();
     } catch (err) {
       toast(errorMessage(err), "error");
@@ -71,7 +72,12 @@ export default function CarViewPage() {
       ) : (
         // Full-width like the web detail page: photos + specs left, price / seller right on desktop.
         <div className={cn("mx-auto max-w-[1280px] md:px-6", busy && "pointer-events-none opacity-60")}>
-          <StatusBanner car={car} onApprove={() => approve(car)} onRejected={data.reload} />
+          <StatusBanner
+            car={car}
+            onApprove={() => run(() => approveCar(car.id), "Баталлаа, вэб дээр нийтлэгдлээ")}
+            onHidden={(hidden) => run(() => setHidden(car.id, hidden), hidden ? "Нууллаа, вэб дээр харагдахгүй" : "Ил гаргалаа, вэб дээр харагдана")}
+            onRejected={data.reload}
+          />
           <RejectNote car={car} className="mt-3" />
 
           <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px] lg:items-start lg:gap-6">
@@ -127,9 +133,10 @@ export default function CarViewPage() {
   );
 }
 
-function StatusBanner({ car, onApprove, onRejected }: { car: Car; onApprove: () => void; onRejected: () => void }) {
+function StatusBanner({ car, onApprove, onHidden, onRejected }: { car: Car; onApprove: () => void; onHidden: (hidden: boolean) => void; onRejected: () => void }) {
   const isAdmin = useAuth().user?.role === ROLES.admin;
   const reject = useRejectCar();
+  const confirm = useConfirm();
   const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
   const onWeb = car.status === "active" || car.status === "sold";
   return (
@@ -148,6 +155,27 @@ function StatusBanner({ car, onApprove, onRejected }: { car: Car; onApprove: () 
         <button onClick={onApprove} className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white">
           <Check className="size-4" strokeWidth={3} />
           Батлах
+        </button>
+      )}
+      {/* Dealers can hide / unhide their own ads too, not only admins. */}
+      {car.status === "active" && (
+        <button
+          onClick={async () =>
+            (await confirm({ title: "Зарыг түр нуух уу?", message: "Вэб дээр харагдахаа болино. Дараа нь «Ил гаргах»-аар буцааж нийтэлж болно.", confirmLabel: "Нуух", tone: "amber", icon: EyeOff })) && onHidden(true)
+          }
+          className="flex shrink-0 items-center gap-1 rounded-xl bg-muted px-3 py-2 text-sm font-bold"
+        >
+          <EyeOff className="size-4" />
+          Нуух
+        </button>
+      )}
+      {car.status === "hidden" && (
+        <button
+          onClick={async () => (await confirm({ title: "Зарыг ил гаргах уу?", message: "Вэб дээр дахин харагдана.", confirmLabel: "Ил гаргах", tone: "success", icon: Eye })) && onHidden(false)}
+          className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white"
+        >
+          <Eye className="size-4" />
+          Ил гаргах
         </button>
       )}
       {onWeb && WEB_URL && (

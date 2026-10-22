@@ -33,7 +33,7 @@ const TABS: { value: Tab; label: string }[] = [
   { value: "deleted", label: "Устгасан" },
 ];
 
-function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
+function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => void; showDealer: boolean }) {
   const toast = useToast();
   const confirm = useConfirm();
   const reject = useRejectCar();
@@ -73,16 +73,19 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
 
   return (
     <div className={cn("overflow-hidden rounded-2xl bg-card", busy && "pointer-events-none opacity-60")}>
-      {/* Dealer title bar across the card's top, like a status bar, in a muted slate with a soft shadow onto the card. */}
-      <div className="relative z-10 flex items-center gap-2 bg-slate-500 px-3 py-2 text-white shadow-[0_3px_6px_-2px_rgb(0_0_0/0.18)]">
-        {dealerLogo ? (
-          // eslint-disable-next-line @next/next/no-img-element -- uploaded dealer logo
-          <img src={dealerLogo} alt="" className="size-5 shrink-0 rounded-md bg-white object-contain" />
-        ) : (
-          <Store className="size-4 shrink-0 text-white/70" />
-        )}
-        <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-white/70")}>{car.dealer_name || "Дилергүй"}</span>
-      </div>
+      {/* Dealer title bar across the card's top, like a status bar, in a muted slate with a soft shadow onto the card.
+          Left out when the list is already one dealer's. */}
+      {showDealer && (
+        <div className="relative z-10 flex items-center gap-2 bg-slate-500 px-3 py-2 text-white shadow-[0_3px_6px_-2px_rgb(0_0_0/0.18)]">
+          {dealerLogo ? (
+            // eslint-disable-next-line @next/next/no-img-element -- uploaded dealer logo
+            <img src={dealerLogo} alt="" className="size-5 shrink-0 rounded-md bg-white object-contain" />
+          ) : (
+            <Store className="size-4 shrink-0 text-white/70" />
+          )}
+          <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-white/70")}>{car.dealer_name || "Дилергүй"}</span>
+        </div>
+      )}
       <div className="p-3">
         <Link href={`/cars/${car.id}`} className="flex gap-3">
           <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} size="thumb" className="h-16 w-20 shrink-0" artClassName="w-[80%]" />
@@ -269,7 +272,7 @@ function CarsInner() {
           <p className="mb-2 text-xs font-semibold text-muted-foreground">{cars.data.count} зар</p>
           <div className="space-y-3">
             {cars.data.rows.map((car) => (
-              <CarRow key={car.id} car={car} onChanged={cars.reload} />
+              <CarRow key={car.id} car={car} onChanged={cars.reload} showDealer={isAdmin && !dealerId} />
             ))}
           </div>
           {cars.data.rows.length < cars.data.count && (
