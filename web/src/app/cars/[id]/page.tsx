@@ -21,7 +21,7 @@ import { cn, formatEngine, formatNumber, formatPrice, initials, timeAgo, tintFor
 import { MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function Gallery({ car }: { car: Car }) {
   const { t } = useI18n();
@@ -165,6 +165,13 @@ export default function CarDetailPage() {
   const { t } = useI18n();
   const car = useApi(() => getCar(id), id);
 
+  // Every /cars/<id> is the same exported page ("_"), so the router sees
+  // /cars/1 -> /cars/2 (e.g. from "Төстэй машинууд") as no route change and
+  // keeps the scroll position. Jump to the top ourselves.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   if (car.loading && !car.data) return <LoadingState className="min-h-[60vh]" />;
   if (car.error) return <Container className="pt-10"><ErrorState message={car.error.message} onRetry={car.reload} /></Container>;
   if (!car.data || car.data.status === "deleted")
@@ -179,7 +186,8 @@ export default function CarDetailPage() {
   const sold = c.status === "sold";
 
   return (
-    <Container className="pt-6">
+    // key: reset gallery/leasing state when moving to another car.
+    <Container key={c.id} className="pt-6">
       <nav aria-label={t("Зам")} className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-foreground">{t("Нүүр")}</Link>/
         {c.body_type_id ? (

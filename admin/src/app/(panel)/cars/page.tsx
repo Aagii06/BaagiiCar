@@ -21,11 +21,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 const PAGE_SIZE = 20;
-type Tab = NonNullable<CarFilter["status"]> | "all" | "mine";
+type Tab = NonNullable<CarFilter["status"]> | "all";
 const TABS: { value: Tab; label: string }[] = [
   { value: "all", label: "Бүгд" },
-  // Ads the signed-in admin entered themselves, any status but deleted.
-  { value: "mine", label: "Миний" },
   { value: "pending", label: "Хүлээгдэж буй" },
   { value: "rejected", label: "Буцаасан" },
   { value: "active", label: "Идэвхтэй" },
@@ -197,11 +195,13 @@ function CarsInner() {
   const tab = (TABS.find((t) => t.value === sp.get("status"))?.value ?? "all") as Tab;
   const [search, setSearch] = useState(sp.get("q") ?? "");
   const q = sp.get("q") ?? "";
-  const dealerId = Number(sp.get("dealer")) || undefined;
   const { user } = useAuth();
   const isAdmin = user?.role === ROLES.admin;
   // Every non-deleted dealer, so ads of a since-deactivated one can still be filtered.
   const dealers = useApi(() => (isAdmin ? listDealers().then((r) => r.rows) : Promise.resolve([])), String(isAdmin));
+  // Admins always browse one dealer at a time: the one in the URL, else their own, else the first.
+  const fallbackDealer = dealers.data?.find((d) => d.id === user?.dealer_id) ?? dealers.data?.[0];
+  const dealerId = isAdmin ? Number(sp.get("dealer")) || fallbackDealer?.id : undefined;
   const [take, setTake] = useState(PAGE_SIZE);
 
   const setParam = (patch: Record<string, string>) => {
@@ -213,14 +213,15 @@ function CarsInner() {
 
   const cars = useApi(
     () =>
-      listCars({
-        status: tab === "all" || tab === "mine" ? undefined : tab,
-        createdBy: tab === "mine" ? user?.id : undefined,
-        dealerId,
-        search: q,
-        page: 1,
-        pageSize: take,
-      }),
+      isAdmin && !dealerId
+        ? Promise.resolve(null)
+        : listCars({
+            status: tab === "all" ? undefined : tab,
+            dealerId,
+            search: q,
+            page: 1,
+            pageSize: take,
+          }),
     `${tab}|${q}|${dealerId ?? ""}|${take}`
   );
 
@@ -243,7 +244,6 @@ function CarsInner() {
           {isAdmin && (
             <span className="w-36 shrink-0">
               <Select title="Дилер" value={dealerId ? String(dealerId) : ""} onChange={(e) => setParam({ dealer: e.target.value })} className={dealerId ? "font-semibold text-foreground" : undefined}>
-                <option value="">Бүх дилер</option>
                 {dealers.data?.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -256,7 +256,9 @@ function CarsInner() {
         <ChipTabs items={TABS} value={tab} onChange={(v) => setParam({ status: v === "all" ? "" : v })} />
       </PageHeader>
 
-      {cars.loading && !cars.data ? (
+      {isAdmin && !dealerId ? (
+        dealers.loading ? <LoadingState /> : dealers.error ? <ErrorState message={dealers.error.message} onRetry={dealers.reload} /> : <EmptyState title="Дилер алга" />
+      ) : cars.loading && !cars.data ? (
         <LoadingState />
       ) : cars.error ? (
         <ErrorState message={cars.error.message} onRetry={cars.reload} />
