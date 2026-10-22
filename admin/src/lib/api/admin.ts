@@ -1,6 +1,5 @@
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
-import { ROLES } from "@/lib/constants";
-import type { BodyType, Brand, Car, CarFile, CarModel, Location, Message, User } from "./types";
+import type { BodyType, Brand, Car, CarFile, CarModel, Dealer, Location, Message, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
 const NEWEST = [{ selector: "created_at", desc: true }];
@@ -54,8 +53,10 @@ export async function deleteRows(target: string, ids: number[]) {
 
 // --- catalog ---------------------------------------------------------------
 
-/** `POST /api/upload/image` (admin): saves into `uploads/<folder>`, returns the file name for the image/logo column. */
-export async function uploadCatalogImage(folder: "bodyTypes" | "brands" | "users", file: File) {
+export type UploadFolder = "bodyTypes" | "brands" | "users" | "dealers";
+
+/** `POST /api/upload/image` (admin): saves into `uploads/<folder>`, returns the file name for the image/logo/profile column. */
+export async function uploadCatalogImage(folder: UploadFolder, file: File) {
   const form = new FormData();
   form.append("folder", folder);
   form.append("image", file);
@@ -79,13 +80,16 @@ export const getLocations = () => listAll<Location>("locations").then(bySort);
 
 export interface CarFilter {
   status?: "pending" | "rejected" | "active" | "hidden" | "sold" | "deleted" | "featured";
+  /** Only ads this user entered (`created_by`). */
+  createdBy?: number;
   search?: string;
   page: number;
   pageSize: number;
 }
 
-export async function listCars({ status, search, page, pageSize }: CarFilter) {
+export async function listCars({ status, createdBy, search, page, pageSize }: CarFilter) {
   const filter: Condition[] = [];
+  if (createdBy) filter.push(["created_by", "=", createdBy]);
   if (status === "featured") filter.push(["status", "=", "active"], ["is_featured", "=", 1]);
   else if (status) filter.push(["status", "=", status]);
   else filter.push(NOT_DELETED);
@@ -149,8 +153,8 @@ export type CarInput = Partial<
   >
 > & {
   id?: number;
-  /** Admin only: an active dealer's id, or the admin's own id / null for the admin's own ad. Omit to keep the owner. */
-  user_id?: number | null;
+  /** Admin only: an active dealer's id, or null for an ad without a dealer. Omit to keep it. */
+  dealer_id?: number | null;
 };
 
 /** Car registry data (autobox.mn) mapped to our ad fields; any field can be null. */
@@ -243,13 +247,6 @@ export async function listUsers(search?: string, excludeId?: number, role?: stri
   return res.data;
 }
 
-/** Active dealers, for assigning an ad to one. */
-export async function getDealers() {
-  const res = await apiFetch<ApiListResponse<User>>(
-    `/api/base/users${listQuery({ filter: [["role", "=", ROLES.dealer], ["status", "=", "active"]], sort: [{ selector: "firstname", desc: false }], take: 500 })}`
-  );
-  return res.data.rows;
-}
 
 export interface CreateUserInput {
   phonenumber: string;
@@ -257,8 +254,10 @@ export interface CreateUserInput {
   lastname?: string | null;
   email?: string | null;
   role: string;
-  /** Dealer logo file name (uploads/users). */
-  logo?: string | null;
+  /** Profile photo file name (uploads/users). */
+  profile?: string | null;
+  /** ADMIN / DEALER only. */
+  dealer_id?: number | null;
   password: string;
   password_confirm: string;
 }
@@ -273,6 +272,36 @@ export async function getUser(id: number | string) {
   const res = await apiFetch<ApiItemResponse<User | null>>(`/api/base/users/${id}`);
   return res.data;
 }
+
+// --- dealers ---------------------------------------------------------------
+
+const BY_NAME = [{ selector: "name", desc: false }];
+
+/** Every dealer that isn't deleted (the Дилерүүд registry). */
+export async function listDealers(search?: string) {
+  const filter: Condition[] = [NOT_DELETED];
+  const q = search?.trim();
+  if (q) filter.push(/^\d+$/.test(q) ? ["phonenumber", "contains", q] : ["name", "contains", q]);
+  const res = await apiFetch<ApiListResponse<Dealer>>(`/api/base/dealers${listQuery({ filter, sort: BY_NAME, take: 500 })}`);
+  return res.data;
+}
+
+/** Active dealers, for assigning an ad or a user to one. */
+export async function getDealers() {
+  const res = await apiFetch<ApiListResponse<Dealer>>(`/api/base/dealers${listQuery({ filter: [["status", "=", "active"]], sort: BY_NAME, take: 500 })}`);
+  return res.data.rows;
+}
+
+export async function getDealer(id: number | string) {
+  const res = await apiFetch<ApiItemResponse<Dealer | null>>(`/api/base/dealers/${id}`);
+  return res.data;
+}
+
+export type DealerInput = Pick<Dealer, "name" | "logo" | "phonenumber" | "email" | "address" | "description"> & { status: "active" | "inactive" };
+
+export const createDealer = (body: DealerInput) => createRow("dealers", body);
+export const updateDealer = (id: number, body: DealerInput) => updateRow("dealers", id, body);
+export const deleteDealer = (id: number) => deleteRows("dealers", [id]);
 
 // --- web chat messages -----------------------------------------------------
 

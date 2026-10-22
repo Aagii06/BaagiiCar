@@ -4,6 +4,8 @@ export interface Car {
   /** Ad number: YYYYMMDD + 4 random digits. */
   code: string | null;
   user_id: number;
+  /** Dealer the ad belongs to; null = a person's / the admin's own ad. */
+  dealer_id: number | null;
   brand_id: number;
   car_model_id: number | null;
   body_type_id: number | null;
@@ -39,6 +41,8 @@ export interface Car {
   location_name: string | null;
   seller_name: string | null;
   seller_phone: string | null;
+  dealer_name: string | null;
+  dealer_logo: string | null;
   image: string | null;
   image_count: number | null;
   favorite_count: number | null;
@@ -90,10 +94,25 @@ export interface User {
   lastname: string | null;
   email: string | null;
   role: string | null;
+  /** Profile photo file name (uploads/users). */
   profile: string | null;
-  /** Dealer logo file name (uploads/users); only DEALER users have one. */
-  logo: string | null;
+  /** Dealer the user works for; only ADMIN / DEALER users have one. */
+  dealer_id: number | null;
   status?: string | null;
+  created_at?: string | null;
+}
+
+/** Dealer (car showroom) registry row; users and ads point at it by `dealer_id`. */
+export interface Dealer {
+  id: number;
+  name: string;
+  /** File name in uploads/dealers. */
+  logo: string | null;
+  phonenumber: string | null;
+  email: string | null;
+  address: string | null;
+  description: string | null;
+  status: "active" | "inactive" | "deleted";
   created_at?: string | null;
 }
 

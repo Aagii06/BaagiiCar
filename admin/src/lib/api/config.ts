@@ -11,7 +11,7 @@ export function uploadUrl(fileName: string | null | undefined, size: ImageSize =
 }
 
 /** Brand logos / body-type icons: the DB keeps only the file name, stored in `<backend>/uploads/<folder>`; absolute URLs pass through. */
-export function catalogImage(fileName: string | null | undefined, folder: "brands" | "bodyTypes" | "users") {
+export function catalogImage(fileName: string | null | undefined, folder: "brands" | "bodyTypes" | "users" | "dealers") {
   return uploadUrl(fileName?.trim(), "full", folder);
 }
 
