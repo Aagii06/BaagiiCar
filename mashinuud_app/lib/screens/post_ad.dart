@@ -223,10 +223,15 @@ class _PostAdScreenState extends State<PostAdScreen> {
     return null;
   }
 
+  String? _missingTech() {
+    if (_transmission == null) return 'Хурдны хайрцаг сонгоно уу';
+    return null;
+  }
+
   void _next() {
     FocusScope.of(context).unfocus();
-    if (_step == 1) {
-      final missing = _missingGeneral();
+    if (_step == 1 || _step == 2) {
+      final missing = _step == 1 ? _missingGeneral() : _missingTech();
       if (missing != null) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()

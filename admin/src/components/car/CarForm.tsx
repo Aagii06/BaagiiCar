@@ -362,6 +362,7 @@ export default function CarForm({
     if (!f.imported_year) return "Орж ирсэн он оруулна уу";
     if (Number(f.imported_year) < Number(f.manufactured_year)) return "Орж ирсэн он үйлдвэрлэсэн оноос өмнө байж болохгүй";
     if (!f.price) return "Үнэ оруулна уу";
+    if (!f.transmission) return "Хурдны хайрцаг сонгоно уу";
     return null;
   };
 
@@ -535,7 +536,7 @@ export default function CarForm({
             <Field label="Түлш">
               <Chips options={FUEL_TYPES} value={f.fuel_type} onChange={(v) => set("fuel_type", v)} />
             </Field>
-            <Field label="Хурдны хайрцаг">
+            <Field label="Хурдны хайрцаг *">
               <Chips options={TRANSMISSIONS} value={f.transmission} onChange={(v) => set("transmission", v)} />
             </Field>
             <Field label="Хөтлөгч">

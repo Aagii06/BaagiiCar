@@ -47,7 +47,8 @@ module.exports.saveValidation = [
     .isIn(fuelTypes)
     .withMessage("Шатахууны төрөл буруу байна"),
   body("transmission")
-    .optional(optional)
+    .notEmpty()
+    .withMessage("Хурдны хайрцаг сонгоно уу")
     .isIn(transmissions)
     .withMessage("Хурдны хайрцаг буруу байна"),
   body("drive_type")
