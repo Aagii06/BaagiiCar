@@ -5,14 +5,14 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/common/States
 import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
-import { changePassword, createUser, deleteRows, getUser, updateRow, uploadCatalogImage } from "@/lib/api/admin";
-import { catalogImage } from "@/lib/api/config";
+import ImageInput from "@/components/common/ImageInput";
+import { changePassword, createUser, deleteRows, getDealers, getUser, updateRow } from "@/lib/api/admin";
 import type { User } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLE_LIST, roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { cn, userName } from "@/lib/utils";
-import { ImageUp, Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { userName } from "@/lib/utils";
+import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
@@ -30,7 +30,8 @@ function UserForm({ user }: { user: User | null }) {
     email: user?.email ?? "",
     role: user?.role ?? ROLES.customer,
     status: user?.status ?? "active",
-    logo: user?.logo ?? "",
+    profile: user?.profile ?? "",
+    dealer_id: user?.dealer_id ? String(user.dealer_id) : "",
     password: "",
     password_confirm: "",
   });
@@ -39,6 +40,9 @@ function UserForm({ user }: { user: User | null }) {
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setF({ ...f, [k]: k === "phonenumber" ? e.target.value.replace(/\D/g, "") : e.target.value });
   const isMe = user?.id === me?.id;
+  // Дилерт зөвхөн админ, дилер эрхтэй хэрэглэгч харьяалагдана
+  const canHaveDealer = f.role === ROLES.admin || f.role === ROLES.dealer;
+  const dealers = useApi(getDealers);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,8 +57,8 @@ function UserForm({ user }: { user: User | null }) {
       email: f.email || null,
       role: f.role,
       status: f.status,
-      // Logo is a dealer thing; other roles keep whatever logo they had.
-      ...(f.role === ROLES.dealer && { logo: f.logo || null }),
+      profile: f.profile || null,
+      dealer_id: canHaveDealer && f.dealer_id ? Number(f.dealer_id) : null,
     };
     try {
       if (user) {
@@ -93,6 +97,10 @@ function UserForm({ user }: { user: User | null }) {
   return (
     <form onSubmit={submit} className="space-y-4">
       <section className="space-y-4 rounded-2xl bg-card p-4">
+        <div>
+          <span className="mb-1.5 block text-[13px] font-semibold">Профайл зураг</span>
+          <ImageInput value={f.profile} onChange={(profile) => setF({ ...f, profile })} folder="users" label="Зураг оруулах" hint="Дөрвөлжин зураг хамгийн сайн харагдана" round />
+        </div>
         {/* Овог түр ашиглахгүй (дилерт овог байдаггүй), зөвхөн нэр.
         <Field label="Овог">
           <input className={inputClass} value={f.lastname} onChange={set("lastname")} />
@@ -124,11 +132,19 @@ function UserForm({ user }: { user: User | null }) {
             </Select>
           </Field>
         </div>
-        {f.role === ROLES.dealer && (
-          <div>
-            <span className="mb-1.5 block text-[13px] font-semibold">Дилерийн лого</span>
-            <LogoInput value={f.logo} onChange={(logo) => setF({ ...f, logo })} />
-          </div>
+        {canHaveDealer && (
+          <Field label="Дилер" hint={f.role === ROLES.dealer ? "Энэ хэрэглэгчийн оруулсан зар уг дилерт харьяалагдана" : "Админ аль дилерийнх болох"}>
+            <Select value={f.dealer_id} onChange={set("dealer_id")}>
+              <option value="">Дилергүй</option>
+              {/* A dealer that's since been deactivated stays selectable for users already in it. */}
+              {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}
+              {dealers.data?.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
         )}
       </section>
 

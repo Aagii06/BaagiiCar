@@ -4,12 +4,12 @@ import ChipTabs from "@/components/common/ChipTabs";
 import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
-import { listUsers } from "@/lib/api/admin";
-import { catalogImage } from "@/lib/api/config";
+import UserAvatar from "@/components/common/UserAvatar";
+import { listDealers, listUsers } from "@/lib/api/admin";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLE_LIST, roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { cn, initials, userName } from "@/lib/utils";
+import { cn, userName } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -28,6 +28,8 @@ export default function UsersPage() {
   const [role, setRole] = useState("");
   const { user } = useAuth();
   const users = useApi(() => listUsers(q, user?.id, role || undefined), `${q}|${role}|${user?.id ?? ""}`);
+  const dealers = useApi(() => listDealers());
+  const dealerNames = new Map(dealers.data?.rows.map((d) => [d.id, d.name]));
 
   return (
     <>
@@ -63,15 +65,10 @@ export default function UsersPage() {
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
           {users.data.rows.map((u) => (
             <Link key={u.id} href={`/users/${u.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/60">
-              {u.role === ROLES.dealer && u.logo ? (
-                // eslint-disable-next-line @next/next/no-img-element -- uploaded dealer logo
-                <img src={catalogImage(u.logo, "users") ?? ""} alt="" className="size-10 shrink-0 rounded-full bg-muted object-contain" />
-              ) : (
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{initials(userName(u))}</span>
-              )}
+              <UserAvatar user={u} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{userName(u)}</p>
-                <p className="truncate text-xs text-muted-foreground">{[u.phonenumber, u.email].filter(Boolean).join(" · ")}</p>
+                <p className="truncate text-xs text-muted-foreground">{[u.phonenumber, u.email, dealerNames.get(u.dealer_id ?? 0)].filter(Boolean).join(" · ")}</p>
               </div>
               <div className="flex flex-col items-end gap-1">
                 <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", ROLE_TONE[u.role ?? ""] ?? "bg-muted")}>{roleLabel(u.role)}</span>
