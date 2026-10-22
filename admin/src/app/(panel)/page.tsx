@@ -12,17 +12,17 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 
 async function loadStats(isAdmin: boolean) {
-  const [pending, active, sold, featured, users, brands, models] = await Promise.all([
+  const [pending, active, sold, featured, total, dealers, users] = await Promise.all([
     countOf("cars", [["status", "=", "pending"]]),
     countOf("cars", [["status", "=", "active"]]),
     countOf("cars", [["status", "=", "sold"]]),
     countOf("cars", [["status", "=", "active"], ["is_featured", "=", 1]]),
-    // Customers are admin-only data; car counts are scoped to the dealer by the backend.
-    isAdmin ? countOf("customers", [["status", "<>", "deleted"]]) : Promise.resolve(0),
-    countOf("brands", [["status", "=", "active"]]),
-    countOf("carModels", [["status", "=", "active"]]),
+    countOf("cars", [["status", "<>", "deleted"]]),
+    // Dealers and customers are admin-only data; car counts are scoped to the dealer by the backend.
+    isAdmin ? countOf("dealers", [["status", "<>", "deleted"]]) : Promise.resolve(0),
+    isAdmin ? countOf("customers", [["status", "=", "active"]]) : Promise.resolve(0),
   ]);
-  return { pending, active, sold, featured, users, brands, models };
+  return { pending, active, sold, featured, total, dealers, users };
 }
 
 export default function DashboardPage() {
@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const recent = useApi(() => recentCars(6));
   const s = stats.data;
 
-  // Ads by status (pending first: it's the one that needs action), then the catalog.
+  // Totals (dealers, active customers, all ads) first, then ads by status (pending first: it needs action).
   const carTiles = s && [
     {
       label: "Хүлээгдэж буй",
@@ -44,9 +44,13 @@ export default function DashboardPage() {
     { label: "Зарагдсан", value: s.sold, href: "/cars?status=sold", className: "bg-dark text-white" },
   ];
   const tiles = s && [
-    ...(isAdmin ? [{ label: "Хэрэглэгч", value: s.users, href: "/customers", className: "bg-white" }] : []),
-    { label: "Үйлдвэр", value: s.brands, href: "/catalog", className: "bg-white" },
-    { label: "Загвар", value: s.models, href: "/catalog?tab=models", className: "bg-white" },
+    ...(isAdmin
+      ? [
+          { label: "Нийт дилер", value: s.dealers, href: "/dealers", className: "bg-white" },
+          { label: "Идэвхтэй хэрэглэгч", value: s.users, href: "/customers", className: "bg-white" },
+        ]
+      : []),
+    { label: "Нийт зар", value: s.total, href: "/cars", className: "bg-white" },
   ];
 
   return (
@@ -66,19 +70,19 @@ export default function DashboardPage() {
         <ErrorState message={stats.error.message} onRetry={stats.reload} />
       ) : (
         <div className="space-y-2">
+          <div className={cn("grid gap-2", isAdmin ? "grid-cols-3" : "grid-cols-1")}>
+            {tiles!.map((t) => (
+              <Link key={t.label} href={t.href} className={cn("rounded-2xl p-3.5", t.className)}>
+                <p className="font-display text-2xl font-bold">{t.value}</p>
+                <p className="mt-1 text-xs font-semibold opacity-80">{t.label}</p>
+              </Link>
+            ))}
+          </div>
           <div className="grid grid-cols-4 gap-2">
             {carTiles!.map((t) => (
               <Link key={t.label} href={t.href} className={cn("rounded-2xl px-2.5 py-3", t.className)}>
                 <p className="font-display text-2xl font-bold">{t.value}</p>
                 <p className="mt-1 text-[11px] font-semibold leading-tight opacity-80">{t.label}</p>
-              </Link>
-            ))}
-          </div>
-          <div className={cn("grid gap-2", isAdmin ? "grid-cols-3" : "grid-cols-2")}>
-            {tiles!.map((t) => (
-              <Link key={t.label} href={t.href} className={cn("rounded-2xl p-3.5", t.className)}>
-                <p className="font-display text-2xl font-bold">{t.value}</p>
-                <p className="mt-1 text-xs font-semibold opacity-80">{t.label}</p>
               </Link>
             ))}
           </div>
