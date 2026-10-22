@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
   vwCars.init(
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+      code: { type: DataTypes.STRING },
 
       user_id: { type: DataTypes.INTEGER },
       brand_id: { type: DataTypes.INTEGER },

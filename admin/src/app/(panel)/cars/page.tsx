@@ -48,7 +48,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
       <div className="min-w-0">
         <p className="truncate text-sm font-bold">{car.name}</p>
         <p className="text-xs font-semibold text-primary">
-          {formatPrice(car.price)} <span className="font-medium text-muted-foreground">· #{car.id}</span>
+          {formatPrice(car.price)} <span className="font-medium text-muted-foreground">· #{car.code ?? car.id}</span>
         </p>
       </div>
     </div>
@@ -79,7 +79,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
           </div>
           <p className="text-sm font-semibold text-primary">{formatPrice(car.price)}</p>
           <p className="truncate text-xs text-muted-foreground">
-            #{car.id} · {car.seller_name || "—"} · {car.phonenumber || car.seller_phone}
+            #{car.code ?? car.id} · {car.seller_name || "—"} · {car.phonenumber || car.seller_phone}
           </p>
           {car.status === "rejected" && car.reject_reason && <p className="mt-1 line-clamp-2 text-xs text-destructive">↩ {car.reject_reason}</p>}
         </div>

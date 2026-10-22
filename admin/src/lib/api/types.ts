@@ -1,6 +1,8 @@
 /** Row of the `vwCars` view. */
 export interface Car {
   id: number;
+  /** Ad number: YYYYMMDDHHmmss + 8 random digits. */
+  code: string | null;
   user_id: number;
   brand_id: number;
   car_model_id: number | null;

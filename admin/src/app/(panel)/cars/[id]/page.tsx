@@ -40,7 +40,7 @@ export default function CarEditPage() {
     return { car, photos };
   }, id);
 
-  const title = picking ? "Шинэ зар · эзэн сонгох" : isNew ? (owner ? `Шинэ зар · ${userName(owner)}` : "Шинэ зар") : data.data?.car ? `#${data.data.car.id} ${data.data.car.name ?? ""}` : "Зар";
+  const title = picking ? "Шинэ зар · эзэн сонгох" : isNew ? (owner ? `Шинэ зар · ${userName(owner)}` : "Шинэ зар") : data.data?.car ? `#${data.data.car.code ?? data.data.car.id} ${data.data.car.name ?? ""}` : "Зар";
 
   return (
     <>

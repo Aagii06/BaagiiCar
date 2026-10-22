@@ -1,4 +1,6 @@
 const Sequelize = require("sequelize");
+const crypto = require("crypto");
+const moment = require("moment");
 
 module.exports = (sequelize, DataTypes) => {
   class cars extends Sequelize.Model {
@@ -18,6 +20,8 @@ module.exports = (sequelize, DataTypes) => {
   cars.init(
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+      // Зарын дугаар: YYYYMMDDHHmmss + 8 оронтой санамсаргүй тоо (beforeCreate)
+      code: { type: DataTypes.STRING(22) },
 
       user_id: { type: DataTypes.INTEGER },
       brand_id: { type: DataTypes.INTEGER },
@@ -62,6 +66,13 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   cars.softDelete = true;
+
+  cars.beforeCreate((data) => {
+    if (!data.code)
+      data.code =
+        moment().utcOffset("+0800").format("YYYYMMDDHHmmss") +
+        String(crypto.randomInt(100000000)).padStart(8, "0");
+  });
 
   cars.beforeSave(async (data, options) => {
     let errorMessage = "";

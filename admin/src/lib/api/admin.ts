@@ -91,7 +91,8 @@ export async function listCars({ status, search, page, pageSize }: CarFilter) {
   else filter.push(NOT_DELETED);
   if (search?.trim()) {
     const q = search.trim();
-    if (/^\d+$/.test(q) && q.length <= 7) filter.push(["id", "=", Number(q)]);
+    if (/^\d{9,}$/.test(q)) filter.push(["code", "contains", q]);
+    else if (/^\d+$/.test(q) && q.length <= 7) filter.push(["id", "=", Number(q)]);
     else if (/^\d{8}$/.test(q)) filter.push(["phonenumber", "=", q]);
     else filter.push(["name", "contains", q]);
   }

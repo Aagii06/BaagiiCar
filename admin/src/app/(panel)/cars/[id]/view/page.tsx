@@ -52,7 +52,7 @@ export default function CarViewPage() {
   return (
     <>
       <DetailHeader
-        title={car ? `#${car.id} ${car.name ?? ""}` : "Зар"}
+        title={car ? `#${car.code ?? car.id} ${car.name ?? ""}` : "Зар"}
         back={`/cars/${id}`}
         aside={
           car && car.status !== "deleted" ? (
