@@ -4,12 +4,14 @@ export interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  /** Hidden from dealers. */
+  adminOnly?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Самбар", icon: ChartNoAxesColumn },
   { href: "/cars", label: "Зарууд", icon: CarFront },
-  { href: "/messages", label: "Мессеж", icon: MessageCircle },
+  { href: "/messages", label: "Мессеж", icon: MessageCircle, adminOnly: true },
   { href: "/profile", label: "Профайл", icon: UserRound },
 ];
 

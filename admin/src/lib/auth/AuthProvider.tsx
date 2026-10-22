@@ -20,7 +20,8 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const isAdmin = (u: User | null) => u?.role === ROLES.admin;
+/** Admins manage everything; dealers sign in to post and manage their own dealer's ads. */
+const canUsePanel = (u: User | null) => u?.role === ROLES.admin || u?.role === ROLES.dealer;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("loading");
@@ -38,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       getUserData().then(
         (u) => {
-          if (!isAdmin(u)) {
+          if (!canUsePanel(u)) {
             clearSession();
             finish("anonymous", null);
           } else finish("authenticated", u);
@@ -60,10 +61,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
   }, []);
 
-  // Only admins get a session here; the backend enforces it on every write too.
+  // Only admins and dealers get a session here; the backend enforces it on every write too.
   const login = useCallback(async (phonenumber: string, password: string) => {
     const { token, loggedUser } = await loginRequest(phonenumber, password);
-    if (!isAdmin(loggedUser)) throw new Error("Зөвхөн админ эрхтэй хэрэглэгч нэвтэрнэ");
+    if (!canUsePanel(loggedUser)) throw new Error("Зөвхөн админ, дилер эрхтэй хэрэглэгч нэвтэрнэ");
     setSession(token, loggedUser);
     setUser(loggedUser);
     setStatus("authenticated");

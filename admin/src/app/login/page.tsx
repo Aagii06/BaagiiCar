@@ -48,7 +48,7 @@ function LoginForm() {
         <h1 className="mt-8 font-display text-[28px] font-bold leading-tight tracking-tight">
           Удирдлагын <span className="text-primary">самбар</span>
         </h1>
-        <p className="mt-2 text-sm text-white/70">Админ эрхтэй утасны дугаараараа нэвтэрнэ үү.</p>
+        <p className="mt-2 text-sm text-white/70">Админ эсвэл дилер эрхтэй утасны дугаараараа нэвтэрнэ үү.</p>
       </div>
       <form onSubmit={submit} className="-mt-4 space-y-4 rounded-3xl bg-white p-5 shadow-xl shadow-black/5">
         <Field label="Утасны дугаар">

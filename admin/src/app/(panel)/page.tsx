@@ -4,19 +4,21 @@ import CarImage from "@/components/car/CarImage";
 import { ErrorState, LoadingState } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { countOf, recentCars } from "@/lib/api/admin";
-import { CAR_STATUS } from "@/lib/constants";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPriceShort } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
-async function loadStats() {
+async function loadStats(isAdmin: boolean) {
   const [pending, active, sold, featured, users, brands, models] = await Promise.all([
     countOf("cars", [["status", "=", "pending"]]),
     countOf("cars", [["status", "=", "active"]]),
     countOf("cars", [["status", "=", "sold"]]),
     countOf("cars", [["status", "=", "active"], ["is_featured", "=", 1]]),
-    countOf("customers", [["status", "<>", "deleted"]]),
+    // Customers are admin-only data; car counts are scoped to the dealer by the backend.
+    isAdmin ? countOf("customers", [["status", "<>", "deleted"]]) : Promise.resolve(0),
     countOf("brands", [["status", "=", "active"]]),
     countOf("carModels", [["status", "=", "active"]]),
   ]);
@@ -24,7 +26,8 @@ async function loadStats() {
 }
 
 export default function DashboardPage() {
-  const stats = useApi(loadStats);
+  const isAdmin = useAuth().user?.role === ROLES.admin;
+  const stats = useApi(() => loadStats(isAdmin), String(isAdmin));
   const recent = useApi(() => recentCars(6));
   const s = stats.data;
 
@@ -41,7 +44,7 @@ export default function DashboardPage() {
     { label: "Зарагдсан", value: s.sold, href: "/cars?status=sold", className: "bg-dark text-white" },
   ];
   const tiles = s && [
-    { label: "Хэрэглэгч", value: s.users, href: "/customers", className: "bg-white" },
+    ...(isAdmin ? [{ label: "Хэрэглэгч", value: s.users, href: "/customers", className: "bg-white" }] : []),
     { label: "Үйлдвэр", value: s.brands, href: "/catalog", className: "bg-white" },
     { label: "Загвар", value: s.models, href: "/catalog?tab=models", className: "bg-white" },
   ];
@@ -71,7 +74,7 @@ export default function DashboardPage() {
               </Link>
             ))}
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className={cn("grid gap-2", isAdmin ? "grid-cols-3" : "grid-cols-2")}>
             {tiles!.map((t) => (
               <Link key={t.label} href={t.href} className={cn("rounded-2xl p-3.5", t.className)}>
                 <p className="font-display text-2xl font-bold">{t.value}</p>

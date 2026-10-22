@@ -7,6 +7,8 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import BrandMark from "./BrandMark";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { ROLES } from "@/lib/constants";
 import { isActivePath, NAV_ITEMS } from "./nav";
 
 // Tab pages get the brand header and bottom nav; detail pages bring their
@@ -16,6 +18,8 @@ const TAB_PATHS = new Set(NAV_ITEMS.map((item) => item.href));
 export default function PanelShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "/";
   const isTabPage = TAB_PATHS.has(pathname);
+  const isAdmin = useAuth().user?.role === ROLES.admin;
+  const navItems = NAV_ITEMS.filter((item) => isAdmin || !item.adminOnly);
 
   return (
     <ToastProvider>
@@ -46,7 +50,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
             </div>
 
             <div className="relative flex pb-[env(safe-area-inset-bottom)]">
-              {NAV_ITEMS.flatMap(({ href, label, icon: Icon }, i) => {
+              {navItems.flatMap(({ href, label, icon: Icon }, i) => {
                 const active = isActivePath(pathname, href);
                 const tab = (
                   <Link
@@ -60,7 +64,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
                   </Link>
                 );
                 // Three tabs either side; the middle slot sits under the notch.
-                return i === Math.floor(NAV_ITEMS.length / 2) ? [<div key="notch" className="w-24 shrink-0" />, tab] : [tab];
+                return i === Math.floor(navItems.length / 2) ? [<div key="notch" className="w-24 shrink-0" />, tab] : [tab];
               })}
             </div>
 
