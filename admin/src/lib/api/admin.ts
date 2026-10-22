@@ -145,7 +145,11 @@ export type CarInput = Partial<
     | "price" | "mileage" | "fuel_type" | "transmission" | "drive_type" | "steering" | "engine_capacity"
     | "color" | "vin" | "phonenumber" | "description" | "is_featured" | "status"
   >
-> & { id?: number };
+> & {
+  id?: number;
+  /** Admin only: an active dealer's id, or the admin's own id / null for the admin's own ad. Omit to keep the owner. */
+  user_id?: number | null;
+};
 
 /**
  * `POST /api/cars/save` (multipart). The server deletes every photo it
@@ -211,6 +215,14 @@ export async function listUsers(search?: string, excludeId?: number, role?: stri
   if (q) filter.push(/^\d+$/.test(q) ? ["phonenumber", "contains", q] : ["firstname", "contains", q]);
   const res = await apiFetch<ApiListResponse<User>>(`/api/base/users${listQuery({ filter, sort: NEWEST, take: 200 })}`);
   return res.data;
+}
+
+/** Active dealers, for assigning an ad to one. */
+export async function getDealers() {
+  const res = await apiFetch<ApiListResponse<User>>(
+    `/api/base/users${listQuery({ filter: [["role", "=", ROLES.dealer], ["status", "=", "active"]], sort: [["firstname", "ASC"]], take: 500 })}`
+  );
+  return res.data.rows;
 }
 
 export interface CreateUserInput {

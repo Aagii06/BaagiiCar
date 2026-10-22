@@ -390,6 +390,8 @@ export const MESSAGES = {
   "Дилер": { ru: "Дилер", en: "Dealer" },
   "{n} зар": { ru: "Объявлений: {n}", en: "{n} listings" },
   "Бүртгэлтэй дилер алга": { ru: "Дилеров пока нет", en: "No dealers yet" },
+  "Бүх дилер": { ru: "Все дилеры", en: "All dealers" },
+  "Энэ дилерт одоогоор зар алга": { ru: "У этого дилера пока нет объявлений", en: "This dealer has no listings yet" },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;

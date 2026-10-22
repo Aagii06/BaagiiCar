@@ -1,5 +1,6 @@
 const {
   cars,
+  users,
   vwCars,
   favorites,
   allFiles,
@@ -27,7 +28,22 @@ const findOwnCar = async (id, loggedUser) => {
   return { car };
 };
 
+// Админ зарыг дилерт харьяалуулах үед: user_id нь идэвхтэй DEALER байх ёстой.
+// Хоосон эсвэл админы өөрийн id бол админы өөрийн зар болно.
+const resolveOwner = async (userId, loggedUser) => {
+  if (!userId || userId + "" === loggedUser.id + "") return { owner: loggedUser };
+  const dealer = await users.findOne({
+    where: { id: userId, role: roles.dealer, status: "active" },
+    attributes: ["id", "phonenumber"],
+    raw: true,
+  });
+  if (!dealer) return { error: "Сонгосон дилер олдсонгүй эсвэл идэвхгүй байна" };
+  return { owner: dealer };
+};
+
 // Шинэ зар нэмэх / засах (зурагтай хамт multipart-аар)
+// Админ: user_id-аар дилер сонгоно (сонгохгүй бол өөрийн зар), шууд нийтлэгдэнэ.
+// Дилер / бусад: зар автоматаар өөрт нь харьяалагдана, админ батлахыг хүлээнэ.
 // fields: data = JSON, file0..N = зураг, file0Info..N = { id } (хуучин) эсвэл { original_name } (шинэ)
 module.exports.save = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
@@ -44,6 +60,15 @@ module.exports.save = async (req, res) => {
     const { car, error } = await findOwnCar(id, loggedUser);
     if (error) return res.status(200).json({ ...result, message: error });
     prevStatus = car.status;
+  }
+
+  // Зарын эзэн. Засахдаа user_id ирээгүй бол эзэн өөрчлөгдөхгүй.
+  let owner = loggedUser;
+  if (isAdmin && (!id || body.user_id !== undefined)) {
+    const resolved = await resolveOwner(body.user_id, loggedUser);
+    if (resolved.error) return res.status(200).json({ ...result, message: resolved.error });
+    owner = resolved.owner;
+    body.user_id = owner.id;
   }
 
   const t = await sequelize.transaction();
@@ -65,9 +90,10 @@ module.exports.save = async (req, res) => {
       // create
       item = await cars.create(
         {
-          user_id: loggedUser.id,
-          phonenumber: loggedUser.phonenumber,
           ...body,
+          user_id: owner.id,
+          // Утас оруулаагүй бол зарын эзний (дилерийн) дугаар
+          phonenumber: body.phonenumber || owner.phonenumber,
           // Админ шууд нийтэлнэ, бусдынх админ батлахыг хүлээнэ
           status: isAdmin ? carStatuses.active : carStatuses.pending,
           created_by: by,

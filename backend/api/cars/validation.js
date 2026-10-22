@@ -50,6 +50,10 @@ module.exports.saveValidation = [
     .optional(optional)
     .isIn(steerings)
     .withMessage("Жолооны хүрд буруу байна"),
+  body("user_id")
+    .optional(optional)
+    .isInt({ min: 1 })
+    .withMessage("Дилерийн дугаар буруу байна"),
   body("phonenumber")
     .optional(optional)
     .matches(/^\d{8}$/)

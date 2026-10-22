@@ -9,6 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import AccountMenu from "./AccountMenu";
+import DealersMenu from "./DealersMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
 import LocationPicker from "./LocationPicker";
 import Logo from "./Logo";
@@ -43,16 +44,13 @@ export default function Header() {
         <nav className="hidden h-full items-stretch gap-5 whitespace-nowrap md:flex lg:gap-7">
           {NAV.map((item) => {
             const active = isActive(pathname, item.href);
+            const className = cn(
+              "flex items-center border-b-2 pt-0.5 text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors",
+              active ? "border-primary text-primary" : "border-transparent text-foreground/75 hover:text-foreground"
+            );
+            if (item.href === "/dealers") return <DealersMenu key={item.href} className={className} />;
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex items-center border-b-2 pt-0.5 text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors",
-                  active ? "border-primary text-primary" : "border-transparent text-foreground/75 hover:text-foreground"
-                )}
-              >
+              <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={className}>
                 {t(item.label)}
               </Link>
             );
