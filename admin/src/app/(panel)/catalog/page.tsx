@@ -4,6 +4,7 @@ import ChipTabs from "@/components/common/ChipTabs";
 import { Field, FormError, inputClass, Select } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
+import LoadMore from "@/components/common/LoadMore";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, getModels, updateRow, uploadCatalogImage } from "@/lib/api/admin";
@@ -14,6 +15,9 @@ import { cn } from "@/lib/utils";
 import { ImageUp, Pencil, Plus, Trash2, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
+
+/** Rows shown at first and added each time the list is scrolled to its end. */
+const PAGE_SIZE = 30;
 
 type Tab = "brands" | "models" | "bodyTypes" | "locations";
 const TABS: { value: Tab; label: string }[] = [
@@ -215,6 +219,11 @@ function CatalogInner() {
     const all = data.data?.rows ?? [];
     return q ? all.filter((r) => `${r.name} ${r.subtitle ?? ""}`.toLowerCase().includes(q)) : all;
   }, [data.data, query]);
+  // Back to the first page whenever the tab or the search changes.
+  const pageKey = `${tab}|${query}`;
+  const [paging, setPaging] = useState({ key: pageKey, take: PAGE_SIZE });
+  const take = paging.key === pageKey ? paging.take : PAGE_SIZE;
+  const shown = rows.slice(0, take);
 
   const remove = async (row: Row) => {
     if (!(await confirm({ title: `"${row.name}" устгах уу?`, confirmLabel: "Устгах", tone: "danger", icon: Trash2 }))) return;
@@ -258,7 +267,7 @@ function CatalogInner() {
         <EmptyState title="Бичлэг алга" />
       ) : (
         <div className={cn("divide-y divide-border overflow-hidden rounded-2xl bg-card", data.loading && "opacity-60")}>
-          {rows.map((row) => (
+          {shown.map((row) => (
             <div key={row.id} className="flex items-center gap-3 px-3 py-2.5">
               {row.image !== undefined && (
                 <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted text-sm font-bold">
@@ -284,6 +293,7 @@ function CatalogInner() {
           ))}
         </div>
       )}
+      {shown.length < rows.length && <LoadMore key={`${pageKey}|${take}`} onMore={() => setPaging({ key: pageKey, take: take + PAGE_SIZE })} />}
 
       {editing && (
         <Editor
