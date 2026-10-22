@@ -69,8 +69,9 @@ function ProfileForm({ me }: { me: User }) {
           <input className={inputClass} type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
         </Field>
         <Field label="Дилер" hint="Шинэ зар нэмэхэд энэ дилер санал болгогдоно">
-          <Select value={f.dealer_id} onChange={(e) => setF({ ...f, dealer_id: e.target.value })}>
-            <option value="" className="text-gray-200">-- Сонгох --</option>
+          {/* Placeholder grey goes on the select: browsers ignore colour on <option>. */}
+          <Select value={f.dealer_id} onChange={(e) => setF({ ...f, dealer_id: e.target.value })} className={f.dealer_id ? undefined : "text-muted-foreground"}>
+            <option value="">-- Сонгох --</option>
             {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}
             {dealers.data?.map((d) => (
               <option key={d.id} value={d.id}>
