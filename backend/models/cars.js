@@ -41,6 +41,8 @@ module.exports = (sequelize, DataTypes) => {
       steering: { type: DataTypes.STRING },
       engine_capacity: { type: DataTypes.DECIMAL(4, 1) },
       color: { type: DataTypes.STRING },
+      // Салоны (дотор) өнгө
+      interior_color: { type: DataTypes.STRING },
       vin: { type: DataTypes.STRING },
       phonenumber: { type: DataTypes.STRING },
       description: { type: DataTypes.TEXT },
