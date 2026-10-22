@@ -1,13 +1,12 @@
 "use client";
 
-import Img from "@/components/common/Img";
+import DealerAvatar from "@/components/common/DealerAvatar";
 import { Spinner } from "@/components/common/States";
-import { uploadUrl } from "@/lib/api/config";
 import { dealerName, getDealers } from "@/lib/api/dealers";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Store } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -68,7 +67,6 @@ export default function DealersMenu({ className }: { className?: string }) {
               ) : rows.length ? (
                 rows.map((dealer) => {
                   const name = dealerName(dealer) || t("Дилер");
-                  const logo = uploadUrl(dealer.logo, "full", "dealers");
                   return (
                     <Link
                       key={dealer.id}
@@ -77,7 +75,12 @@ export default function DealersMenu({ className }: { className?: string }) {
                       className="flex items-center gap-3 px-4 py-2.5 normal-case tracking-normal hover:bg-muted"
                     >
                       <span className="grid size-10 shrink-0 place-items-center overflow-hidden bg-muted">
-                        {logo ? <Img src={logo} alt="" className="size-full object-contain" /> : <Store className="size-5 text-muted-foreground" />}
+                        <DealerAvatar
+                          logo={dealer.logo}
+                          name={name}
+                          imgClassName="size-full object-contain"
+                          letterClassName="font-display text-base font-bold text-foreground/60"
+                        />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-semibold text-foreground">{name}</span>

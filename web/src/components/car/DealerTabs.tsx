@@ -1,8 +1,7 @@
 "use client";
 
-import Img from "@/components/common/Img";
+import DealerAvatar from "@/components/common/DealerAvatar";
 import { TileRowSkeleton } from "@/components/common/States";
-import { uploadUrl } from "@/lib/api/config";
 import { dealerName, type Dealer } from "@/lib/api/dealers";
 import { useWheelScrollX } from "@/lib/useWheelScrollX";
 import { cn } from "@/lib/utils";
@@ -16,7 +15,6 @@ export default function DealerTabs({ items, loading, className }: { items: Deale
       {loading && <TileRowSkeleton />}
       {items.map((d) => {
         const name = dealerName(d);
-        const logo = uploadUrl(d.logo, "full", "dealers");
         return (
           <Link
             key={d.id}
@@ -25,16 +23,14 @@ export default function DealerTabs({ items, loading, className }: { items: Deale
             title={name}
             className="group flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-transparent bg-card p-2 transition-colors hover:border-border md:size-[72px]"
           >
-            {logo ? (
-              <Img
-                src={logo}
-                loading="lazy"
-                skeletonClassName="bg-foreground/10 rounded-md"
-                className="h-full w-full object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
-              />
-            ) : (
-              <span className="font-display text-base font-bold leading-none text-foreground/70">{name[0]}</span>
-            )}
+            <DealerAvatar
+              logo={d.logo}
+              name={name}
+              loading="lazy"
+              skeletonClassName="bg-foreground/10 rounded-md"
+              imgClassName="h-full w-full object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
+              letterClassName="font-display text-xl font-bold leading-none text-foreground/70"
+            />
           </Link>
         );
       })}

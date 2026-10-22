@@ -2,15 +2,14 @@
 
 import CarCard from "@/components/car/CarCard";
 import Container, { PageTitle } from "@/components/common/Container";
-import Img from "@/components/common/Img";
+import DealerAvatar from "@/components/common/DealerAvatar";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
-import { uploadUrl } from "@/lib/api/config";
 import { dealerName, getDealer, getDealerCars, getDealers, type Dealer } from "@/lib/api/dealers";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Phone, Store } from "lucide-react";
+import { ArrowLeft, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -18,10 +17,14 @@ import { Suspense } from "react";
 const PAGE_SIZE = 12;
 
 function DealerLogo({ dealer, className }: { dealer: Dealer; className?: string }) {
-  const logo = uploadUrl(dealer.logo, "full", "dealers");
   return (
     <div className={cn("grid shrink-0 place-items-center overflow-hidden rounded-xl bg-muted", className)}>
-      {logo ? <Img src={logo} alt="" className="size-full object-contain" /> : <Store className="size-1/2 text-muted-foreground" />}
+      <DealerAvatar
+        logo={dealer.logo}
+        name={dealerName(dealer)}
+        imgClassName="size-full object-contain"
+        letterClassName="font-display text-2xl font-bold text-foreground/60"
+      />
     </div>
   );
 }

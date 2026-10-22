@@ -20,6 +20,7 @@ export default function DealerAvatar({
   name: string | null | undefined;
   imgClassName?: string;
   letterClassName?: string;
+  skeletonClassName?: string;
 } & Pick<React.ImgHTMLAttributes<HTMLImageElement>, "loading" | "fetchPriority">) {
   const src = uploadUrl(logo, "full", "dealers");
   // The src that failed, so a new logo gets its own try.

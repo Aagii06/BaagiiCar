@@ -8,6 +8,7 @@ import LeasingCalculator from "@/components/car/LeasingCalculator";
 import Container from "@/components/common/Container";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import DealerAvatar from "@/components/common/DealerAvatar";
 import Img from "@/components/common/Img";
 import { getCar, getCarFiles, searchCars } from "@/lib/api/cars";
 import { uploadUrl } from "@/lib/api/config";
@@ -221,7 +222,6 @@ export default function CarDetailPage() {
 
 function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold: boolean }) {
   const { t } = useI18n();
-  const dealerLogo = uploadUrl(c.dealer_logo, "full", "dealers");
   return (
     <section className="rounded-2xl bg-card p-5 md:p-6">
       <div className="flex flex-wrap gap-2">
@@ -259,11 +259,12 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
         {c.dealer_id && c.dealer_name ? (
           // Dealer ad: logo + name open the dealer's page.
           <Link href={`/dealers?d=${c.dealer_id}`} className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80">
-            {dealerLogo ? (
-              <Img src={dealerLogo} className="size-11 shrink-0 rounded-full border border-border bg-white object-contain p-1" />
-            ) : (
-              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{initials(c.dealer_name)}</span>
-            )}
+            <DealerAvatar
+              logo={c.dealer_logo}
+              name={c.dealer_name}
+              imgClassName="size-11 shrink-0 rounded-full border border-border bg-white object-contain p-1"
+              letterClassName="grid size-11 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary"
+            />
             <span className="min-w-0 flex-1">
               <span className="block truncate font-bold">{c.dealer_name}</span>
               <span className="block text-xs text-muted-foreground">{t("Дилер")}</span>
