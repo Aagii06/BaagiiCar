@@ -17,11 +17,15 @@ const publicAttributes = (dealerIdSql) => [
 
 const activeDealer = { role: roles.dealer, status: "active" };
 
-// Идэвхтэй DEALER эрхтэй хэрэглэгчид, вэб дээр харагдах зарын тоотой нь
+// Идэвхтэй DEALER эрхтэй хэрэглэгчид, вэб дээр харагдах зарын тоотой нь.
+// Зөвхөн идэвхтэй зартай (car_count > 0) дилерүүд жагсаалтад орно.
 module.exports.list = async (req, res) => {
   try {
     const rows = await users.findAll({
-      where: activeDealer,
+      where: {
+        ...activeDealer,
+        [op.and]: [sequelize.literal(`EXISTS (SELECT 1 FROM cars WHERE ${dealerCarsSql("users.id")})`)],
+      },
       attributes: publicAttributes("users.id"),
       order: [[sequelize.literal("car_count"), "DESC"], ["firstname", "ASC"]],
       raw: true,
