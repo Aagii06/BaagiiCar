@@ -4,15 +4,16 @@ import CarForm, { CAR_FORM_ID } from "@/components/car/CarForm";
 import DealerPicker from "@/components/car/DealerPicker";
 import Stepper from "@/components/common/Stepper";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
-import { useToast } from "@/components/common/Toast";
+import { useConfirm } from "@/components/common/Confirm";
+import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
-import { getCar, getCarFiles, getDealers, type PhotoItem } from "@/lib/api/admin";
+import { getCar, getCarFiles, getDealers, setHidden, type PhotoItem } from "@/lib/api/admin";
 import type { Dealer } from "@/lib/api/types";
 import { uploadUrl } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { Check, Eye } from "lucide-react";
+import { Check, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
@@ -30,7 +31,9 @@ export default function CarEditPage() {
   const isNew = id === "new";
   const router = useRouter();
   const toast = useToast();
+  const confirm = useConfirm();
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const { user } = useAuth();
   const isAdmin = user?.role === ROLES.admin;
   /** Admin's pick; `undefined` = not picked yet. */
@@ -55,6 +58,20 @@ export default function CarEditPage() {
       .map((f) => ({ kind: "existing", id: f.id, url: uploadUrl(f.generated_name, "grid")! }));
     return { car, photos };
   }, id);
+
+  const publish = async (carId: number) => {
+    if (!(await confirm({ title: "Зарыг нийтлэх үү?", message: "Нийтэлсэн зар вэб дээр харагдах боломжтой болно.", confirmLabel: "Нийтлэх", tone: "success", icon: Eye }))) return;
+    setPublishing(true);
+    try {
+      await setHidden(carId, false);
+      toast("Нийтэллээ, вэб дээр харагдана");
+      data.reload();
+    } catch (err) {
+      toast(errorMessage(err), "error");
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   const title = picking ? "Шинэ зар · дилер сонгох" : isNew ? (dealer ? `Шинэ зар · ${dealer.name}` : "Шинэ зар") : data.data?.car?.name || "Зар";
 
@@ -104,8 +121,19 @@ export default function CarEditPage() {
         <EmptyState title="Зар олдсонгүй эсвэл устгагдсан" />
       ) : (
         <div hidden={picking}>
+          {data.data.car?.status === "hidden" && (
+            <div className="mb-4 flex items-center gap-3 rounded-2xl bg-amber-soft p-3.5 text-amber-ink">
+              <EyeOff className="size-5 shrink-0" />
+              <p className="min-w-0 flex-1 text-sm font-medium">Энэ зар нуугдсан тул вэб дээр харагдахгүй байна.</p>
+              <button type="button" onClick={() => publish(data.data!.car!.id)} disabled={publishing} className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white disabled:opacity-60">
+                <Eye className="size-4" />
+                {publishing ? "Нийтэлж байна…" : "Нийтлэх"}
+              </button>
+            </div>
+          )}
           <CarForm
-            key={id}
+            // Remount on a status change so the form's Төлөв doesn't save the old one back.
+            key={`${id}|${data.data.car?.status ?? ""}`}
             car={data.data.car}
             photos={data.data.photos}
             defaultPhone={user?.phonenumber}
