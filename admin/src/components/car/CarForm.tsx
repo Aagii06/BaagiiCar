@@ -355,6 +355,8 @@ export default function CarForm({
   const detailsError = () => {
     if (!f.brand_id) return "Үйлдвэр сонгоно уу";
     if (!f.manufactured_year) return "Үйлдвэрлэсэн он оруулна уу";
+    if (!f.imported_year) return "Орж ирсэн он оруулна уу";
+    if (Number(f.imported_year) < Number(f.manufactured_year)) return "Орж ирсэн он үйлдвэрлэсэн оноос өмнө байж болохгүй";
     if (!f.price) return "Үнэ оруулна уу";
     return null;
   };
@@ -493,8 +495,8 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Орж ирсэн он">
-              <Select {...bind("imported_year")}>
+            <Field label="Орж ирсэн он *">
+              <Select {...bind("imported_year")} required>
                 <option value="">Сонгох</option>
                 {yearOptions(f.imported_year).map((y) => (
                   <option key={y} value={y}>

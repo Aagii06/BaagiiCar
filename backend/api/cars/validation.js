@@ -20,9 +20,15 @@ module.exports.saveValidation = [
     .isInt({ min: 1950, max: maxYear })
     .withMessage("Үйлдвэрлэсэн он буруу байна"),
   body("imported_year")
-    .optional(optional)
+    .notEmpty()
+    .withMessage("Орж ирсэн он оруулна уу")
     .isInt({ min: 1950, max: maxYear })
-    .withMessage("Орж ирсэн он буруу байна"),
+    .withMessage("Орж ирсэн он буруу байна")
+    .custom((value, { req }) => {
+      if (Number(value) < Number(req.body.manufactured_year))
+        throw new Error("Орж ирсэн он үйлдвэрлэсэн оноос өмнө байж болохгүй");
+      return true;
+    }),
   body("price")
     .notEmpty()
     .withMessage("Үнэ оруулна уу")
