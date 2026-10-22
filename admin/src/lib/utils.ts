@@ -60,8 +60,7 @@ export function initials(name: string | null | undefined) {
 
 export function userName(u: { firstname?: string | null; lastname?: string | null; phonenumber?: string | null } | null) {
   if (!u) return "";
-  // Овог түр ашиглахгүй: [u.lastname, u.firstname].filter(Boolean).join(" ")
-  return u.firstname || u.phonenumber || "";
+  return [u.lastname, u.firstname].filter(Boolean).join(" ") || u.phonenumber || "";
 }
 
 const TINTS = ["bg-tint-blue", "bg-tint-peach", "bg-tint-mint", "bg-tint-lavender", "bg-tint-rose"];

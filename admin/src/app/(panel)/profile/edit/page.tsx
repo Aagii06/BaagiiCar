@@ -22,6 +22,7 @@ function ProfileForm({ me }: { me: User }) {
   const { refreshUser } = useAuth();
   const dealers = useApi(getDealers);
   const [f, setF] = useState({
+    lastname: me.lastname ?? "",
     firstname: me.firstname ?? "",
     phonenumber: me.phonenumber ?? "",
     email: me.email ?? "",
@@ -59,6 +60,7 @@ function ProfileForm({ me }: { me: User }) {
     setError(null);
     try {
       await updateRow("users", me.id, {
+        lastname: f.lastname.trim() || null,
         firstname: f.firstname.trim() || null,
         phonenumber: f.phonenumber,
         profile: f.profile || null,
@@ -83,9 +85,14 @@ function ProfileForm({ me }: { me: User }) {
             <span className="mb-1.5 block text-[13px] font-semibold">Профайл зураг</span>
             <ImageInput value={f.profile} onChange={(profile) => setF({ ...f, profile })} folder="users" label="Зураг оруулах" hint="Дөрвөлжин зураг хамгийн сайн харагдана" round />
           </div>
-          <Field label="Нэр">
-            <input className={inputClass} value={f.firstname} onChange={(e) => setF({ ...f, firstname: e.target.value })} />
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Овог">
+              <input className={inputClass} value={f.lastname} onChange={(e) => setF({ ...f, lastname: e.target.value })} />
+            </Field>
+            <Field label="Нэр">
+              <input className={inputClass} value={f.firstname} onChange={(e) => setF({ ...f, firstname: e.target.value })} />
+            </Field>
+          </div>
           <Field label="Утасны дугаар *" hint="Админ самбарт энэ дугаараар нэвтэрнэ">
             <PhoneInput autoComplete="tel" placeholder="00000000" value={f.phonenumber} onChange={(phonenumber) => setF({ ...f, phonenumber })} required />
           </Field>

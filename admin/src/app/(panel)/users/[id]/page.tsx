@@ -101,14 +101,14 @@ function UserForm({ user }: { user: User | null }) {
           <span className="mb-1.5 block text-[13px] font-semibold">Профайл зураг</span>
           <ImageInput value={f.profile} onChange={(profile) => setF({ ...f, profile })} folder="users" label="Зураг оруулах" hint="Дөрвөлжин зураг хамгийн сайн харагдана" round />
         </div>
-        {/* Овог түр ашиглахгүй (дилерт овог байдаггүй), зөвхөн нэр.
-        <Field label="Овог">
-          <input className={inputClass} value={f.lastname} onChange={set("lastname")} />
-        </Field>
-        */}
-        <Field label="Нэр">
-          <input className={inputClass} value={f.firstname} onChange={set("firstname")} />
-        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Овог">
+            <input className={inputClass} value={f.lastname} onChange={set("lastname")} />
+          </Field>
+          <Field label="Нэр">
+            <input className={inputClass} value={f.firstname} onChange={set("firstname")} />
+          </Field>
+        </div>
         <Field label="Утасны дугаар *">
           <PhoneInput autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(phonenumber) => setF({ ...f, phonenumber })} required />
         </Field>
