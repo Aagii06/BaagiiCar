@@ -21,6 +21,8 @@ module.exports = {
       references: { model: "dealers", key: "id" },
       onDelete: "RESTRICT",
     });
+    // MySQL дээр references-тэй changeColumn нь NOT NULL-ийг алгасдаг тул тусад нь
+    await q("ALTER TABLE cars MODIFY dealer_id INT NOT NULL");
   },
 
   // Хуваарилалтыг буцаахгүй — зөвхөн шаардлагыг авна
