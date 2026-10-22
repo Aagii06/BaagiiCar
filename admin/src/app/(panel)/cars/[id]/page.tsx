@@ -2,6 +2,7 @@
 
 import CarForm, { CAR_FORM_ID } from "@/components/car/CarForm";
 import DealerPicker from "@/components/car/DealerPicker";
+import Stepper from "@/components/common/Stepper";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
@@ -21,6 +22,9 @@ import { useState } from "react";
  * `/cars/new`: an admin first picks the dealer; a dealer's own dealer is used as is.
  * `/cars/:id` edits an ad (dealers only reach their own dealer's ads).
  */
+/** Admin's new-ad steps; the form adds the same list after "Дилер" (dealers start at Мэдээлэл). */
+const NEW_AD_STEPS = ["Дилер", "Мэдээлэл", "Зураг", "Нийтлэх"];
+
 export default function CarEditPage() {
   const id = useRouteId();
   const isNew = id === "new";
@@ -31,11 +35,13 @@ export default function CarEditPage() {
   const isAdmin = user?.role === ROLES.admin;
   /** Admin's pick; `undefined` = not picked yet. */
   const [picked, setPicked] = useState<Dealer | undefined>(undefined);
+  /** Admin went back to the Дилер step from the form; the form stays mounted (hidden) so nothing typed is lost. */
+  const [repicking, setRepicking] = useState(false);
   // A dealer posts for their own dealer: no picker.
   const dealers = useApi(() => (isNew && !isAdmin ? getDealers() : Promise.resolve([] as Dealer[])), `${isNew}|${isAdmin}`);
   const ownDealer = isAdmin ? undefined : dealers.data?.find((d) => d.id === user?.dealer_id);
   const dealer = isAdmin ? picked : ownDealer;
-  const picking = isNew && isAdmin && !picked;
+  const picking = isNew && isAdmin && (!picked || repicking);
   const waitingOwnDealer = isNew && !isAdmin && dealers.loading && !dealers.data;
   const noOwnDealer = isNew && !isAdmin && !!dealers.data && !ownDealer;
 
@@ -65,19 +71,28 @@ export default function CarEditPage() {
                 <Eye className="size-4" />
               </Link>
             )}
-            {/* Same as the save button at the bottom of the form. */}
-            {!picking && !noOwnDealer && data.data && data.data.car?.status !== "deleted" && (
+            {/* Same as the save button at the bottom of the form; a new ad uses the wizard's own buttons. */}
+            {!isNew && data.data && data.data.car?.status !== "deleted" && (
               <button type="submit" form={CAR_FORM_ID} disabled={saving} className="flex h-9 items-center gap-1 rounded-xl bg-primary px-3 text-sm font-bold text-white hover:bg-primary-hover disabled:opacity-60">
                 <Check className="size-4" strokeWidth={3} />
-                {saving ? "Хадгалж байна…" : isNew ? (isAdmin ? "Нийтлэх" : "Илгээх") : "Хадгалах"}
+                {saving ? "Хадгалж байна…" : "Хадгалах"}
               </button>
             )}
           </div>
         }
       />
-      {picking ? (
-        <DealerPicker onPick={setPicked} />
-      ) : waitingOwnDealer ? (
+      {picking && (
+        <div className="space-y-5">
+          <Stepper steps={NEW_AD_STEPS} current={0} />
+          <DealerPicker
+            onPick={(d) => {
+              setPicked(d);
+              setRepicking(false);
+            }}
+          />
+        </div>
+      )}
+      {picking && !picked ? null : waitingOwnDealer ? (
         <LoadingState />
       ) : noOwnDealer ? (
         <EmptyState title="Таны бүртгэл дилерт харьяалагдаагүй байна" description="Зар нэмэхийн тулд админд хандаж дилерт харьяалуулна уу." />
@@ -88,18 +103,22 @@ export default function CarEditPage() {
       ) : !data.data || data.data.car?.status === "deleted" ? (
         <EmptyState title="Зар олдсонгүй эсвэл устгагдсан" />
       ) : (
-        <CarForm
-          key={id}
-          car={data.data.car}
-          photos={data.data.photos}
-          defaultPhone={user?.phonenumber}
-          dealer={dealer ?? undefined}
-          onBusyChange={setSaving}
-          onSaved={() => {
-            toast("Хадгаллаа");
-            router.push("/cars");
-          }}
-        />
+        <div hidden={picking}>
+          <CarForm
+            key={id}
+            car={data.data.car}
+            photos={data.data.photos}
+            defaultPhone={user?.phonenumber}
+            dealer={dealer ?? undefined}
+            leadingSteps={isNew && isAdmin ? ["Дилер"] : []}
+            onBackToLead={() => setRepicking(true)}
+            onBusyChange={setSaving}
+            onSaved={() => {
+              toast("Хадгаллаа");
+              router.push("/cars");
+            }}
+          />
+        </div>
       )}
     </>
   );
