@@ -11,7 +11,8 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Самбар", icon: ChartNoAxesColumn },
   { href: "/cars", label: "Зарууд", icon: CarFront },
-  { href: "/messages", label: "Мессеж", icon: MessageCircle, adminOnly: true },
+  // Dealers see messages about their own dealer's ads (the backend scopes them).
+  { href: "/messages", label: "Мессеж", icon: MessageCircle },
   { href: "/profile", label: "Профайл", icon: UserRound },
 ];
 
