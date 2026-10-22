@@ -1,8 +1,8 @@
 // Same surface as the web's lib/api/cars.ts, so the shared CarForm works here.
 import * as admin from "./admin";
 
-export type { CarInput, PhotoItem } from "./admin";
-export const { getBrands, getBodyTypes, getLocations, getDealers, saveCar } = admin;
+export type { CarInput, PhotoItem, VehicleInfo } from "./admin";
+export const { getBrands, getBodyTypes, getLocations, getDealers, saveCar, vehicleLookup } = admin;
 
 export async function getModels(brandId?: number) {
   const rows = await admin.getModels();

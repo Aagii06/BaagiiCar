@@ -152,6 +152,30 @@ export type CarInput = Partial<
   user_id?: number | null;
 };
 
+/** Car registry data (autobox.mn) mapped to our ad fields; any field can be null. */
+export interface VehicleInfo {
+  plate: string | null;
+  vin: string | null;
+  brand: string | null;
+  model: string | null;
+  manufactured_year: number | null;
+  imported_year: number | null;
+  fuel_type: string | null;
+  transmission: string | null;
+  drive_type: string | null;
+  steering: string | null;
+  engine_capacity: number | null;
+  mileage: number | null;
+  color: string | null;
+}
+
+/** `GET /web/cars/vehicle-lookup?plate=1234УБА` (or `?vin=`). */
+export async function vehicleLookup(query: { plate?: string; vin?: string }) {
+  const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v?.trim()) as [string, string][]);
+  const res = await apiFetch<ApiItemResponse<VehicleInfo>>(`/web/cars/vehicle-lookup?${params}`, { auth: false });
+  return res.data;
+}
+
 /**
  * `POST /api/cars/save` (multipart). The server deletes every photo it
  * isn't told to keep, so existing photos must always be listed by id.
