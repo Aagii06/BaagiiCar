@@ -320,6 +320,10 @@ export default function CarForm({
     return `${name} — мэдээлэл бөглөгдлөө. Загвар, хурдны хайрцгийг шалгана уу`;
   };
 
+  // New ad: location shows / saves as Улаанбаатар until another one is picked.
+  const ubId = locations.data?.find((l) => norm(l.name) === norm("Улаанбаатар"))?.id;
+  const locationId = f.location_id || (wizard && ubId ? String(ubId) : "");
+
   // The admin went back and picked another dealer: switch to it, and to its phone unless one was typed in.
   const dealerId = dealer?.id;
   const dealerPhone = dealer?.phonenumber;
@@ -378,7 +382,7 @@ export default function CarForm({
     setBusy(true);
     setError(null);
     try {
-      const input = { ...toInput(f, car), ...(featured !== undefined && { is_featured: featured }) };
+      const input = { ...toInput({ ...f, location_id: locationId }, car), ...(featured !== undefined && { is_featured: featured }) };
       const id = await saveCar({ ...input, ...(car ? { id: car.id } : {}) }, photos);
       onSaved(id);
     } catch (err) {
@@ -483,7 +487,7 @@ export default function CarForm({
               </Select>
             </Field>
             <Field label="Байршил">
-              <Select {...bind("location_id")}>
+              <Select value={locationId} onChange={(e) => set("location_id", e.target.value)}>
                 <option value="">Сонгох</option>
                 {locations.data?.map((l) => (
                   <option key={l.id} value={l.id}>

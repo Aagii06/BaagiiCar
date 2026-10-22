@@ -1,3 +1,4 @@
+import RequiredFieldMarker from "@/components/common/RequiredFieldMarker";
 import AppColumn from "@/components/layout/AppColumn";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import type { Metadata, Viewport } from "next";
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="mn" className={`${inter.variable} ${oswald.variable}`}>
       <body className="bg-[#e4e6ea] font-sans antialiased">
         <AppColumn>
+          <RequiredFieldMarker />
           <AuthProvider>{children}</AuthProvider>
         </AppColumn>
       </body>
