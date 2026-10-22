@@ -71,8 +71,10 @@ const verifyOtp = async ({ model, where, key, code }) => {
 
 const subjects = {
   login: "нэвтрэх код",
+  // "email:<userId>" - нэвтэрсэн хэрэглэгч имэйлээ солих
+  email: "имэйл баталгаажуулах код",
 };
-const titleFor = (purpose) => `Cardealer ${subjects[purpose] || "баталгаажуулах код"}`;
+const titleFor = (purpose) => `Cardealer ${subjects[purpose.split(":")[0]] || "баталгаажуулах код"}`;
 
 // --- Имэйл ------------------------------------------------------------------
 const otpEmailHtml = (code, title) => `

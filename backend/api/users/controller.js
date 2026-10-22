@@ -322,6 +322,75 @@ module.exports.emailOtpLogin = async (req, res) => {
   }
 };
 
+// --- Имэйл солих: шинэ хаяг руу код илгээж, баталгаажуулсны дараа л солино ----
+// Код хэрэглэгч бүрт тусдаа (purpose = "email:<id>"), өөр хэрэглэгчийн кодоор солигдохгүй.
+const emailChangePurpose = (userId) => `email:${userId}`;
+
+module.exports.emailChangeSend = async (req, res) => {
+  const { email } = req.body;
+  const { loggedUser } = req;
+  try {
+    const me = await users.findOne({ where: { id: loggedUser?.id, status: "active" }, attributes: ["id", "email"], raw: true });
+    if (!me) return res.status(200).json({ success: false, data: null, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" });
+    if ((me.email || "").toLowerCase() === email)
+      return res.status(200).json({ success: false, data: null, message: "Одоогийн имэйлтэй ижил байна" });
+    const taken = await users.count({ where: { email, status: { [op.ne]: "deleted" }, id: { [op.ne]: me.id } } });
+    if (taken) return res.status(200).json({ success: false, data: null, message: "И-мэйл хаяг давхардаж байна" });
+
+    const result = await sendEmailOtp(email, emailChangePurpose(me.id));
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Код илгээж чадсангүй" });
+  }
+};
+
+module.exports.emailChangeVerify = async (req, res) => {
+  let result = { success: false, data: null, message: "" };
+  const { email, code, by, at } = req.body;
+  const { loggedUser } = req;
+  try {
+    const verified = await verifyEmailOtp(email, emailChangePurpose(loggedUser?.id), code);
+    if (!verified.success) {
+      result.message = verified.message;
+      return res.status(200).json(result);
+    }
+    const t = await sequelize.transaction();
+    try {
+      // individualHooks: давхардлыг users.beforeSave дахин шалгана
+      await users.update(
+        { email, updated_by: by, updated_at: at },
+        { where: { id: loggedUser.id, status: "active" }, transaction: t, individualHooks: true },
+      );
+      await saveLog(
+        {
+          object_name: "users",
+          object_id: loggedUser.id,
+          log_action: "email_changed",
+          log_action_mn: "Имэйл солисон",
+          modify_data: JSON.stringify({ email }),
+          created_by: by,
+          created_at: at,
+        },
+        t,
+      );
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+    const { user } = await findUserData(loggedUser.id);
+    result.success = true;
+    result.data = user;
+    result.message = "Имэйл баталгаажиж шинэчлэгдлээ";
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    result.message = typeof error === "string" ? error : "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
 // Апп-аас өөрөө бүртгүүлэх (Хэрэглэгч эрхтэй)
 module.exports.register = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };

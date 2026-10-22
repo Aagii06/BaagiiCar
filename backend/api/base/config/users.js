@@ -35,6 +35,8 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
   // Лого дилерийн бүртгэл рүү шилжсэн
   delete req.body.logo;
+  // Өөрийн имэйлийг зөвхөн кодоор баталгаажуулж солино (/api/users/email-change)
+  if (req.params.id + "" === req.loggedUser?.id + "") delete req.body.email;
   isAdmin(req, res, () => checkDealer(req, res, next));
 };
 

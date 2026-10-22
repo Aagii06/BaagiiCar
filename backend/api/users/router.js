@@ -28,6 +28,8 @@ const {
   logout,
   getUserData,
   changePassword,
+  emailChangeSend,
+  emailChangeVerify,
 } = require("./controller");
 // Утас + кодоор нэвтрэх логик вэбтэй нэг (web/auth)
 const { otpSend, otpLogin } = require("../../web/auth/controller");
@@ -49,6 +51,9 @@ router.route("/otp-login").post(otpLoginValidation, byAndAt, otpLogin);
 router.route("/email-otp-send").post(emailOtpSendValidation, emailOtpSend);
 router.route("/email-otp-login").post(emailOtpLoginValidation, byAndAt, emailOtpLogin);
 router.route("/register").post(registerValidation, byAndAt, register);
+// Нэвтэрсэн хэрэглэгч имэйлээ солих: шинэ хаяг руу код → кодоор баталгаажуулна
+router.route("/email-change/send").post(protect, emailOtpSendValidation, emailChangeSend);
+router.route("/email-change/verify").post(protect, emailOtpLoginValidation, byAndAt, emailChangeVerify);
 router.route("/logout").post(protect, logout);
 router.route("/get-user-data").post(protect, getUserData);
 router

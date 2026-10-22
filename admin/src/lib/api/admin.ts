@@ -27,6 +27,20 @@ export async function changePassword(id: number, password: string, password_conf
   await apiFetch("/api/users/change-password", { method: "POST", body: { id, password, password_confirm, old_password } });
 }
 
+type OtpSent = { expires_in: number; resend_in: number };
+
+/** Sends a 6-digit code to the new address; the email changes only after `verifyEmailChange`. */
+export async function sendEmailChangeCode(email: string) {
+  const res = await apiFetch<ApiItemResponse<OtpSent>>("/api/users/email-change/send", { method: "POST", body: { email } });
+  return res.data;
+}
+
+/** Checks the code and saves the email; returns the updated user. */
+export async function verifyEmailChange(email: string, code: string) {
+  const res = await apiFetch<ApiItemResponse<User>>("/api/users/email-change/verify", { method: "POST", body: { email, code } });
+  return res.data;
+}
+
 // --- generic /api/base/:target ---------------------------------------------
 
 export async function countOf(target: string, filter: Condition[]) {
