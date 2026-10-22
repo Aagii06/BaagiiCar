@@ -6,11 +6,11 @@ import { RejectNote } from "./useRejectCar";
 import { DealerAvatar } from "./DealerPicker";
 import PlateLookup from "./PlateLookup";
 import { getBodyTypes, getBrands, getDealers, getLocations, getModels, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
-import type { Car, CarModel, User } from "@/lib/api/types";
+import type { Car, CarModel, Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, FUEL_TYPES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { cn, userName } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ImagePlus, UserRound, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -26,7 +26,7 @@ const yearOptions = (current: string) => {
 };
 
 type FormState = Record<
-  | "user_id"
+  | "dealer_id"
   | "brand_id"
   | "car_model_id"
   | "body_type_id"
@@ -50,9 +50,9 @@ type FormState = Record<
 
 const str = (v: unknown) => (v === null || v === undefined ? "" : String(v));
 
-function initialState(car: Car | null | undefined, phone: string | null | undefined, ownerId: number | undefined): FormState {
+function initialState(car: Car | null | undefined, phone: string | null | undefined, dealerId: number | undefined): FormState {
   return {
-    user_id: str(car?.user_id ?? ownerId),
+    dealer_id: str(car ? car.dealer_id : dealerId),
     brand_id: str(car?.brand_id),
     car_model_id: str(car?.car_model_id),
     body_type_id: str(car?.body_type_id),
@@ -79,8 +79,8 @@ const intOrNull = (v: string) => (v.trim() ? Number(v) : null);
 
 function toInput(f: FormState, car?: Car | null): CarInput {
   return {
-    // Засахад эзэн өөрчлөгдсөн үед л илгээнэ (хуучин эзэн нь дилер биш байж болно)
-    ...((!car || f.user_id !== str(car.user_id)) && { user_id: intOrNull(f.user_id) }),
+    // Засахад дилер өөрчлөгдсөн үед л илгээнэ (хуучин дилер нь идэвхгүй болсон байж болно)
+    ...((!car || f.dealer_id !== str(car.dealer_id)) && { dealer_id: intOrNull(f.dealer_id) }),
     brand_id: Number(f.brand_id),
     car_model_id: intOrNull(f.car_model_id),
     body_type_id: intOrNull(f.body_type_id),
@@ -135,16 +135,13 @@ function Chips({ options, value, onChange }: { options: string[]; value: string;
  * Create / edit an ad. Photos already on the server are passed in as
  * `existing` items and kept by id; new files are uploaded with the save.
  */
-/** Whose ad it is: the admin, an active dealer, or (when editing) whoever owns it now. */
-function OwnerSection({ car, value, dealers, onChange }: { car?: Car | null; value: string; dealers: User[]; onChange: (id: string, phone: string | null) => void }) {
-  const { user: me } = useAuth();
+/** Which dealer the ad belongs to: none, an active dealer, or (when editing) its current dealer even if inactive now. */
+function DealerSection({ car, value, dealers, onChange }: { car?: Car | null; value: string; dealers: Dealer[]; onChange: (id: string, phone: string | null) => void }) {
   const dealer = dealers.find((d) => String(d.id) === value);
-  const isMine = value === String(me?.id ?? "");
-  // Current owner that is neither the admin nor an active dealer (e.g. a customer's ad).
-  const other = car && !isMine && !dealer && value === String(car.user_id);
+  const current = car?.dealer_id && value === String(car.dealer_id) && !dealer;
 
   return (
-    <Section title="Зарын эзэн">
+    <Section title="Дилер">
       <div className="flex items-center gap-3">
         {dealer ? (
           <DealerAvatar dealer={dealer} className="size-12" />
@@ -158,19 +155,21 @@ function OwnerSection({ car, value, dealers, onChange }: { car?: Car | null; val
             value={value}
             onChange={(e) => {
               const id = e.target.value;
-              const next = dealers.find((d) => String(d.id) === id);
-              onChange(id, next ? next.phonenumber : id === String(me?.id) ? (me?.phonenumber ?? null) : null);
+              onChange(id, dealers.find((d) => String(d.id) === id)?.phonenumber ?? null);
             }}
           >
-            {other && <option value={value}>{car.seller_name || car.seller_phone || `#${car.user_id}`} (одоогийн)</option>}
-            <option value={String(me?.id ?? "")}>Миний зар (админ)</option>
+            {current && <option value={value}>{car.dealer_name || `#${car.dealer_id}`} (одоогийн)</option>}
+            <option value="">Дилергүй</option>
             {dealers.map((d) => (
               <option key={d.id} value={d.id}>
-                {userName(d)} · {d.phonenumber}
+                {d.name}
+                {d.phonenumber ? ` · ${d.phonenumber}` : ""}
               </option>
             ))}
           </Select>
-          <p className="mt-1 text-xs text-muted-foreground">{dealer ? "Зар энэ дилерт харьяалагдана" : isMine ? "Админы өөрийн зар" : "Одоогийн эзэмшигч хэвээр үлдэнэ"}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {dealer || current ? "Зар энэ дилерийн хуудсанд харагдана" : car ? `Оруулсан: ${car.seller_name || car.seller_phone || "—"}` : "Өөрийн нэр дээр нийтэлнэ"}
+          </p>
         </div>
       </div>
     </Section>
@@ -193,21 +192,21 @@ export default function CarForm({
   car,
   photos: initialPhotos = [],
   defaultPhone,
-  owner,
+  dealer,
   onSaved,
   onBusyChange,
 }: {
   car?: Car | null;
   photos?: PhotoItem[];
   defaultPhone?: string | null;
-  /** New ad only: the dealer picked in the first step, or the admin themselves. */
-  owner?: User | null;
+  /** New ad only: the dealer picked in the first step (none = no dealer). */
+  dealer?: Dealer | null;
   onSaved: (id: number) => void;
   /** Mirrors the saving state to the header's save button. */
   onBusyChange?: (busy: boolean) => void;
 }) {
   const { user: me } = useAuth();
-  const [f, setF] = useState<FormState>(() => initialState(car, owner?.phonenumber ?? defaultPhone, owner?.id ?? me?.id));
+  const [f, setF] = useState<FormState>(() => initialState(car, dealer?.phonenumber || defaultPhone, dealer?.id));
   const [photos, setPhotos] = useState<PhotoItem[]>(initialPhotos);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -308,16 +307,16 @@ export default function CarForm({
     <form id={CAR_FORM_ID} onSubmit={submit} className="space-y-5">
       {car && <RejectNote car={car} />}
       <PlateLookup onFound={applyLookup} />
-      <OwnerSection
+      <DealerSection
         car={car}
-        value={f.user_id}
-        dealers={dealers.data ?? (owner ? [owner] : [])}
+        value={f.dealer_id}
+        dealers={dealers.data ?? (dealer ? [dealer] : [])}
         onChange={(id, phone) =>
-          // Утас хоосон эсвэл өмнөх эзний дугаар байвал шинэ эзний дугаараар солино
+          // Утас хоосон эсвэл өмнөх дилерийн / өөрийн дугаар байвал шинэ дилерийн дугаараар солино
           setF((p) => {
-            const prevPhone = dealers.data?.find((d) => String(d.id) === p.user_id)?.phonenumber ?? (p.user_id === String(me?.id) ? me?.phonenumber : null);
+            const prevPhone = dealers.data?.find((d) => String(d.id) === p.dealer_id)?.phonenumber || me?.phonenumber;
             const keepPhone = p.phonenumber && p.phonenumber !== prevPhone;
-            return { ...p, user_id: id, phonenumber: keepPhone ? p.phonenumber : (phone ?? p.phonenumber) };
+            return { ...p, dealer_id: id, phonenumber: keepPhone ? p.phonenumber : (phone || me?.phonenumber || p.phonenumber) };
           })
         }
       />
