@@ -8,6 +8,7 @@
   "private": null,
   "scripts": {
     "start": "nodemon server.js",
+    "start:prod": "NODE_ENV=production node server.js",
     "generate-model": "node ./command/generate-model.js",
     "sync-db": "node ./command/sync-db.js",
     "seed": "npx sequelize-cli db:seed:all",
