@@ -486,30 +486,10 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Байршил">
-              <Select value={locationId} onChange={(e) => set("location_id", e.target.value)}>
-                <option value="">Сонгох</option>
-                {locations.data?.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
             <Field label="Үйлдвэрлэсэн он *">
               <Select {...bind("manufactured_year")} required>
                 <option value="">Сонгох</option>
                 {yearOptions(f.manufactured_year).map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Орж ирсэн он">
-              <Select {...bind("imported_year")}>
-                <option value="">Сонгох</option>
-                {yearOptions(f.imported_year).map((y) => (
                   <option key={y} value={y}>
                     {y}
                   </option>
@@ -545,10 +525,38 @@ export default function CarForm({
               <Field label="Хөдөлгүүр (л)">
                 <input className={inputClass} inputMode="decimal" value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder="2.5" />
               </Field>
-              <Field label="Өнгө">
-                <input className={inputClass} {...bind("color")} placeholder="Цагаан" />
-              </Field>
             </div>
+          </div>
+        </Section>
+      )}
+
+      {/* Optional details buyers care least about. */}
+      {show(0) && (
+        <Section title="Бусад мэдээлэл">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Байршил">
+              <Select value={locationId} onChange={(e) => set("location_id", e.target.value)}>
+                <option value="">Сонгох</option>
+                {locations.data?.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Орж ирсэн он">
+              <Select {...bind("imported_year")}>
+                <option value="">Сонгох</option>
+                {yearOptions(f.imported_year).map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Өнгө">
+              <input className={inputClass} {...bind("color")} placeholder="Цагаан" />
+            </Field>
           </div>
         </Section>
       )}
