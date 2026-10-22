@@ -2,7 +2,7 @@
 
 // Анхны админ хэрэглэгч. Нууц үгийг кодонд бичихгүйн тулд .env-ээс уншина:
 // ADMIN_PHONENUMBER=99999999 ADMIN_PASSWORD=... npm run seed
-require("dotenv").config({ path: __dirname + "/../.env" });
+require("../config/env");
 const bcrypt = require("bcrypt");
 const { roles } = require("../config/constants");
 

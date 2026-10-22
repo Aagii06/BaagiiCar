@@ -8,7 +8,9 @@ const { formatPrice, escapeHtml, carTitle, carSummary } = require("./notifyHelpe
 // Өдөр бүр DIGEST_HOUR цагт шалгаад, сүүлд илгээснээс хойш DIGEST_INTERVAL_DAYS өдөр өнгөрсөн хүмүүст явуулна.
 const MAX_CARS = 20;
 
-const webUrl = () => (process.env.WEB_URL || "http://localhost:3880").replace(/\/$/, "");
+// WEB_URL тохируулаагүй бол production-д cardealer.mn, бусад үед local вэб
+const webUrl = () =>
+  (process.env.WEB_URL || (process.env.NODE_ENV === "production" ? "https://cardealer.mn" : "http://localhost:3880")).replace(/\/$/, "");
 const apiUrl = () => (process.env.API_URL || "").replace(/\/$/, "");
 const intervalDays = () => Math.max(1, Number(process.env.DIGEST_INTERVAL_DAYS) || 1);
 const digestHour = () => {
