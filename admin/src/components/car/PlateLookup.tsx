@@ -27,11 +27,12 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const t = TYPES[type];
+  const q = normalize(value);
+  // The search button stays off until the number has the right format.
+  const valid = t.check.test(q);
 
   const search = async () => {
-    const q = normalize(value);
-    if (!q || busy) return;
-    if (!t.check.test(q)) return setNote({ tone: "error", text: t.error });
+    if (!valid || busy) return;
     setBusy(true);
     setNote(null);
     try {
@@ -75,7 +76,10 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
         <input
           className="min-w-0 flex-1 bg-transparent px-3 text-[15px] font-semibold uppercase tracking-wide outline-none placeholder:font-normal placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground/70"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setNote(null);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -89,13 +93,15 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
         <button
           type="button"
           onClick={search}
-          disabled={busy || !value.trim()}
+          disabled={busy || !valid}
           aria-label="Хайх"
           className="grid w-14 shrink-0 place-items-center bg-primary text-white hover:bg-primary-hover disabled:opacity-60"
         >
           {busy ? <Loader2 className="size-5 animate-spin" /> : <Search className="size-5" />}
         </button>
       </div>
+      {/* Explains the disabled button while the typed number doesn't match yet. */}
+      {!note && q && !valid && <p className="mt-2 text-xs font-semibold text-destructive">{t.error}</p>}
       {note && <p className={cn("mt-2 text-xs font-semibold", note.tone === "ok" ? "text-success" : "text-destructive")}>{note.text}</p>}
     </section>
   );
