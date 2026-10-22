@@ -32,6 +32,8 @@ export type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "v
   /** Drops the standard input look (for a select embedded in another control). */
   bare?: boolean;
   chevronClassName?: string;
+  /** Shown on the closed field instead of the picked option's label (e.g. a short form of it). */
+  valueLabel?: React.ReactNode;
 };
 
 /**
@@ -39,7 +41,7 @@ export type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "v
  * bottom sheet that fills the screen from 25% down. A hidden native select stays in the form so
  * `required` still blocks the submit and gets the red border (RequiredFieldMarker).
  */
-export default function Select({ value, onChange, children, className, disabled, required, title, bare, chevronClassName, name, id, ...rest }: SelectProps) {
+export default function Select({ value, onChange, children, className, disabled, required, title, bare, chevronClassName, valueLabel, name, id, ...rest }: SelectProps) {
   const [open, setOpen] = useState(false);
   const fieldLabel = useContext(FieldLabelContext);
   const nativeRef = useRef<HTMLSelectElement>(null);
@@ -70,7 +72,7 @@ export default function Select({ value, onChange, children, className, disabled,
         onClick={() => setOpen(true)}
         className={cn(bare ? "h-full outline-none" : cn(inputClass, "flex items-center pr-10 text-left"), "select-trigger", empty && !bare && "text-muted-foreground", className)}
       >
-        <span className="min-w-0 flex-1 truncate">{selected?.label ?? (current ? current : "Сонгох")}</span>
+        <span className="min-w-0 flex-1 truncate">{valueLabel ?? selected?.label ?? (current ? current : "Сонгох")}</span>
       </button>
       <ChevronDown className={cn("pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground", chevronClassName)} />
       {/* Keeps native form validation (required) and the invalid mark; focus is passed to the button. */}

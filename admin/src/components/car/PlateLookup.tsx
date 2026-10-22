@@ -55,6 +55,8 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
             bare
             title="Хайх төрөл"
             value={type}
+            // Short on the field, full name in the sheet.
+            valueLabel={t.short}
             onChange={(e) => {
               setType(e.target.value as SearchType);
               setNote(null);
@@ -65,7 +67,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
           >
             {(Object.keys(TYPES) as SearchType[]).map((k) => (
               <option key={k} value={k}>
-                {TYPES[k].short}
+                {TYPES[k].label}
               </option>
             ))}
           </Select>
