@@ -8,31 +8,13 @@ import DealerTabs from "@/components/car/DealerTabs";
 import Container from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
-import {
-  CardGridSkeleton,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  Spinner,
-} from "@/components/common/States";
+import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import Img from "@/components/common/Img";
-import {
-  CAR_SORTS,
-  getBodyTypes,
-  getBrands,
-  getModels,
-  searchCars,
-  type CarSort,
-} from "@/lib/api/cars";
+import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
 import { catalogImage } from "@/lib/api/config";
 import { getDealers } from "@/lib/api/dealers";
 import type { BodyType, Brand, CarModel } from "@/lib/api/types";
-import {
-  bodyTypeLabel,
-  FUEL_TYPES,
-  PAGE_SIZE,
-  STEERINGS,
-} from "@/lib/constants";
+import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
@@ -59,8 +41,7 @@ type Params = {
   page: number;
 };
 
-const num = (v: string | null) =>
-  v && Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : undefined;
+const num = (v: string | null) => (v && Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : undefined);
 const list = (v: string | null) => (v ? v.split(",").filter(Boolean) : []);
 
 function readParams(sp: URLSearchParams): Params {
@@ -69,9 +50,7 @@ function readParams(sp: URLSearchParams): Params {
     // Older links may carry several brands; only one is used now.
     brand: num(list(sp.get("brand"))[0] ?? null),
     model: num(sp.get("model")),
-    body: list(sp.get("body"))
-      .map(Number)
-      .filter((n) => Number.isInteger(n) && n > 0),
+    body: list(sp.get("body")).map(Number).filter((n) => Number.isInteger(n) && n > 0),
     location: num(sp.get("location")),
     yearFrom: num(sp.get("yearFrom")),
     yearTo: num(sp.get("yearTo")),
@@ -106,13 +85,7 @@ function writeParams(p: Params) {
 }
 
 /** One titled block inside the filter card; blocks after the first get a divider. */
-function Group({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="border-t border-border pt-4 first:border-t-0 first:pt-0">
       <h3 className="mb-3 text-[13px] font-bold">{title}</h3>
@@ -124,14 +97,9 @@ function Group({
 const THIS_YEAR = new Date().getFullYear();
 const FIRST_YEAR = 1950;
 // Newest first: recent years are the ones people pick.
-const YEARS = Array.from(
-  { length: THIS_YEAR - FIRST_YEAR + 1 },
-  (_, i) => THIS_YEAR - i,
-);
+const YEARS = Array.from({ length: THIS_YEAR - FIRST_YEAR + 1 }, (_, i) => THIS_YEAR - i);
 // Million ₮ steps, as on unegui.mn's car listings.
-const PRICES = [
-  5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 200, 300,
-];
+const PRICES = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 200, 300];
 
 /**
  * From / to dropdowns over a fixed list of steps (in display order); each side only
@@ -151,21 +119,9 @@ function RangeSelect({
 }) {
   const { t } = useI18n();
   const descending = options[0] > options[options.length - 1];
-  const all = [
-    ...new Set([...options, ...[from, to].filter((v): v is number => !!v)]),
-  ].sort((a, b) => (descending ? b - a : a - b));
-  const side = (
-    label: string,
-    value: number | undefined,
-    keep: (v: number) => boolean,
-    pick: (v: number | undefined) => void,
-  ) => (
-    <Select
-      value={value ?? ""}
-      onChange={(e) => pick(num(e.target.value))}
-      aria-label={label}
-      className="h-11 px-3 text-sm"
-    >
+  const all = [...new Set([...options, ...[from, to].filter((v): v is number => !!v)])].sort((a, b) => (descending ? b - a : a - b));
+  const side = (label: string, value: number | undefined, keep: (v: number) => boolean, pick: (v: number | undefined) => void) => (
+    <Select value={value ?? ""} onChange={(e) => pick(num(e.target.value))} aria-label={label} className="h-11 px-3 text-sm">
       <option value="">{label}</option>
       {all.filter(keep).map((v) => (
         <option key={v} value={v}>
@@ -176,27 +132,15 @@ function RangeSelect({
   );
   return (
     <div className="grid grid-cols-2 gap-2">
-      {side(
-        t("Доод"),
-        from,
-        (v) => !to || v <= to,
-        (v) => onChange(v, to),
-      )}
-      {side(
-        t("Дээд"),
-        to,
-        (v) => !from || v >= from,
-        (v) => onChange(from, v),
-      )}
+      {side(t("Доод"), from, (v) => !to || v <= to, (v) => onChange(v, to))}
+      {side(t("Дээд"), to, (v) => !from || v >= from, (v) => onChange(from, v))}
     </div>
   );
 }
 
 /** Covers a disabled Select's chevron while its options load. */
 function SelectSpinner() {
-  return (
-    <Spinner className="pointer-events-none absolute right-3 top-1/2 size-5 -translate-y-1/2 rounded-full bg-muted" />
-  );
+  return <Spinner className="pointer-events-none absolute right-3 top-1/2 size-5 -translate-y-1/2 rounded-full bg-muted" />;
 }
 
 type Loaded<T> = { data: T | undefined; loading: boolean };
@@ -222,20 +166,9 @@ function Filters({
   const brandPending = pending !== null && pending.brand !== p.brand;
   // The selected brand can only be shown once the brand list is in.
   const brandsLoading = brandPending || !brands.data;
-  const modelsLoading =
-    (brandPending && !!pending.brand) || (!!p.brand && models.loading);
+  const modelsLoading = (brandPending && !!pending.brand) || (!!p.brand && models.loading);
   const hasFilters =
-    p.brand ||
-    p.model ||
-    p.body.length ||
-    p.yearFrom ||
-    p.yearTo ||
-    p.importFrom ||
-    p.importTo ||
-    p.priceMin ||
-    p.priceMax ||
-    p.fuel.length ||
-    p.steering;
+    p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
 
   return (
     <section className="space-y-4 rounded-2xl bg-card p-5">
@@ -279,9 +212,7 @@ function Filters({
               aria-busy={brandsLoading}
               aria-label={t("Үйлдвэр")}
             >
-              <option value="">
-                {brandsLoading ? t("Ачаалж байна...") : t("Бүх үйлдвэр")}
-              </option>
+              <option value="">{brandsLoading ? t("Ачаалж байна...") : t("Бүх үйлдвэр")}</option>
               {!brandsLoading &&
                 brands.data?.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -299,9 +230,7 @@ function Filters({
               aria-busy={modelsLoading}
               aria-label={t("Загвар")}
             >
-              <option value="">
-                {modelsLoading ? t("Ачаалж байна...") : t("Бүх загвар")}
-              </option>
+              <option value="">{modelsLoading ? t("Ачаалж байна...") : t("Бүх загвар")}</option>
               {!modelsLoading &&
                 models.data?.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -326,18 +255,10 @@ function Filters({
                   key={b.id}
                   type="button"
                   aria-pressed={on}
-                  onClick={() =>
-                    set({
-                      body: on
-                        ? p.body.filter((x) => x !== b.id)
-                        : [...p.body, b.id],
-                    })
-                  }
+                  onClick={() => set({ body: on ? p.body.filter((x) => x !== b.id) : [...p.body, b.id] })}
                   className={cn(
                     "relative flex flex-col items-center gap-1.5 rounded-xl border-2 bg-muted px-2 pb-2.5 pt-3 text-[13px] font-semibold transition-colors",
-                    on
-                      ? "border-primary bg-primary-soft"
-                      : "border-transparent hover:border-border",
+                    on ? "border-primary bg-primary-soft" : "border-transparent hover:border-border"
                   )}
                 >
                   {on && (
@@ -346,21 +267,11 @@ function Filters({
                     </span>
                   )}
                   {image ? (
-                    <Img
-                      src={image}
-                      loading="lazy"
-                      className="h-8 w-full rounded-md object-contain"
-                    />
+                    <Img src={image} loading="lazy" className="h-8 w-full rounded-md object-contain" />
                   ) : (
-                    <CarArt
-                      shape={shapeFor(b.name)}
-                      className="h-8 w-auto"
-                      strokeWidth={2.6}
-                    />
+                    <CarArt shape={shapeFor(b.name)} className="h-8 w-auto" strokeWidth={2.6} />
                   )}
-                  <span className="w-full truncate text-center">
-                    {bodyTypeLabel(b.name, t)}
-                  </span>
+                  <span className="w-full truncate text-center">{bodyTypeLabel(b.name, t)}</span>
                 </button>
               );
             })}
@@ -371,30 +282,15 @@ function Filters({
       </Group>
 
       <Group title={t("Үнэ (сая ₮)")}>
-        <RangeSelect
-          options={PRICES}
-          from={p.priceMin}
-          to={p.priceMax}
-          onChange={(priceMin, priceMax) => set({ priceMin, priceMax })}
-        />
+        <RangeSelect options={PRICES} from={p.priceMin} to={p.priceMax} onChange={(priceMin, priceMax) => set({ priceMin, priceMax })} />
       </Group>
 
       <Group title={t("Үйлдвэрлэсэн он")}>
-        <RangeSelect
-          options={YEARS}
-          from={p.yearFrom}
-          to={p.yearTo}
-          onChange={(yearFrom, yearTo) => set({ yearFrom, yearTo })}
-        />
+        <RangeSelect options={YEARS} from={p.yearFrom} to={p.yearTo} onChange={(yearFrom, yearTo) => set({ yearFrom, yearTo })} />
       </Group>
 
       <Group title={t("Орж ирсэн он")}>
-        <RangeSelect
-          options={YEARS}
-          from={p.importFrom}
-          to={p.importTo}
-          onChange={(importFrom, importTo) => set({ importFrom, importTo })}
-        />
+        <RangeSelect options={YEARS} from={p.importFrom} to={p.importTo} onChange={(importFrom, importTo) => set({ importFrom, importTo })} />
       </Group>
 
       <Group title={t("Түлш")}>
@@ -402,28 +298,14 @@ function Filters({
           {FUEL_TYPES.map((f) => {
             const on = p.fuel.includes(f);
             return (
-              <label
-                key={f}
-                className="flex cursor-pointer items-center gap-3 text-[15px]"
-              >
+              <label key={f} className="flex cursor-pointer items-center gap-3 text-[15px]">
                 <input
                   type="checkbox"
                   className="sr-only"
                   checked={on}
-                  onChange={() =>
-                    set({
-                      fuel: on ? p.fuel.filter((x) => x !== f) : [...p.fuel, f],
-                    })
-                  }
+                  onChange={() => set({ fuel: on ? p.fuel.filter((x) => x !== f) : [...p.fuel, f] })}
                 />
-                <span
-                  className={cn(
-                    "grid size-5 place-items-center rounded-[5px] border-[1.5px]",
-                    on
-                      ? "border-primary bg-primary text-white"
-                      : "border-input bg-white",
-                  )}
-                >
+                <span className={cn("grid size-5 place-items-center rounded-[5px] border-[1.5px]", on ? "border-primary bg-primary text-white" : "border-input bg-white")}>
                   {on && <Check className="size-3.5" strokeWidth={3.2} />}
                 </span>
                 {tv(f)}
@@ -439,10 +321,7 @@ function Filters({
             <button
               key={s ?? "all"}
               onClick={() => set({ steering: s })}
-              className={cn(
-                "rounded-lg py-2 text-sm font-semibold",
-                p.steering === s ? "bg-white shadow-sm" : "text-foreground/70",
-              )}
+              className={cn("rounded-lg py-2 text-sm font-semibold", p.steering === s ? "bg-white shadow-sm" : "text-foreground/70")}
             >
               {s ? tv(s) : t("Бүгд")}
             </button>
@@ -472,10 +351,7 @@ function MobileFilters({
 }) {
   const { t } = useI18n();
   const [draft, setDraft] = useState(p);
-  const models = useApi(
-    () => (draft.brand ? getModels(draft.brand) : Promise.resolve([])),
-    String(draft.brand ?? ""),
-  );
+  const models = useApi(() => (draft.brand ? getModels(draft.brand) : Promise.resolve([])), String(draft.brand ?? ""));
 
   // The page behind must not scroll while the sheet is up.
   useEffect(() => {
@@ -487,26 +363,12 @@ function MobileFilters({
   }, []);
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={t("Шүүлтүүр")}
-      className="fixed inset-0 z-[60] flex flex-col bg-muted lg:hidden"
-    >
+    <div role="dialog" aria-modal="true" aria-label={t("Шүүлтүүр")} className="fixed inset-0 z-[60] flex flex-col bg-muted lg:hidden">
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-white px-2 pt-[env(safe-area-inset-top)]">
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={t("Буцах")}
-          className="grid size-10 place-items-center rounded-xl hover:bg-muted"
-        >
+        <button type="button" onClick={onClose} aria-label={t("Буцах")} className="grid size-10 place-items-center rounded-xl hover:bg-muted">
           <ArrowLeft className="size-5" />
         </button>
-        <button
-          type="button"
-          onClick={() => onApply(draft)}
-          className="h-10 rounded-xl bg-primary px-5 text-sm font-bold text-white hover:bg-primary-hover"
-        >
+        <button type="button" onClick={() => onApply(draft)} className="h-10 rounded-xl bg-primary px-5 text-sm font-bold text-white hover:bg-primary-hover">
           {t("Хайх")}
         </button>
       </div>
@@ -535,16 +397,11 @@ function CarsPageInner() {
   const set = (patch: Partial<Params>) => {
     const next = { ...p, page: 1, ...patch };
     const qs = writeParams(next);
-    router.replace(`${pathname}${qs ? `?${qs}` : ""}`, {
-      scroll: "page" in patch,
-    });
+    router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: "page" in patch });
   };
 
   const brands = useApi(getBrands);
-  const models = useApi(
-    () => (p.brand ? getModels(p.brand) : Promise.resolve([])),
-    String(p.brand ?? ""),
-  );
+  const models = useApi(() => (p.brand ? getModels(p.brand) : Promise.resolve([])), String(p.brand ?? ""));
   const bodyTypes = useApi(getBodyTypes);
   const dealers = useApi(getDealers);
   const key = writeParams(p);
@@ -567,7 +424,7 @@ function CarsPageInner() {
         page: p.page,
         pageSize: PAGE_SIZE,
       }),
-    key,
+    key
   );
 
   const rows = result.data?.rows ?? [];
@@ -580,37 +437,35 @@ function CarsPageInner() {
     <>
       {/* Title band over a road photo (Unsplash, see public/hero/CREDITS.md), darkened so the white text reads. */}
       <section className="relative isolate overflow-hidden bg-dark text-white">
-        <img
-          src="/hero/road.webp"
-          srcSet="/hero/road-sm.webp 900w, /hero/road.webp 1920w"
-          sizes="100vw"
-          alt=""
-          className="absolute inset-0 -z-10 size-full object-cover object-[center_60%]"
-        />
+        <div className="absolute inset-0 -z-10">
+          <Img
+            src="/hero/road.webp"
+            srcSet="/hero/road-sm.webp 900w, /hero/road.webp 1920w"
+            sizes="100vw"
+            alt=""
+            fetchPriority="high"
+            className="size-full object-cover object-[center_60%]"
+          />
+        </div>
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
         <Container className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-10 md:py-16">
-          <h1 className="font-display text-3xl font-bold uppercase leading-tight tracking-tight md:text-5xl">
-            {t("Машин хайх")}
-          </h1>
+          <h1 className="font-display text-3xl font-bold uppercase leading-tight tracking-tight md:text-5xl">{t("Машин хайх")}</h1>
           {/* Total beside the title; pulses while results are loading. */}
-          <span
-            aria-live="polite"
-            className={cn(
-              "text-sm font-medium tabular-nums text-white/75 md:text-base",
-              result.loading && "animate-pulse",
-            )}
-          >
-            {result.data
-              ? t("{n} машин", { n: result.data.count.toLocaleString("en-US") })
-              : "…"}
+          <span aria-live="polite" className={cn("text-sm font-medium tabular-nums text-white/75 md:text-base", result.loading && "animate-pulse")}>
+            {result.data ? t("{n} машин", { n: result.data.count.toLocaleString("en-US") }) : "…"}
           </span>
         </Container>
       </section>
 
       <Container className="pt-1 md:pt-3">
-        <p className="mt-6 text-xs font-semibold text-muted-foreground">
-          {t("Үйлдвэр")}
-        </p>
+        {(dealers.loading && !dealers.data) || dealers.data?.rows.length ? (
+          <>
+            <p className="mt-6 text-xs font-semibold text-muted-foreground">{t("Дилерүүд")}</p>
+            <DealerTabs className="mt-2" items={dealers.data?.rows ?? []} loading={dealers.loading && !dealers.data} />
+          </>
+        ) : null}
+
+        <p className="mt-4 text-xs font-semibold text-muted-foreground">{t("Үйлдвэр")}</p>
         <BrandTabs
           className="mt-2"
           items={brands.data ?? []}
@@ -618,19 +473,6 @@ function CarsPageInner() {
           selectedId={p.brand}
           onSelect={(id) => set({ brand: id, model: undefined })}
         />
-
-        {(dealers.loading && !dealers.data) || dealers.data?.rows.length ? (
-          <>
-            <p className="mt-4 text-xs font-semibold text-muted-foreground">
-              {t("Дилерүүд")}
-            </p>
-            <DealerTabs
-              className="mt-2"
-              items={dealers.data?.rows ?? []}
-              loading={dealers.loading && !dealers.data}
-            />
-          </>
-        ) : null}
 
         <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[296px_1fr]">
           <aside>
@@ -643,14 +485,7 @@ function CarsPageInner() {
               {t("Шүүлтүүр")}
             </button>
             <div className="hidden lg:block">
-              <Filters
-                key={key}
-                p={p}
-                set={set}
-                brands={brands}
-                models={models}
-                bodyTypes={bodyTypes.data ?? []}
-              />
+              <Filters key={key} p={p} set={set} brands={brands} models={models} bodyTypes={bodyTypes.data ?? []} />
             </div>
             {showFilters && (
               <MobileFilters
@@ -668,19 +503,8 @@ function CarsPageInner() {
 
           <div>
             <div className="mb-4 flex items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">
-                {result.data
-                  ? t("{n} зар олдлоо", { n: result.data.count })
-                  : " "}
-              </p>
-              <Select
-                value={p.sort}
-                onChange={(e) =>
-                  set({ sort: e.target.value as Params["sort"] })
-                }
-                className="h-10 w-48 text-sm"
-                aria-label={t("Эрэмбэлэх")}
-              >
+              <p className="text-sm text-muted-foreground">{result.data ? t("{n} зар олдлоо", { n: result.data.count }) : " "}</p>
+              <Select value={p.sort} onChange={(e) => set({ sort: e.target.value as Params["sort"] })} className="h-10 w-48 text-sm" aria-label={t("Эрэмбэлэх")}>
                 {CAR_SORTS.map((o) => (
                   <option key={o.value} value={o.value}>
                     {t(o.label)}
@@ -692,22 +516,11 @@ function CarsPageInner() {
             {result.loading && !result.data ? (
               <CardGridSkeleton />
             ) : result.error ? (
-              <ErrorState
-                message={result.error.message}
-                onRetry={result.reload}
-              />
+              <ErrorState message={result.error.message} onRetry={result.reload} />
             ) : rows.length === 0 ? (
-              <EmptyState
-                title={t("Тохирох зар олдсонгүй")}
-                description={t("Шүүлтүүрээ өөрчлөөд дахин оролдоно уу.")}
-              />
+              <EmptyState title={t("Тохирох зар олдсонгүй")} description={t("Шүүлтүүрээ өөрчлөөд дахин оролдоно уу.")} />
             ) : (
-              <div
-                className={cn(
-                  "grid gap-4 sm:grid-cols-2 xl:grid-cols-3",
-                  result.loading && "opacity-60",
-                )}
-              >
+              <div className={cn("grid gap-4 sm:grid-cols-2 xl:grid-cols-3", result.loading && "opacity-60")}>
                 {rest.slice(0, 3).map((car) => (
                   <CarCard key={car.id} car={car} showDescription />
                 ))}
@@ -719,11 +532,7 @@ function CarsPageInner() {
             )}
 
             <div className="mt-8">
-              <Pagination
-                page={p.page}
-                total={totalPages}
-                onChange={(page) => set({ page })}
-              />
+              <Pagination page={p.page} total={totalPages} onChange={(page) => set({ page })} />
             </div>
           </div>
         </div>
@@ -739,3 +548,4 @@ export default function CarsPage() {
     </Suspense>
   );
 }
+
