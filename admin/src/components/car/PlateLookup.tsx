@@ -7,9 +7,9 @@ import { useState } from "react";
 
 type SearchType = "plate" | "vin";
 
-const TYPES: Record<SearchType, { label: string; placeholder: string; check: RegExp; error: string }> = {
-  plate: { label: "Улсын дугаар", placeholder: "1234 УБА", check: /^\d{4}[А-ЯЁӨҮ]{3}$/, error: "Улсын дугаарын формат буруу байна (жш: 1234 УБА)" },
-  vin: { label: "Арлын дугаар", placeholder: "NHP106487692", check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, error: "Арлын дугаарын формат буруу байна" },
+const TYPES: Record<SearchType, { label: string; short: string; placeholder: string; check: RegExp; error: string }> = {
+  plate: { label: "Улсын дугаар", short: "Улсын", placeholder: "1234 УБА", check: /^\d{4}[А-ЯЁӨҮ]{3}$/, error: "Улсын дугаарын формат буруу байна (жш: 1234 УБА)" },
+  vin: { label: "Арлын дугаар", short: "Арлын", placeholder: "NHP106487692", check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, error: "Арлын дугаарын формат буруу байна" },
 };
 
 /** "1698 уао" → "1698УАО" */
@@ -56,15 +56,15 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
               setNote(null);
             }}
             aria-label="Хайх төрөл"
-            className="h-full cursor-pointer appearance-none bg-transparent pl-3 pr-8 text-sm font-semibold text-primary outline-none"
+            className="h-full cursor-pointer appearance-none bg-transparent pl-3 pr-7 text-[13px] font-semibold text-primary outline-none"
           >
             {(Object.keys(TYPES) as SearchType[]).map((k) => (
               <option key={k} value={k}>
-                {TYPES[k].label}
+                {TYPES[k].short}
               </option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-primary" />
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-primary" />
         </span>
         <input
           className="min-w-0 flex-1 bg-transparent px-3 text-[15px] font-semibold uppercase tracking-wide outline-none placeholder:font-normal placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground/70"
@@ -76,7 +76,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
               search();
             }
           }}
-          placeholder={t.placeholder}
+          placeholder={`${t.label}: ${t.placeholder}`}
           maxLength={20}
           autoComplete="off"
         />
