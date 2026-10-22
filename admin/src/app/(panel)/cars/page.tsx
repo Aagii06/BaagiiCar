@@ -107,7 +107,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
               Буцаах
             </button>
           )}
-          {car.status === "active" && (
+          {isAdmin && car.status === "active" && (
             <button
               onClick={() =>
                 run(
@@ -129,7 +129,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
               Зарагдсан
             </button>
           )}
-          {car.status === "active" && (
+          {isAdmin && car.status === "active" && (
             <button
               onClick={() =>
                 run(() => setHidden(car.id, true), "Нууллаа, вэб дээр харагдахгүй", {
@@ -146,7 +146,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
               Нуух
             </button>
           )}
-          {car.status === "hidden" && (
+          {isAdmin && car.status === "hidden" && (
             <button
               onClick={() =>
                 run(() => setHidden(car.id, false), "Ил гаргалаа, вэб дээр харагдана", {

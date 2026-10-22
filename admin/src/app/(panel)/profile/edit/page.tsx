@@ -8,7 +8,7 @@ import EmailOtpSheet from "@/components/profile/EmailOtpSheet";
 import { getDealers, sendEmailChangeCode, updateRow } from "@/lib/api/admin";
 import type { User } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { roleLabel } from "@/lib/constants";
+import { roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { BadgeCheck, Loader2 } from "lucide-react";
@@ -20,6 +20,7 @@ function ProfileForm({ me }: { me: User }) {
   const router = useRouter();
   const toast = useToast();
   const { refreshUser } = useAuth();
+  const isAdmin = me.role === ROLES.admin;
   const dealers = useApi(getDealers);
   const [f, setF] = useState({
     lastname: me.lastname ?? "",
@@ -64,7 +65,8 @@ function ProfileForm({ me }: { me: User }) {
         firstname: f.firstname.trim() || null,
         phonenumber: f.phonenumber,
         profile: f.profile || null,
-        dealer_id: f.dealer_id ? Number(f.dealer_id) : null,
+        // Only admins pick their dealer; the backend ignores it for everyone else.
+        ...(isAdmin && { dealer_id: f.dealer_id ? Number(f.dealer_id) : null }),
         // The update endpoint validates the role; send the current one unchanged.
         role: me.role,
       });
@@ -113,9 +115,9 @@ function ProfileForm({ me }: { me: User }) {
               )}
             </span>
           </Field>
-          <Field label="Дилер" hint="Шинэ зар нэмэхэд энэ дилер санал болгогдоно">
+          <Field label="Дилер" hint={isAdmin ? "Шинэ зар нэмэхэд энэ дилер санал болгогдоно" : "Таны зарууд энэ дилерт харьяалагдана. Солихыг админаас хүснэ үү"}>
             {/* Placeholder grey goes on the select: browsers ignore colour on <option>. */}
-            <Select value={f.dealer_id} onChange={(e) => setF({ ...f, dealer_id: e.target.value })} className={f.dealer_id ? undefined : "text-muted-foreground"}>
+            <Select value={f.dealer_id} onChange={(e) => setF({ ...f, dealer_id: e.target.value })} disabled={!isAdmin} className={f.dealer_id ? undefined : "text-muted-foreground"}>
               <option value="">-- Сонгох --</option>
               {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}
               {dealers.data?.map((d) => (

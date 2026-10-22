@@ -8,10 +8,10 @@ import PlateLookup from "./PlateLookup";
 import { getBodyTypes, getBrands, getDealers, getLocations, getModels, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
 import type { Car, CarModel, Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, FUEL_TYPES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
+import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, FUEL_TYPES, ROLES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ImagePlus, UserRound, X } from "lucide-react";
+import { ImagePlus, Store, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const MAX_PHOTOS = 12;
@@ -135,40 +135,64 @@ function Chips({ options, value, onChange }: { options: string[]; value: string;
  * Create / edit an ad. Photos already on the server are passed in as
  * `existing` items and kept by id; new files are uploaded with the save.
  */
-/** Which dealer the ad belongs to: none, an active dealer, or (when editing) its current dealer even if inactive now. */
-function DealerSection({ car, value, dealers, onChange }: { car?: Car | null; value: string; dealers: Dealer[]; onChange: (id: string, phone: string | null) => void }) {
+/**
+ * Which dealer the ad belongs to (required). Admins pick from active dealers (an ad's current dealer stays
+ * selectable even if inactive now); a dealer only sees their own, read-only.
+ */
+function DealerSection({
+  car,
+  value,
+  dealers,
+  editable,
+  onChange,
+}: {
+  car?: Car | null;
+  value: string;
+  dealers: Dealer[];
+  editable: boolean;
+  onChange: (id: string, phone: string | null) => void;
+}) {
   const dealer = dealers.find((d) => String(d.id) === value);
   const current = car?.dealer_id && value === String(car.dealer_id) && !dealer;
+  const name = dealer?.name ?? (current ? car?.dealer_name : null);
 
   return (
     <Section title="Дилер">
       <div className="flex items-center gap-3">
-        {dealer ? (
-          <DealerAvatar dealer={dealer} className="size-12" />
+        {dealer || current ? (
+          <DealerAvatar dealer={dealer ?? { name: car?.dealer_name ?? "", logo: car?.dealer_logo ?? null }} className="size-12" />
         ) : (
           <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
-            <UserRound className="size-5" />
+            <Store className="size-5" />
           </span>
         )}
         <div className="min-w-0 flex-1">
-          <Select
-            value={value}
-            onChange={(e) => {
-              const id = e.target.value;
-              onChange(id, dealers.find((d) => String(d.id) === id)?.phonenumber ?? null);
-            }}
-          >
-            {current && <option value={value}>{car.dealer_name || `#${car.dealer_id}`} (одоогийн)</option>}
-            <option value="">Дилергүй</option>
-            {dealers.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-                {d.phonenumber ? ` · ${d.phonenumber}` : ""}
-              </option>
-            ))}
-          </Select>
+          {editable ? (
+            <Select
+              value={value}
+              onChange={(e) => {
+                const id = e.target.value;
+                onChange(id, dealers.find((d) => String(d.id) === id)?.phonenumber ?? null);
+              }}
+              className={value ? undefined : "text-muted-foreground"}
+              required
+            >
+              {/* Older ads may have no dealer yet: one has to be picked before saving. */}
+              {!value && <option value="">-- Сонгох --</option>}
+              {current && <option value={value}>{car.dealer_name || `#${car.dealer_id}`} (одоогийн)</option>}
+              {dealers.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                  {d.phonenumber ? ` · ${d.phonenumber}` : ""}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <p className="truncate font-bold">{name || "—"}</p>
+          )}
           <p className="mt-1 text-xs text-muted-foreground">
-            {dealer || current ? "Зар энэ дилерийн хуудсанд харагдана" : car ? `Оруулсан: ${car.seller_name || car.seller_phone || "—"}` : "Өөрийн нэр дээр нийтэлнэ"}
+            {editable ? "Зар энэ дилерийн хуудсанд харагдана" : "Таны дилерийн нэр дээр нийтлэгдэнэ"}
+            {car && ` · Оруулсан: ${car.seller_name || car.seller_phone || "—"}`}
           </p>
         </div>
       </div>
@@ -199,13 +223,14 @@ export default function CarForm({
   car?: Car | null;
   photos?: PhotoItem[];
   defaultPhone?: string | null;
-  /** New ad only: the dealer picked in the first step (none = no dealer). */
+  /** New ad only: the admin's pick from the first step, or the signed-in dealer's own dealer. */
   dealer?: Dealer | null;
   onSaved: (id: number) => void;
   /** Mirrors the saving state to the header's save button. */
   onBusyChange?: (busy: boolean) => void;
 }) {
   const { user: me } = useAuth();
+  const isAdmin = me?.role === ROLES.admin;
   const [f, setF] = useState<FormState>(() => initialState(car, dealer?.phonenumber || defaultPhone, dealer?.id));
   const [photos, setPhotos] = useState<PhotoItem[]>(initialPhotos);
   const [error, setError] = useState<string | null>(null);
@@ -289,6 +314,7 @@ export default function CarForm({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
+    if (!f.dealer_id && isAdmin) return setError("Дилер сонгоно уу");
     if (!f.brand_id) return setError("Үйлдвэр сонгоно уу");
     if (!f.manufactured_year) return setError("Үйлдвэрлэсэн он оруулна уу");
     if (!f.price) return setError("Үнэ оруулна уу");
@@ -311,6 +337,7 @@ export default function CarForm({
         car={car}
         value={f.dealer_id}
         dealers={dealers.data ?? (dealer ? [dealer] : [])}
+        editable={isAdmin}
         onChange={(id, phone) =>
           // Утас хоосон эсвэл өмнөх дилерийн / өөрийн дугаар байвал шинэ дилерийн дугаараар солино
           setF((p) => {
@@ -457,37 +484,39 @@ export default function CarForm({
         </div>
       </Section>
 
-      <Section title="Админ">
-        <div className="space-y-4">
-          <label className="flex items-center justify-between gap-4">
-            <span>
-              <span className="block text-sm font-semibold">Онцлох зар</span>
-              <span className="block text-xs text-muted-foreground">Нүүр хуудсанд болон хайлтын эхэнд гарна</span>
-            </span>
-            <input type="checkbox" className="size-5 accent-[var(--primary)]" checked={f.is_featured} onChange={(e) => setF((p) => ({ ...p, is_featured: e.target.checked }))} />
-          </label>
-          {car && (
-            <Field label="Төлөв">
-              <Select {...bind("status")}>
-                {Object.entries(CAR_STATUS)
-                  .filter(([k]) => k !== "deleted")
-                  .map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v.label}
-                    </option>
-                  ))}
-              </Select>
-            </Field>
-          )}
-        </div>
-      </Section>
+      {isAdmin && (
+        <Section title="Админ">
+          <div className="space-y-4">
+            <label className="flex items-center justify-between gap-4">
+              <span>
+                <span className="block text-sm font-semibold">Онцлох зар</span>
+                <span className="block text-xs text-muted-foreground">Нүүр хуудсанд болон хайлтын эхэнд гарна</span>
+              </span>
+              <input type="checkbox" className="size-5 accent-[var(--primary)]" checked={f.is_featured} onChange={(e) => setF((p) => ({ ...p, is_featured: e.target.checked }))} />
+            </label>
+            {car && (
+              <Field label="Төлөв">
+                <Select {...bind("status")}>
+                  {Object.entries(CAR_STATUS)
+                    .filter(([k]) => k !== "deleted")
+                    .map(([k, v]) => (
+                      <option key={k} value={k}>
+                        {v.label}
+                      </option>
+                    ))}
+                </Select>
+              </Field>
+            )}
+          </div>
+        </Section>
+      )}
 
       <div ref={errorRef}>
         <FormError message={error} />
       </div>
       <div className="flex justify-end">
         <button disabled={busy} className="h-12 w-full rounded-xl bg-primary px-8 font-bold text-white hover:bg-primary-hover disabled:opacity-60">
-          {busy ? "Хадгалж байна…" : car ? "Хадгалах" : "Зар нийтлэх"}
+          {busy ? "Хадгалж байна…" : car ? "Хадгалах" : isAdmin ? "Зар нийтлэх" : "Батлуулахаар илгээх"}
         </button>
       </div>
     </form>
