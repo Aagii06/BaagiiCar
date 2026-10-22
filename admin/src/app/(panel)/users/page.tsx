@@ -59,9 +59,10 @@ export default function UsersPage() {
       ) : !users.data?.rows.length ? (
         <EmptyState title="Хэрэглэгч олдсонгүй" />
       ) : (
-        <div className="divide-y divide-border overflow-hidden rounded-2xl bg-card">
+        // Edge to edge, right under the header (cancels main's px-4 and the header's mb-4).
+        <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
           {users.data.rows.map((u) => (
-            <Link key={u.id} href={`/users/${u.id}`} className="flex items-center gap-3 px-3 py-3 hover:bg-muted/60">
+            <Link key={u.id} href={`/users/${u.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/60">
               {u.role === ROLES.dealer && u.logo ? (
                 // eslint-disable-next-line @next/next/no-img-element -- uploaded dealer logo
                 <img src={catalogImage(u.logo, "users") ?? ""} alt="" className="size-10 shrink-0 rounded-full bg-muted object-contain" />
