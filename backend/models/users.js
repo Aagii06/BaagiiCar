@@ -23,6 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 
       profile: { type: DataTypes.STRING },
+      // Зөвхөн DEALER эрхтэй хэрэглэгчийн лого (public/uploads/users)
+      logo: { type: DataTypes.STRING },
       username: { type: DataTypes.STRING },
       phonenumber: { type: DataTypes.STRING },
       firstname: { type: DataTypes.STRING },
