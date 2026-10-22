@@ -5,12 +5,16 @@ import { WEB_URL } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
 import UserAvatar from "@/components/common/UserAvatar";
+import { getDealers } from "@/lib/api/admin";
+import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
 import { ChevronRight, ExternalLink, LibraryBig, LogOut, ShieldUser, Store, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
+  const dealers = useApi(getDealers);
+  const dealer = dealers.data?.find((d) => d.id === user?.dealer_id);
 
   return (
     <>
@@ -22,6 +26,7 @@ export default function ProfilePage() {
           <p className="text-sm text-white/70">
             {user?.phonenumber} · {roleLabel(user?.role)}
           </p>
+          {dealer && <p className="truncate text-sm font-semibold text-white">{dealer.name}</p>}
         </div>
       </section>
 
@@ -52,6 +57,10 @@ export default function ProfilePage() {
       )}
 
       <div className="mt-4 space-y-2">
+        <Link href="/profile/edit" className="flex items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold">
+          Профайл засах
+          <ChevronRight className="size-4" />
+        </Link>
         <Link href="/profile/password" className="flex items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold">
           Нууц үг солих
           <ChevronRight className="size-4" />

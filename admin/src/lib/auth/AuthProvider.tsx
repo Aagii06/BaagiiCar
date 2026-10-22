@@ -14,6 +14,8 @@ interface AuthContextValue {
   user: User | null;
   login: (phonenumber: string, password: string) => Promise<void>;
   logout: () => void;
+  /** Re-reads the signed-in user after they edit their own profile. */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -73,7 +75,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus("anonymous");
   }, []);
 
-  const value = useMemo(() => ({ status, user, login, logout }), [status, user, login, logout]);
+  const refreshUser = useCallback(async () => {
+    const fresh = await getUserData();
+    const token = getAuthToken();
+    if (!fresh || !token) return;
+    setSession(token, fresh);
+    setUser(fresh);
+  }, []);
+
+  const value = useMemo(() => ({ status, user, login, logout, refreshUser }), [status, user, login, logout, refreshUser]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
