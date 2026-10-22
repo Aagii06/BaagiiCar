@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, FormError, inputClass } from "@/components/common/Field";
+import { Field, FormError, PasswordInput } from "@/components/common/Field";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
 import { changePassword } from "@/lib/api/admin";
@@ -38,13 +38,13 @@ export default function ChangePasswordPage() {
       <DetailHeader title="Нууц үг солих" back="/profile" />
       <form onSubmit={submit} className="space-y-4 rounded-2xl bg-card p-4">
         <Field label="Хуучин нууц үг">
-          <input className={inputClass} type="password" autoComplete="current-password" value={pw.old_password} onChange={(e) => setPw({ ...pw, old_password: e.target.value })} required />
+          <PasswordInput autoComplete="current-password" value={pw.old_password} onChange={(e) => setPw({ ...pw, old_password: e.target.value })} required />
         </Field>
         <Field label="Шинэ нууц үг">
-          <input className={inputClass} type="password" autoComplete="new-password" value={pw.password} onChange={(e) => setPw({ ...pw, password: e.target.value })} required />
+          <PasswordInput autoComplete="new-password" value={pw.password} onChange={(e) => setPw({ ...pw, password: e.target.value })} required />
         </Field>
         <Field label="Шинэ нууц үг давтах">
-          <input className={inputClass} type="password" autoComplete="new-password" value={pw.password_confirm} onChange={(e) => setPw({ ...pw, password_confirm: e.target.value })} required />
+          <PasswordInput autoComplete="new-password" value={pw.password_confirm} onChange={(e) => setPw({ ...pw, password_confirm: e.target.value })} required />
         </Field>
         <FormError message={error} />
         <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">

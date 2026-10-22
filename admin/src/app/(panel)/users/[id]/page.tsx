@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, FormError, inputClass, PhoneInput, Select } from "@/components/common/Field";
+import { Field, FormError, inputClass, PasswordInput, PhoneInput, Select } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
@@ -12,13 +12,16 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLE_LIST, roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
-import { Trash2 } from "lucide-react";
+import { Loader2, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-function UserForm({ user }: { user: User | null }) {
+/** Lets the header's save icon submit the form via `form={USER_FORM_ID}`. */
+const USER_FORM_ID = "user-form";
+
+function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (busy: boolean) => void }) {
   const router = useRouter();
   const toast = useToast();
   const confirm = useConfirm();
@@ -37,6 +40,7 @@ function UserForm({ user }: { user: User | null }) {
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  useEffect(() => onBusyChange?.(busy), [busy, onBusyChange]);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setF({ ...f, [k]: k === "phonenumber" ? e.target.value.replace(/\D/g, "") : e.target.value });
   const isMe = user?.id === me?.id;
@@ -95,7 +99,7 @@ function UserForm({ user }: { user: User | null }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form id={USER_FORM_ID} onSubmit={submit} className="space-y-4">
       <section className="space-y-4 rounded-2xl bg-card p-4">
         <div>
           <span className="mb-1.5 block text-[13px] font-semibold">Профайл зураг</span>
@@ -151,10 +155,10 @@ function UserForm({ user }: { user: User | null }) {
       <section className="space-y-4 rounded-2xl bg-card p-4">
         <h2 className="font-bold">{user ? "Нууц үг солих" : "Нууц үг *"}</h2>
         <Field label="Нууц үг" hint={user ? "Хоосон орхивол өөрчлөгдөхгүй" : undefined}>
-          <input className={inputClass} type="password" autoComplete="new-password" value={f.password} onChange={set("password")} required={!user} />
+          <PasswordInput autoComplete="new-password" value={f.password} onChange={set("password")} required={!user} />
         </Field>
         <Field label="Нууц үг давтах">
-          <input className={inputClass} type="password" autoComplete="new-password" value={f.password_confirm} onChange={set("password_confirm")} required={!user || !!f.password} />
+          <PasswordInput autoComplete="new-password" value={f.password_confirm} onChange={set("password_confirm")} required={!user || !!f.password} />
         </Field>
       </section>
 
@@ -182,10 +186,31 @@ export default function UserPage() {
   const id = useRouteId();
   const isNew = id === "new";
   const data = useApi(() => (isNew ? Promise.resolve(null) : getUser(id)), id);
+  const [saving, setSaving] = useState(false);
 
   return (
     <>
-      <DetailHeader title={isNew ? "Шинэ админ, дилер" : data.data ? userName(data.data) : "Admin & Dealer"} back="/users" />
+      <DetailHeader
+        title={isNew ? "Шинэ админ, дилер" : data.data ? userName(data.data) : "Admin & Dealer"}
+        back="/users"
+        aside={
+          // Same as the save button at the bottom of the form.
+          !isNew &&
+          data.data &&
+          data.data.status !== "deleted" && (
+            <button
+              type="submit"
+              form={USER_FORM_ID}
+              disabled={saving}
+              aria-label="Хадгалах"
+              title="Хадгалах"
+              className="grid size-10 place-items-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-60"
+            >
+              {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            </button>
+          )
+        }
+      />
       {isNew ? (
         <UserForm user={null} />
       ) : data.loading && !data.data ? (
@@ -195,7 +220,7 @@ export default function UserPage() {
       ) : !data.data || data.data.status === "deleted" ? (
         <EmptyState title="Хэрэглэгч олдсонгүй" />
       ) : (
-        <UserForm key={data.data.id} user={data.data} />
+        <UserForm key={data.data.id} user={data.data} onBusyChange={setSaving} />
       )}
     </>
   );
