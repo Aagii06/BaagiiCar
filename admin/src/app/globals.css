@@ -160,3 +160,8 @@
   border-color: var(--destructive);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--destructive) 12%, transparent);
 }
+
+/* Bottom-sheet Select: the mark lands on its hidden native <select>; show it on the visible button. */
+.select-field:has(> select[data-invalid]) > .select-trigger {
+  border-color: var(--destructive);
+}

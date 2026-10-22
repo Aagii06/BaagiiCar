@@ -3,7 +3,7 @@
 // Field.tsx re-exports this Select; the cycle is fine since both are only read at render time.
 import { FieldLabelContext, inputClass } from "@/components/common/Field";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, Search, X } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { Children, isValidElement, useContext, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -59,7 +59,7 @@ export default function Select({ value, onChange, children, className, disabled,
   };
 
   return (
-    <span className="select-field relative block">
+    <span className={cn("select-field relative block", bare && "h-full")}>
       <button
         ref={triggerRef}
         type="button"
@@ -123,18 +123,14 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="absolute inset-x-0 bottom-0 top-[25dvh] mx-auto flex max-w-md animate-sheet-up flex-col rounded-t-3xl bg-white shadow-2xl"
+        // Sized to its options, never higher than 25% from the top.
+        className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[75dvh] max-w-md animate-sheet-up flex-col rounded-t-3xl bg-white shadow-2xl"
       >
         <div className="shrink-0 px-5 pt-3">
-          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-border" />
-          <div className="flex items-center justify-between gap-3">
-            <h2 id={titleId} className="truncate text-lg font-bold">
-              {title}
-            </h2>
-            <button type="button" onClick={onClose} aria-label="Хаах" className="grid size-9 shrink-0 place-items-center rounded-xl hover:bg-muted">
-              <X className="size-5" />
-            </button>
-          </div>
+          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
+          <h2 id={titleId} className="truncate text-lg font-bold">
+            {title}
+          </h2>
           {searchable && (
             <label className="relative mt-3 block">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -142,7 +138,7 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
             </label>
           )}
         </div>
-        <div ref={listRef} role="listbox" aria-labelledby={titleId} className="mt-2 min-h-0 flex-1 overflow-y-auto px-2 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div ref={listRef} role="listbox" aria-labelledby={titleId} className="mt-2 min-h-0 flex-1 divide-y divide-border overflow-y-auto pb-[env(safe-area-inset-bottom)]">
           {rows.length ? (
             rows.map((o) => {
               const active = o.value === value;
@@ -154,8 +150,8 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
                   aria-selected={active}
                   onClick={() => onPick(o.value)}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[15px] hover:bg-muted",
-                    active && "bg-primary-soft font-bold text-primary hover:bg-primary-soft",
+                    "flex w-full items-center gap-3 px-5 py-4 text-left text-base hover:bg-muted/60",
+                    active && "font-bold text-primary",
                     !o.value && !active && "text-muted-foreground"
                   )}
                 >

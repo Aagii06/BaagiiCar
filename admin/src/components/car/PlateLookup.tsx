@@ -1,8 +1,10 @@
 "use client";
 
+import Select from "@/components/common/Select";
+
 import { vehicleLookup, type VehicleInfo } from "@/lib/api/cars";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Loader2, Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { useState } from "react";
 
 type SearchType = "plate" | "vin";
@@ -49,22 +51,24 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
       {/* Not a <form>: this sits inside the car form, Enter must search instead of submitting it. */}
       <div className="flex h-12 overflow-hidden rounded-xl border border-input bg-white transition focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10">
         <span className="relative shrink-0 border-r border-input bg-primary-soft">
-          <select
+          <Select
+            bare
+            title="Хайх төрөл"
             value={type}
             onChange={(e) => {
               setType(e.target.value as SearchType);
               setNote(null);
             }}
             aria-label="Хайх төрөл"
-            className="h-full cursor-pointer appearance-none bg-transparent pl-3 pr-7 text-[13px] font-semibold text-primary outline-none"
+            className="cursor-pointer bg-transparent pl-3 pr-7 text-[13px] font-semibold text-primary"
+            chevronClassName="right-2 size-3.5 text-primary"
           >
             {(Object.keys(TYPES) as SearchType[]).map((k) => (
               <option key={k} value={k}>
                 {TYPES[k].short}
               </option>
             ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-primary" />
+          </Select>
         </span>
         <input
           className="min-w-0 flex-1 bg-transparent px-3 text-[15px] font-semibold uppercase tracking-wide outline-none placeholder:font-normal placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground/70"
