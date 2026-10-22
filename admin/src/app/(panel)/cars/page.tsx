@@ -104,7 +104,7 @@ function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => voi
         {car.status !== "deleted" && (
           <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
             {car.status === "pending" && isAdmin && (
-              <button onClick={() => run(() => approveCar(car.id), "Баталлаа, вэб дээр нийтлэгдлээ")} className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white">
+              <button onClick={() => run(() => approveCar(car.id), "Баталлаа, вэб дээр нийтлэгдлээ", { title: "Зарыг батлах уу?", message: "Батласны дараа вэб дээр нийтлэгдэнэ.", confirmLabel: "Батлах", tone: "success", icon: Check })} className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white">
                 <Check className="size-3.5" strokeWidth={3} />
                 Батлах
               </button>
@@ -149,7 +149,7 @@ function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => voi
                 onClick={() =>
                   run(() => setHidden(car.id, true), "Нууллаа, вэб дээр харагдахгүй", {
                     title: "Зарыг түр нуух уу?",
-                    message: "Вэб дээр харагдахаа болино. Дараа нь «Ил гаргах»-аар буцааж нийтэлж болно.",
+                    message: "Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно.",
                     confirmLabel: "Нуух",
                     tone: "amber",
                     icon: EyeOff,
@@ -164,10 +164,10 @@ function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => voi
             {car.status === "hidden" && (
               <button
                 onClick={() =>
-                  run(() => setHidden(car.id, false), "Ил гаргалаа, вэб дээр харагдана", {
-                    title: "Зарыг ил гаргах уу?",
-                    message: "Вэб дээр дахин харагдана.",
-                    confirmLabel: "Ил гаргах",
+                  run(() => setHidden(car.id, false), "Нийтэллээ, вэб дээр харагдана", {
+                    title: "Зарыг нийтлэх үү?",
+                    message: "Нийтэлсэн зар вэб дээр харагдах боломжтой болно.",
+                    confirmLabel: "Нийтлэх",
                     tone: "success",
                     icon: Eye,
                   })
@@ -175,7 +175,7 @@ function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => voi
                 className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white"
               >
                 <Eye className="size-3.5" />
-                Ил гаргах
+                Нийтлэх
               </button>
             )}
             {/* Dealers can't delete live or sold ads, only hide / edit them. */}
@@ -202,9 +202,10 @@ function CarsInner() {
   const isAdmin = user?.role === ROLES.admin;
   // Every non-deleted dealer, so ads of a since-deactivated one can still be filtered.
   const dealers = useApi(() => (isAdmin ? listDealers().then((r) => r.rows) : Promise.resolve([])), String(isAdmin));
-  // Admins always browse one dealer at a time: the one in the URL, else their own, else the first.
+  // Admins browse the dealer in the URL ("all" = every dealer), else their own, else the first.
+  const allDealers = sp.get("dealer") === "all";
   const fallbackDealer = dealers.data?.find((d) => d.id === user?.dealer_id) ?? dealers.data?.[0];
-  const dealerId = isAdmin ? Number(sp.get("dealer")) || fallbackDealer?.id : undefined;
+  const dealerId = isAdmin && !allDealers ? Number(sp.get("dealer")) || fallbackDealer?.id : undefined;
   const [take, setTake] = useState(PAGE_SIZE);
 
   const setParam = (patch: Record<string, string>) => {
@@ -216,7 +217,7 @@ function CarsInner() {
 
   const cars = useApi(
     () =>
-      isAdmin && !dealerId
+      isAdmin && !allDealers && !dealerId
         ? Promise.resolve(null)
         : listCars({
             status: tab === "all" ? undefined : tab,
@@ -225,7 +226,7 @@ function CarsInner() {
             page: 1,
             pageSize: take,
           }),
-    `${tab}|${q}|${dealerId ?? ""}|${take}`
+    `${tab}|${q}|${allDealers ? "all" : dealerId ?? ""}|${take}`
   );
 
   return (
@@ -246,7 +247,8 @@ function CarsInner() {
           {/* Dealers only ever see their own dealer's ads, so the filter is for admins. */}
           {isAdmin && (
             <span className="w-36 shrink-0">
-              <Select title="Дилер" value={dealerId ? String(dealerId) : ""} onChange={(e) => setParam({ dealer: e.target.value })} className={dealerId ? "font-semibold text-foreground" : undefined}>
+              <Select title="Дилер" value={allDealers ? "all" : dealerId ? String(dealerId) : ""} onChange={(e) => setParam({ dealer: e.target.value })} className={dealerId || allDealers ? "font-semibold text-foreground" : undefined}>
+                <option value="all">Бүгд</option>
                 {dealers.data?.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -259,7 +261,7 @@ function CarsInner() {
         <ChipTabs items={TABS} value={tab} onChange={(v) => setParam({ status: v === "all" ? "" : v })} />
       </PageHeader>
 
-      {isAdmin && !dealerId ? (
+      {isAdmin && !allDealers && !dealerId ? (
         dealers.loading ? <LoadingState /> : dealers.error ? <ErrorState message={dealers.error.message} onRetry={dealers.reload} /> : <EmptyState title="Дилер алга" />
       ) : cars.loading && !cars.data ? (
         <LoadingState />
@@ -272,7 +274,7 @@ function CarsInner() {
           <p className="mb-2 text-xs font-semibold text-muted-foreground">{cars.data.count} зар</p>
           <div className="space-y-3">
             {cars.data.rows.map((car) => (
-              <CarRow key={car.id} car={car} onChanged={cars.reload} showDealer={isAdmin && !dealerId} />
+              <CarRow key={car.id} car={car} onChanged={cars.reload} showDealer={allDealers} />
             ))}
           </div>
           {cars.data.rows.length < cars.data.count && (

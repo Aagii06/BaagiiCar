@@ -75,7 +75,7 @@ export default function CarViewPage() {
           <StatusBanner
             car={car}
             onApprove={() => run(() => approveCar(car.id), "Баталлаа, вэб дээр нийтлэгдлээ")}
-            onHidden={(hidden) => run(() => setHidden(car.id, hidden), hidden ? "Нууллаа, вэб дээр харагдахгүй" : "Ил гаргалаа, вэб дээр харагдана")}
+            onHidden={(hidden) => run(() => setHidden(car.id, hidden), hidden ? "Нууллаа, вэб дээр харагдахгүй" : "Нийтэллээ, вэб дээр харагдана")}
             onRejected={data.reload}
           />
           <RejectNote car={car} className="mt-3" />
@@ -152,7 +152,9 @@ function StatusBanner({ car, onApprove, onHidden, onRejected }: { car: Car; onAp
         </button>
       )}
       {car.status === "pending" && isAdmin && (
-        <button onClick={onApprove} className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white">
+        <button
+          onClick={async () => (await confirm({ title: "Зарыг батлах уу?", message: "Батласны дараа вэб дээр нийтлэгдэнэ.", confirmLabel: "Батлах", tone: "success", icon: Check })) && onApprove()}
+          className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white">
           <Check className="size-4" strokeWidth={3} />
           Батлах
         </button>
@@ -161,7 +163,7 @@ function StatusBanner({ car, onApprove, onHidden, onRejected }: { car: Car; onAp
       {car.status === "active" && (
         <button
           onClick={async () =>
-            (await confirm({ title: "Зарыг түр нуух уу?", message: "Вэб дээр харагдахаа болино. Дараа нь «Ил гаргах»-аар буцааж нийтэлж болно.", confirmLabel: "Нуух", tone: "amber", icon: EyeOff })) && onHidden(true)
+            (await confirm({ title: "Зарыг түр нуух уу?", message: "Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно.", confirmLabel: "Нуух", tone: "amber", icon: EyeOff })) && onHidden(true)
           }
           className="flex shrink-0 items-center gap-1 rounded-xl bg-muted px-3 py-2 text-sm font-bold"
         >
@@ -171,11 +173,11 @@ function StatusBanner({ car, onApprove, onHidden, onRejected }: { car: Car; onAp
       )}
       {car.status === "hidden" && (
         <button
-          onClick={async () => (await confirm({ title: "Зарыг ил гаргах уу?", message: "Вэб дээр дахин харагдана.", confirmLabel: "Ил гаргах", tone: "success", icon: Eye })) && onHidden(false)}
+          onClick={async () => (await confirm({ title: "Зарыг нийтлэх үү?", message: "Нийтэлсэн зар вэб дээр харагдах боломжтой болно.", confirmLabel: "Нийтлэх", tone: "success", icon: Eye })) && onHidden(false)}
           className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white"
         >
           <Eye className="size-4" />
-          Ил гаргах
+          Нийтлэх
         </button>
       )}
       {onWeb && WEB_URL && (
