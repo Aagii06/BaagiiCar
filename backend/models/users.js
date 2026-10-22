@@ -4,9 +4,8 @@ const bcrypt = require("bcrypt");
 
 module.exports = (sequelize, DataTypes) => {
   class users extends Sequelize.Model {
-    static associate({ cars, dealers, favorites, users }) {
+    static associate({ cars, dealers, users }) {
       this.hasMany(cars, { as: "cars", foreignKey: "user_id" });
-      this.hasMany(favorites, { as: "favorites", foreignKey: "user_id" });
       this.belongsTo(dealers, { as: "dealer", foreignKey: "dealer_id" });
       this.belongsTo(users, { as: "createdBy", foreignKey: "created_by" });
       this.belongsTo(users, { as: "updatedBy", foreignKey: "updated_by" });
