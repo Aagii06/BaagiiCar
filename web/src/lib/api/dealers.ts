@@ -14,7 +14,8 @@ export interface Dealer {
 }
 
 export function dealerName(dealer: Dealer) {
-  return [dealer.firstname, dealer.lastname].filter(Boolean).join(" ");
+  // Дилерт овог байдаггүй: [dealer.firstname, dealer.lastname].filter(Boolean).join(" ")
+  return dealer.firstname ?? "";
 }
 
 export async function getDealers() {

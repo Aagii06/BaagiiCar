@@ -194,14 +194,14 @@ function UserForm({ user }: { user: User | null }) {
   return (
     <form onSubmit={submit} className="space-y-4">
       <section className="space-y-4 rounded-2xl bg-card p-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Овог">
-            <input className={inputClass} value={f.lastname} onChange={set("lastname")} />
-          </Field>
-          <Field label="Нэр">
-            <input className={inputClass} value={f.firstname} onChange={set("firstname")} />
-          </Field>
-        </div>
+        {/* Овог түр ашиглахгүй (дилерт овог байдаггүй), зөвхөн нэр.
+        <Field label="Овог">
+          <input className={inputClass} value={f.lastname} onChange={set("lastname")} />
+        </Field>
+        */}
+        <Field label="Нэр">
+          <input className={inputClass} value={f.firstname} onChange={set("firstname")} />
+        </Field>
         <Field label="Утасны дугаар *">
           <input className={inputClass} inputMode="numeric" maxLength={8} value={f.phonenumber} onChange={set("phonenumber")} required />
         </Field>

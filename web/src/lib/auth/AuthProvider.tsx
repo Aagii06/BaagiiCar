@@ -93,5 +93,6 @@ export function useAuth() {
 
 /** Name if the user filled one in, else the phone number. */
 export function displayName(user: WebUser) {
-  return [user.firstname, user.lastname].filter(Boolean).join(" ") || user.phonenumber || "";
+  // Овог түр ашиглахгүй: [user.firstname, user.lastname].filter(Boolean).join(" ")
+  return user.firstname || user.phonenumber || "";
 }
