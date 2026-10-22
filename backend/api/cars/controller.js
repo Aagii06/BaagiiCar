@@ -272,8 +272,11 @@ module.exports.reject = async (req, res) => {
 module.exports.setHidden = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
   const { id, hidden, by, at } = req.body;
-  if (req.loggedUser?.role !== roles.admin)
-    return res.status(200).json({ ...result, message: "Танд энэ үйлдлийг хийх эрх байхгүй" });
+  // Админ бүх зарыг, дилер зөвхөн өөрийн дилерийн зарыг нууна / ил гаргана
+  if (req.loggedUser?.role !== roles.admin) {
+    const { error } = await findOwnCar(id, req.loggedUser);
+    if (error) return res.status(200).json({ ...result, message: error });
+  }
 
   const [from, to] = hidden
     ? [carStatuses.active, carStatuses.hidden]
@@ -313,10 +316,12 @@ module.exports.setHidden = async (req, res) => {
   }
 };
 
-// Зарагдсан гэж тэмдэглэх
+// Зарагдсан гэж тэмдэглэх (зөвхөн админ; дилер идэвхтэй зараа зөвхөн нууж, засна)
 module.exports.markSold = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
   const { id, by, at } = req.body;
+  if (req.loggedUser?.role !== roles.admin)
+    return res.status(200).json({ ...result, message: "Танд энэ үйлдлийг хийх эрх байхгүй" });
   try {
     const { car, error } = await findOwnCar(id, req.loggedUser);
     if (error) return res.status(200).json({ ...result, message: error });

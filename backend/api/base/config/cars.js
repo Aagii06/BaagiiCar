@@ -1,5 +1,5 @@
 const { cars, op } = require("../../../models");
-const { roles } = require("../../../config/constants");
+const { roles, carStatuses } = require("../../../config/constants");
 const { dealerIdOf } = require("../../cars/controller");
 
 // Админ бүх зарыг, бусад нь зөвхөн өөрийн дилерийн (эсвэл өөрийн оруулсан) зарыг (самбарын тоолуур)
@@ -26,7 +26,7 @@ const lookup = list;
 
 // Зар үүсгэх/засах нь зурагтай тул /api/cars/save-ээр дамжина (create, update энд байхгүй)
 
-// Өөрийн эсвэл өөрийн дилерийн зарыг устгана, админ бүгдийг устгаж болно
+// Админ бүгдийг устгана. Дилер өөрийн дилерийн зарыг устгана, гэхдээ идэвхтэй / зарагдсаныг биш (нууж болно)
 const destroy = async (req, res, next) => {
   const { loggedUser } = req;
   const { ids } = req.body;
@@ -41,6 +41,11 @@ const destroy = async (req, res, next) => {
     return res
       .status(200)
       .json({ success: false, message: "Зөвхөн өөрийн зарыг устгах боломжтой" });
+  const locked = await cars.count({ where: { id: ids, status: [carStatuses.active, carStatuses.sold] } });
+  if (locked > 0)
+    return res
+      .status(200)
+      .json({ success: false, message: "Идэвхтэй болон зарагдсан зарыг устгах боломжгүй. Нууж болно" });
   next();
 };
 

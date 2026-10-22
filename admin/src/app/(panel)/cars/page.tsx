@@ -124,12 +124,12 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
               Онцлох
             </button>
           )}
-          {car.status === "active" && (
+          {isAdmin && car.status === "active" && (
             <button onClick={() => run(() => markSold(car.id), "Зарагдсан гэж тэмдэглэлээ", { title: "Зарагдсан гэж тэмдэглэх үү?", message: "Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана.", confirmLabel: "Тэмдэглэх", icon: BadgeCheck })} className="rounded-lg bg-muted px-3 py-1.5 text-xs font-bold">
               Зарагдсан
             </button>
           )}
-          {isAdmin && car.status === "active" && (
+          {car.status === "active" && (
             <button
               onClick={() =>
                 run(() => setHidden(car.id, true), "Нууллаа, вэб дээр харагдахгүй", {
@@ -146,7 +146,7 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
               Нуух
             </button>
           )}
-          {isAdmin && car.status === "hidden" && (
+          {car.status === "hidden" && (
             <button
               onClick={() =>
                 run(() => setHidden(car.id, false), "Ил гаргалаа, вэб дээр харагдана", {
@@ -163,9 +163,12 @@ function CarRow({ car, onChanged }: { car: Car; onChanged: () => void }) {
               Ил гаргах
             </button>
           )}
-          <button onClick={() => run(() => deleteCar(car.id), "Устгалаа", { title: "Зарыг устгах уу?", message: "Устгасан зар вэб дээр харагдахгүй болно.", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">
+          {/* Dealers can't delete live or sold ads, only hide / edit them. */}
+          {(isAdmin || (car.status !== "active" && car.status !== "sold")) && (
+            <button onClick={() => run(() => deleteCar(car.id), "Устгалаа", { title: "Зарыг устгах уу?", message: "Устгасан зар вэб дээр харагдахгүй болно.", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">
             Устгах
           </button>
+          )}
         </div>
       )}
     </div>
