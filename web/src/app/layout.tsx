@@ -21,7 +21,7 @@ const oswald = Oswald({ variable: "--font-oswald", subsets: ["latin", "cyrillic"
 const locale = DEFAULT_LOCALE;
 
 export const metadata: Metadata = {
-  title: { default: `Baagii Car Dealer — ${translate(locale, "Машин авах, зарах")}`, template: "%s · Baagii Car Dealer" },
+  title: { default: `Cardealer — ${translate(locale, "Машин авах, зарах")}`, template: "%s · Cardealer" },
   description: translate(locale, "Монголын машин авах, зарах платформ. Оношилгоотой зар, зээлийн тооцоолуур, зарлагчтай шууд холбогдох."),
 };
 

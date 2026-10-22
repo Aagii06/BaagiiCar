@@ -53,7 +53,7 @@ function HelpInner() {
 
   // No contact endpoint on the backend yet, so the form opens the user's mail app.
   const mailto = CONTACT.email
-    ? `mailto:${CONTACT.email}?subject=${encodeURIComponent(`Baagii Car Dealer — ${t("асуулт")}`)}&body=${encodeURIComponent(`${form.message}\n\n${[form.name, form.phone, form.email].filter(Boolean).join(" · ")}`)}`
+    ? `mailto:${CONTACT.email}?subject=${encodeURIComponent(`Cardealer — ${t("асуулт")}`)}&body=${encodeURIComponent(`${form.message}\n\n${[form.name, form.phone, form.email].filter(Boolean).join(" · ")}`)}`
     : null;
 
   return (

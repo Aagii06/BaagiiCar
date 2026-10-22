@@ -4,6 +4,7 @@ import BrandTabs from "@/components/car/BrandTabs";
 import CarArt, { shapeFor } from "@/components/car/CarArt";
 import CarCard from "@/components/car/CarCard";
 import CarWideCard from "@/components/car/CarWideCard";
+import DealerTabs from "@/components/car/DealerTabs";
 import Container from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
 import Pagination from "@/components/common/Pagination";
@@ -11,6 +12,7 @@ import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from 
 import Img from "@/components/common/Img";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
 import { catalogImage } from "@/lib/api/config";
+import { getDealers } from "@/lib/api/dealers";
 import type { BodyType, Brand, CarModel } from "@/lib/api/types";
 import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -401,6 +403,7 @@ function CarsPageInner() {
   const brands = useApi(getBrands);
   const models = useApi(() => (p.brand ? getModels(p.brand) : Promise.resolve([])), String(p.brand ?? ""));
   const bodyTypes = useApi(getBodyTypes);
+  const dealers = useApi(getDealers);
   const key = writeParams(p);
   const result = useApi(
     () =>
@@ -450,6 +453,13 @@ function CarsPageInner() {
         selectedId={p.brand}
         onSelect={(id) => set({ brand: id, model: undefined })}
       />
+
+      {!!dealers.data?.rows.length && (
+        <>
+          <p className="mt-4 text-xs font-semibold text-muted-foreground">{t("Дилерүүд")}</p>
+          <DealerTabs className="mt-2" items={dealers.data.rows} />
+        </>
+      )}
 
       <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[296px_1fr]">
         <aside>

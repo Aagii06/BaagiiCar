@@ -72,12 +72,12 @@ const verifyOtp = async ({ model, where, key, code }) => {
 const subjects = {
   login: "нэвтрэх код",
 };
-const titleFor = (purpose) => `Baagii Car Dealer ${subjects[purpose] || "баталгаажуулах код"}`;
+const titleFor = (purpose) => `Cardealer ${subjects[purpose] || "баталгаажуулах код"}`;
 
 // --- Имэйл ------------------------------------------------------------------
 const otpEmailHtml = (code, title) => `
 <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#111">
-  <p style="color:#888;font-size:13px;margin:0 0 8px">Baagii Car Dealer</p>
+  <p style="color:#888;font-size:13px;margin:0 0 8px">Cardealer</p>
   <h2 style="margin:0 0 12px">${title}</h2>
   <p style="font-size:32px;font-weight:bold;letter-spacing:8px;margin:0 0 12px">${code}</p>
   <p style="color:#555;margin:0">Код ${OTP_TTL_SECONDS / 60} минутын турш хүчинтэй. Та энэ хүсэлтийг илгээгээгүй бол энэ имэйлийг үл тоомсорлоно уу.</p>

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export const BRAND = "Baagii Car Dealer";
+export const BRAND = "Cardealer";
 
 export function LogoMark({ className }: { className?: string }) {
   return (
@@ -14,15 +14,12 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-/** Orange mark + stacked "BAAGII / CAR DEALER" wordmark. */
+/** Orange mark + "Cardealer" wordmark. */
 export default function Logo({ dark, className }: { dark?: boolean; className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)} aria-label={BRAND}>
       <LogoMark />
-      <span className="flex flex-col leading-none">
-        <span className={cn("font-display text-[22px] font-bold tracking-wide", dark ? "text-white" : "text-foreground")}>Baagii</span>
-        <span className={cn("mt-0.5 text-[9px] font-semibold uppercase tracking-[0.32em]", dark ? "text-white/60" : "text-muted-foreground")}>Car Dealer</span>
-      </span>
+      <span className={cn("font-display text-[22px] font-bold tracking-wide", dark ? "text-white" : "text-foreground")}>Cardealer</span>
     </span>
   );
 }

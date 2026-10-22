@@ -131,7 +131,7 @@ export default function ChatWidget() {
           className="flex h-[min(560px,calc(100dvh-9rem))] w-[calc(100vw-2rem)] max-w-[370px] flex-col overflow-hidden rounded-2xl bg-background shadow-2xl shadow-black/25"
         >
           <header className="relative shrink-0 bg-primary px-5 pb-5 pt-4 text-center text-white">
-            <p className="font-bold">Baagii Car Dealer</p>
+            <p className="font-bold">Cardealer</p>
             <div className="mt-3 flex justify-center gap-3">
               <span className="grid size-12 place-items-center rounded-full bg-white ring-2 ring-white/60">
                 <LogoMark className="size-9 rounded-full" />

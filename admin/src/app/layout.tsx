@@ -8,7 +8,7 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin", "cyrillic"], 
 const oswald = Oswald({ variable: "--font-oswald", subsets: ["latin", "cyrillic"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "Baagii Car Dealer Admin", template: "%s · Baagii Car Dealer Admin" },
+  title: { default: "Cardealer Admin", template: "%s · Cardealer Admin" },
   robots: { index: false, follow: false },
 };
 

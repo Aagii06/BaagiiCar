@@ -44,7 +44,7 @@ const secondsSince = (value) => (value ? moment().diff(parseAt(value), "seconds"
 
 const otpEmailHtml = (code) => `
 <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#111">
-  <p style="color:#888;font-size:13px;margin:0 0 8px">Baagii Car Dealer</p>
+  <p style="color:#888;font-size:13px;margin:0 0 8px">Cardealer</p>
   <h2 style="margin:0 0 12px">Имэйл баталгаажуулах код</h2>
   <p style="font-size:32px;font-weight:bold;letter-spacing:8px;margin:0 0 12px">${code}</p>
   <p style="color:#555;margin:0">Код ${OTP_TTL_SECONDS / 60} минутын турш хүчинтэй. Та бүртгүүлээгүй бол энэ имэйлийг үл тоомсорлоно уу.</p>
@@ -77,7 +77,7 @@ module.exports.subscribeEmail = async (req, res) => {
       if (process.env.NODE_ENV === "production") throw new Error("MAIL_USER_NAME / MAIL_USER_PASS тохируулаагүй");
       console.log(`[dev] ${email} баталгаажуулах код: ${code}`);
     } else {
-      await sendMail(email, { subject: `Baagii Car Dealer баталгаажуулах код: ${code}`, html: otpEmailHtml(code) });
+      await sendMail(email, { subject: `Cardealer баталгаажуулах код: ${code}`, html: otpEmailHtml(code) });
     }
 
     if (existing) await existing.update(otp);

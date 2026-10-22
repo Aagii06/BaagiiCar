@@ -37,14 +37,14 @@ const carRow = (car) => {
 
 const digestHtml = (rows, total, unsubscribeLink) => `
 <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111">
-  <p style="color:#888;font-size:13px;margin:0 0 8px">Baagii Car Dealer</p>
+  <p style="color:#888;font-size:13px;margin:0 0 8px">Cardealer</p>
   <h2 style="margin:0 0 4px">Шинэ зар: ${total}</h2>
   <p style="color:#555;margin:0 0 12px">Таны сүүлд авсан имэйлээс хойш орсон зарууд.</p>
   <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">${rows.map(carRow).join("")}</table>
   ${total > rows.length ? `<p style="margin:16px 0 0;color:#555">Мөн өөр ${total - rows.length} зар орсон.</p>` : ""}
   <a href="${webUrl()}/cars" style="display:inline-block;margin-top:20px;background:#f05a28;color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:10px">Бүх зарыг үзэх</a>
   <p style="color:#999;font-size:12px;margin-top:28px">
-    Та Baagii Car Dealer-ийн шинэ зарын имэйлд бүртгүүлсэн тул энэ имэйлийг хүлээн авлаа.
+    Та Cardealer-ийн шинэ зарын имэйлд бүртгүүлсэн тул энэ имэйлийг хүлээн авлаа.
     <a href="${unsubscribeLink}" style="color:#999">Бүртгэлээс гарах</a>
   </p>
 </div>`;
@@ -59,7 +59,7 @@ const sendDigest = async (row) => {
   const unsubscribeLink = `${webUrl()}/unsubscribe?token=${row.token}`;
 
   await sendMail(row.email, {
-    subject: `Шинэ ${total} зар — Baagii Car Dealer`,
+    subject: `Шинэ ${total} зар — Cardealer`,
     html: digestHtml(rows, total, unsubscribeLink),
     headers: { "List-Unsubscribe": `<${unsubscribeLink}>` },
   });
