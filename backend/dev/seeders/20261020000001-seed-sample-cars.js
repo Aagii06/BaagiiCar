@@ -112,6 +112,10 @@ module.exports = {
     const [{ n }] = await q("SELECT COUNT(*) n FROM cars WHERE user_id IN (:ids)", { ids: Object.values(sellerIds) });
     if (n > 0) return;
 
+    // Зар заавал дилертэй: жишээ зарыг идэвхтэй дилерүүдэд ээлжлэн өгнө
+    const dealerIds = (await q("SELECT id FROM dealers WHERE status = 'active' ORDER BY id")).map((r) => r.id);
+    if (!dealerIds.length) throw new Error("Идэвхтэй дилер алга — эхлээд дилер бүртгэнэ үү");
+
     const idMap = async (sql) => new Map((await q(sql)).map((r) => [r.k, r.id]));
     const brandIds = await idMap("SELECT MIN(id) id, name k FROM brands WHERE status <> 'deleted' GROUP BY name");
     const modelIds = await idMap("SELECT MIN(id) id, CONCAT(brand_id, ':', name) k FROM carModels WHERE status <> 'deleted' GROUP BY brand_id, name");
@@ -129,6 +133,7 @@ module.exports = {
       await queryInterface.bulkInsert("cars", [
         {
           user_id: sellerIds[seller],
+          dealer_id: dealerIds[i % dealerIds.length],
           brand_id: brandId,
           car_model_id: modelIds.get(`${brandId}:${model}`) ?? null,
           body_type_id: bodyTypeIds.get(bodyType) ?? null,
