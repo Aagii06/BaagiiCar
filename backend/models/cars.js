@@ -20,8 +20,8 @@ module.exports = (sequelize, DataTypes) => {
   cars.init(
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-      // Зарын дугаар: YYYYMMDDHHmmss + 8 оронтой санамсаргүй тоо (beforeCreate)
-      code: { type: DataTypes.STRING(22) },
+      // Зарын дугаар: YYYYMMDD + 4 оронтой санамсаргүй тоо (beforeCreate)
+      code: { type: DataTypes.STRING(12) },
 
       user_id: { type: DataTypes.INTEGER },
       brand_id: { type: DataTypes.INTEGER },
@@ -67,11 +67,15 @@ module.exports = (sequelize, DataTypes) => {
 
   cars.softDelete = true;
 
-  cars.beforeCreate((data) => {
-    if (!data.code)
-      data.code =
-        moment().utcOffset("+0800").format("YYYYMMDDHHmmss") +
-        String(crypto.randomInt(100000000)).padStart(8, "0");
+  // Өдөрт 10000 дугаар л байх тул давхцвал дахин үүсгэнэ
+  cars.beforeCreate(async (data, options) => {
+    if (data.code) return;
+    const day = moment().utcOffset("+0800").format("YYYYMMDD");
+    for (;;) {
+      const code = day + String(crypto.randomInt(10000)).padStart(4, "0");
+      const taken = await cars.count({ where: { code }, transaction: options.transaction });
+      if (!taken) return void (data.code = code);
+    }
   });
 
   cars.beforeSave(async (data, options) => {

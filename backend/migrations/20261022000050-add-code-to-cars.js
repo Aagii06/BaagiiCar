@@ -1,6 +1,6 @@
 "use strict";
 
-// Зарын дугаар: огноо цаг (YYYYMMDDHHmmss) + 8 оронтой санамсаргүй тоо, тусгаарлагчгүй.
+// Зарын дугаар: огноо (YYYYMMDD) + 4 оронтой санамсаргүй тоо, тусгаарлагчгүй.
 // Шинэ зарт cars моделийн beforeCreate үүсгэнэ; хуучин зарт created_at-аас нөхнө.
 
 const viewSql = (extraColumns) => `
@@ -46,14 +46,18 @@ const viewSql = (extraColumns) => `
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn("cars", "code", { type: Sequelize.STRING(22), after: "id" });
-    await queryInterface.sequelize.query(`
-      UPDATE cars SET code = CONCAT(
-        DATE_FORMAT(COALESCE(created_at, NOW()), '%Y%m%d%H%i%s'),
-        LPAD(FLOOR(RAND() * 100000000), 8, '0')
-      )
-      WHERE code IS NULL
-    `);
+    await queryInterface.addColumn("cars", "code", { type: Sequelize.STRING(12), after: "id" });
+    const [rows] = await queryInterface.sequelize.query(
+      "SELECT id, DATE_FORMAT(COALESCE(created_at, NOW()), '%Y%m%d') AS day FROM cars WHERE code IS NULL",
+    );
+    const used = new Set();
+    for (const { id, day } of rows) {
+      let code;
+      do code = day + String(Math.floor(Math.random() * 10000)).padStart(4, "0");
+      while (used.has(code));
+      used.add(code);
+      await queryInterface.sequelize.query("UPDATE cars SET code = ? WHERE id = ?", { replacements: [code, id] });
+    }
     await queryInterface.addIndex("cars", ["code"], { unique: true, name: "cars_code_unique" });
     await queryInterface.sequelize.query(viewSql(" c.code,"));
   },
