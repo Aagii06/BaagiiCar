@@ -35,8 +35,14 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
   // Лого дилерийн бүртгэл рүү шилжсэн
   delete req.body.logo;
+  const isSelf = req.params.id + "" === req.loggedUser?.id + "";
   // Өөрийн имэйлийг зөвхөн кодоор баталгаажуулж солино (/api/users/email-change)
-  if (req.params.id + "" === req.loggedUser?.id + "") delete req.body.email;
+  if (isSelf) delete req.body.email;
+  // Админ бус хэрэглэгч зөвхөн өөрийн нэр, утас, зургаа засна; эрх, төлөв, дилерээ өөрчлөхгүй
+  if (isSelf && req.loggedUser?.role !== roles.admin) {
+    ["role", "status", "dealer_id", "password"].forEach((field) => delete req.body[field]);
+    return next();
+  }
   isAdmin(req, res, () => checkDealer(req, res, next));
 };
 

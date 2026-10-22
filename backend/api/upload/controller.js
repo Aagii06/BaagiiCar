@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { saveFile } = require("../../helper/fileHelper");
+const { roles } = require("../../config/constants");
 
 // Админаас каталогийн зураг (биеийн хэлбэрийн дүрс, үйлдвэрийн лого) солих.
 // public/uploads/<folder> дотор хадгалаад зөвхөн файлын нэрийг буцаана,
@@ -21,6 +22,7 @@ module.exports.uploadImage = async (req, res) => {
       return res.status(200).json(result);
     };
     if (!folders.includes(folder)) return reject("Хавтасны нэр буруу байна");
+    if (folder !== "users" && req.loggedUser?.role !== roles.admin) return reject("Танд энэ үйлдлийг хийх эрх байхгүй");
     if (!file || !/^image\/(png|jpeg|webp|svg\+xml)$/.test(file.mimetype))
       return reject("PNG, JPG, WEBP эсвэл SVG зураг сонгоно уу");
 

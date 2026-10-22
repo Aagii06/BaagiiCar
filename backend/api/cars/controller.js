@@ -39,9 +39,9 @@ const findOwnCar = async (id, loggedUser) => {
   return { car };
 };
 
-// Админ зарыг дилерт харьяалуулах үед: идэвхтэй дилер байх ёстой. Хоосон бол дилергүй зар.
+// Зар заавал дилерт харьяалагдана: идэвхтэй дилер байх ёстой
 const resolveDealer = async (dealerId) => {
-  if (!dealerId) return { dealer: null };
+  if (!dealerId) return { error: "Дилер сонгоно уу" };
   const dealer = await dealers.findOne({
     where: { id: dealerId, status: "active" },
     attributes: ["id", "phonenumber"],
@@ -52,9 +52,9 @@ const resolveDealer = async (dealerId) => {
 };
 
 // Шинэ зар нэмэх / засах (зурагтай хамт multipart-аар)
-// Зарын эзэн (user_id) нь оруулсан хэрэглэгч, засахад өөрчлөгдөхгүй.
-// Админ: dealer_id-аар дилер сонгоно (хоосон бол дилергүй), шууд нийтлэгдэнэ.
-// Бусад: зар өөрийн дилерт харьяалагдана, админ батлахыг хүлээнэ.
+// Зарын эзэн (user_id) нь оруулсан хэрэглэгч, засахад өөрчлөгдөхгүй. Зар заавал дилертэй.
+// Админ: dealer_id-аар дилер сонгоно, шууд нийтлэгдэнэ.
+// Дилер: зар өөрийн дилерт автоматаар харьяалагдана, админ батлахыг хүлээнэ.
 // fields: data = JSON, file0..N = зураг, file0Info..N = { id } (хуучин) эсвэл { original_name } (шинэ)
 module.exports.save = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
@@ -83,6 +83,8 @@ module.exports.save = async (req, res) => {
     body.dealer_id = dealer?.id ?? null;
   } else if (!isAdmin && !id) {
     body.dealer_id = await dealerIdOf(loggedUser);
+    if (!body.dealer_id)
+      return res.status(200).json({ ...result, message: "Таны бүртгэл дилерт харьяалагдаагүй байна. Админд хандана уу" });
   }
 
   const t = await sequelize.transaction();
@@ -399,3 +401,5 @@ module.exports.getFavorites = async (req, res) => {
     return res.status(200).json(result);
   }
 };
+
+module.exports.dealerIdOf = dealerIdOf;

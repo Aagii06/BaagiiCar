@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect, isAdmin } = require("../../middleware/auth");
+const { protect } = require("../../middleware/auth");
 const { extractFormData } = require("../../middleware/formData");
 
 const { uploadImage } = require("./controller");
 
-router.route("/image").post(protect, isAdmin, extractFormData, uploadImage);
+// Каталог, дилерийн лого зөвхөн админ; профайл зураг (users) нэвтэрсэн хэн ч (controller шалгана)
+router.route("/image").post(protect, extractFormData, uploadImage);
 
 module.exports = router;
