@@ -8,7 +8,7 @@ import { inputClass, Select } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
-import { approveCar, deleteCar, listCars, listDealers, markSold, setFeatured, setHidden, type CarFilter } from "@/lib/api/admin";
+import { approveCar, deleteCar, listCars, listDealers, markSold, setFeatured, setHidden, type CarStatusFilter } from "@/lib/api/admin";
 import { catalogImage } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -21,7 +21,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 const PAGE_SIZE = 20;
-type Tab = NonNullable<CarFilter["status"]> | "all";
+type Tab = CarStatusFilter | "all";
 const TABS: { value: Tab; label: string }[] = [
   { value: "all", label: "Бүгд" },
   { value: "pending", label: "Хүлээгдэж буй" },
@@ -195,7 +195,12 @@ function CarsInner() {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
-  const tab = (TABS.find((t) => t.value === sp.get("status"))?.value ?? "all") as Tab;
+  // Several statuses can be on at once (`?status=pending,active`); none = "Бүгд".
+  const statuses = (sp.get("status") ?? "").split(",").filter((v): v is CarStatusFilter => v !== "all" && TABS.some((t) => t.value === v));
+  const toggleStatus = (v: Tab) => {
+    const next = v === "all" ? [] : statuses.includes(v) ? statuses.filter((s) => s !== v) : [...statuses, v];
+    setParam({ status: next.join(",") });
+  };
   const [search, setSearch] = useState(sp.get("q") ?? "");
   const q = sp.get("q") ?? "";
   const { user } = useAuth();
@@ -220,13 +225,13 @@ function CarsInner() {
       isAdmin && !allDealers && !dealerId
         ? Promise.resolve(null)
         : listCars({
-            status: tab === "all" ? undefined : tab,
+            statuses,
             dealerId,
             search: q,
             page: 1,
             pageSize: take,
           }),
-    `${tab}|${q}|${allDealers ? "all" : dealerId ?? ""}|${take}`
+    `${statuses.join(",")}|${q}|${allDealers ? "all" : dealerId ?? ""}|${take}`
   );
 
   return (
@@ -258,7 +263,7 @@ function CarsInner() {
             </span>
           )}
         </div>
-        <ChipTabs items={TABS} value={tab} onChange={(v) => setParam({ status: v === "all" ? "" : v })} />
+        <ChipTabs items={TABS} value={statuses.length ? statuses : ["all"]} onChange={toggleStatus} />
       </PageHeader>
 
       {isAdmin && !allDealers && !dealerId ? (

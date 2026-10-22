@@ -93,8 +93,11 @@ export const getLocations = () => listAll<Location>("locations").then(bySort);
 
 // --- cars ------------------------------------------------------------------
 
+export type CarStatusFilter = "pending" | "rejected" | "active" | "hidden" | "sold" | "deleted" | "featured";
+
 export interface CarFilter {
-  status?: "pending" | "rejected" | "active" | "hidden" | "sold" | "deleted" | "featured";
+  /** Any of these (OR); empty = every status but deleted. */
+  statuses?: CarStatusFilter[];
   /** Only ads this user entered (`created_by`). */
   createdBy?: number;
   dealerId?: number;
@@ -103,13 +106,18 @@ export interface CarFilter {
   pageSize: number;
 }
 
-export async function listCars({ status, createdBy, dealerId, search, page, pageSize }: CarFilter) {
+export async function listCars({ statuses = [], createdBy, dealerId, search, page, pageSize }: CarFilter) {
   const filter: Condition[] = [];
   if (createdBy) filter.push(["created_by", "=", createdBy]);
   if (dealerId) filter.push(["dealer_id", "=", dealerId]);
-  if (status === "featured") filter.push(["status", "=", "active"], ["is_featured", "=", 1]);
-  else if (status) filter.push(["status", "=", status]);
-  else filter.push(NOT_DELETED);
+  const plain = statuses.filter((s) => s !== "featured");
+  const groups: unknown[] = [];
+  if (plain.length) groups.push(["status", "in", plain]);
+  // "featured" isn't a status: active ads with the flag on.
+  if (statuses.includes("featured")) groups.push([["status", "=", "active"], "and", ["is_featured", "=", 1]]);
+  if (!groups.length) filter.push(NOT_DELETED);
+  else if (groups.length === 1) filter.push(groups[0] as Condition);
+  else filter.push([groups[0], "or", groups[1]] as unknown as Condition);
   if (search?.trim()) {
     const q = search.trim();
     if (/^\d{9,}$/.test(q)) filter.push(["code", "contains", q]);
