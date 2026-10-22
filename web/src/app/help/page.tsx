@@ -1,7 +1,7 @@
 "use client";
 
 import Container from "@/components/common/Container";
-import { Field, inputClass } from "@/components/common/Field";
+import { Field, inputClass, PhoneInput } from "@/components/common/Field";
 import { LoadingState } from "@/components/common/States";
 import { EmailSignup } from "@/components/layout/NotifySignup";
 import { CONTACT } from "@/lib/api/config";
@@ -120,15 +120,7 @@ function HelpInner() {
               <input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </Field>
             <Field label={t("Утас")}>
-              <input
-                className={inputClass}
-                inputMode="numeric"
-                autoComplete="tel"
-                maxLength={8}
-                placeholder={t("Утасны дугаар")}
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "") })}
-              />
+              <PhoneInput autoComplete="tel" placeholder={t("Утасны дугаар")} value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
             </Field>
             <Field label={t("И-мэйл")}>
               <input

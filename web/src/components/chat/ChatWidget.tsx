@@ -1,5 +1,6 @@
 "use client";
 
+import { PhoneInput } from "@/components/common/Field";
 import { LogoMark } from "@/components/layout/Logo";
 import { CONTACT } from "@/lib/api/config";
 import { sendMessage } from "@/lib/api/messages";
@@ -172,12 +173,11 @@ export default function ChatWidget() {
                 aria-label={t("Таны нэр")}
                 autoComplete="name"
               />
-              <input
+              <PhoneInput
                 className={fieldClass}
+                maskClassName="left-[15px] text-sm text-muted-foreground/80"
                 value={contact.phone}
-                onChange={(e) => setContact({ ...contact, phone: e.target.value.replace(/\D/g, "") })}
-                inputMode="numeric"
-                maxLength={8}
+                onChange={(phone) => setContact({ ...contact, phone })}
                 placeholder={`${t("Утасны дугаар")} *`}
                 aria-label={t("Утасны дугаар")}
                 autoComplete="tel"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, FormError, inputClass, Select } from "@/components/common/Field";
+import { Field, FormError, inputClass, PhoneInput, Select } from "@/components/common/Field";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { RejectNote } from "./useRejectCar";
 import { DealerAvatar } from "./DealerPicker";
@@ -452,7 +452,7 @@ export default function CarForm({
             <textarea className={cn(inputClass, "h-auto min-h-32 py-3")} {...bind("description")} maxLength={5000} placeholder="Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…" />
           </Field>
           <Field label="Холбогдох утас" hint="Худалдан авагч энэ дугаар руу залгана">
-            <input className={cn(inputClass, "sm:max-w-xs")} {...digits("phonenumber")} maxLength={8} placeholder="99112233" />
+            <PhoneInput className="sm:max-w-xs" autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(v) => set("phonenumber", v)} />
           </Field>
         </div>
       </Section>

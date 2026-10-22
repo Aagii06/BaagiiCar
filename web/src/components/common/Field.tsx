@@ -47,8 +47,14 @@ export function PhoneInput({
   value,
   onChange,
   className,
+  maskClassName,
   ...props
-}: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type"> & { value: string; onChange: (digits: string) => void }) {
+}: Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type"> & {
+  value: string;
+  onChange: (digits: string) => void;
+  /** Mask position / font when `className` changes the input's padding or text size. */
+  maskClassName?: string;
+}) {
   const [focused, setFocused] = useState(false);
   const shown = value.replace(/\D/g, "").slice(0, PHONE_MASK.length);
   return (
@@ -66,7 +72,7 @@ export function PhoneInput({
       />
       {focused && (
         // Typed part is invisible so the remaining underscores line up right after the caret.
-        <span aria-hidden className="pointer-events-none absolute inset-y-0 left-[17px] flex items-center whitespace-pre text-[15px] text-muted-foreground/70">
+        <span aria-hidden className={cn("pointer-events-none absolute inset-y-0 left-[17px] flex items-center whitespace-pre text-[15px] text-muted-foreground/70", maskClassName)}>
           <span className="invisible">{shown}</span>
           {PHONE_MASK.slice(shown.length)}
         </span>

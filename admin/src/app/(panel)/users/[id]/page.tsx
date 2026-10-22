@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, FormError, inputClass, Select } from "@/components/common/Field";
+import { Field, FormError, inputClass, PhoneInput, Select } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
@@ -110,7 +110,7 @@ function UserForm({ user }: { user: User | null }) {
           <input className={inputClass} value={f.firstname} onChange={set("firstname")} />
         </Field>
         <Field label="Утасны дугаар *">
-          <input className={inputClass} inputMode="numeric" maxLength={8} value={f.phonenumber} onChange={set("phonenumber")} required />
+          <PhoneInput autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(phonenumber) => setF({ ...f, phonenumber })} required />
         </Field>
         <Field label="И-мэйл">
           <input className={inputClass} type="email" value={f.email} onChange={set("email")} />

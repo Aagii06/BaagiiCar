@@ -1,6 +1,6 @@
 "use client";
 
-import { Field, FormError, inputClass, Select } from "@/components/common/Field";
+import { Field, FormError, inputClass, PhoneInput, Select } from "@/components/common/Field";
 import ImageInput from "@/components/common/ImageInput";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
@@ -90,7 +90,7 @@ function DealerForm({ dealer }: { dealer: Dealer | null }) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Утас" hint="Зарын холбогдох утас хоосон бол үүнийг ашиглана">
-            <input className={inputClass} inputMode="numeric" maxLength={8} value={f.phonenumber} onChange={set("phonenumber")} placeholder="99112233" />
+            <PhoneInput autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(phonenumber) => setF({ ...f, phonenumber })} />
           </Field>
           <Field label="Төлөв">
             <Select value={f.status} onChange={set("status")}>
