@@ -4,8 +4,9 @@ import { Field, FormError, inputClass, Select } from "@/components/common/Field"
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { RejectNote } from "./useRejectCar";
 import { DealerAvatar } from "./DealerPicker";
-import { getBodyTypes, getBrands, getDealers, getLocations, getModels, saveCar, type CarInput, type PhotoItem } from "@/lib/api/cars";
-import type { Car, User } from "@/lib/api/types";
+import PlateLookup from "./PlateLookup";
+import { getBodyTypes, getBrands, getDealers, getLocations, getModels, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
+import type { Car, CarModel, User } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, FUEL_TYPES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
@@ -176,6 +177,18 @@ function OwnerSection({ car, value, dealers, onChange }: { car?: Car | null; val
   );
 }
 
+const norm = (s: string | null | undefined) => (s ?? "").toLowerCase().replace(/[\s-]+/g, "");
+
+/** Registry model name → our catalog: exact match, else the longest name one contains the other ("Prius 30" ↔ "Prius"). */
+function matchModel(models: CarModel[], name: string | null) {
+  const n = norm(name);
+  if (!n) return undefined;
+  return (
+    models.find((m) => norm(m.name) === n) ??
+    models.filter((m) => norm(m.name) && (n.startsWith(norm(m.name)) || norm(m.name).startsWith(n))).sort((a, b) => b.name.length - a.name.length)[0]
+  );
+}
+
 export default function CarForm({
   car,
   photos: initialPhotos = [],
@@ -235,6 +248,38 @@ export default function CarForm({
       return prev.filter((_, j) => j !== i);
     });
 
+  /** Fills the form from a registry lookup; only overwrites fields the registry knows. Returns a note for the user. */
+  const applyLookup = (info: VehicleInfo) => {
+    const brand = brands.data?.find((b) => norm(b.name) === norm(info.brand));
+    // Models of the found brand are fetched right away so the model can be picked in the same step.
+    const pickModel = brand
+      ? getModels(brand.id).then((rows) => matchModel(rows, info.model))
+      : Promise.resolve(undefined);
+    const fill: Partial<FormState> = {};
+    const put = (k: Exclude<keyof FormState, "is_featured">, v: string | number | null | undefined, allowed?: string[]) => {
+      if (v === null || v === undefined || v === "") return;
+      if (allowed && !allowed.includes(String(v))) return;
+      fill[k] = String(v);
+    };
+    if (brand) fill.brand_id = String(brand.id);
+    put("manufactured_year", info.manufactured_year);
+    put("imported_year", info.imported_year);
+    put("fuel_type", info.fuel_type, FUEL_TYPES);
+    put("transmission", info.transmission, TRANSMISSIONS);
+    put("drive_type", info.drive_type, DRIVE_TYPES);
+    put("steering", info.steering, STEERINGS);
+    put("engine_capacity", info.engine_capacity);
+    put("mileage", info.mileage);
+    put("color", info.color);
+    put("vin", info.vin);
+    setF((p) => ({ ...p, ...fill, ...(brand && brand.id !== Number(p.brand_id) ? { car_model_id: "" } : {}) }));
+    pickModel.then((model) => model && setF((p) => (p.brand_id === String(brand!.id) ? { ...p, car_model_id: String(model.id) } : p)));
+
+    const name = [info.brand, info.model, info.manufactured_year].filter(Boolean).join(" ");
+    if (!brand) return `${name} олдлоо. "${info.brand ?? "—"}" үйлдвэр каталогид алга, гараар сонгоно уу`;
+    return `${name} — мэдээлэл бөглөгдлөө. Загвар, хурдны хайрцгийг шалгана уу`;
+  };
+
   const errorRef = useRef<HTMLDivElement>(null);
   useEffect(() => onBusyChange?.(busy), [busy, onBusyChange]);
   // The header button submits from the top; bring the message into view.
@@ -262,6 +307,7 @@ export default function CarForm({
   return (
     <form id={CAR_FORM_ID} onSubmit={submit} className="space-y-5">
       {car && <RejectNote car={car} />}
+      <PlateLookup onFound={applyLookup} />
       <OwnerSection
         car={car}
         value={f.user_id}
