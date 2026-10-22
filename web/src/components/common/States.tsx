@@ -51,6 +51,15 @@ export function EmptyState({
   );
 }
 
+/** Placeholder tiles for the brand / dealer logo rows while they load. */
+export function TileRowSkeleton({ count = 10 }: { count?: number }) {
+  return Array.from({ length: count }, (_, i) => (
+    <div key={i} className="size-16 shrink-0 animate-pulse rounded-xl bg-card md:size-[72px]">
+      <div className="m-3 h-[calc(100%-1.5rem)] rounded-md bg-muted" />
+    </div>
+  ));
+}
+
 /** Grey placeholder grid shown while car lists load. */
 export function CardGridSkeleton({ count = 6, className }: { count?: number; className?: string }) {
   return (

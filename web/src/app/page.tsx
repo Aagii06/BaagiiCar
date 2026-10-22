@@ -63,12 +63,22 @@ function Hero({ bodyTypes }: { bodyTypes: BodyType[] }) {
 function BrandGrid() {
   const { t } = useI18n();
   const brands = useApi(getBrands);
-  if (!brands.data?.length) return null;
+  const loading = brands.loading && !brands.data;
+  if (!loading && !brands.data?.length) return null;
   return (
     <Container className="mt-20 md:mt-28">
       <SectionTitle kicker={t("Бүх үйлдвэр")} light={t("Машины")} bold={t("үйлдвэр")} action={<ViewAll href="/cars" />} />
       <div className="mt-8 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
-        {brands.data.slice(0, 16).map((b, i) => {
+        {loading &&
+          Array.from({ length: 16 }, (_, i) => (
+            <div
+              key={i}
+              className={cn("h-16 animate-pulse items-center justify-center rounded-xl bg-card", i < 8 ? "flex" : i < 12 ? "hidden sm:flex" : "hidden lg:flex")}
+            >
+              <div className="size-8 rounded-md bg-muted" />
+            </div>
+          ))}
+        {(brands.data ?? []).slice(0, 16).map((b, i) => {
           const logo = catalogImage(b.logo, "brands");
           return (
             <Link

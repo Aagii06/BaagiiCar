@@ -435,12 +435,12 @@ function CarsPageInner() {
 
   return (
     <Container className="pt-3 md:pt-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-card px-4 py-2.5 md:px-5">
-        <h1 className="font-display text-xl font-bold leading-none md:text-2xl">{t("Машин хайх")}</h1>
-        {/* Total; pulses while results are loading. */}
+      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 pt-1">
+        <h1 className="font-display text-2xl font-bold leading-tight tracking-tight md:text-3xl">{t("Машин хайх")}</h1>
+        {/* Total, muted beside the title; pulses while results are loading. */}
         <span
           aria-live="polite"
-          className={cn("inline-flex items-center rounded-full bg-primary-soft px-3 py-1.5 text-sm font-semibold text-primary", result.loading && "animate-pulse")}
+          className={cn("text-sm font-medium tabular-nums text-muted-foreground md:text-base", result.loading && "animate-pulse")}
         >
           {result.data ? t("{n} машин", { n: result.data.count.toLocaleString("en-US") }) : "…"}
         </span>
@@ -450,16 +450,17 @@ function CarsPageInner() {
       <BrandTabs
         className="mt-2"
         items={brands.data ?? []}
+        loading={brands.loading && !brands.data}
         selectedId={p.brand}
         onSelect={(id) => set({ brand: id, model: undefined })}
       />
 
-      {!!dealers.data?.rows.length && (
+      {(dealers.loading && !dealers.data) || dealers.data?.rows.length ? (
         <>
           <p className="mt-4 text-xs font-semibold text-muted-foreground">{t("Дилерүүд")}</p>
-          <DealerTabs className="mt-2" items={dealers.data.rows} />
+          <DealerTabs className="mt-2" items={dealers.data?.rows ?? []} loading={dealers.loading && !dealers.data} />
         </>
-      )}
+      ) : null}
 
       <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[296px_1fr]">
         <aside>
