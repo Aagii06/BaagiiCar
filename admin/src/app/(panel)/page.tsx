@@ -9,6 +9,9 @@ import { useApi } from "@/lib/useApi";
 import { cn, formatPriceShort } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+
+const RECENT_PAGE = 10;
 
 async function loadStats(isAdmin: boolean) {
   const [pending, active, sold, featured, total, dealers, users] = await Promise.all([
@@ -27,7 +30,8 @@ async function loadStats(isAdmin: boolean) {
 export default function DashboardPage() {
   const isAdmin = useAuth().user?.role === ROLES.admin;
   const stats = useApi(() => loadStats(isAdmin), String(isAdmin));
-  const recent = useApi(() => recentCars(6));
+  const [recentTake, setRecentTake] = useState(RECENT_PAGE);
+  const recent = useApi(() => recentCars({ take: recentTake }), String(recentTake));
   const s = stats.data;
 
   // Totals (dealers, active customers, all ads) first, then ads by status (pending first: it needs action).
@@ -80,7 +84,10 @@ export default function DashboardPage() {
       )}
 
       <div className="mt-6 flex items-center justify-between">
-        <h2 className="font-bold">Сүүлд нэмэгдсэн</h2>
+        <h2 className="font-bold">
+          Сүүлийн 2 хоногт нэмэгдсэн
+          {recent.data && <span className="ml-1.5 text-sm font-semibold text-muted-foreground">{recent.data.count}</span>}
+        </h2>
         <Link href="/cars" className="flex items-center gap-1 text-sm font-semibold text-primary">
           Бүгд
           <ArrowRight className="size-4" />
@@ -91,8 +98,10 @@ export default function DashboardPage() {
           <LoadingState className="py-8" />
         ) : recent.error ? (
           <ErrorState message={recent.error.message} onRetry={recent.reload} />
+        ) : !recent.data?.rows.length ? (
+          <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Сүүлийн 2 хоногт зар нэмэгдээгүй</p>
         ) : (
-          recent.data?.map((car) => {
+          recent.data.rows.map((car) => {
             const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
             return (
               <Link key={car.id} href={`/cars/${car.id}`} className="flex items-center gap-3 rounded-2xl bg-card p-2.5">
@@ -107,6 +116,16 @@ export default function DashboardPage() {
               </Link>
             );
           })
+        )}
+        {recent.data && recent.data.rows.length < recent.data.count && (
+          <button
+            type="button"
+            onClick={() => setRecentTake((t) => t + RECENT_PAGE)}
+            disabled={recent.loading}
+            className="w-full rounded-xl bg-card py-3 text-sm font-bold disabled:opacity-60"
+          >
+            {recent.loading ? "Ачаалж байна…" : "Цааш үзэх"}
+          </button>
         )}
       </div>
     </div>

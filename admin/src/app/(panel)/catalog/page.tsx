@@ -7,16 +7,16 @@ import { useConfirm } from "@/components/common/Confirm";
 import LoadMore from "@/components/common/LoadMore";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
-import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, getModels, updateRow, uploadCatalogImage } from "@/lib/api/admin";
+import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, listModelsPage, updateRow, uploadCatalogImage } from "@/lib/api/admin";
 import { catalogImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ImageUp, Pencil, Plus, Trash2, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
-/** Rows shown at first and added each time the list is scrolled to its end. */
+/** Rows shown at first and added each time the list is scrolled to its end (models are fetched page by page). */
 const PAGE_SIZE = 30;
 
 type Tab = "brands" | "models" | "bodyTypes" | "locations";
@@ -72,16 +72,8 @@ async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
       rows: brands.map((b) => ({ id: b.id, name: b.name, subtitle: [b.country, b.car_count != null && `${b.car_count} зар`].filter(Boolean).join(" · "), image: catalogImage(b.logo, "brands"), values: { ...b } })),
     };
   }
-  if (tab === "models") {
-    const [models, brands] = await Promise.all([getModels(), getBrands()]);
-    const brandName = new Map(brands.map((b) => [b.id, b.name]));
-    return {
-      brands,
-      rows: models
-        .map((m) => ({ id: m.id, name: m.name, subtitle: brandName.get(m.brand_id) ?? "—", values: { ...m } }))
-        .sort((a, b) => (a.subtitle ?? "").localeCompare(b.subtitle ?? "") || a.name.localeCompare(b.name)),
-    };
-  }
+  // Models are many: only the brands (picker + names) load here, the rows come page by page from the server.
+  if (tab === "models") return { brands: await getBrands(), rows: [] };
   if (tab === "bodyTypes") {
     const rows = await getBodyTypes();
     return {
@@ -210,27 +202,54 @@ function CatalogInner() {
   const toast = useToast();
   const confirm = useConfirm();
   const tab = (TABS.find((t) => t.value === sp.get("tab"))?.value ?? "brands") as Tab;
-  const data = useApi(() => loadTab(tab), tab);
+  // Tagged with its tab: right after a switch the previous tab's rows are still in `data` and must not show.
+  const data = useApi(() => loadTab(tab).then((res) => ({ ...res, tab })), tab);
+  const tabData = data.data?.tab === tab ? data.data : undefined;
   const [editing, setEditing] = useState<Row | "new" | null>(null);
   const [query, setQuery] = useState("");
+  // The server search runs once typing pauses.
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(query.trim()), 300);
+    return () => clearTimeout(t);
+  }, [query]);
 
-  const rows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const all = data.data?.rows ?? [];
-    return q ? all.filter((r) => `${r.name} ${r.subtitle ?? ""}`.toLowerCase().includes(q)) : all;
-  }, [data.data, query]);
+  const isModels = tab === "models";
   // Back to the first page whenever the tab or the search changes.
-  const pageKey = `${tab}|${query}`;
+  const pageKey = `${tab}|${isModels ? search : query}`;
   const [paging, setPaging] = useState({ key: pageKey, take: PAGE_SIZE });
   const take = paging.key === pageKey ? paging.take : PAGE_SIZE;
-  const shown = rows.slice(0, take);
+
+  const brands = tabData?.brands;
+  const models = useApi(() => {
+    if (!isModels || !brands) return Promise.resolve(null);
+    const q = search.toLowerCase();
+    const brandIds = q ? brands.filter((b) => b.name.toLowerCase().includes(q)).map((b) => b.id) : [];
+    // Tagged with the search it answers, so a next page (same key) can be told from a new search.
+    return listModelsPage({ search, brandIds, take }).then((res) => ({ ...res, key: pageKey }));
+  }, `${isModels}|${search}|${take}|${brands ? "b" : ""}`);
+
+  const rows = useMemo<Row[]>(() => {
+    if (isModels) {
+      const brandName = new Map(brands?.map((b) => [b.id, b.name]));
+      return (models.data?.rows ?? []).map((m) => ({ id: m.id, name: m.name, subtitle: brandName.get(m.brand_id) ?? "—", values: { ...m } }));
+    }
+    const q = query.trim().toLowerCase();
+    const all = tabData?.rows ?? [];
+    return q ? all.filter((r) => `${r.name} ${r.subtitle ?? ""}`.toLowerCase().includes(q)) : all;
+  }, [isModels, brands, models.data, tabData, query]);
+  const shown = isModels ? rows : rows.slice(0, take);
+  const total = isModels ? (models.data?.count ?? 0) : rows.length;
+  const list = isModels ? models : data;
+  const loadingMore = isModels && models.loading && models.data?.key === pageKey;
+  const reload = () => (isModels ? models.reload() : data.reload());
 
   const remove = async (row: Row) => {
     if (!(await confirm({ title: `"${row.name}" устгах уу?`, confirmLabel: "Устгах", tone: "danger", icon: Trash2 }))) return;
     try {
       await deleteRows(TARGET[tab], [row.id]);
       toast("Устгалаа");
-      data.reload();
+      reload();
     } catch (err) {
       toast(errorMessage(err), "error");
     }
@@ -259,14 +278,15 @@ function CatalogInner() {
         <input className={inputClass} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Хайх" />
       </PageHeader>
 
-      {data.loading && !data.data ? (
+      {data.error || (isModels && models.error) ? (
+        <ErrorState message={(data.error ?? models.error)!.message} onRetry={() => (data.error ? data.reload() : models.reload())} />
+      ) : !tabData || (isModels && !models.data) ? (
         <LoadingState />
-      ) : data.error ? (
-        <ErrorState message={data.error.message} onRetry={data.reload} />
       ) : !rows.length ? (
         <EmptyState title="Бичлэг алга" />
       ) : (
-        <div className={cn("divide-y divide-border overflow-hidden rounded-2xl bg-card", data.loading && "opacity-60")}>
+        // A next page keeps the rows already shown bright; a new search / reload dims them.
+        <div className={cn("divide-y divide-border overflow-hidden rounded-2xl bg-card", list.loading && !loadingMore && "opacity-60")}>
           {shown.map((row) => (
             <div key={row.id} className="flex items-center gap-3 px-3 py-2.5">
               {row.image !== undefined && (
@@ -293,18 +313,25 @@ function CatalogInner() {
           ))}
         </div>
       )}
-      {shown.length < rows.length && <LoadMore key={`${pageKey}|${take}`} onMore={() => setPaging({ key: pageKey, take: take + PAGE_SIZE })} />}
+      {shown.length > 0 &&
+        shown.length < total &&
+        // While a page loads the sentinel is swapped out, so it can't ask for the same page twice; it fires again on remount.
+        (list.loading ? (
+          <p className="py-4 text-center text-xs font-semibold text-muted-foreground">Ачаалж байна…</p>
+        ) : (
+          <LoadMore key={`${pageKey}|${take}`} onMore={() => setPaging({ key: pageKey, take: take + PAGE_SIZE })} />
+        ))}
 
       {editing && (
         <Editor
           key={editing === "new" ? "new" : editing.id}
           tab={tab}
           row={editing === "new" ? null : editing}
-          brands={data.data?.brands ?? []}
+          brands={tabData?.brands ?? []}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
-            data.reload();
+            reload();
           }}
         />
       )}

@@ -88,6 +88,17 @@ const byModelName = (a: { name: string }, b: { name: string }) =>
   Number(a.name === "Other") - Number(b.name === "Other") || a.name.localeCompare(b.name);
 
 export const getModels = () => listAll<CarModel>("carModels").then((r) => [...r].sort(byModelName));
+
+/** One page of the catalog's models by name; a search also matches models of `brandIds` (brands whose name fits it). */
+export async function listModelsPage({ search, brandIds = [], take }: { search?: string; brandIds?: number[]; take: number }) {
+  const filter: Condition[] = [NOT_DELETED];
+  const q = search?.trim();
+  if (q) filter.push((brandIds.length ? [["name", "contains", q], "or", ["brand_id", "in", brandIds]] : ["name", "contains", q]) as Condition);
+  const res = await apiFetch<ApiListResponse<CarModel>>(
+    `/api/base/carModels${listQuery({ filter, sort: [{ selector: "name", desc: false }, { selector: "id", desc: false }], take })}`
+  );
+  return res.data;
+}
 export const getBodyTypes = () => listAll<BodyType>("vwBodyTypes", [["status", "=", "active"]]).then(bySort);
 export const getLocations = () => listAll<Location>("locations").then(bySort);
 
@@ -131,9 +142,16 @@ export async function listCars({ statuses = [], createdBy, dealerId, search, pag
   return res.data;
 }
 
-export async function recentCars(take = 5) {
-  const res = await apiFetch<ApiListResponse<Car>>(`/api/base/vwCars${listQuery({ filter: [NOT_DELETED], sort: NEWEST, take })}`);
-  return res.data.rows;
+/** "YYYY-MM-DD HH:mm:ss" in Ulaanbaatar time (+08:00), the way the backend stamps `created_at`. */
+const ubTimestamp = (ms: number) => new Date(ms + 8 * 3600_000).toISOString().slice(0, 19).replace("T", " ");
+
+/** Ads added in the last `days` days (rolling), newest first; `take` grows for "Цааш үзэх". */
+export async function recentCars({ days = 2, take }: { days?: number; take: number }) {
+  const since = ubTimestamp(Date.now() - days * 24 * 3600_000);
+  const res = await apiFetch<ApiListResponse<Car>>(
+    `/api/base/vwCars${listQuery({ filter: [NOT_DELETED, ["created_at", ">=", since]], sort: NEWEST, take })}`
+  );
+  return res.data;
 }
 
 export async function getCar(id: number | string) {
