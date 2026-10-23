@@ -71,10 +71,12 @@ export async function apiFetch<T>(
 
 /** A filter condition in the backend's DevExtreme-style format. */
 export type Condition = [string, string, unknown];
+/** Conditions joined by "or" / "and" strings, e.g. `[c1, "or", c2]`. */
+export type ConditionGroup = (Condition | "and" | "or")[];
 
 export interface ListQuery {
   /** Joined with "and". */
-  filter?: Condition[];
+  filter?: (Condition | ConditionGroup)[];
   sort?: { selector: string; desc: boolean }[];
   take?: number;
   skip?: number;

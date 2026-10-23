@@ -1,5 +1,5 @@
 import type { MessageKey } from "../i18n/messages";
-import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
+import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition, type ConditionGroup } from "./client";
 import type { BodyType, Brand, Car, CarFile, CarModel, Location } from "./types";
 
 const NEWEST = [{ selector: "created_at", desc: true }];
@@ -19,13 +19,15 @@ export interface CarSearch {
   priceMax?: number;
   fuelTypes?: string[];
   steering?: string;
+  /** Matched against brand and model names. */
+  text?: string;
   sort?: CarSort;
   page?: number;
   pageSize?: number;
 }
 
-export function searchConditions(s: CarSearch): Condition[] {
-  const c: Condition[] = [["status", "=", "active"]];
+export function searchConditions(s: CarSearch): (Condition | ConditionGroup)[] {
+  const c: (Condition | ConditionGroup)[] = [["status", "=", "active"]];
   if (s.brandIds?.length) c.push(["brand_id", "in", s.brandIds]);
   if (s.modelId) c.push(["car_model_id", "=", s.modelId]);
   if (s.bodyTypeId) c.push(["body_type_id", "=", s.bodyTypeId]);
@@ -39,6 +41,8 @@ export function searchConditions(s: CarSearch): Condition[] {
   if (s.priceMax) c.push(["price", "<=", s.priceMax]);
   if (s.fuelTypes?.length) c.push(["fuel_type", "in", s.fuelTypes]);
   if (s.steering) c.push(["steering", "=", s.steering]);
+  const text = s.text?.trim();
+  if (text) c.push([["brand_name", "contains", text], "or", ["model_name", "contains", text]]);
   return c;
 }
 

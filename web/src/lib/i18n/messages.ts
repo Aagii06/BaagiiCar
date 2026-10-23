@@ -413,6 +413,8 @@ export const MESSAGES = {
   },
   "Машин нэмэх": { ru: "Добавить авто", en: "Add a car" },
   "Ялгаатай үзүүлэлт алга": { ru: "Различий нет", en: "No differences" },
+  "Үйлдвэр, загвараар хайх": { ru: "Поиск по марке, модели", en: "Search by make or model" },
+  "Цааш үзэх": { ru: "Показать ещё", en: "Show more" },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;

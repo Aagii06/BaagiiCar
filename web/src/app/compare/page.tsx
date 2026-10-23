@@ -2,6 +2,7 @@
 
 import { carTitle } from "@/components/car/CarCard";
 import CarImage from "@/components/car/CarImage";
+import ComparePicker from "@/components/car/ComparePicker";
 import Container, { PageTitle } from "@/components/common/Container";
 import { ErrorState, LoadingState } from "@/components/common/States";
 import { getCarsByIds } from "@/lib/api/cars";
@@ -13,7 +14,7 @@ import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, toNumber } from "@/lib/utils";
 import { Plus, Trophy, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 /** Which end of a numeric row counts as better; that cell gets highlighted. */
 type Best = "min" | "max";
@@ -40,6 +41,8 @@ export default function ComparePage() {
   const { ids, ready, remove, clear } = useCompare();
   const { t, tv } = useI18n();
   const [diffOnly, setDiffOnly] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const closePicker = useCallback(() => setPicking(false), []);
 
   const key = ready ? [...ids].sort((a, b) => a - b).join(",") : "";
   const cars = useApi(() => (ready && ids.length ? getCarsByIds(ids) : Promise.resolve([])), key);
@@ -126,14 +129,15 @@ export default function ComparePage() {
                     </div>
                   ))}
                   {Array.from({ length: slots }, (_, i) => (
-                    <Link
+                    <button
                       key={i}
-                      href="/cars"
+                      type="button"
+                      onClick={() => setPicking(true)}
                       className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
                     >
                       <Plus className="size-6" />
                       {t("Машин нэмэх")}
-                    </Link>
+                    </button>
                   ))}
                 </div>
 
@@ -162,6 +166,8 @@ export default function ComparePage() {
           </>
         )}
       </div>
+
+      {picking && <ComparePicker onClose={closePicker} />}
     </Container>
   );
 }

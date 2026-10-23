@@ -89,6 +89,17 @@ const byModelName = (a: { name: string }, b: { name: string }) =>
 
 export const getModels = () => listAll<CarModel>("carModels").then((r) => [...r].sort(byModelName));
 
+/** One page of the catalog's active brands in their display order; a search matches the name or the country. */
+export async function listBrandsPage({ search, take }: { search?: string; take: number }) {
+  const filter: Condition[] = [["status", "=", "active"]];
+  const q = search?.trim();
+  if (q) filter.push([["name", "contains", q], "or", ["country", "contains", q]] as unknown as Condition);
+  const res = await apiFetch<ApiListResponse<Brand>>(
+    `/api/base/vwBrands${listQuery({ filter, sort: [{ selector: "sort_order", desc: false }, { selector: "name", desc: false }], take })}`
+  );
+  return res.data;
+}
+
 /** One page of the catalog's models by name; a search also matches models of `brandIds` (brands whose name fits it). */
 export async function listModelsPage({ search, brandIds = [], take }: { search?: string; brandIds?: number[]; take: number }) {
   const filter: Condition[] = [NOT_DELETED];

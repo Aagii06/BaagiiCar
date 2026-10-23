@@ -7,7 +7,7 @@ import { useConfirm } from "@/components/common/Confirm";
 import LoadMore from "@/components/common/LoadMore";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
-import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, listModelsPage, updateRow, uploadCatalogImage } from "@/lib/api/admin";
+import { createRow, deleteRows, getBodyTypes, getBrands, getLocations, listBrandsPage, listModelsPage, updateRow, uploadCatalogImage } from "@/lib/api/admin";
 import { catalogImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
@@ -16,8 +16,10 @@ import { ImageUp, Pencil, Plus, Trash2, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
-/** Rows shown at first and added each time the list is scrolled to its end (models are fetched page by page). */
-const PAGE_SIZE = 30;
+/** Rows shown at first and added each time the list is scrolled to its end (brands and models are fetched page by page). */
+const PAGE_SIZE = 10;
+/** Tabs with many rows: fetched from the server a page at a time instead of all at once. */
+const SERVER_PAGED: ReadonlySet<Tab> = new Set(["brands", "models"]);
 
 type Tab = "brands" | "models" | "bodyTypes" | "locations";
 const TABS: { value: Tab; label: string }[] = [
@@ -64,15 +66,17 @@ const FIELDS: Record<Tab, FieldDef[]> = {
 
 type Row = { id: number; name: string; subtitle?: string; image?: string | null; values: Record<string, unknown> };
 
+const brandRow = (b: Brand): Row => ({
+  id: b.id,
+  name: b.name,
+  subtitle: [b.country, b.car_count != null && `${b.car_count} зар`].filter(Boolean).join(" · "),
+  image: catalogImage(b.logo, "brands"),
+  values: { ...b },
+});
+
+/** Everything a tab needs up front; server-paged tabs fetch their rows separately (models still need every brand for the picker and names). */
 async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
-  if (tab === "brands") {
-    const brands = await getBrands();
-    return {
-      brands,
-      rows: brands.map((b) => ({ id: b.id, name: b.name, subtitle: [b.country, b.car_count != null && `${b.car_count} зар`].filter(Boolean).join(" · "), image: catalogImage(b.logo, "brands"), values: { ...b } })),
-    };
-  }
-  // Models are many: only the brands (picker + names) load here, the rows come page by page from the server.
+  if (tab === "brands") return { brands: [], rows: [] };
   if (tab === "models") return { brands: await getBrands(), rows: [] };
   if (tab === "bodyTypes") {
     const rows = await getBodyTypes();
@@ -214,35 +218,46 @@ function CatalogInner() {
     return () => clearTimeout(t);
   }, [query]);
 
-  const isModels = tab === "models";
+  const paged = SERVER_PAGED.has(tab);
   // Back to the first page whenever the tab or the search changes.
-  const pageKey = `${tab}|${isModels ? search : query}`;
+  const pageKey = `${tab}|${paged ? search : query}`;
   const [paging, setPaging] = useState({ key: pageKey, take: PAGE_SIZE });
   const take = paging.key === pageKey ? paging.take : PAGE_SIZE;
 
-  const brands = tabData?.brands;
-  const models = useApi(() => {
-    if (!isModels || !brands) return Promise.resolve(null);
-    const q = search.toLowerCase();
-    const brandIds = q ? brands.filter((b) => b.name.toLowerCase().includes(q)).map((b) => b.id) : [];
-    // Tagged with the search it answers, so a next page (same key) can be told from a new search.
-    return listModelsPage({ search, brandIds, take }).then((res) => ({ ...res, key: pageKey }));
-  }, `${isModels}|${search}|${take}|${brands ? "b" : ""}`);
+  const page = useApi(async () => {
+    if (!paged || !tabData) return null;
+    let rows: Row[];
+    let count: number;
+    if (tab === "brands") {
+      const res = await listBrandsPage({ search, take });
+      rows = res.rows.map(brandRow);
+      count = res.count;
+    } else {
+      const all = tabData.brands;
+      const q = search.toLowerCase();
+      const brandIds = q ? all.filter((b) => b.name.toLowerCase().includes(q)).map((b) => b.id) : [];
+      const brandName = new Map(all.map((b) => [b.id, b.name]));
+      const res = await listModelsPage({ search, brandIds, take });
+      rows = res.rows.map((m) => ({ id: m.id, name: m.name, subtitle: brandName.get(m.brand_id) ?? "—", values: { ...m } }));
+      count = res.count;
+    }
+    // Tagged with the tab + search it answers, so a next page (same key) can be told from a new search.
+    return { rows, count, key: pageKey };
+  }, `${pageKey}|${take}|${tabData ? "ready" : ""}`);
 
   const rows = useMemo<Row[]>(() => {
-    if (isModels) {
-      const brandName = new Map(brands?.map((b) => [b.id, b.name]));
-      return (models.data?.rows ?? []).map((m) => ({ id: m.id, name: m.name, subtitle: brandName.get(m.brand_id) ?? "—", values: { ...m } }));
-    }
+    if (paged) return page.data?.rows ?? [];
     const q = query.trim().toLowerCase();
     const all = tabData?.rows ?? [];
     return q ? all.filter((r) => `${r.name} ${r.subtitle ?? ""}`.toLowerCase().includes(q)) : all;
-  }, [isModels, brands, models.data, tabData, query]);
-  const shown = isModels ? rows : rows.slice(0, take);
-  const total = isModels ? (models.data?.count ?? 0) : rows.length;
-  const list = isModels ? models : data;
-  const loadingMore = isModels && models.loading && models.data?.key === pageKey;
-  const reload = () => (isModels ? models.reload() : data.reload());
+  }, [paged, page.data, tabData, query]);
+  // Another tab's page may still be in `page` right after a switch.
+  const pageReady = paged && page.data?.key.startsWith(`${tab}|`);
+  const shown = paged ? rows : rows.slice(0, take);
+  const total = paged ? (page.data?.count ?? 0) : rows.length;
+  const list = paged ? page : data;
+  const loadingMore = paged && page.loading && page.data?.key === pageKey;
+  const reload = () => (paged ? page.reload() : data.reload());
 
   const remove = async (row: Row) => {
     if (!(await confirm({ title: `"${row.name}" устгах уу?`, confirmLabel: "Устгах", tone: "danger", icon: Trash2 }))) return;
@@ -278,9 +293,9 @@ function CatalogInner() {
         <input className={inputClass} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Хайх" />
       </PageHeader>
 
-      {data.error || (isModels && models.error) ? (
-        <ErrorState message={(data.error ?? models.error)!.message} onRetry={() => (data.error ? data.reload() : models.reload())} />
-      ) : !tabData || (isModels && !models.data) ? (
+      {data.error || (paged && page.error) ? (
+        <ErrorState message={(data.error ?? page.error)!.message} onRetry={() => (data.error ? data.reload() : page.reload())} />
+      ) : !tabData || (paged && !pageReady) ? (
         <LoadingState />
       ) : !rows.length ? (
         <EmptyState title="Бичлэг алга" />
