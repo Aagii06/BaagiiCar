@@ -36,7 +36,7 @@ function Gallery({ car }: { car: Car }) {
 
   if (!total)
     return (
-      <div className={cn("grid aspect-[4/3] place-items-center rounded-2xl md:aspect-auto md:h-[520px]", tintFor(car.id))}>
+      <div className={cn("-mx-4 grid aspect-[4/3] place-items-center md:mx-0 md:aspect-auto md:h-[520px] md:rounded-2xl", tintFor(car.id))}>
         <CarArt shape={shapeFor(car.body_type_name)} className="w-[58%] md:w-[48%]" strokeWidth={1.6} />
       </div>
     );
@@ -49,12 +49,12 @@ function Gallery({ car }: { car: Car }) {
 
   return (
     <section>
-      {/* Mobile: swipe between photos, dots show how many there are. */}
-      <div className="md:hidden">
+      {/* Mobile: edge-to-edge swipe between photos, dots show how many there are. */}
+      <div className="-mx-4 md:hidden">
         <div className="relative">
           <div
             onScroll={(e) => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
-            className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto rounded-2xl bg-card"
+            className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto bg-card"
           >
             {photos.map((name, i) => (
               <button key={name} type="button" onClick={() => setViewing(i)} aria-label={t("Зураг томоор харах")} className="aspect-[4/3] w-full shrink-0 snap-center">
@@ -190,8 +190,9 @@ export default function CarDetailPage() {
 
   return (
     // key: reset gallery/leasing state when moving to another car.
-    <Container key={c.id} className="pt-6">
-      <nav aria-label={t("Зам")} className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+    <Container key={c.id} className="md:pt-6">
+      {/* Phones: the app bar's back arrow replaces the breadcrumb. */}
+      <nav aria-label={t("Зам")} className="hidden flex-wrap md:flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-foreground">{t("Нүүр")}</Link>/
         {c.body_type_id ? (
           <Link href={`/cars?body=${c.body_type_id}`} className="hover:text-foreground">{bodyTypeLabel(c.body_type_name, t)}</Link>
@@ -201,8 +202,8 @@ export default function CarDetailPage() {
         /<span className="font-medium text-foreground">{carTitle(c, t)}</span>
       </nav>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_380px]">
-        <div className="min-w-0 space-y-5">
+      <div className="grid gap-3 md:mt-5 md:gap-5 lg:grid-cols-[1fr_380px]">
+        <div className="min-w-0 space-y-3 md:space-y-5">
           <Gallery car={c} />
           <div className="lg:hidden">
             <Summary car={c} phone={phone} sold={sold} />
@@ -228,7 +229,36 @@ export default function CarDetailPage() {
       </div>
 
       <Similar car={c} />
+      <ActionBar car={c} phone={phone} />
     </Container>
+  );
+}
+
+/** Phones: app-style bottom bar (in place of the tab bar) with the ad's actions. */
+function ActionBar({ car: c, phone }: { car: Car; phone: string | null }) {
+  const { t } = useI18n();
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-border bg-white px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 md:hidden">
+      <FavoriteButton carId={c.id} className="size-12 shrink-0 rounded-xl border border-border shadow-none" />
+      <CompareButton carId={c.id} className="size-12" />
+      <button
+        onClick={() => openChat({ carId: c.id, title: `${carTitle(c, t)} ${c.manufactured_year ?? ""}`.trim() })}
+        aria-label={t("Чатлах")}
+        className={cn(
+          "flex h-12 items-center justify-center gap-2 rounded-xl font-bold",
+          phone ? "w-12 shrink-0 border-[1.5px] border-primary text-primary" : "flex-1 bg-primary text-white"
+        )}
+      >
+        <MessageCircle className="size-5" />
+        {!phone && t("Чатлах")}
+      </button>
+      {phone && (
+        <a href={`tel:${phone}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white">
+          <Phone className="size-4" />
+          {t("Залгах")}
+        </a>
+      )}
+    </div>
   );
 }
 
@@ -250,7 +280,8 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
       </p>
       <p className="mt-4 text-[28px] font-bold">{formatPrice(c.price, t)}</p>
 
-      <div className="mt-4 flex gap-2">
+      {/* Phones: these live in the fixed ActionBar at the bottom. */}
+      <div className="mt-4 hidden gap-2 md:flex">
         <button
           onClick={() => openChat({ carId: c.id, title: `${carTitle(c, t)} ${c.manufactured_year ?? ""}`.trim() })}
           title={t("Чатлах")}

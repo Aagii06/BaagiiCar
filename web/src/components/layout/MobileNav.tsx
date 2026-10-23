@@ -19,6 +19,8 @@ const TABS: { href: string; label: MessageKey; icon: typeof Home }[] = [
 export default function MobileNav() {
   const pathname = usePathname() ?? "/";
   const { t } = useI18n();
+  // An ad's page shows its own action bar here instead.
+  if (/^\/cars\/[^/]+/.test(pathname)) return null;
   return (
     <nav aria-label={t("Үндсэн цэс")} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white pb-[env(safe-area-inset-bottom)] select-none md:hidden">
       <div className="grid grid-cols-4">
