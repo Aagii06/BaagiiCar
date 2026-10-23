@@ -145,6 +145,8 @@ export interface Message {
   message: string;
   car_id: number | null;
   page_url: string | null;
+  /** The signed-in web visitor who wrote it; with `car_id` it groups messages into one chat. */
+  created_by?: number | null;
   /** "deleted": removed from the list but kept (soft delete); restoring sets it back to "new". */
   status: "new" | "done" | "deleted";
   created_at: string | null;
