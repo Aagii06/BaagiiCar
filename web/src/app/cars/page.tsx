@@ -7,7 +7,6 @@ import CarWideCard from "@/components/car/CarWideCard";
 import DealerTabs from "@/components/car/DealerTabs";
 import Container from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
-import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import Img from "@/components/common/Img";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
@@ -18,7 +17,7 @@ import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Check, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, Check, Loader2, SlidersHorizontal } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
@@ -422,14 +421,23 @@ function CarsPageInner() {
         steering: p.steering,
         sort: p.sort,
         featuredFirst: true,
-        page: p.page,
-        pageSize: PAGE_SIZE,
+        // "Цааш үзэх": `page` counts the batches shown, all fetched in one go so a reload / back keeps them.
+        page: 1,
+        pageSize: PAGE_SIZE * p.page,
       }),
     key
   );
 
   const rows = result.data?.rows ?? [];
-  const totalPages = Math.ceil((result.data?.count ?? 0) / PAGE_SIZE);
+  const more = (result.data?.count ?? 0) > rows.length;
+  // Only a filter change dims the list; loading more keeps it as is.
+  const [loadingMore, setLoadingMore] = useState(false);
+  if (loadingMore && !result.loading) setLoadingMore(false);
+  const loadMore = () => {
+    setLoadingMore(true);
+    const qs = writeParams({ ...p, page: p.page + 1 });
+    router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+  };
   // The design lifts one featured ad into a wide card after the first row.
   const wide = rows.find((c) => c.is_featured);
   const rest = rows.filter((c) => c !== wide);
@@ -522,7 +530,7 @@ function CarsPageInner() {
             ) : rows.length === 0 ? (
               <EmptyState title={t("Тохирох зар олдсонгүй")} description={t("Шүүлтүүрээ өөрчлөөд дахин оролдоно уу.")} />
             ) : (
-              <div className={cn("grid gap-4 sm:grid-cols-2 xl:grid-cols-3", result.loading && "opacity-60")}>
+              <div className={cn("grid gap-4 sm:grid-cols-2 xl:grid-cols-3", result.loading && !loadingMore && "opacity-60")}>
                 {rest.slice(0, 3).map((car) => (
                   <CarCard key={car.id} car={car} />
                 ))}
@@ -533,9 +541,26 @@ function CarsPageInner() {
               </div>
             )}
 
-            <div className="mt-8">
-              <Pagination page={p.page} total={totalPages} onChange={(page) => set({ page })} />
-            </div>
+            {more && !result.error && (
+              <button
+                type="button"
+                onClick={loadMore}
+                disabled={result.loading}
+                aria-busy={loadingMore}
+                className="mx-auto mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-card text-sm font-bold hover:bg-border disabled:cursor-wait sm:w-64 md:mt-8"
+              >
+                {loadingMore ? (
+                  <Loader2 aria-label={t("Цааш үзэх")} className="size-4 animate-spin text-primary" />
+                ) : (
+                  <>
+                    {t("Цааш үзэх")}
+                    <span className="font-medium text-muted-foreground">
+                      {rows.length} / {result.data?.count}
+                    </span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </Container>
