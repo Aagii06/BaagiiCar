@@ -180,7 +180,27 @@ export type CarInput = Partial<
   id?: number;
   /** Admin only: an active dealer's id, or null for an ad without a dealer. Omit to keep it. */
   dealer_id?: number | null;
+  /** Registry lookup the form was filled from; the server stores the listed fields' values once and keeps them on later edits. */
+  autobox_data?: { plate: string | null; vin: string | null; fields: string[] } | null;
 };
+
+/** What was saved from the registry lookup, or null for an ad typed in by hand. */
+export interface AutoboxData {
+  plate: string | null;
+  vin: string | null;
+  fetched_at: string | null;
+  fields: Record<string, unknown>;
+}
+
+export function parseAutobox(car: Pick<Car, "autobox_data"> | null | undefined): AutoboxData | null {
+  if (!car?.autobox_data) return null;
+  try {
+    const data = JSON.parse(car.autobox_data) as AutoboxData;
+    return data?.fields && typeof data.fields === "object" ? data : null;
+  } catch {
+    return null;
+  }
+}
 
 /** Car registry data (autobox.mn) mapped to our ad fields; any field can be null. */
 export interface VehicleInfo {

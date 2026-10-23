@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       drive_type: { type: DataTypes.STRING },
       steering: { type: DataTypes.STRING },
       vehicle_type: { type: DataTypes.STRING },
+      autobox_data: { type: DataTypes.TEXT },
       engine_capacity: { type: DataTypes.DECIMAL(4, 1) },
       color: { type: DataTypes.STRING },
       interior_color: { type: DataTypes.STRING },

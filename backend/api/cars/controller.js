@@ -17,6 +17,40 @@ const { roles, carStatuses, nonPublicCarStatuses } = require("../../config/const
 // Зөвхөн админ өөрчилж болох талбарууд
 const adminOnlyFields = ["user_id", "dealer_id", "is_featured", "view_count", "status", "sold_at", "reject_reason", "rejected_by", "rejected_at"];
 
+// autobox.mn-ээс бөглөгдөж, дараа нь засагдахгүй байж болох талбарууд
+const autoboxFields = ["brand_id", "car_model_id", "manufactured_year", "imported_year", "fuel_type", "transmission", "drive_type", "steering", "vehicle_type", "engine_capacity", "mileage", "color", "vin"];
+
+const parseAutobox = (value) => {
+  if (!value) return null;
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
+// autobox-оос татсан талбаруудыг хадгална (зарт өмнө нь байхгүй бол), байгаа бол хадгалсан утгаар нь буцааж тавина.
+// Ирэх: autobox_data = { plate, vin, fields: ["brand_id", ...] } - утгыг нь body-оос авна.
+const applyAutobox = (body, prevCar, at) => {
+  const incoming = parseAutobox(body.autobox_data);
+  delete body.autobox_data;
+
+  const saved = parseAutobox(prevCar?.autobox_data);
+  if (saved?.fields) {
+    for (const k of autoboxFields) if (k in saved.fields) body[k] = saved.fields[k];
+    return;
+  }
+  if (!Array.isArray(incoming?.fields)) return;
+
+  const fields = {};
+  for (const k of autoboxFields)
+    if (incoming.fields.includes(k) && body[k] !== undefined && body[k] !== null && body[k] !== "") fields[k] = body[k];
+  if (!Object.keys(fields).length) return;
+  const text = (v) => (v ? String(v).slice(0, 32) : null);
+  body.autobox_data = JSON.stringify({ plate: text(incoming.plate), vin: text(incoming.vin), fetched_at: at, fields });
+};
+
 // Нэвтэрсэн хэрэглэгчийн дилер (токен хуучин байж болох тул баазаас уншина)
 const dealerIdOf = async (loggedUser) => {
   if (!loggedUser?.id) return null;
@@ -67,11 +101,14 @@ module.exports.save = async (req, res) => {
 
   const isAdmin = loggedUser?.role === roles.admin;
   let prevStatus = null;
+  let prevCar = null;
   if (id) {
     const { car, error } = await findOwnCar(id, loggedUser);
     if (error) return res.status(200).json({ ...result, message: error });
     prevStatus = car.status;
+    prevCar = car;
   }
+  applyAutobox(body, prevCar, at);
 
   delete body.user_id;
   // Дилер. Засахдаа dealer_id ирээгүй бол өөрчлөгдөхгүй.

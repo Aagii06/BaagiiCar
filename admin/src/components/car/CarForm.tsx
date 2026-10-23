@@ -7,13 +7,13 @@ import { RejectNote } from "./useRejectCar";
 import { DealerAvatar } from "./DealerPicker";
 import PlateLookup from "./PlateLookup";
 import PublishChoiceSheet from "./PublishChoiceSheet";
-import { getBodyTypes, getBrands, getDealers, getLocations, getModels, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
+import { getBodyTypes, getBrands, getDealers, getLocations, getModels, parseAutobox, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
 import type { Car, CarModel, Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, ROLES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, ImagePlus, Store, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const MAX_PHOTOS = 12;
@@ -259,8 +259,12 @@ export default function CarForm({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [viewing, setViewing] = useState<number | null>(null);
+  /** Registry data saved with the ad: the lookup isn't offered again and its fields stay locked (the server keeps them too). */
+  const [savedAutobox] = useState(() => parseAutobox(car));
   /** Fields filled from the registry (autobox) lookup; read-only so they match the official record. */
-  const [locked, setLocked] = useState<ReadonlySet<keyof FormState>>(new Set());
+  const [locked, setLocked] = useState<ReadonlySet<keyof FormState>>(() => new Set(Object.keys(savedAutobox?.fields ?? {}) as (keyof FormState)[]));
+  /** The number searched in this session; sent with the save so the server records the lookup. */
+  const [lookup, setLookup] = useState<{ plate: string | null; vin: string | null } | null>(null);
   const isLocked = (k: keyof FormState) => locked.has(k);
   const fileInput = useRef<HTMLInputElement>(null);
   // A new ad is a wizard (Мэдээлэл → Зураг → Нийтлэх); editing keeps one long form.
@@ -333,6 +337,7 @@ export default function CarForm({
     // A new lookup replaces the previous lock; fields the registry left empty stay editable.
     const lock = new Set(Object.keys(fill) as (keyof FormState)[]);
     setLocked(lock);
+    setLookup({ plate: info.plate, vin: info.vin });
     pickModel.then((model) => {
       if (!model) return;
       setF((p) => (p.brand_id === String(brand!.id) ? { ...p, car_model_id: String(model.id) } : p));
@@ -409,7 +414,11 @@ export default function CarForm({
     setBusy(true);
     setError(null);
     try {
-      const input = { ...toInput({ ...f, location_id: locationId }, car), ...(featured !== undefined && { is_featured: featured }) };
+      const input: CarInput = {
+        ...toInput({ ...f, location_id: locationId }, car),
+        ...(featured !== undefined && { is_featured: featured }),
+        ...(lookup && !savedAutobox && locked.size > 0 && { autobox_data: { ...lookup, fields: [...locked] } }),
+      };
       const id = await saveCar({ ...input, ...(car ? { id: car.id } : {}) }, photos);
       onSaved(id);
     } catch (err) {
@@ -430,7 +439,20 @@ export default function CarForm({
         />
       )}
       {car && <RejectNote car={car} />}
-      {show(0) && <PlateLookup onFound={applyLookup} />}
+      {show(0) &&
+        (savedAutobox ? (
+          <section className="flex items-center gap-3 rounded-2xl bg-card p-4">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success-soft text-success">
+              <ShieldCheck className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-bold">Бүртгэлээс татсан{savedAutobox.plate ? ` · ${savedAutobox.plate}` : ""}</p>
+              <p className="text-xs text-muted-foreground">Бүртгэлийн мэдээллийг засах боломжгүй</p>
+            </div>
+          </section>
+        ) : (
+          <PlateLookup onFound={applyLookup} />
+        ))}
       {/* In the wizard the dealer was settled before the form (admin's pick / the dealer's own). */}
       {!wizard && isAdmin && (
         <DealerSection

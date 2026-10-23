@@ -20,6 +20,8 @@ export interface Car {
   steering: string | null;
   /** Бүртгэлийн ангилал (autobox), жш "Туулах чадвар сайтай". */
   vehicle_type: string | null;
+  /** JSON текст: autobox-оос татсан `{ plate, vin, fetched_at, fields }`; fields-ийн утгыг засахад сервер өөрчлүүлэхгүй. */
+  autobox_data?: string | null;
   engine_capacity: string | number | null;
   color: string | null;
   /** Салоны өнгө. */

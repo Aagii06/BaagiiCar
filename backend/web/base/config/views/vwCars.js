@@ -4,9 +4,9 @@ const { nonPublicCarStatuses } = require("../../../../config/constants");
 // Олон нийтэд устгагдсан, батлагдаагүй, нуусан зар харагдахгүй
 const hidden = nonPublicCarStatuses;
 
-// Арлын дугаар (VIN) баазад хадгалагдах ч олон нийтэд буцаагдахгүй.
+// Арлын дугаар (VIN), autobox-ын мэдээлэл (улсын дугаартай) баазад хадгалагдах ч олон нийтэд буцаагдахгүй.
 // ?select=[...]-аар хүссэн ч зөвхөн нийтийн талбарууд гарна.
-const privateFields = ["vin", "reject_reason", "rejected_at"];
+const privateFields = ["vin", "autobox_data", "reject_reason", "rejected_at"];
 const publicFields = Object.keys(vwCars.rawAttributes).filter((f) => !privateFields.includes(f));
 const publicSelect = (req) => {
   const requested = Array.isArray(req.select) ? req.select.filter((f) => publicFields.includes(f)) : [];

@@ -56,6 +56,8 @@ module.exports.cars = async (req, res) => {
 
     const { rows, count } = await vwCars.findAndCountAll({
       where: { status: carStatuses.active, dealer_id: id },
+      // Арлын дугаар, autobox-ын мэдээллийг олон нийтэд буцаахгүй
+      attributes: { exclude: ["vin", "autobox_data", "reject_reason", "rejected_at"] },
       order: [["created_at", "DESC"], ["id", "DESC"]],
       limit: take,
       offset: skip,
