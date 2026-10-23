@@ -200,24 +200,52 @@ class ListPage<T> {
   const ListPage(this.rows, this.count);
 }
 
+class MessageReply {
+  final int id;
+  final String reply;
+  final String? createdAt;
+  const MessageReply({required this.id, required this.reply, this.createdAt});
+  factory MessageReply.fromJson(Map<String, dynamic> j) =>
+      MessageReply(id: _int(j['id']) ?? 0, reply: _str(j['reply']) ?? '', createdAt: _str(j['created_at']));
+}
+
 class MyMessage {
   final int id;
   final String message;
 
-  /// The team's / dealer's answer.
+  /// Latest answer only (list preview); [replies] has them all, oldest first.
   final String? reply;
   final String? repliedAt;
+  final List<MessageReply> replies;
+
+  /// Answers the visitor hasn't opened yet (server-side).
+  final int unread;
   final int? carId;
 
   /// "new" until the team marks it "done".
   final String? status;
   final String? createdAt;
-  const MyMessage({required this.id, required this.message, this.reply, this.repliedAt, this.carId, this.status, this.createdAt});
+  const MyMessage({
+    required this.id,
+    required this.message,
+    this.reply,
+    this.repliedAt,
+    this.replies = const [],
+    this.unread = 0,
+    this.carId,
+    this.status,
+    this.createdAt,
+  });
+
+  /// Every answer; older backends only send the latest as `reply`.
+  List<MessageReply> get allReplies => replies.isNotEmpty ? replies : [if (reply != null) MessageReply(id: 0, reply: reply!, createdAt: repliedAt)];
   factory MyMessage.fromJson(Map<String, dynamic> j) => MyMessage(
         id: _int(j['id'])!,
         message: _str(j['message']) ?? '',
         reply: (_str(j['reply'])?.isNotEmpty ?? false) ? _str(j['reply']) : null,
         repliedAt: _str(j['replied_at']),
+        replies: ((j['replies'] as List?) ?? []).whereType<Map<String, dynamic>>().map(MessageReply.fromJson).toList(),
+        unread: _int(j['unread']) ?? 0,
         carId: _int(j['car_id']),
         status: _str(j['status']),
         createdAt: _str(j['created_at']),

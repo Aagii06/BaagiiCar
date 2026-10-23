@@ -151,6 +151,17 @@ class Api {
     return _rows(res, MyMessage.fromJson);
   }
 
+  /// Unread answers across all the visitor's messages (profile badge).
+  static Future<int> getUnreadCount(String token) async {
+    final res = await apiFetch('/web/messages/unread', token: token);
+    return (res['data']?['count'] as num?)?.toInt() ?? 0;
+  }
+
+  /// Opening a thread reads its answers ([carId] null = general questions).
+  static Future<void> markRead(String token, int? carId) async {
+    await apiFetch('/web/messages/read', method: 'POST', token: token, body: {'car_id': carId});
+  }
+
   /// Question about an ad, stored for the team (name and number come from the token).
   static Future<void> sendMessage({required String token, required String message, int? carId}) async {
     await apiFetch('/web/messages', method: 'POST', token: token, body: {
