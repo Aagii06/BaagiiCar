@@ -408,7 +408,13 @@ export async function listMessages(status?: Message["status"]) {
   const res = await apiFetch<ApiListResponse<Message>>(
     `/api/base/messages${listQuery({ filter: [status ? ["status", "=", status] : NOT_DELETED], sort: [...NEWEST, { selector: "id", desc: true }], take: 200 })}`
   );
-  return res.data;
+  // The ads the messages are about, in one request, for the photo + title under each message.
+  const carIds = [...new Set(res.data.rows.map((m) => m.car_id).filter((id): id is number => !!id))];
+  const cars = carIds.length
+    ? (await apiFetch<ApiListResponse<Car>>(`/api/base/vwCars${listQuery({ filter: [["id", "in", carIds]], take: carIds.length })}`)).data.rows
+    : [];
+  const carById = new Map(cars.map((c) => [c.id, c]));
+  return { ...res.data, rows: res.data.rows.map((m) => ({ ...m, car: m.car_id ? carById.get(m.car_id) : undefined })) };
 }
 
 export const setMessageStatus = (id: number, status: Message["status"]) => updateRow("messages", id, { status });

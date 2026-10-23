@@ -149,4 +149,6 @@ export interface Message {
   status: "new" | "done" | "deleted";
   created_at: string | null;
   deleted_at?: string | null;
+  /** The ad it's about; filled in by `listMessages`. */
+  car?: Car;
 }
