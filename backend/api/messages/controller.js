@@ -9,6 +9,13 @@ const findOwnMessage = async (req, id) => {
   return messages.findOne({ where: { id, type: "car", ...(scope || {}) }, raw: true });
 };
 
+// Яриа: нэг хэрэглэгчийн (created_by, байхгүй бол утас) нэг зарын (car_id) тухай мессежүүд
+const threadOf = (item) => ({
+  type: "car",
+  car_id: item.car_id ?? null,
+  ...(item.created_by ? { created_by: item.created_by } : { phonenumber: item.phonenumber }),
+});
+
 // messages.reply / replied_at-д хамгийн сүүлийн хариуг хадгална (жагсаалт, вэбийн хуучин код)
 const syncLatest = async (messageId, extra = {}) => {
   const last = await messageReplies.findOne({ where: { message_id: messageId }, order: [["id", "DESC"]], raw: true });
@@ -30,6 +37,11 @@ module.exports.reply = async (req, res) => {
     const row = await messageReplies.create({ message_id: id, reply, created_by: by, created_at: at, updated_at: at });
     // Устгасан мессежид хариулбал жагсаалтад буцааж гаргана
     await syncLatest(id, { status: "done", updated_by: by, updated_at: at });
+    // Нэг яриа (нэг хэрэглэгч, нэг зар) дахь хариулаагүй бусад мессеж ч хариулагдсан болно
+    await messages.update(
+      { status: "done", updated_by: by, updated_at: at },
+      { where: { ...threadOf(item), status: "new" } },
+    );
     await saveLog({
       object_name: "messages",
       object_id: id,
