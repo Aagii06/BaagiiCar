@@ -395,6 +395,11 @@ export const MESSAGES = {
   "Бүртгэлтэй дилер алга": { ru: "Дилеров пока нет", en: "No dealers yet" },
   "Бүх дилер": { ru: "Все дилеры", en: "All dealers" },
   "Энэ дилерт одоогоор зар алга": { ru: "У этого дилера пока нет объявлений", en: "This dealer has no listings yet" },
+  // --- share ----------------------------------------------------------------
+  "Хуваалцах": { ru: "Поделиться", en: "Share" },
+  "{name}-д хуваалцах": { ru: "Поделиться в {name}", en: "Share on {name}" },
+  "Холбоос хуулах": { ru: "Скопировать ссылку", en: "Copy link" },
+  "Холбоос хуулагдлаа": { ru: "Ссылка скопирована", en: "Link copied" },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;

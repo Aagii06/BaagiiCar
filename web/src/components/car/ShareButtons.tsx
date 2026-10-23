@@ -3,7 +3,9 @@
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { Check, Link as LinkIcon, Share2 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
+
+const noop = () => () => {};
 
 const BTN =
   "grid size-10 place-items-center rounded-full border border-border bg-card text-foreground/70 transition hover:-translate-y-0.5 hover:text-white";
@@ -35,27 +37,24 @@ function Telegram() {
 /** Icon-only share row for a car ad: Facebook, X, Telegram, copy link (+ the OS share sheet where available). */
 export default function ShareButtons({ title, className }: { title: string; className?: string }) {
   const { t } = useI18n();
-  const [url, setUrl] = useState("");
-  const [canNativeShare, setCanNativeShare] = useState(false);
   const [copied, setCopied] = useState(false);
+  // false on the server, real value in the browser — without a setState-in-effect.
+  const canNativeShare = useSyncExternalStore(noop, () => typeof navigator.share === "function", () => false);
 
-  // window is only available after mount.
-  useEffect(() => {
-    setUrl(window.location.href);
-    setCanNativeShare(typeof navigator.share === "function");
-  }, []);
-
-  const u = encodeURIComponent(url);
-  const text = encodeURIComponent(title);
-  const links: { label: string; href: string; hover: string; icon: ReactNode }[] = [
-    { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${u}`, hover: "hover:border-[#1877f2] hover:bg-[#1877f2]", icon: <Facebook /> },
-    { label: "X", href: `https://twitter.com/intent/tweet?url=${u}&text=${text}`, hover: "hover:border-black hover:bg-black", icon: <X /> },
-    { label: "Telegram", href: `https://t.me/share/url?url=${u}&text=${text}`, hover: "hover:border-[#229ed9] hover:bg-[#229ed9]", icon: <Telegram /> },
+  const links: { label: string; href: (u: string, text: string) => string; hover: string; icon: ReactNode }[] = [
+    { label: "Facebook", href: (u) => `https://www.facebook.com/sharer/sharer.php?u=${u}`, hover: "hover:border-[#1877f2] hover:bg-[#1877f2]", icon: <Facebook /> },
+    { label: "X", href: (u, text) => `https://twitter.com/intent/tweet?url=${u}&text=${text}`, hover: "hover:border-black hover:bg-black", icon: <X /> },
+    { label: "Telegram", href: (u, text) => `https://t.me/share/url?url=${u}&text=${text}`, hover: "hover:border-[#229ed9] hover:bg-[#229ed9]", icon: <Telegram /> },
   ];
+
+  function open(build: (u: string, text: string) => string) {
+    const href = build(encodeURIComponent(window.location.href), encodeURIComponent(title));
+    window.open(href, "_blank", "noopener,noreferrer,width=640,height=560");
+  }
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -66,17 +65,16 @@ export default function ShareButtons({ title, className }: { title: string; clas
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       {links.map((l) => (
-        <a
+        <button
           key={l.label}
-          href={l.href}
-          target="_blank"
-          rel="noopener noreferrer"
+          type="button"
+          onClick={() => open(l.href)}
           title={l.label}
           aria-label={t("{name}-д хуваалцах", { name: l.label })}
-          className={cn(BTN, l.hover, !url && "pointer-events-none")}
+          className={cn(BTN, l.hover)}
         >
           {l.icon}
-        </a>
+        </button>
       ))}
       <button
         type="button"
@@ -90,7 +88,7 @@ export default function ShareButtons({ title, className }: { title: string; clas
       {canNativeShare && (
         <button
           type="button"
-          onClick={() => navigator.share({ title, url }).catch(() => {})}
+          onClick={() => navigator.share({ title, url: window.location.href }).catch(() => {})}
           title={t("Хуваалцах")}
           aria-label={t("Хуваалцах")}
           className={cn(BTN, "hover:border-primary hover:bg-primary")}

@@ -6,6 +6,7 @@ import CarImage from "@/components/car/CarImage";
 import FavoriteButton from "@/components/car/FavoriteButton";
 import LeasingCalculator from "@/components/car/LeasingCalculator";
 import Container from "@/components/common/Container";
+import ShareButtons from "@/components/car/ShareButtons";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import DealerAvatar from "@/components/common/DealerAvatar";
@@ -251,10 +252,11 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
       <div className="mt-4 flex gap-2">
         <button
           onClick={() => openChat({ carId: c.id, title: `${carTitle(c, t)} ${c.manufactured_year ?? ""}`.trim() })}
-          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white hover:bg-primary-hover"
+          title={t("Чатлах")}
+          aria-label={t("Чатлах")}
+          className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary text-white hover:bg-primary-hover"
         >
-          <MessageCircle className="size-4" />
-          {t("Чатлах")}
+          <MessageCircle className="size-5" />
         </button>
         {phone && (
           <a href={`tel:${phone}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border-[1.5px] border-foreground font-bold hover:bg-muted">
@@ -290,6 +292,11 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
           </>
         )}
         <span className="text-xs text-muted-foreground">{t("{n} үзсэн", { n: c.view_count ?? 0 })}</span>
+      </div>
+
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-5">
+        <span className="text-sm font-semibold text-muted-foreground">{t("Хуваалцах")}</span>
+        <ShareButtons title={`${carTitle(c, t)} ${c.manufactured_year ?? ""}`.trim()} />
       </div>
     </section>
   );
