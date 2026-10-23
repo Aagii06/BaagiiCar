@@ -403,24 +403,34 @@ export const deleteCustomer = (id: number) => deleteRows("customers", [id]);
 
 // --- web chat messages -----------------------------------------------------
 
+/** Adds each message's ad (photo + title) and its answers, one request each. */
+async function withCarsAndReplies(rows: Message[]): Promise<Message[]> {
+  const carIds = [...new Set(rows.map((m) => m.car_id).filter((id): id is number => !!id))];
+  const cars = carIds.length
+    ? (await apiFetch<ApiListResponse<Car>>(`/api/base/vwCars${listQuery({ filter: [["id", "in", carIds]], take: carIds.length })}`)).data.rows
+    : [];
+  const carById = new Map(cars.map((c) => [c.id, c]));
+  const ids = rows.map((m) => m.id);
+  const replies = ids.length ? (await apiFetch<ApiItemResponse<MessageReply[]>>(`/api/messages/replies?ids=${ids.join(",")}`)).data : [];
+  return rows.map((m) => ({ ...m, car: m.car_id ? carById.get(m.car_id) : undefined, replies: replies.filter((r) => r.message_id === m.id) }));
+}
+
 /** Without a status: every message except deleted ones (the Бүгд tab). */
 export async function listMessages(status?: Message["status"]) {
   const res = await apiFetch<ApiListResponse<Message>>(
     `/api/base/messages${listQuery({ filter: [status ? ["status", "=", status] : NOT_DELETED], sort: [...NEWEST, { selector: "id", desc: true }], take: 200 })}`
   );
-  // The ads the messages are about, in one request, for the photo + title under each message.
-  const carIds = [...new Set(res.data.rows.map((m) => m.car_id).filter((id): id is number => !!id))];
-  const cars = carIds.length
-    ? (await apiFetch<ApiListResponse<Car>>(`/api/base/vwCars${listQuery({ filter: [["id", "in", carIds]], take: carIds.length })}`)).data.rows
-    : [];
-  const carById = new Map(cars.map((c) => [c.id, c]));
-  // Every answer of these messages, in one request.
-  const ids = res.data.rows.map((m) => m.id);
-  const replies = ids.length ? (await apiFetch<ApiItemResponse<MessageReply[]>>(`/api/messages/replies?ids=${ids.join(",")}`)).data : [];
-  return {
-    ...res.data,
-    rows: res.data.rows.map((m) => ({ ...m, car: m.car_id ? carById.get(m.car_id) : undefined, replies: replies.filter((r) => r.message_id === m.id) })),
-  };
+  return { ...res.data, rows: await withCarsAndReplies(res.data.rows) };
+}
+
+/** Every message of the chat `messageId` belongs to (same visitor, same ad), any status; null if it's gone / out of reach. */
+export async function getMessageThread(messageId: number | string) {
+  const one = (await apiFetch<ApiItemResponse<Message | null>>(`/api/base/messages/${messageId}`)).data;
+  if (!one) return null;
+  const who: Condition = one.created_by ? ["created_by", "=", one.created_by] : ["phonenumber", "=", one.phonenumber];
+  const res = await apiFetch<ApiListResponse<Message>>(`/api/base/messages${listQuery({ filter: [who], sort: [{ selector: "id", desc: false }], take: 500 })}`);
+  // Same ad (or both about no ad); filtered here so a null car_id needs no special filter.
+  return withCarsAndReplies(res.data.rows.filter((m) => (m.car_id ?? null) === (one.car_id ?? null)));
 }
 
 export const setMessageStatus = (id: number, status: Message["status"]) => updateRow("messages", id, { status });
