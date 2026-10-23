@@ -1,0 +1,165 @@
+"use client";
+
+import { carTitle } from "@/components/car/CarCard";
+import CarImage from "@/components/car/CarImage";
+import Container, { PageTitle } from "@/components/common/Container";
+import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { getCarsByIds } from "@/lib/api/cars";
+import type { Car } from "@/lib/api/types";
+import { COMPARE_MAX, useCompare } from "@/lib/compare/CompareProvider";
+import { bodyTypeLabel } from "@/lib/constants";
+import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useApi } from "@/lib/useApi";
+import { cn, formatEngine, formatNumber, formatPrice, toNumber } from "@/lib/utils";
+import { Plus, Trophy, X } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+
+/** Which end of a numeric row counts as better; that cell gets highlighted. */
+type Best = "min" | "max";
+
+interface Row {
+  label: string;
+  value: (c: Car) => string | number | null | undefined;
+  num?: (c: Car) => number | null;
+  best?: Best;
+}
+
+function bestIndexes(cars: Car[], row: Row) {
+  if (!row.best || !row.num || cars.length < 2) return new Set<number>();
+  const nums = cars.map((c) => row.num!(c));
+  const valid = nums.filter((n): n is number => n != null && n > 0);
+  if (valid.length < 2) return new Set<number>();
+  const target = row.best === "min" ? Math.min(...valid) : Math.max(...valid);
+  // Everyone equal — nothing stands out.
+  if (valid.every((n) => n === target)) return new Set<number>();
+  return new Set(nums.flatMap((n, i) => (n === target ? [i] : [])));
+}
+
+export default function ComparePage() {
+  const { ids, ready, remove, clear } = useCompare();
+  const { t, tv } = useI18n();
+  const [diffOnly, setDiffOnly] = useState(false);
+
+  const key = ready ? [...ids].sort((a, b) => a - b).join(",") : "";
+  const cars = useApi(() => (ready && ids.length ? getCarsByIds(ids) : Promise.resolve([])), key);
+  // Keep the order cars were added in.
+  const byId = new Map((cars.data ?? []).map((c) => [c.id, c]));
+  const rows = ids.map((id) => byId.get(id)).filter((c): c is Car => !!c);
+  const loading = !ready || (cars.loading && !cars.data);
+
+  const specs: Row[] = [
+    { label: t("Үнэ"), value: (c) => formatPrice(c.price, t), num: (c) => toNumber(c.price) || null, best: "min" },
+    { label: t("Үйлдвэрлэсэн он"), value: (c) => c.manufactured_year, num: (c) => c.manufactured_year, best: "max" },
+    { label: t("Орж ирсэн он"), value: (c) => c.imported_year, num: (c) => c.imported_year, best: "max" },
+    { label: t("Гүйлт"), value: (c) => (c.mileage != null ? t("{n} км", { n: formatNumber(c.mileage) }) : null), num: (c) => c.mileage, best: "min" },
+    { label: t("Хөдөлгүүр"), value: (c) => (c.engine_capacity ? formatEngine(c.engine_capacity, t) : null) },
+    { label: t("Түлш"), value: (c) => tv(c.fuel_type) },
+    { label: t("Хурдны хайрцаг"), value: (c) => tv(c.transmission) },
+    { label: t("Хүрд"), value: (c) => tv(c.steering) },
+    { label: t("Хөтлөгч"), value: (c) => c.drive_type },
+    { label: t("Төрөл"), value: (c) => bodyTypeLabel(c.body_type_name, t) },
+    { label: t("Ангилал"), value: (c) => c.vehicle_type },
+    { label: t("Гадна өнгө"), value: (c) => c.color },
+    { label: t("Дотор өнгө"), value: (c) => c.interior_color },
+    { label: t("Байршил"), value: (c) => c.location_name },
+  ];
+  const visible = diffOnly ? specs.filter((r) => new Set(rows.map((c) => String(r.value(c) ?? ""))).size > 1) : specs;
+  const slots = rows.length < COMPARE_MAX ? 1 : 0;
+  // Label column + one per car (+ the "add" slot); min width keeps phones scrolling sideways instead of squashing.
+  const cols = rows.length + slots;
+  const grid = { gridTemplateColumns: `minmax(110px,180px) repeat(${cols}, minmax(170px, 1fr))` };
+
+  return (
+    <Container className="pt-8 md:pt-12">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <PageTitle count={loading ? undefined : rows.length}>{t("Харьцуулалт")}</PageTitle>
+        {rows.length > 1 && (
+          <div className="flex items-center gap-4">
+            <label className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold">
+              <input type="checkbox" checked={diffOnly} onChange={(e) => setDiffOnly(e.target.checked)} className="size-4 accent-primary" />
+              {t("Зөвхөн ялгааг харуулах")}
+            </label>
+            <button type="button" onClick={clear} className="text-sm font-semibold text-muted-foreground hover:text-destructive">
+              {t("Цэвэрлэх")}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-8">
+        {loading ? (
+          <LoadingState />
+        ) : cars.error ? (
+          <ErrorState message={cars.error.message} onRetry={cars.reload} />
+        ) : !rows.length ? (
+          <EmptyState
+            title={t("Харьцуулах машин алга")}
+            description={t("Машины карт дээрх харьцуулах товчийг дарж {n} хүртэл машин нэмнэ үү.", { n: COMPARE_MAX })}
+            action={<Link href="/cars" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">{t("Машин хайх")}</Link>}
+          />
+        ) : (
+          <div className="no-scrollbar -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+            <div className="min-w-max overflow-hidden rounded-2xl bg-card md:min-w-0">
+              {/* Car headers */}
+              <div className="grid gap-3 p-3" style={grid}>
+                <div />
+                {rows.map((c) => (
+                  <div key={c.id} className="relative flex flex-col">
+                    <Link href={`/cars/${c.id}`} className="block">
+                      <CarImage id={c.id} image={c.image} bodyType={c.body_type_name} className="aspect-[4/3]" alt={carTitle(c, t)} />
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => remove(c.id)}
+                      title={t("Харьцуулалтаас хасах")}
+                      aria-label={t("Харьцуулалтаас хасах")}
+                      className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white shadow-sm hover:text-destructive"
+                    >
+                      <X className="size-4" />
+                    </button>
+                    <Link href={`/cars/${c.id}`} className="mt-3 px-1 font-bold leading-snug hover:text-primary">
+                      {carTitle(c, t)}
+                      {c.manufactured_year ? <span className="font-medium text-muted-foreground"> · {c.manufactured_year}</span> : null}
+                    </Link>
+                    <p className="mt-1 px-1 font-display text-lg font-bold text-primary">{formatPrice(c.price, t)}</p>
+                  </div>
+                ))}
+                {slots > 0 && (
+                  <Link
+                    href="/cars"
+                    className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
+                  >
+                    <Plus className="size-6" />
+                    {t("Машин нэмэх")}
+                  </Link>
+                )}
+              </div>
+
+              {/* Spec rows */}
+              {visible.map((r, ri) => {
+                const best = bestIndexes(rows, r);
+                return (
+                  <div key={r.label} className={cn("grid items-center gap-3 px-3 py-3", ri % 2 === 0 && "bg-muted/60")} style={grid}>
+                    <div className="px-1 text-xs font-medium text-muted-foreground md:text-sm">{r.label}</div>
+                    {rows.map((c, i) => {
+                      const v = r.value(c);
+                      return (
+                        <div key={c.id} className={cn("flex items-center gap-1.5 px-1 text-sm font-semibold", best.has(i) && "text-success")}>
+                          {v || <span className="font-normal text-muted-foreground">—</span>}
+                          {best.has(i) && <Trophy className="size-3.5 shrink-0" />}
+                        </div>
+                      );
+                    })}
+                    {slots > 0 && <div />}
+                  </div>
+                );
+              })}
+              {diffOnly && !visible.length && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("Ялгаатай үзүүлэлт алга")}</p>}
+            </div>
+          </div>
+        )}
+      </div>
+    </Container>
+  );
+}

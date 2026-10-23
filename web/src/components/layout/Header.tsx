@@ -16,7 +16,7 @@ import Logo from "./Logo";
 
 export const NAV: { href: string; label: MessageKey }[] = [
   { href: "/cars", label: "Машин авах" },
-  { href: "/leasing", label: "Лизинг" },
+  { href: "/compare", label: "Харьцуулалт" },
   { href: "/help", label: "Тусламж" },
   { href: "/dealers", label: "Дилерүүд" },
 ];

@@ -8,6 +8,7 @@ import { cn, formatPriceShort } from "@/lib/utils";
 import { BadgeCheck, MapPin, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import CarImage from "./CarImage";
+import CompareButton from "./CompareButton";
 import FavoriteButton from "./FavoriteButton";
 import SpecChips from "./SpecChips";
 
@@ -74,6 +75,7 @@ export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadg
           >
             <MessageCircle className="size-4" />
           </button>
+          <CompareButton carId={car.id} />
         </div>
       </div>
     </article>

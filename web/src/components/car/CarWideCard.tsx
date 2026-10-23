@@ -8,6 +8,7 @@ import { MessageCircle, Zap } from "lucide-react";
 import Link from "next/link";
 import { carTitle } from "./CarCard";
 import CarImage from "./CarImage";
+import CompareButton from "./CompareButton";
 import SpecChips from "./SpecChips";
 
 /** The orange-outlined, full-width featured card in the "Машин авах" grid. */
@@ -45,6 +46,7 @@ export default function CarWideCard({ car }: { car: Car }) {
           >
             <MessageCircle className="size-4" />
           </button>
+          <CompareButton carId={car.id} className="size-11" />
         </div>
       </div>
     </article>

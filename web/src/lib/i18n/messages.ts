@@ -401,6 +401,19 @@ export const MESSAGES = {
   "{name}-д хуваалцах": { ru: "Поделиться в {name}", en: "Share on {name}" },
   "Холбоос хуулах": { ru: "Скопировать ссылку", en: "Copy link" },
   "Холбоос хуулагдлаа": { ru: "Ссылка скопирована", en: "Link copied" },
+  // --- compare --------------------------------------------------------------
+  "Харьцуулалт": { ru: "Сравнение", en: "Compare" },
+  "Харьцуулалтад нэмэх": { ru: "Добавить к сравнению", en: "Add to compare" },
+  "Харьцуулалтаас хасах": { ru: "Убрать из сравнения", en: "Remove from compare" },
+  "Хамгийн ихдээ {n} машин": { ru: "Не более {n} авто", en: "Up to {n} cars" },
+  "Зөвхөн ялгааг харуулах": { ru: "Только различия", en: "Differences only" },
+  "Харьцуулах машин алга": { ru: "Нет авто для сравнения", en: "Nothing to compare yet" },
+  "Машины карт дээрх харьцуулах товчийг дарж {n} хүртэл машин нэмнэ үү.": {
+    ru: "Нажмите кнопку сравнения на карточке, чтобы добавить до {n} авто.",
+    en: "Tap the compare button on a car card to add up to {n} cars.",
+  },
+  "Машин нэмэх": { ru: "Добавить авто", en: "Add a car" },
+  "Ялгаатай үзүүлэлт алга": { ru: "Различий нет", en: "No differences" },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;

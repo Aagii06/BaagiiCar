@@ -3,6 +3,7 @@
 import CarArt, { shapeFor } from "@/components/car/CarArt";
 import { carTitle } from "@/components/car/CarCard";
 import CarImage from "@/components/car/CarImage";
+import CompareButton from "@/components/car/CompareButton";
 import FavoriteButton from "@/components/car/FavoriteButton";
 import LeasingCalculator from "@/components/car/LeasingCalculator";
 import Container from "@/components/common/Container";
@@ -265,6 +266,7 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
           </a>
         )}
         <FavoriteButton carId={c.id} className="size-12 rounded-xl border border-border shadow-none" />
+        <CompareButton carId={c.id} className="size-12" />
       </div>
 
       <div className="mt-5 flex items-center gap-3 border-t border-border pt-5">
