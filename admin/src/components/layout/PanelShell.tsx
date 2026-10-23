@@ -23,7 +23,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
   const action = navItems.find((item) => item.href === pathname)?.action;
 
   return (
-    <ToastProvider>
+    <ToastProvider aboveNav={isTabPage}>
       <ConfirmProvider>
       {isTabPage && (
         <header className="sticky top-0 z-30 flex min-h-[61px] items-center justify-between gap-3 border-b border-border bg-white/95 px-4 py-3 backdrop-blur">
