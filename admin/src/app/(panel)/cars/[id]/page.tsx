@@ -17,7 +17,8 @@ import { Check, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
-import { useState } from "react";
+import { useBackTo, withFrom } from "@/lib/useBackTo";
+import { Suspense, useState } from "react";
 
 /**
  * `/cars/new`: an admin first picks the dealer; a dealer's own dealer is used as is.
@@ -27,7 +28,17 @@ import { useState } from "react";
 const NEW_AD_STEPS = ["Дилер", "Мэдээлэл", "Зураг", "Нийтлэх"];
 
 export default function CarEditPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CarEditInner />
+    </Suspense>
+  );
+}
+
+function CarEditInner() {
   const id = useRouteId();
+  // Opened from Самбар / Мессеж: back (and save) returns there instead of the ads list.
+  const { from, back } = useBackTo("/cars");
   const isNew = id === "new";
   const router = useRouter();
   const toast = useToast();
@@ -79,12 +90,12 @@ export default function CarEditPage() {
     <>
       <DetailHeader
         title={title}
-        back="/cars"
+        back={back}
         aside={
           <div className="flex items-center gap-1">
             {!isNew && (
               // Preview works for pending ads too, unlike the public site.
-              <Link href={`/cars/${id}/view`} aria-label="Зарыг харах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
+              <Link href={withFrom(`/cars/${id}/view`, from)} aria-label="Зарыг харах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
                 <Eye className="size-4" />
               </Link>
             )}
@@ -143,7 +154,7 @@ export default function CarEditPage() {
             onBusyChange={setSaving}
             onSaved={() => {
               toast("Хадгаллаа");
-              router.push("/cars");
+              router.push(back);
             }}
           />
         </div>

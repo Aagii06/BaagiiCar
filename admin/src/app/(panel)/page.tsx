@@ -6,6 +6,7 @@ import { countOf, recentCars } from "@/lib/api/admin";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
+import { withFrom } from "@/lib/useBackTo";
 import { carTitle, cn, formatPriceShort } from "@/lib/utils";
 import { ArrowRight, CarFront, Store, Users } from "lucide-react";
 import Link from "next/link";
@@ -107,7 +108,7 @@ export default function DashboardPage() {
           recent.data.rows.map((car) => {
             const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
             return (
-              <Link key={car.id} href={`/cars/${car.id}`} className="flex items-center gap-3 rounded-2xl bg-card p-2.5">
+              <Link key={car.id} href={withFrom(`/cars/${car.id}`, "home")} className="flex items-center gap-3 rounded-2xl bg-card p-2.5">
                 <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} size="thumb" className="h-12 w-16 shrink-0" artClassName="w-[80%]" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{carTitle(car)}</p>

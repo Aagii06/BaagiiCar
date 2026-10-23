@@ -8,6 +8,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import { deleteMessage, listMessages, setMessageStatus } from "@/lib/api/admin";
 import type { Message } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
+import { withFrom } from "@/lib/useBackTo";
 import CarImage from "@/components/car/CarImage";
 import { carTitle, cn, timeAgo } from "@/lib/utils";
 import { Check, ChevronRight, Phone, RotateCcw, Trash2 } from "lucide-react";
@@ -67,20 +68,13 @@ function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void 
         </div>
       </div>
       <p className="mt-3 whitespace-pre-line text-sm leading-6">{item.message}</p>
-      {item.car_id &&
-        (item.car ? (
-          <Link href={`/cars/${item.car_id}`} className="mt-3 flex items-center gap-3 rounded-xl bg-muted p-2 hover:bg-border">
+      {item.car && (
+          <Link href={withFrom(`/cars/${item.car_id}`, "messages")} className="mt-3 flex items-center gap-3 rounded-xl bg-muted p-2 hover:bg-border">
             <CarImage id={item.car.id} image={item.car.image} bodyType={item.car.body_type_name} size="thumb" className="h-10 w-14 shrink-0" artClassName="w-[80%]" />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-bold">{carTitle(item.car)}</span>
-              <span className="block text-xs text-muted-foreground">Зар #{item.car_id}</span>
-            </span>
+            <span className="min-w-0 flex-1 truncate text-sm font-bold">{carTitle(item.car)}</span>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
           </Link>
-        ) : (
-          // The ad is gone (or out of this user's reach): keep the bare id.
-          <p className="mt-2 text-xs font-semibold text-muted-foreground">Зар #{item.car_id}</p>
-        ))}
+      )}
       <div className="mt-3 flex gap-2">
         {isDeleted ? (
           <button onClick={() => run(() => setMessageStatus(item.id, "new"), "Сэргээлээ")} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">

@@ -17,14 +17,25 @@ import { cn, formatEngine, formatNumber, formatPrice, timeAgo } from "@/lib/util
 import { Check, ExternalLink, Eye, EyeOff, Heart, Pencil, Phone, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
-import { useState } from "react";
+import { useBackTo, withFrom } from "@/lib/useBackTo";
+import { Suspense, useState } from "react";
 
 /**
  * Read-only preview of an ad laid out like the web detail page. The web only
  * serves active/sold ads, so this is where pending ones can be checked.
  */
 export default function CarViewPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CarViewInner />
+    </Suspense>
+  );
+}
+
+function CarViewInner() {
   const id = useRouteId();
+  // Keeps where the ad was opened from, for the edit page's back button.
+  const { from } = useBackTo("/cars");
   const toast = useToast();
   const [busy, setBusy] = useState(false);
 
@@ -54,10 +65,10 @@ export default function CarViewPage() {
     <>
       <DetailHeader
         title={car?.name || "Зар"}
-        back={`/cars/${id}`}
+        back={withFrom(`/cars/${id}`, from)}
         aside={
           car && car.status !== "deleted" ? (
-            <Link href={`/cars/${car.id}`} aria-label="Засах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
+            <Link href={withFrom(`/cars/${car.id}`, from)} aria-label="Засах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
               <Pencil className="size-4" />
             </Link>
           ) : null
