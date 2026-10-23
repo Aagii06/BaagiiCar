@@ -159,7 +159,8 @@ function Filters({
 }: {
   p: Params;
   set: (patch: Partial<Params>) => void;
-  dealers: Dealer[];
+  /** undefined while loading. */
+  dealers: Dealer[] | undefined;
   brands: Loaded<Brand[]>;
   models: Loaded<CarModel[]>;
   bodyTypes: BodyType[];
@@ -203,16 +204,26 @@ function Filters({
         ) : null}
       </div>
 
-      {dealers.length > 0 && (
+      {/* Hidden only once loaded with no dealers; while loading it spins like the brand list. */}
+      {(!dealers || dealers.length > 0) && (
         <Group title={t("Дилер")}>
-          <Select value={p.dealer ?? ""} onChange={(e) => set({ dealer: num(e.target.value) })} aria-label={t("Дилер")}>
-            <option value="">{t("Бүх дилер")}</option>
-            {dealers.map((d) => (
-              <option key={d.id} value={d.id}>
-                {dealerName(d)}
-              </option>
-            ))}
-          </Select>
+          <div className="relative">
+            <Select
+              value={dealers ? (p.dealer ?? "") : ""}
+              onChange={(e) => set({ dealer: num(e.target.value) })}
+              disabled={!dealers}
+              aria-busy={!dealers}
+              aria-label={t("Дилер")}
+            >
+              <option value="">{dealers ? t("Бүх дилер") : t("Ачаалж байна...")}</option>
+              {dealers?.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {dealerName(d)}
+                </option>
+              ))}
+            </Select>
+            {!dealers && <SelectSpinner />}
+          </div>
         </Group>
       )}
 
@@ -363,7 +374,7 @@ function MobileFilters({
   onClose,
 }: {
   p: Params;
-  dealers: Dealer[];
+  dealers: Dealer[] | undefined;
   brands: Loaded<Brand[]>;
   bodyTypes: BodyType[];
   onApply: (next: Params) => void;
@@ -524,12 +535,12 @@ function CarsPageInner() {
               {t("Шүүлтүүр")}
             </button>
             <div className="hidden lg:block">
-              <Filters key={key} p={p} set={set} dealers={dealers.data?.rows ?? []} brands={brands} models={models} bodyTypes={bodyTypes.data ?? []} />
+              <Filters key={key} p={p} set={set} dealers={dealers.data?.rows ?? (dealers.error ? [] : undefined)} brands={brands} models={models} bodyTypes={bodyTypes.data ?? []} />
             </div>
             {showFilters && (
               <MobileFilters
                 p={p}
-                dealers={dealers.data?.rows ?? []}
+                dealers={dealers.data?.rows ?? (dealers.error ? [] : undefined)}
                 brands={brands}
                 bodyTypes={bodyTypes.data ?? []}
                 onClose={() => setShowFilters(false)}

@@ -1,7 +1,7 @@
 "use client";
 
 import CarImage from "@/components/car/CarImage";
-import { ErrorState, LoadingState, Spinner } from "@/components/common/States";
+import { ErrorState, LoadingState } from "@/components/common/States";
 import { countOf, featuredCars, recentCars } from "@/lib/api/admin";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -11,9 +11,6 @@ import { withFrom } from "@/lib/useBackTo";
 import { carTitle, cn, formatPriceShort } from "@/lib/utils";
 import { ArrowRight, CarFront, Store, Users } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-
-const RECENT_PAGE = 10;
 
 async function loadStats(isAdmin: boolean) {
   const [pending, active, sold, featured, total, dealers, users] = await Promise.all([
@@ -32,8 +29,7 @@ async function loadStats(isAdmin: boolean) {
 export default function DashboardPage() {
   const isAdmin = useAuth().user?.role === ROLES.admin;
   const stats = useApi(() => loadStats(isAdmin), String(isAdmin));
-  const [recentTake, setRecentTake] = useState(RECENT_PAGE);
-  const recent = useApi(() => recentCars({ take: recentTake }), String(recentTake));
+  const recent = useApi(() => recentCars({ take: 5 }));
   const featured = useApi(() => featuredCars(5));
   const s = stats.data;
 
@@ -108,16 +104,6 @@ export default function DashboardPage() {
           <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Сүүлийн 2 хоногт зар нэмэгдээгүй</p>
         ) : (
           recent.data.rows.map((car) => <CarLine key={car.id} car={car} />)
-        )}
-        {recent.data && recent.data.rows.length < recent.data.count && (
-          <button
-            type="button"
-            onClick={() => setRecentTake((t) => t + RECENT_PAGE)}
-            disabled={recent.loading}
-            className="w-full rounded-xl bg-card py-3 text-sm font-bold disabled:opacity-60"
-          >
-            {recent.loading ? <Spinner className="mx-auto size-5" /> : "Цааш үзэх"}
-          </button>
         )}
       </div>
 

@@ -162,7 +162,7 @@ class _CarsScreenState extends State<CarsScreen> {
 
   Future<void> _openFilters() async {
     final next = await Navigator.of(context).push<CarSearch>(
-      MaterialPageRoute(fullscreenDialog: true, builder: (_) => FiltersScreen(initial: _search, dealers: _dealers ?? [], brands: _brands ?? [], bodyTypes: _bodyTypes)),
+      MaterialPageRoute(fullscreenDialog: true, builder: (_) => FiltersScreen(initial: _search, dealers: _dealers, brands: _brands ?? [], bodyTypes: _bodyTypes)),
     );
     if (next != null) _apply(next);
   }
@@ -379,7 +379,9 @@ class _LogoTile extends StatelessWidget {
 /// Full-screen filters over a draft copy; "Хайх" applies it, the back arrow drops it.
 class FiltersScreen extends StatefulWidget {
   final CarSearch initial;
-  final List<Dealer> dealers;
+
+  /// null while loading.
+  final List<Dealer>? dealers;
   final List<Brand> brands;
   final List<BodyType> bodyTypes;
   const FiltersScreen({super.key, required this.initial, required this.dealers, required this.brands, required this.bodyTypes});
@@ -392,11 +394,16 @@ class _FiltersScreenState extends State<FiltersScreen> {
   late CarSearch _d = widget.initial;
   List<CarModel> _models = [];
   bool _modelsLoading = false;
+  late List<Dealer>? _dealers = widget.dealers;
 
   @override
   void initState() {
     super.initState();
     if (_d.brandIds.length == 1) _loadModels(_d.brandIds.first);
+    // Opened before the list screen had them: fetch here so the spinner ends.
+    if (_dealers == null) {
+      Api.getDealers().then((d) => mounted ? setState(() => _dealers = d) : null, onError: (_) => mounted ? setState(() => _dealers = []) : null);
+    }
   }
 
   Future<void> _loadModels(int brandId) async {
@@ -449,14 +456,16 @@ class _FiltersScreenState extends State<FiltersScreen> {
         children: [
           Panel(
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              if (widget.dealers.isNotEmpty)
+              // Hidden only once loaded with no dealers; spins while loading, like the brand list.
+              if (_dealers == null || _dealers!.isNotEmpty)
                 _group(
                   'Дилер',
                   SelectField<int>(
                     label: 'Дилер',
                     placeholder: 'Бүх дилер',
                     value: _d.dealerId,
-                    options: [for (final d in widget.dealers) Option(d.id, d.name)],
+                    loading: _dealers == null,
+                    options: [for (final d in _dealers ?? <Dealer>[]) Option(d.id, d.name)],
                     onChanged: (v) => setState(() => _d = _copy(_d, dealerId: v)),
                   ),
                   first: true,
@@ -485,7 +494,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
                   options: [for (final m in _models) Option(m.id, m.name)],
                   onChanged: (v) => setState(() => _d = _copy(_d, modelId: v)),
                 ),
-              ]), first: widget.dealers.isEmpty),
+              ]), first: _dealers?.isEmpty ?? false),
               if (widget.bodyTypes.isNotEmpty)
                 _group(
                   'Төрөл',
