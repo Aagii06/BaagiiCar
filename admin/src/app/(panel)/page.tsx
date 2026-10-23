@@ -1,7 +1,7 @@
 "use client";
 
 import CarImage from "@/components/car/CarImage";
-import { ErrorState, LoadingState } from "@/components/common/States";
+import { ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import { countOf, recentCars } from "@/lib/api/admin";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
@@ -124,7 +124,7 @@ export default function DashboardPage() {
             disabled={recent.loading}
             className="w-full rounded-xl bg-card py-3 text-sm font-bold disabled:opacity-60"
           >
-            {recent.loading ? "Ачаалж байна…" : "Цааш үзэх"}
+            {recent.loading ? <Spinner className="mx-auto size-5" /> : "Цааш үзэх"}
           </button>
         )}
       </div>

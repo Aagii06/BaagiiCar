@@ -5,7 +5,7 @@ import { useRejectCar } from "@/components/car/useRejectCar";
 import ChipTabs, { type ChipTab } from "@/components/common/ChipTabs";
 import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { inputClass, Select } from "@/components/common/Field";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import { approveCar, deleteCar, listCars, listDealers, markSold, setFeatured, setHidden, type CarStatusFilter } from "@/lib/api/admin";
@@ -279,7 +279,7 @@ function CarsInner() {
           </div>
           {cars.data.rows.length < cars.data.count && (
             <button onClick={() => setTake((t) => t + PAGE_SIZE)} disabled={cars.loading} className="mt-4 w-full rounded-xl bg-card py-3 text-sm font-bold disabled:opacity-60">
-              {cars.loading ? "Ачаалж байна…" : "Цааш үзэх"}
+              {cars.loading ? <Spinner className="mx-auto size-5" /> : "Цааш үзэх"}
             </button>
           )}
         </>

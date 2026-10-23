@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Spinner } from "./States";
 
 /** Infinite-scroll sentinel: calls `onMore` when it comes near the viewport. Re-key it after each page so a still-visible sentinel fires again. */
 export default function LoadMore({ onMore }: { onMore: () => void }) {
@@ -19,8 +20,8 @@ export default function LoadMore({ onMore }: { onMore: () => void }) {
   }, []);
 
   return (
-    <div ref={ref} className="py-4 text-center text-xs font-semibold text-muted-foreground">
-      Ачаалж байна…
+    <div ref={ref} role="status" aria-label="Ачаалж байна" className="flex justify-center py-4">
+      <Spinner className="size-5" />
     </div>
   );
 }

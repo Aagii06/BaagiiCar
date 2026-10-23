@@ -2,7 +2,7 @@
 
 import ChipTabs from "@/components/common/ChipTabs";
 import { Field, FormError, inputClass, Select } from "@/components/common/Field";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
 import LoadMore from "@/components/common/LoadMore";
 import { errorMessage, useToast } from "@/components/common/Toast";
@@ -332,7 +332,9 @@ function CatalogInner() {
         shown.length < total &&
         // While a page loads the sentinel is swapped out, so it can't ask for the same page twice; it fires again on remount.
         (list.loading ? (
-          <p className="py-4 text-center text-xs font-semibold text-muted-foreground">Ачаалж байна…</p>
+          <div role="status" aria-label="Ачаалж байна" className="flex justify-center py-4">
+            <Spinner className="size-5" />
+          </div>
         ) : (
           <LoadMore key={`${pageKey}|${take}`} onMore={() => setPaging({ key: pageKey, take: take + PAGE_SIZE })} />
         ))}
