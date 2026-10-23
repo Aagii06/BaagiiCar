@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPriceShort } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CarFront, Store, Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -49,11 +49,11 @@ export default function DashboardPage() {
   const tiles = s && [
     ...(isAdmin
       ? [
-          { label: "Нийт дилер", value: s.dealers, href: "/dealers", className: "bg-white" },
-          { label: "Идэвхтэй хэрэглэгч", value: s.users, href: "/customers", className: "bg-white" },
+          { label: "Нийт дилер", value: s.dealers, href: "/dealers", icon: Store, className: "bg-tint-blue", iconClassName: "bg-[#2f80ed] text-white" },
+          { label: "Идэвхтэй хэрэглэгч", value: s.users, href: "/customers", icon: Users, className: "bg-tint-mint", iconClassName: "bg-success text-white" },
         ]
       : []),
-    { label: "Нийт зар", value: s.total, href: "/cars", className: "bg-white" },
+    { label: "Нийт зар", value: s.total, href: "/cars", icon: CarFront, className: "bg-tint-lavender", iconClassName: "bg-[#7b61ff] text-white" },
   ];
 
   return (
@@ -66,7 +66,10 @@ export default function DashboardPage() {
         <div className="space-y-2">
           <div className={cn("grid gap-2", isAdmin ? "grid-cols-3" : "grid-cols-1")}>
             {tiles!.map((t) => (
-              <Link key={t.label} href={t.href} className={cn("rounded-2xl p-3.5", t.className)}>
+              <Link key={t.label} href={t.href} className={cn("relative rounded-2xl p-3.5", t.className)}>
+                <span className={cn("absolute right-3 top-3 grid size-7 place-items-center rounded-lg", t.iconClassName)}>
+                  <t.icon className="size-4" strokeWidth={2.4} />
+                </span>
                 <p className="font-display text-2xl font-bold">{t.value}</p>
                 <p className="mt-1 text-xs font-semibold opacity-80">{t.label}</p>
               </Link>

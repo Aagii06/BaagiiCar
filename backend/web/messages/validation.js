@@ -4,11 +4,6 @@ const validation = require("../../middleware/validation");
 const optional = { nullable: true, checkFalsy: true };
 
 module.exports.sendValidation = [
-  body("name").optional(optional).trim().isLength({ max: 100 }).withMessage("Нэр хэт урт байна"),
-  body("phonenumber")
-    .trim()
-    .matches(/^\d{8}$/)
-    .withMessage("8 оронтой утасны дугаар оруулна уу"),
   body("message")
     .trim()
     .notEmpty()

@@ -26,7 +26,7 @@ module.exports.otpSend = async (req, res) => {
   }
 };
 
-// Утас + кодоор нэвтрэх. Бүртгэлгүй дугаар бол CUSTOMER эрхтэй шинэ хэрэглэгч үүсгэнэ.
+// Утас + кодоор нэвтрэх. Бүртгэлгүй дугаар бол "Зочин" нэртэй CUSTOMER эрхтэй шинэ хэрэглэгч үүсгэнэ.
 // Буцаах: { token, loggedUser }
 module.exports.otpLogin = async (req, res) => {
   let result = { success: false, data: null, message: "" };
@@ -57,6 +57,7 @@ module.exports.otpLogin = async (req, res) => {
     if (!user) {
       const created = await users.create({
         phonenumber,
+        firstname: "Зочин",
         role: roles.customer,
         status: "active",
         created_at: at,

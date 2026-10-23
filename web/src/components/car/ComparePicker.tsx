@@ -230,8 +230,7 @@ export default function ComparePicker({ onClose }: { onClose: () => void }) {
               aria-busy={cars.loading}
               className="mx-2 mt-2 flex h-10 w-[calc(100%-1rem)] items-center justify-center gap-2 rounded-xl bg-muted text-sm font-bold hover:bg-border disabled:cursor-wait"
             >
-              {cars.loading && <Loader2 className="size-4 animate-spin text-primary" />}
-              {cars.loading ? t("Ачаалж байна...") : t("Цааш үзэх")}
+              {cars.loading ? <Loader2 aria-label={t("Цааш үзэх")} className="size-4 animate-spin text-primary" /> : t("Цааш үзэх")}
             </button>
           )}
         </div>
