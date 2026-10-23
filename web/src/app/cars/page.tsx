@@ -436,8 +436,9 @@ function CarsPageInner() {
 
   return (
     <>
-      {/* Title band over a road photo (Unsplash, see public/hero/CREDITS.md), darkened so the white text reads. */}
-      <section className="relative isolate overflow-hidden bg-dark text-white">
+      {/* Title band over a road photo (Unsplash, see public/hero/CREDITS.md), darkened so the white text reads.
+          Phones: the app bar carries the title instead. */}
+      <section className="relative isolate hidden overflow-hidden bg-dark text-white md:block">
         <div className="absolute inset-0 -z-10">
           <Img
             src="/hero/road.webp"
@@ -461,7 +462,7 @@ function CarsPageInner() {
       <Container className="pt-1 md:pt-3">
         {(dealers.loading && !dealers.data) || dealers.data?.rows.length ? (
           <>
-            <p className="mt-6 text-xs font-semibold text-muted-foreground">{t("Дилерүүд")}</p>
+            <p className="mt-3 text-xs font-semibold text-muted-foreground md:mt-6">{t("Дилерүүд")}</p>
             <DealerTabs className="mt-2" items={dealers.data?.rows ?? []} loading={dealers.loading && !dealers.data} />
           </>
         ) : null}
@@ -475,7 +476,7 @@ function CarsPageInner() {
           onSelect={(id) => set({ brand: id, model: undefined })}
         />
 
-        <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[296px_1fr]">
+        <div className="mt-4 grid gap-4 md:mt-6 md:gap-6 lg:mt-8 lg:grid-cols-[296px_1fr]">
           <aside>
             <button
               onClick={() => setShowFilters(true)}
