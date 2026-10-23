@@ -5,6 +5,7 @@ const {
   vwCars,
   favorites,
   allFiles,
+  actionLogs,
   sequelize,
   op,
 } = require("../../models");
@@ -13,6 +14,13 @@ const { uploadFiles } = require("../../helper/fileHelper");
 const { notifyNewCar } = require("../../helper/notifyHelper");
 const { saveLog } = require("../../utils/logHelper");
 const { roles, carStatuses, nonPublicCarStatuses } = require("../../config/constants");
+
+// Дилер засахад дахин батлуулах ("pending") төлөвүүд
+const resubmitStatuses = [carStatuses.active, carStatuses.hidden, carStatuses.rejected];
+
+// Засаад дахин илгээсэн (өмнө нь нийтлэгдсэн) зар эсэх: батлахад "шинэ зар" мэдэгдэл дахин явуулахгүй
+const wasResubmitted = async (id, transaction) =>
+  (await actionLogs.count({ where: { object_name: "cars", object_id: id, log_action: "resubmitted" }, transaction })) > 0;
 
 // Зөвхөн админ өөрчилж болох талбарууд
 const adminOnlyFields = ["user_id", "dealer_id", "is_featured", "view_count", "status", "sold_at", "reject_reason", "rejected_by", "rejected_at"];
@@ -139,8 +147,9 @@ module.exports.save = async (req, res) => {
 
     let item = null;
     if (id) {
-      // Буцаасан зарыг эзэн нь засаж хадгалбал дахин батлуулах хүсэлт болно
-      const resubmit = !isAdmin && prevStatus === carStatuses.rejected ? { status: carStatuses.pending } : {};
+      // Дилер (админ биш) зараа засвал дахин батлуулна: идэвхтэй / нуусан / буцаасан зар "pending" болно.
+      // Админ засвал төлөв хэвээр (идэвхтэй нь идэвхтэй).
+      const resubmit = !isAdmin && resubmitStatuses.includes(prevStatus) ? { status: carStatuses.pending } : {};
       // update
       item = await cars
         .update(
@@ -148,6 +157,20 @@ module.exports.save = async (req, res) => {
           { where: { id }, transaction: t, individualHooks: true },
         )
         .then(async () => await cars.findByPk(id, { raw: true, transaction: t }));
+      // Өмнө нь нийтлэгдсэн зар: батлахад "шинэ зар" мэдэгдэл дахин явуулахгүйн тулд тэмдэглэнэ
+      if (resubmit.status && prevStatus !== carStatuses.rejected)
+        await saveLog(
+          {
+            object_name: "cars",
+            object_id: id,
+            log_action: "resubmitted",
+            log_action_mn: "Засаад дахин илгээсэн",
+            modify_data: JSON.stringify({ from: prevStatus, status: carStatuses.pending }),
+            created_by: by,
+            created_at: at,
+          },
+          t,
+        );
     } else {
       // create
       item = await cars.create(
@@ -213,11 +236,11 @@ module.exports.save = async (req, res) => {
       t,
     );
 
-    await t.commit();
-    // Шинэ зар нийтлэгдэх (шууд эсвэл батлагдах) үед мэдэгдлийг ар талд илгээнэ
+    // Шинэ зар нийтлэгдэх (шууд эсвэл батлагдах) үед мэдэгдлийг ар талд илгээнэ (засаад дахин илгээсэн зарт биш)
     const published = id
-      ? prevStatus === carStatuses.pending && item.status === carStatuses.active
+      ? prevStatus === carStatuses.pending && item.status === carStatuses.active && !(await wasResubmitted(id, t))
       : item.status === carStatuses.active;
+    await t.commit();
     if (published) setImmediate(() => notifyNewCar(item.id));
     result.success = true;
     result.data = { id: item.id };
@@ -261,8 +284,9 @@ module.exports.approve = async (req, res) => {
       },
       t,
     );
+    const republished = await wasResubmitted(id, t);
     await t.commit();
-    setImmediate(() => notifyNewCar(id));
+    if (!republished) setImmediate(() => notifyNewCar(id));
     result.success = true;
     return res.status(200).json(result);
   } catch (error) {
