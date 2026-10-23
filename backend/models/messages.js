@@ -10,6 +10,8 @@ module.exports = (sequelize, DataTypes) => {
   messages.init(
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+      // "car" - зартай холбоотой (админ / дилер хариулна), "ai" - AI туслахтай яриа
+      type: { type: DataTypes.STRING(10), defaultValue: "car" },
 
       name: { type: DataTypes.STRING(100) },
       phonenumber: { type: DataTypes.STRING(20) },
@@ -20,8 +22,10 @@ module.exports = (sequelize, DataTypes) => {
 
       created_by: { type: DataTypes.INTEGER },
       updated_by: { type: DataTypes.INTEGER },
+      deleted_by: { type: DataTypes.INTEGER },
       created_at: { type: DataTypes.STRING },
       updated_at: { type: DataTypes.STRING },
+      deleted_at: { type: DataTypes.STRING },
     },
     {
       sequelize,
@@ -30,6 +34,9 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
     },
   );
+
+  // Устгахад status = "deleted" болно (base destroy)
+  messages.softDelete = true;
 
   return messages;
 };

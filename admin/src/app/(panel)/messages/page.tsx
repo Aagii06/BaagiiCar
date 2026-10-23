@@ -18,12 +18,21 @@ const TABS: { value: Tab; label: string }[] = [
   { value: "new", label: "Шинэ" },
   { value: "done", label: "Хариулсан" },
   { value: "all", label: "Бүгд" },
+  { value: "deleted", label: "Устгагдсан" },
 ];
+
+const BADGE: Record<Message["status"], { label: string; className: string }> = {
+  new: { label: "Шинэ", className: "bg-primary text-white" },
+  done: { label: "Хариулсан", className: "bg-muted" },
+  deleted: { label: "Устгагдсан", className: "bg-destructive-soft text-destructive" },
+};
 
 function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const isNew = item.status === "new";
+  const isDeleted = item.status === "deleted";
+  const badge = BADGE[item.status] ?? BADGE.done;
 
   const confirm = useConfirm();
   const run = async (action: () => Promise<void>, done: string, ask?: ConfirmOptions) => {
@@ -51,8 +60,9 @@ function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void 
           </a>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
-          <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", isNew ? "bg-primary text-white" : "bg-muted")}>{isNew ? "Шинэ" : "Хариулсан"}</span>
+          <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", badge.className)}>{badge.label}</span>
           <span className="text-[11px] text-muted-foreground">{timeAgo(item.created_at)}</span>
+          {isDeleted && item.deleted_at && <span className="text-[11px] text-destructive">Устгасан: {timeAgo(item.deleted_at)}</span>}
         </div>
       </div>
       <p className="mt-3 whitespace-pre-line text-sm leading-6">{item.message}</p>
@@ -62,7 +72,12 @@ function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void 
         </Link>
       )}
       <div className="mt-3 flex gap-2">
-        {isNew ? (
+        {isDeleted ? (
+          <button onClick={() => run(() => setMessageStatus(item.id, "new"), "Сэргээлээ")} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
+            <RotateCcw className="size-3.5" />
+            Сэргээх
+          </button>
+        ) : isNew ? (
           <button onClick={() => run(() => setMessageStatus(item.id, "done"), "Хариулсан гэж тэмдэглэлээ")} className="flex items-center gap-1 rounded-lg bg-dark px-3 py-2 text-xs font-bold text-white">
             <Check className="size-3.5" />
             Хариулсан
@@ -73,13 +88,15 @@ function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void 
             Шинэ болгох
           </button>
         )}
-        <button
-          onClick={() => run(() => deleteMessage(item.id), "Устгалаа", { title: "Мессежийг устгах уу?", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })}
-          aria-label="Устгах"
-          className="ml-auto grid size-8 place-items-center rounded-lg text-destructive hover:bg-destructive-soft"
-        >
-          <Trash2 className="size-4" />
-        </button>
+        {!isDeleted && (
+          <button
+            onClick={() => run(() => deleteMessage(item.id), "Устгалаа", { title: "Мессежийг устгах уу?", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })}
+            aria-label="Устгах"
+            className="ml-auto grid size-8 place-items-center rounded-lg text-destructive hover:bg-destructive-soft"
+          >
+            <Trash2 className="size-4" />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -101,7 +118,7 @@ export default function MessagesPage() {
       ) : messages.error ? (
         <ErrorState message={messages.error.message} onRetry={messages.reload} />
       ) : !messages.data?.rows.length ? (
-        <EmptyState title={tab === "new" ? "Шинэ мессеж алга" : "Мессеж алга"} />
+        <EmptyState title={tab === "new" ? "Шинэ мессеж алга" : tab === "deleted" ? "Устгагдсан мессеж алга" : "Мессеж алга"} />
       ) : (
         // Edge to edge, right under the header, like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">

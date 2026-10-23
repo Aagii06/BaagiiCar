@@ -145,6 +145,8 @@ export interface Message {
   message: string;
   car_id: number | null;
   page_url: string | null;
-  status: "new" | "done";
+  /** "deleted": removed from the list but kept (soft delete); restoring sets it back to "new". */
+  status: "new" | "done" | "deleted";
   created_at: string | null;
+  deleted_at?: string | null;
 }

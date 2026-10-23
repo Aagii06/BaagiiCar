@@ -403,9 +403,10 @@ export const deleteCustomer = (id: number) => deleteRows("customers", [id]);
 
 // --- web chat messages -----------------------------------------------------
 
+/** Without a status: every message except deleted ones (the Бүгд tab). */
 export async function listMessages(status?: Message["status"]) {
   const res = await apiFetch<ApiListResponse<Message>>(
-    `/api/base/messages${listQuery({ filter: status ? [["status", "=", status]] : [], sort: [...NEWEST, { selector: "id", desc: true }], take: 200 })}`
+    `/api/base/messages${listQuery({ filter: [status ? ["status", "=", status] : NOT_DELETED], sort: [...NEWEST, { selector: "id", desc: true }], take: 200 })}`
   );
   return res.data;
 }

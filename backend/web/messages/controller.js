@@ -11,6 +11,7 @@ module.exports.send = async (req, res) => {
     const car = car_id ? await cars.findByPk(car_id, { attributes: ["id"], raw: true }) : null;
     const at = moment().utcOffset("+0800").format("YYYY-MM-DD HH:mm:ss");
     const item = await messages.create({
+      type: "car",
       name: firstname || null,
       phonenumber,
       message,

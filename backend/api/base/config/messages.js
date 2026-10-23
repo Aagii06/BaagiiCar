@@ -16,7 +16,9 @@ const denied = (res) => res.status(200).json({ success: false, message: "Тан�
 
 const list = async (req, res, next) => {
   const scope = await ownScope(req);
-  if (scope) req.where = [...(req.where || []), scope];
+  // AI туслахтай яриа энд орохгүй - зөвхөн зартай холбоотой мессеж
+  req.where = [...(req.where || []), { type: "car" }];
+  if (scope) req.where.push(scope);
   next();
 };
 
@@ -27,7 +29,7 @@ const one = async (req, res, next) => {
   next();
 };
 
-// Дилер зөвхөн төлөвийг (шинэ / хариулсан) өөрчилнө
+// Дилер зөвхөн төлөвийг (шинэ / хариулсан) өөрчилнө. Устгасан мессежийг "new" болгож сэргээнэ.
 const update = async (req, res, next) => {
   if (req.loggedUser?.role !== roles.admin) req.body = { status: req.body.status };
   return one(req, res, next);

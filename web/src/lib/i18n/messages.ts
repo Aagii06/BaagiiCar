@@ -417,6 +417,16 @@ export const MESSAGES = {
   "Цааш үзэх": { ru: "Показать ещё", en: "Show more" },
   "Бүх үнэ": { ru: "Любая цена", en: "Any price" },
   "Асуултаа бичээд илгээнэ үү.": { ru: "Напишите свой вопрос и отправьте.", en: "Type your question and send it." },
+  "Мессежийн төрөл": { ru: "Тип сообщения", en: "Message type" },
+  "Зарын тухай": { ru: "Об объявлении", en: "About an ad" },
+  "AI туслах": { ru: "AI-помощник", en: "AI assistant" },
+  "Машин сонголт, ерөнхий асуултад хариулна": { ru: "Поможет с выбором авто и общими вопросами", en: "Helps with choosing a car and general questions" },
+  "AI туслах удахгүй нэмэгдэнэ": { ru: "AI-помощник скоро появится", en: "The AI assistant is coming soon" },
+  "Одоохондоо зарын тухай асуултаа манай ажилтнаас асуугаарай.": {
+    ru: "Пока задайте вопрос об объявлении нашему сотруднику.",
+    en: "For now, ask our team about an ad.",
+  },
+  "Зарын тухай асуух": { ru: "Спросить об объявлении", en: "Ask about an ad" },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;
