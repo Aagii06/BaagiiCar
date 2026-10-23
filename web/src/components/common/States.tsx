@@ -65,15 +65,21 @@ export function CardGridSkeleton({ count = 6, className }: { count?: number; cla
   return (
     <div className={cn("grid gap-4 sm:grid-cols-2 lg:grid-cols-3", className)}>
       {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="animate-pulse rounded-2xl bg-card p-3">
-          <div className="aspect-[4/3] rounded-xl bg-muted" />
-          <div className="mt-4 h-4 w-2/3 rounded bg-muted" />
-          <div className="mt-3 grid grid-cols-4 gap-1.5">
-            {Array.from({ length: 4 }, (_, j) => (
-              <div key={j} className="h-12 rounded-lg bg-muted" />
-            ))}
+        // Same shape as CarCard: a compact row on phones, the tall card from sm up.
+        <div key={i} className="flex animate-pulse gap-3 rounded-2xl bg-card p-2.5 sm:flex-col sm:gap-0 sm:p-3">
+          <div className="aspect-[4/3] w-[42%] max-w-44 shrink-0 self-start rounded-xl bg-muted sm:w-auto sm:max-w-none" />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <div className="h-4 w-3/4 rounded bg-muted sm:mt-4 sm:w-2/3" />
+            <div className="mt-2 h-3.5 w-1/3 rounded bg-muted sm:hidden" />
+            <div className="mt-2 h-3 w-1/2 rounded bg-muted sm:hidden" />
+            <div className="mt-3 hidden h-10 rounded-xl bg-muted sm:block" />
+            <div className="mt-auto flex gap-2 pt-2 sm:mt-4 sm:pt-0">
+              <div className="size-9 rounded-xl bg-muted sm:hidden" />
+              <div className="size-9 rounded-xl bg-muted sm:hidden" />
+              <div className="size-9 rounded-xl bg-muted sm:hidden" />
+              <div className="hidden h-10 flex-1 rounded-xl bg-muted sm:block" />
+            </div>
           </div>
-          <div className="mt-4 h-10 rounded-xl bg-muted" />
         </div>
       ))}
     </div>

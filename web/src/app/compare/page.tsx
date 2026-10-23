@@ -71,7 +71,9 @@ export default function ComparePage() {
     { label: t("Дотор өнгө"), value: (c) => c.interior_color },
     { label: t("Байршил"), value: (c) => c.location_name },
   ];
-  const visible = diffOnly ? specs.filter((r) => new Set(rows.map((c) => String(r.value(c) ?? ""))).size > 1) : specs;
+  // Only meaningful with 2+ cars (the toggle is hidden otherwise); left on after "clear" it would hide every row.
+  const diff = diffOnly && rows.length > 1;
+  const visible = diff ? specs.filter((r) => new Set(rows.map((c) => String(r.value(c) ?? ""))).size > 1) : specs;
   // One "add" slot while there is room — also shown on an empty page.
   const slots = rows.length < COMPARE_MAX ? 1 : 0;
   // Label column + one per car and slot. Capped widths so a lone car or "add" slot doesn't stretch
@@ -84,12 +86,22 @@ export default function ComparePage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <PageTitle count={loading ? undefined : rows.length}>{t("Харьцуулалт")}</PageTitle>
         {rows.length > 1 && (
-          <div className="flex items-center gap-4">
+          // Phones: its own full-width row under the title, "Цэвэрлэх" on the right.
+          <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-start">
             <label className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold">
               <input type="checkbox" checked={diffOnly} onChange={(e) => setDiffOnly(e.target.checked)} className="size-4 accent-primary" />
               {t("Зөвхөн ялгааг харуулах")}
             </label>
-            <button type="button" onClick={clear} className="text-sm font-semibold text-muted-foreground hover:text-destructive">
+            <button
+              type="button"
+              onClick={() => {
+                // Back to the page as on first visit.
+                clear();
+                setDiffOnly(false);
+              }}
+              className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-muted px-3 text-sm font-semibold text-muted-foreground transition hover:bg-destructive-soft hover:text-destructive"
+            >
+              <X className="size-3.5" />
               {t("Цэвэрлэх")}
             </button>
           </div>
@@ -164,7 +176,7 @@ export default function ComparePage() {
                     </div>
                   );
                 })}
-                {diffOnly && !visible.length && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("Ялгаатай үзүүлэлт алга")}</p>}
+                {diff && !visible.length && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("Ялгаатай үзүүлэлт алга")}</p>}
               </div>
             </div>
           </>

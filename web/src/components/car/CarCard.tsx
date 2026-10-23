@@ -40,7 +40,8 @@ export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadg
         {car.status === "sold" && (
           <span className="absolute left-1.5 top-1.5 rounded-full bg-dark sm:left-2.5 sm:top-2.5 px-2.5 py-1 text-[11px] font-bold text-white">{t("Зарагдсан")}</span>
         )}
-        <FavoriteButton carId={car.id} className="absolute right-1.5 top-1.5 size-8 sm:right-2.5 sm:top-2.5 sm:size-9" />
+        {/* Phones get it in the button row instead. */}
+        <FavoriteButton carId={car.id} className="absolute right-2.5 top-2.5 hidden sm:grid" />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col sm:px-1 sm:pb-1 sm:pt-3">
@@ -81,6 +82,7 @@ export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadg
           >
             <MessageCircle className="size-4" />
           </button>
+          <FavoriteButton carId={car.id} className="size-9 rounded-xl border-[1.5px] border-border bg-transparent shadow-none sm:hidden" />
           <CompareButton carId={car.id} className="size-9 sm:size-10" />
         </div>
       </div>
