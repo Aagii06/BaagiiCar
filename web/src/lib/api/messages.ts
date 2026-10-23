@@ -17,13 +17,21 @@ export async function sendMessage(input: MessageInput, token: string) {
   });
 }
 
+export interface MessageReply {
+  id: number;
+  reply: string;
+  read_at: string | null;
+  created_at: string | null;
+}
+
 export interface MyMessage {
   id: number;
   type: string | null;
   message: string;
-  /** The team's / dealer's answer, shown in the thread. */
+  /** Latest answer only (list preview); `replies` has them all, oldest first. */
   reply: string | null;
   replied_at: string | null;
+  replies?: MessageReply[];
   car_id: number | null;
   /** The team's / dealer's answers the visitor hasn't opened yet (server-side, for the badge). */
   unread?: number;

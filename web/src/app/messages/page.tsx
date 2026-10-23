@@ -161,7 +161,7 @@ function ThreadView({ thread, token, onSent, className }: { thread: Thread; toke
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const end = useRef<HTMLDivElement>(null);
-  const replies = thread.messages.filter((m) => m.reply).length;
+  const replies = thread.messages.reduce((n, m) => n + (m.replies?.length ?? (m.reply ? 1 : 0)), 0);
 
   // Scroll only the thread box (not the page) to the newest line.
   useEffect(() => {
@@ -233,14 +233,15 @@ function ThreadView({ thread, token, onSent, className }: { thread: Thread; toke
               {timeAgo(m.created_at, t)}
               {!m.reply && <Status done={m.status === "done"} />}
             </span>
-            {m.reply && (
-              <div className="mt-1 flex w-full flex-col items-start gap-1">
-                <p className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-bl-md bg-white px-3.5 py-2 text-[15px] text-foreground shadow-sm md:max-w-[70%]">{m.reply}</p>
+            {/* Every answer to this message, oldest first (older backends send only the latest as `reply`). */}
+            {(m.replies?.length ? m.replies : m.reply ? [{ id: 0, reply: m.reply, read_at: null, created_at: m.replied_at }] : []).map((r) => (
+              <div key={r.id} className="mt-1 flex w-full flex-col items-start gap-1">
+                <p className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-bl-md bg-white px-3.5 py-2 text-[15px] text-foreground shadow-sm md:max-w-[70%]">{r.reply}</p>
                 <span className="text-[11px] text-muted-foreground">
-                  {thread.car?.dealer_name || "Cardealer"} · {timeAgo(m.replied_at, t)}
+                  {thread.car?.dealer_name || "Cardealer"} · {timeAgo(r.created_at, t)}
                 </span>
               </div>
-            )}
+            ))}
           </div>
         ))}
         {pending.map((text, i) => (
