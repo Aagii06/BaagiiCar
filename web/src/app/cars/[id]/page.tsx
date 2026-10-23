@@ -1,6 +1,5 @@
 "use client";
 
-import CarArt, { shapeFor } from "@/components/car/CarArt";
 import { carTitle } from "@/components/car/CarCard";
 import CarImage from "@/components/car/CarImage";
 import CompareButton from "@/components/car/CompareButton";
@@ -19,7 +18,7 @@ import { openChat } from "@/lib/chat";
 import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
-import { cn, formatEngine, formatNumber, formatPrice, initials, timeAgo, tintFor } from "@/lib/utils";
+import { cn, formatEngine, formatNumber, formatPrice, initials, timeAgo } from "@/lib/utils";
 import { MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
@@ -36,9 +35,8 @@ function Gallery({ car }: { car: Car }) {
 
   if (!total)
     return (
-      <div className={cn("-mx-4 grid aspect-[4/3] place-items-center md:mx-0 md:aspect-auto md:h-[520px] md:rounded-2xl", tintFor(car.id))}>
-        <CarArt shape={shapeFor(car.body_type_name)} className="w-[58%] md:w-[48%]" strokeWidth={1.6} />
-      </div>
+      // No photos (or still loading): the cover photo if any, else the default picture.
+      <CarImage id={car.id} image={car.image} size="full" className="-mx-4 aspect-[4/3] rounded-none md:mx-0 md:aspect-auto md:h-[520px] md:rounded-2xl" />
     );
 
   const counter = (

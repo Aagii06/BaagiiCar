@@ -7,6 +7,7 @@ import 'package:mashinuud_app/screens/compare.dart';
 import 'package:mashinuud_app/screens/home.dart';
 import 'package:mashinuud_app/screens/profile.dart';
 import 'package:mashinuud_app/state/stores.dart';
+import 'package:mashinuud_app/widgets/car.dart';
 
 /// Bottom navigation (Нүүр · Хайх · Харьцуулалт · Профайл) with the AI button and the compare bar on top.
 class Shell extends StatelessWidget {
@@ -14,6 +15,8 @@ class Shell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Decode the default car picture up front, so it is there before the first photo starts loading.
+    precacheImage(const AssetImage(defaultCarImage), context);
     final shell = Stores.shell;
     return ListenableBuilder(
       listenable: shell,

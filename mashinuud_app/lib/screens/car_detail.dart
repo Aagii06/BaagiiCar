@@ -94,11 +94,11 @@ class _GalleryState extends State<_Gallery> {
     final car = widget.car;
     return Loader<List<String>>(
       fetch: () => Api.getCarPhotos(car.id),
-      loading: AspectRatio(aspectRatio: 4 / 3, child: Container(color: AppPalette.tintFor(car.id))),
-      error: (_, _, _) => AspectRatio(aspectRatio: 4 / 3, child: NetImage(uploadUrl(car.image), background: AppPalette.tintFor(car.id))),
+      loading: AspectRatio(aspectRatio: 4 / 3, child: CarImage(car, size: 'full', radius: 0)),
+      error: (_, _, _) => AspectRatio(aspectRatio: 4 / 3, child: CarImage(car, size: 'full', radius: 0)),
       builder: (context, photos, _) {
         if (photos.isEmpty) {
-          return AspectRatio(aspectRatio: 4 / 3, child: NetImage(uploadUrl(car.image), background: AppPalette.tintFor(car.id), iconSize: 96));
+          return AspectRatio(aspectRatio: 4 / 3, child: CarImage(car, size: 'full', radius: 0));
         }
         return Column(children: [
           AspectRatio(

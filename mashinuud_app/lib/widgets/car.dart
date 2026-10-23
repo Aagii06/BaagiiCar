@@ -12,7 +12,10 @@ import 'package:mashinuud_app/widgets/common.dart';
 void openCar(BuildContext context, Car car) =>
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => CarDetailScreen(carId: car.id, preview: car)));
 
-/// A car's photo in a tinted well; the car icon when there is no photo.
+/// Shown when an ad has no photo, while it loads (however slowly), and if it fails — same as the website.
+const defaultCarImage = 'assets/no-car.jpg';
+
+/// A car's photo over the default "image coming soon" picture; the photo fades in once loaded.
 class CarImage extends StatelessWidget {
   final Car car;
   final String size;
@@ -20,10 +23,26 @@ class CarImage extends StatelessWidget {
   const CarImage(this.car, {super.key, this.size = 'grid', this.radius = AppRadius.md});
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: NetImage(uploadUrl(car.image, size: size), background: AppPalette.tintFor(car.id)),
-      );
+  Widget build(BuildContext context) {
+    final url = uploadUrl(car.image, size: size);
+    const fallback = Image(image: AssetImage(defaultCarImage), fit: BoxFit.cover);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: Stack(fit: StackFit.expand, children: [
+        const ColoredBox(color: Colors.white, child: fallback),
+        if (url != null)
+          Image.network(
+            url,
+            fit: BoxFit.cover,
+            gaplessPlayback: true,
+            frameBuilder: (_, child, frame, sync) => sync
+                ? child
+                : AnimatedOpacity(opacity: frame == null ? 0 : 1, duration: const Duration(milliseconds: 300), child: child),
+            errorBuilder: (_, _, _) => const SizedBox.shrink(),
+          ),
+      ]),
+    );
+  }
 }
 
 class FavoriteButton extends StatelessWidget {
