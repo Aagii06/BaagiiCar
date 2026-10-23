@@ -63,9 +63,9 @@ function DealerList() {
   const rows = dealers.data?.rows ?? [];
 
   return (
-    <Container className="pt-8 md:pt-12">
+    <Container className="pt-4 md:pt-12">
       <PageTitle count={dealers.loading ? undefined : rows.length}>{t("Дилерүүд")}</PageTitle>
-      <div className="mt-8">
+      <div className="md:mt-8">
         {dealers.loading && !dealers.data ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }, (_, i) => (
@@ -96,8 +96,9 @@ function DealerDetail({ id, page }: { id: number; page: number }) {
   const cars = useApi(() => getDealerCars(id, page, PAGE_SIZE), `${id}:${page}`);
   const totalPages = Math.ceil((cars.data?.count ?? 0) / PAGE_SIZE);
 
+  // Phones use the app bar's back arrow.
   const back = (
-    <Link href="/dealers" className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground">
+    <Link href="/dealers" className="hidden items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground md:inline-flex">
       <ArrowLeft className="size-4" />
       {t("Бүх дилер")}
     </Link>
@@ -105,16 +106,16 @@ function DealerDetail({ id, page }: { id: number; page: number }) {
 
   if (dealer.error)
     return (
-      <Container className="pt-8 md:pt-12">
+      <Container className="pt-4 md:pt-12">
         {back}
         <ErrorState className="mt-6" message={dealer.error.message} onRetry={dealer.reload} />
       </Container>
     );
 
   return (
-    <Container className="pt-8 md:pt-12">
+    <Container className="pt-4 md:pt-12">
       {back}
-      <div className="mt-5 flex items-center gap-4 md:gap-6">
+      <div className="flex items-center gap-4 md:mt-5 md:gap-6">
         {dealer.data ? (
           <DealerLogo dealer={dealer.data} className="size-20 md:size-24" />
         ) : (
@@ -123,7 +124,7 @@ function DealerDetail({ id, page }: { id: number; page: number }) {
         <div className="min-w-0">
           {dealer.data ? (
             <>
-              <PageTitle count={dealer.data.car_count}>{dealerName(dealer.data) || t("Дилер")}</PageTitle>
+              <PageTitle count={dealer.data.car_count} className="max-md:flex max-md:text-[28px]">{dealerName(dealer.data) || t("Дилер")}</PageTitle>
               <div className="mt-3">
                 <DealerPhone phone={dealer.data.phonenumber} />
               </div>

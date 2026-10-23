@@ -68,12 +68,12 @@ function LoginInner() {
   if (!ready || user) return <LoadingState className="min-h-[50vh]" />;
 
   return (
-    <Container className="max-w-md py-12 md:py-20">
-      <h1 className="font-display text-[36px] font-bold leading-none md:text-[44px]">{t("Нэвтрэх")}</h1>
+    <Container className="max-w-md py-4 md:py-20">
+      <h1 className="hidden font-display text-[36px] font-bold leading-none md:block md:text-[44px]">{t("Нэвтрэх")}</h1>
 
       {step === "phone" ? (
         <form
-          className="mt-6 space-y-4"
+          className="space-y-4 md:mt-6"
           onSubmit={(e) => {
             e.preventDefault();
             requestCode();
@@ -90,7 +90,7 @@ function LoginInner() {
         </form>
       ) : (
         <form
-          className="mt-6 space-y-4"
+          className="space-y-4 md:mt-6"
           onSubmit={(e) => {
             e.preventDefault();
             run(async () => {

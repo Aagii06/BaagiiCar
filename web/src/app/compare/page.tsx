@@ -82,7 +82,7 @@ export default function ComparePage() {
   const grid = { gridTemplateColumns: `minmax(110px,180px) repeat(${cols}, minmax(170px, 240px))` };
 
   return (
-    <Container className="pt-8 md:pt-12">
+    <Container className="pt-4 md:pt-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <PageTitle count={loading ? undefined : rows.length}>{t("Харьцуулалт")}</PageTitle>
         {rows.length > 1 && (
@@ -108,7 +108,7 @@ export default function ComparePage() {
         )}
       </div>
 
-      <div className="mt-8">
+      <div className="mt-4 md:mt-8">
         {loading ? (
           <LoadingState />
         ) : cars.error ? (

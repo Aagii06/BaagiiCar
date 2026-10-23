@@ -31,6 +31,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#ffffff",
   viewportFit: "cover",
+  // App-like on phones: iOS no longer zooms into small inputs on focus (pinch-zoom still works there).
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -45,7 +47,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <main className="min-h-[60vh]">{children}</main>
               <Footer />
               {/* Room for the mobile tab bar. */}
-              <div className="h-[calc(4.5rem+env(safe-area-inset-bottom))] bg-dark md:hidden" />
+              <div className="h-[calc(5.5rem+env(safe-area-inset-bottom))] md:hidden" />
               <MobileNav />
               <ChatWidget />
               <CarChatDialog />

@@ -32,10 +32,10 @@ export default function ProfilePage() {
   ];
 
   return (
-    <Container className="max-w-xl pt-8 md:pt-12">
+    <Container className="max-w-xl pt-4 md:pt-12">
       <PageTitle>{t("Миний бүртгэл")}</PageTitle>
 
-      <section className="mt-6 flex items-center gap-4 rounded-2xl bg-card p-5">
+      <section className="flex md:mt-6 items-center gap-4 rounded-2xl bg-card p-5">
         <span className="grid size-14 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
           <User className="size-6" />
         </span>

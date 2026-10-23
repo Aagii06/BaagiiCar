@@ -4,9 +4,9 @@ import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Heart } from "lucide-react";
+import { ArrowLeft, Heart } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import AccountMenu from "./AccountMenu";
 import DealersMenu from "./DealersMenu";
@@ -25,13 +25,66 @@ export function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/** Bottom-bar tabs: the phone app bar shows their title, no back arrow. */
+const TAB_TITLES: Record<string, MessageKey> = {
+  "/cars": "Машин хайх",
+  "/compare": "Харьцуулалт",
+  "/profile": "Профайл",
+};
+
+/** Titles for pages opened from a tab; the phone app bar adds a back arrow. */
+const PAGE_TITLES: [prefix: string, title: MessageKey][] = [
+  ["/cars/", "Дэлгэрэнгүй"],
+  ["/saved", "Хадгалсан"],
+  ["/help", "Тусламж"],
+  ["/dealers", "Дилерүүд"],
+  ["/leasing", "Лизинг"],
+  ["/login", "Нэвтрэх"],
+];
+
+/** Phones: a 56px app bar — logo on home, title on tabs, back arrow + title elsewhere. */
+function MobileAppBar({ pathname }: { pathname: string }) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const tab = pathname === "/" ? null : TAB_TITLES[pathname];
+  const page = pathname === "/" || tab ? undefined : PAGE_TITLES.find(([prefix]) => pathname.startsWith(prefix))?.[1];
+  const sub = pathname !== "/" && !tab;
+
+  return (
+    <div className="flex h-14 items-center gap-1 px-1.5 md:hidden">
+      {sub ? (
+        <button
+          type="button"
+          // Opened straight from a link: nothing to go back to, so go home.
+          onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+          aria-label={t("Буцах")}
+          className="grid size-11 place-items-center rounded-full active:bg-muted"
+        >
+          <ArrowLeft className="size-[22px]" />
+        </button>
+      ) : null}
+      {pathname === "/" ? (
+        <Link href="/" aria-label={t("Нүүр")} className="px-2.5">
+          <Logo />
+        </Link>
+      ) : (
+        <h1 className={cn("min-w-0 flex-1 truncate text-lg font-bold", !sub && "px-2.5")}>{tab || page ? t((tab ?? page)!) : ""}</h1>
+      )}
+      <Link href="/saved" aria-label={t("Хадгалсан")} className="ml-auto grid size-11 shrink-0 place-items-center rounded-full active:bg-muted">
+        <Heart className="size-[22px]" />
+      </Link>
+    </div>
+  );
+}
+
 export default function Header() {
   const pathname = usePathname() ?? "/";
   const { t } = useI18n();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-6 px-4 md:h-[76px] md:px-10">
+    <header className="sticky top-0 z-40 border-b border-border bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur">
+      <MobileAppBar pathname={pathname} />
+      <div className="mx-auto hidden h-[76px] max-w-[1280px] items-center gap-6 px-10 md:flex">
         <Link href="/" aria-label={t("Нүүр")} className="shrink-0">
           <Logo />
         </Link>
@@ -62,10 +115,7 @@ export default function Header() {
           <Link href="/saved" aria-label={t("Хадгалсан")} className="grid size-11 place-items-center rounded-xl bg-muted hover:bg-border">
             <Heart className="size-[18px]" />
           </Link>
-          {/* Phones have the Профайл tab in the bottom bar instead. */}
-          <div className="hidden md:block">
-            <AccountMenu />
-          </div>
+          <AccountMenu />
         </div>
       </div>
     </header>

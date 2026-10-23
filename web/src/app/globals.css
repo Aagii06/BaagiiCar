@@ -105,6 +105,19 @@
   [role="button"] {
     -webkit-tap-highlight-color: transparent;
   }
+  /* Phones: app-like touch — no grey flash, pressed state instead of hover, no page bounce. */
+  @media (max-width: 767px) {
+    body {
+      overscroll-behavior-y: none;
+    }
+  }
+  @media (hover: none) {
+    a:active,
+    button:not(:disabled):active,
+    [role="button"]:active {
+      opacity: 0.7;
+    }
+  }
   ::selection {
     background: var(--primary-soft);
     color: var(--primary);

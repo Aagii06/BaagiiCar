@@ -21,9 +21,9 @@ export default function SavedPage() {
   const loading = !loadedIds || (favorites.loading && !favorites.data);
 
   return (
-    <Container className="pt-8 md:pt-12">
+    <Container className="pt-4 md:pt-12">
       <PageTitle count={loading ? undefined : rows.length}>{t("Хадгалсан")}</PageTitle>
-      <div className="mt-8">
+      <div className="mt-0 md:mt-8">
         {loading ? (
           <CardGridSkeleton count={3} />
         ) : favorites.error ? (

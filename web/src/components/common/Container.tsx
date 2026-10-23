@@ -7,9 +7,10 @@ export default function Container({ className, children }: { className?: string;
   return <div className={cn("mx-auto w-full max-w-[1280px] px-4 md:px-10", className)}>{children}</div>;
 }
 
+/** Page heading; hidden on phones, where the app bar already shows the title. */
 export function PageTitle({ children, count, className }: { children: React.ReactNode; count?: number; className?: string }) {
   return (
-    <h1 className={cn("flex flex-wrap items-center gap-3 font-display text-[36px] font-bold leading-none md:text-[56px]", className)}>
+    <h1 className={cn("flex flex-wrap items-center gap-3 max-md:hidden font-display text-[36px] font-bold leading-none md:text-[56px]", className)}>
       {children}
       {count !== undefined && (
         <span className="rounded-lg bg-primary px-2.5 py-1.5 font-sans text-base font-bold normal-case tracking-normal text-white md:text-lg">{count}</span>

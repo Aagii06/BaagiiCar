@@ -12,12 +12,12 @@ export default function LeasingPage() {
   const { t } = useI18n();
   const [price, setPrice] = useState("60000000");
   return (
-    <Container className="max-w-[1040px] pt-8 md:pt-12">
+    <Container className="max-w-[1040px] pt-4 md:pt-12">
       <PageTitle>{t("Лизинг")}</PageTitle>
       <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
         {t("Машины үнээ оруулаад сарын төлбөрөө тооцоолоорой. Тодорхой зар дээрх тооцоолуур тухайн машины үнээр шууд бодно.")}
       </p>
-      <div className="mt-8 grid gap-6 md:grid-cols-[1fr_400px]">
+      <div className="grid gap-6 md:mt-8 md:grid-cols-[1fr_400px]">
         <section className="rounded-2xl bg-card p-5 md:p-6">
           <Field label={t("Машины үнэ (₮)")} hint={price ? `${Number(price).toLocaleString("en-US")}₮` : undefined}>
             <input className={inputClass} inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ""))} />

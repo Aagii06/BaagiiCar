@@ -35,7 +35,7 @@ export default function Footer() {
   ].filter(Boolean) as { label: string; href?: string }[];
 
   return (
-    <footer className="mt-16 bg-dark text-white">
+    <footer className="mt-16 hidden bg-dark text-white md:block">
       <div className="mx-auto max-w-[1280px] px-4 pb-8 pt-12 md:px-10 md:pt-16">
         <div className="grid gap-10 md:grid-cols-[1.6fr_1fr_1fr_0.8fr]">
           <div>
