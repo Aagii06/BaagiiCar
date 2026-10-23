@@ -1,5 +1,5 @@
 const moment = require("moment");
-const { messages, messageReplies, cars, op } = require("../../models");
+const { messages, messageReplies, cars, sequelize, op } = require("../../models");
 
 // Вэбийн чат цонх: нэвтэрсэн хэрэглэгчийн мессежийг админд хадгална (нэр, утас нь токеноос)
 module.exports.send = async (req, res) => {
@@ -47,13 +47,68 @@ module.exports.mine = async (req, res) => {
     const replies = rows.length
       ? await messageReplies.findAll({
           where: { message_id: { [op.in]: rows.map((m) => m.id) } },
-          attributes: ["id", "message_id", "reply", "created_at", "updated_at"],
+          attributes: ["id", "message_id", "reply", "read_at", "created_at", "updated_at"],
           order: [["id", "ASC"]],
           raw: true,
         })
       : [];
     result.success = true;
-    result.data = { rows: rows.map((m) => ({ ...m, replies: replies.filter((r) => r.message_id === m.id) })), count: rows.length };
+    result.data = {
+      rows: rows.map((m) => {
+        const own = replies.filter((r) => r.message_id === m.id);
+        // unread: хэрэглэгчийн хараахан нээгээгүй хариуны тоо
+        return { ...m, replies: own, unread: own.filter((r) => !r.read_at).length };
+      }),
+      count: rows.length,
+    };
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    result.message = "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
+// Нэвтэрсэн хэрэглэгчийн мессежүүдийн хариунаас уншаагүйн тоо (badge)
+const ownMessageIds = (userId, where = {}) =>
+  sequelize.literal(
+    `(SELECT id FROM messages WHERE created_by = ${sequelize.escape(userId)} AND deleted_at IS NULL${
+      "car_id" in where ? ` AND car_id ${where.car_id ? `= ${sequelize.escape(where.car_id)}` : "IS NULL"}` : ""
+    })`,
+  );
+
+module.exports.unread = async (req, res) => {
+  let result = { success: false, data: { count: 0 }, message: "Амжилттай" };
+  try {
+    const count = await messageReplies.count({
+      where: { message_id: { [op.in]: ownMessageIds(req.loggedUser?.id ?? 0) }, read_at: { [op.is]: null } },
+    });
+    result.success = true;
+    result.data = { count };
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    result.message = "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
+// Нэг ярианы (зар бүрийн, car_id хоосон бол ерөнхий) хариуг уншсан болгоно. body: { car_id }
+module.exports.markRead = async (req, res) => {
+  let result = { success: false, data: null, message: "Амжилттай" };
+  try {
+    const at = moment().utcOffset("+0800").format("YYYY-MM-DD HH:mm:ss");
+    const [affected] = await messageReplies.update(
+      { read_at: at },
+      {
+        where: {
+          message_id: { [op.in]: ownMessageIds(req.loggedUser?.id ?? 0, { car_id: req.body.car_id || null }) },
+          read_at: { [op.is]: null },
+        },
+      },
+    );
+    result.success = true;
+    result.data = { count: affected };
     return res.status(200).json(result);
   } catch (error) {
     console.log(error);

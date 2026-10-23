@@ -300,10 +300,11 @@ function CatalogInner() {
       ) : !rows.length ? (
         <EmptyState title="Бичлэг алга" />
       ) : (
+        // Edge to edge right under the header like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
         // A next page keeps the rows already shown bright; a new search / reload dims them.
-        <div className={cn("divide-y divide-border overflow-hidden rounded-2xl bg-card", list.loading && !loadingMore && "opacity-60")}>
+        <div className={cn("-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white", list.loading && !loadingMore && "opacity-60")}>
           {shown.map((row) => (
-            <div key={row.id} className="flex items-center gap-3 px-3 py-2.5">
+            <div key={row.id} className="flex items-center gap-3 px-4 py-3">
               {row.image !== undefined && (
                 <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted text-sm font-bold">
                   {row.image ? (

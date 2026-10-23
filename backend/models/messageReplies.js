@@ -13,6 +13,8 @@ module.exports = (sequelize, DataTypes) => {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
       message_id: { type: DataTypes.INTEGER },
       reply: { type: DataTypes.TEXT },
+      // Хэрэглэгч уншсан огноо; хоосон бол уншаагүй хариу
+      read_at: { type: DataTypes.STRING },
       created_by: { type: DataTypes.INTEGER },
       updated_by: { type: DataTypes.INTEGER },
       created_at: { type: DataTypes.STRING },

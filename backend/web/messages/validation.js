@@ -16,3 +16,8 @@ module.exports.sendValidation = [
   body("page_url").optional(optional).isString().isLength({ max: 500 }),
   validation,
 ];
+
+module.exports.markReadValidation = [
+  body("car_id").optional(optional).isInt({ min: 1 }).toInt(),
+  validation,
+];
