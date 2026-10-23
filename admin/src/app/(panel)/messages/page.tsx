@@ -5,20 +5,21 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/common/States
 import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
-import { deleteMessage, listMessages, setMessageStatus } from "@/lib/api/admin";
+import { deleteMessage, listMessages, replyMessage, setMessageStatus } from "@/lib/api/admin";
+import { inputClass } from "@/components/common/Field";
 import type { Car, Message } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import CarImage from "@/components/car/CarImage";
 import CarPreviewSheet from "@/components/car/CarPreviewSheet";
 import { carTitle, cn, timeAgo } from "@/lib/utils";
-import { Check, ChevronRight, Phone, RotateCcw, Trash2 } from "lucide-react";
+import { Check, ChevronRight, Phone, Reply, RotateCcw, SendHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 type Tab = Message["status"] | "all";
 const TABS: { value: Tab; label: string }[] = [
+  { value: "all", label: "Бүгд" },
   { value: "new", label: "Шинэ" },
   { value: "done", label: "Хариулсан" },
-  { value: "all", label: "Бүгд" },
   { value: "deleted", label: "Устгагдсан" },
 ];
 
@@ -31,6 +32,8 @@ const BADGE: Record<Message["status"], { label: string; className: string }> = {
 function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: () => void; onOpenCar: (car: Car) => void }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  /** Reply box open, with its draft (starts from the saved reply when editing it). */
+  const [draft, setDraft] = useState<string | null>(null);
   const isNew = item.status === "new";
   const isDeleted = item.status === "deleted";
   const badge = BADGE[item.status] ?? BADGE.done;
@@ -67,6 +70,44 @@ function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: 
         </div>
       </div>
       <p className="mt-3 whitespace-pre-line text-sm leading-6">{item.message}</p>
+      {item.reply && draft === null && (
+        <div className="mt-2 rounded-xl rounded-tl-sm bg-success-soft px-3 py-2">
+          <p className="flex items-center gap-1 text-[11px] font-bold text-success">
+            <Reply className="size-3" />
+            Хариу{item.replied_at && ` · ${timeAgo(item.replied_at)}`}
+          </p>
+          <p className="mt-0.5 whitespace-pre-line text-sm leading-6">{item.reply}</p>
+        </div>
+      )}
+      {draft !== null && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const text = draft.trim();
+            if (text) run(() => replyMessage(item.id, text).then(() => setDraft(null)), "Хариу илгээлээ");
+          }}
+          className="mt-3 space-y-2"
+        >
+          <textarea
+            className={cn(inputClass, "h-auto min-h-24 resize-y py-2.5 leading-6")}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            maxLength={2000}
+            placeholder="Хариугаа бичнэ үү…"
+            aria-label="Хариу"
+            autoFocus
+          />
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={() => setDraft(null)} className="rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
+              Болих
+            </button>
+            <button disabled={!draft.trim() || busy} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-hover disabled:opacity-50">
+              <SendHorizontal className="size-3.5" />
+              Илгээх
+            </button>
+          </div>
+        </form>
+      )}
       {item.car && (
           <button type="button" onClick={() => onOpenCar(item.car!)} className="mt-3 flex w-full items-center gap-3 rounded-xl bg-muted p-2 text-left hover:bg-border">
             <CarImage id={item.car.id} image={item.car.image} bodyType={item.car.body_type_name} size="thumb" className="h-10 w-14 shrink-0" artClassName="w-[80%]" />
@@ -74,14 +115,21 @@ function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: 
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
           </button>
       )}
-      <div className="mt-3 flex gap-2">
+      <div className={cn("mt-3 flex gap-2", draft !== null && "hidden")}>
+        {!isDeleted && (
+          <button onClick={() => setDraft(item.reply ?? "")} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-hover">
+            <Reply className="size-3.5" />
+            {item.reply ? "Хариу засах" : "Хариулах"}
+          </button>
+        )}
         {isDeleted ? (
           <button onClick={() => run(() => setMessageStatus(item.id, "new"), "Сэргээлээ")} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
             <RotateCcw className="size-3.5" />
             Сэргээх
           </button>
         ) : isNew ? (
-          <button onClick={() => run(() => setMessageStatus(item.id, "done"), "Хариулсан гэж тэмдэглэлээ")} className="flex items-center gap-1 rounded-lg bg-dark px-3 py-2 text-xs font-bold text-white">
+          // Answered by phone: just mark it done.
+          <button onClick={() => run(() => setMessageStatus(item.id, "done"), "Хариулсан гэж тэмдэглэлээ")} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
             <Check className="size-3.5" />
             Хариулсан
           </button>
@@ -105,7 +153,7 @@ function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: 
   );
 }
 
-/** Messages left in the web site's chat box; reply by phone, then mark done. */
+/** Messages left in the web site's chat box; answer here (the visitor sees it on the web) or by phone and mark done. */
 export default function MessagesPage() {
   const [tab, setTab] = useState<Tab>("new");
   // Tagged with its tab: right after a switch the previous tab's list is still in `messages` and must not show.

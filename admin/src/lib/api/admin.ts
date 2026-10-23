@@ -419,3 +419,8 @@ export async function listMessages(status?: Message["status"]) {
 
 export const setMessageStatus = (id: number, status: Message["status"]) => updateRow("messages", id, { status });
 export const deleteMessage = (id: number) => deleteRows("messages", [id]);
+
+/** Saves the answer (the visitor sees it on the web, and by SMS once that's connected) and marks the message done. */
+export async function replyMessage(id: number, reply: string) {
+  await apiFetch("/api/messages/reply", { method: "POST", body: { id, reply } });
+}
