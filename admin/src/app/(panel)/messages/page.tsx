@@ -134,7 +134,7 @@ export default function MessagesPage() {
           ))}
         </div>
       )}
-      {preview && <CarPreviewSheet car={preview} from="messages" onClose={() => setPreview(null)} />}
+      {preview && <CarPreviewSheet car={preview} onClose={() => setPreview(null)} />}
     </>
   );
 }

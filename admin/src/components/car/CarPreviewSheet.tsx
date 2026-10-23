@@ -8,15 +8,13 @@ import { uploadUrl } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
 import { CAR_STATUS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { withFrom, type CarOrigin } from "@/lib/useBackTo";
 import { carTitle, cn, formatPrice } from "@/lib/utils";
-import { ArrowRight, X } from "lucide-react";
-import Link from "next/link";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { carSpecs } from "./carSpecs";
 
-/** Quick look at an ad (photos, price, specs) without leaving the page; "Дэлгэрэнгүй" opens the full preview. */
-export default function CarPreviewSheet({ car, from, onClose }: { car: Car; from: CarOrigin; onClose: () => void }) {
+/** Look at an ad (photos, price, specs) without leaving the page. */
+export default function CarPreviewSheet({ car, onClose }: { car: Car; onClose: () => void }) {
   const files = useApi(() => getCarFiles(car.id), String(car.id));
   const photos = (files.data ?? []).map((f) => f.generated_name).filter((n): n is string => Boolean(n));
   const [viewing, setViewing] = useState<number | null>(null);
@@ -61,7 +59,7 @@ export default function CarPreviewSheet({ car, from, onClose }: { car: Car; from
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-4">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
           {files.loading && !files.data ? (
             <div className="grid aspect-[4/3] place-items-center rounded-2xl bg-muted">
               <Spinner className="size-5" />
@@ -93,16 +91,6 @@ export default function CarPreviewSheet({ car, from, onClose }: { car: Car; from
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="border-t border-border px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
-          <Link
-            href={withFrom(`/cars/${car.id}/view`, from)}
-            className="flex h-12 w-full items-center justify-center gap-1.5 rounded-xl bg-primary font-bold text-white hover:bg-primary-hover"
-          >
-            Дэлгэрэнгүй
-            <ArrowRight className="size-4" />
-          </Link>
         </div>
       </div>
 
