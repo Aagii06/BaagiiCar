@@ -141,6 +141,8 @@ class _HeroState extends State<_Hero> {
           child: Stack(fit: StackFit.expand, children: [
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 700),
+              // Cross-fading photos must each fill the hero box.
+              layoutBuilder: (current, previous) => Stack(fit: StackFit.expand, children: [...previous, ?current]),
               child: Image.asset('assets/hero/${s.image}.webp', key: ValueKey(s.image), fit: BoxFit.cover, alignment: s.focus),
             ),
             // Bright wash, top-down, so the dark text reads on any photo.

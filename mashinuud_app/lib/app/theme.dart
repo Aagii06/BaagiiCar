@@ -70,6 +70,7 @@ class AppTheme {
     return base.copyWith(
       textTheme: text,
       dividerColor: AppPalette.border,
+      dividerTheme: const DividerThemeData(color: AppPalette.border, space: 1, thickness: 1),
       splashFactory: InkSparkle.splashFactory,
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.white,
