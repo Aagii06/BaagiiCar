@@ -5,14 +5,14 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/common/States
 import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
-import { deleteMessage, listMessages, replyMessage, setMessageStatus } from "@/lib/api/admin";
+import { deleteMessage, editMessageReply, listMessages, replyMessage, setMessageStatus } from "@/lib/api/admin";
 import { inputClass } from "@/components/common/Field";
 import type { Car, Message } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import CarImage from "@/components/car/CarImage";
 import CarPreviewSheet from "@/components/car/CarPreviewSheet";
 import { carTitle, cn, timeAgo } from "@/lib/utils";
-import { Check, ChevronRight, Phone, Reply, RotateCcw, SendHorizontal, Trash2 } from "lucide-react";
+import { Check, ChevronRight, Pencil, Phone, Reply, RotateCcw, SendHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 type Tab = Message["status"] | "all";
@@ -29,11 +29,48 @@ const BADGE: Record<Message["status"], { label: string; className: string }> = {
   deleted: { label: "Устгагдсан", className: "bg-destructive-soft text-destructive" },
 };
 
+/** Textarea + Болих / Илгээх for a new answer or the edit of one. */
+function ReplyForm({ value, busy, onChange, onCancel, onSubmit }: { value: string; busy: boolean; onChange: (v: string) => void; onCancel: () => void; onSubmit: (text: string) => void }) {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (value.trim()) onSubmit(value.trim());
+      }}
+      className="mt-3 space-y-2"
+    >
+      <textarea
+        className={cn(inputClass, "h-auto min-h-24 resize-y py-2.5 leading-6")}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        maxLength={2000}
+        placeholder="Хариугаа бичнэ үү…"
+        aria-label="Хариу"
+        autoFocus
+      />
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onCancel} className="rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
+          Болих
+        </button>
+        <button disabled={!value.trim() || busy} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-hover disabled:opacity-50">
+          <SendHorizontal className="size-3.5" />
+          Илгээх
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: () => void; onOpenCar: (car: Car) => void }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
-  /** Reply box open, with its draft (starts from the saved reply when editing it). */
-  const [draft, setDraft] = useState<string | null>(null);
+  /** Open reply box: a new answer (`replyId` null) or the edit of one, with its draft. */
+  const [editing, setEditing] = useState<{ replyId: number | null; text: string } | null>(null);
+  const save = (replyId: number | null, text: string) =>
+    run(
+      () => (replyId ? editMessageReply(replyId, text) : replyMessage(item.id, text)).then(() => setEditing(null)),
+      replyId ? "Хариуг засварлалаа" : "Хариу илгээлээ"
+    );
   const isNew = item.status === "new";
   const isDeleted = item.status === "deleted";
   const badge = BADGE[item.status] ?? BADGE.done;
@@ -70,43 +107,34 @@ function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: 
         </div>
       </div>
       <p className="mt-3 whitespace-pre-line text-sm leading-6">{item.message}</p>
-      {item.reply && draft === null && (
-        <div className="mt-2 rounded-xl rounded-tl-sm bg-success-soft px-3 py-2">
-          <p className="flex items-center gap-1 text-[11px] font-bold text-success">
-            <Reply className="size-3" />
-            Хариу{item.replied_at && ` · ${timeAgo(item.replied_at)}`}
-          </p>
-          <p className="mt-0.5 whitespace-pre-line text-sm leading-6">{item.reply}</p>
-        </div>
-      )}
-      {draft !== null && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const text = draft.trim();
-            if (text) run(() => replyMessage(item.id, text).then(() => setDraft(null)), "Хариу илгээлээ");
-          }}
-          className="mt-3 space-y-2"
-        >
-          <textarea
-            className={cn(inputClass, "h-auto min-h-24 resize-y py-2.5 leading-6")}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            maxLength={2000}
-            placeholder="Хариугаа бичнэ үү…"
-            aria-label="Хариу"
-            autoFocus
-          />
-          <div className="flex justify-end gap-2">
-            <button type="button" onClick={() => setDraft(null)} className="rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
-              Болих
-            </button>
-            <button disabled={!draft.trim() || busy} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-hover disabled:opacity-50">
-              <SendHorizontal className="size-3.5" />
-              Илгээх
-            </button>
+      {item.replies?.map((r) =>
+        editing?.replyId === r.id ? (
+          <ReplyForm key={r.id} value={editing.text} busy={busy} onChange={(text) => setEditing({ replyId: r.id, text })} onCancel={() => setEditing(null)} onSubmit={(text) => save(r.id, text)} />
+        ) : (
+          <div key={r.id} className="mt-2 flex items-start gap-1 rounded-xl rounded-tl-sm bg-success-soft py-2 pl-3 pr-1">
+            <div className="min-w-0 flex-1">
+              <p className="flex items-center gap-1 text-[11px] font-bold text-success">
+                <Reply className="size-3" />
+                Хариу{r.created_at && ` · ${timeAgo(r.created_at)}`}
+                {r.updated_at && r.updated_at !== r.created_at && <span className="font-medium text-muted-foreground">· засварласан</span>}
+              </p>
+              <p className="mt-0.5 whitespace-pre-line text-sm leading-6">{r.reply}</p>
+            </div>
+            {!isDeleted && (
+              <button
+                type="button"
+                onClick={() => setEditing({ replyId: r.id, text: r.reply })}
+                aria-label="Хариу засах"
+                className="grid size-8 shrink-0 place-items-center rounded-lg text-success hover:bg-success/10"
+              >
+                <Pencil className="size-3.5" />
+              </button>
+            )}
           </div>
-        </form>
+        )
+      )}
+      {editing?.replyId === null && (
+        <ReplyForm value={editing.text} busy={busy} onChange={(text) => setEditing({ replyId: null, text })} onCancel={() => setEditing(null)} onSubmit={(text) => save(null, text)} />
       )}
       {item.car && (
           <button type="button" onClick={() => onOpenCar(item.car!)} className="mt-3 flex w-full items-center gap-3 rounded-xl bg-muted p-2 text-left hover:bg-border">
@@ -115,11 +143,12 @@ function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: 
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
           </button>
       )}
-      <div className={cn("mt-3 flex gap-2", draft !== null && "hidden")}>
+      <div className={cn("mt-3 flex gap-2", editing && "hidden")}>
+        {/* Any number of answers: each one goes to the visitor. */}
         {!isDeleted && (
-          <button onClick={() => setDraft(item.reply ?? "")} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-hover">
+          <button onClick={() => setEditing({ replyId: null, text: "" })} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-hover">
             <Reply className="size-3.5" />
-            {item.reply ? "Хариу засах" : "Хариулах"}
+            Хариулах
           </button>
         )}
         {isDeleted ? (

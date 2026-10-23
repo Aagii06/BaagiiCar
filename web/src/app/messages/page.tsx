@@ -10,6 +10,7 @@ import { getMyMessages, sendMessage, type MyMessage } from "@/lib/api/messages";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { markSeen, readSeen, unreadCount } from "@/lib/messages/seen";
 import { useApi } from "@/lib/useApi";
 import { cn, timeAgo } from "@/lib/utils";
 import { ChevronRight, MessageCircle, SendHorizontal } from "lucide-react";
@@ -79,6 +80,7 @@ function MessagesInner() {
   }
 
   const list = threads.data ?? [];
+  const seen = readSeen(user.id);
   return (
     <Container className="max-w-2xl pt-4 md:pt-12">
       <PageTitle count={list.length}>{t("Мессеж")}</PageTitle>
@@ -94,6 +96,7 @@ function MessagesInner() {
             {list.map((th) => {
               const last = th.messages[th.messages.length - 1];
               const preview = last.reply ? `${t("Хариу")}: ${last.reply}` : last.message;
+              const unread = unreadCount(th.messages, seen);
               return (
                 <li key={th.carId} className="border-b border-border last:border-b-0">
                   <Link href={`/messages?car=${th.carId}`} className="flex items-center gap-3 px-4 py-3.5 hover:bg-muted">
@@ -111,7 +114,11 @@ function MessagesInner() {
                       </span>
                       <span className="mt-1 flex items-center gap-2">
                         <span className={cn("min-w-0 flex-1 truncate text-sm", last.reply ? "font-semibold text-foreground" : "text-muted-foreground")}>{preview}</span>
-                        <Status done={last.status === "done" || !!last.reply} />
+                        {unread ? (
+                          <span className="grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-bold text-white">{unread}</span>
+                        ) : (
+                          <Status done={last.status === "done" || !!last.reply} />
+                        )}
                       </span>
                     </span>
                     <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -129,7 +136,7 @@ function MessagesInner() {
 /** One conversation: the visitor's messages as chat bubbles, and a box to keep writing about the same ad. */
 function ThreadView({ thread, token, onSent }: { thread: Thread; token: string; onSent: () => void }) {
   const { t } = useI18n();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [draft, setDraft] = useState("");
   const [sent, setSent] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -140,6 +147,11 @@ function ThreadView({ thread, token, onSent }: { thread: Thread; token: string; 
   useEffect(() => {
     end.current?.scrollIntoView({ block: "end" });
   }, [thread.messages.length, sent.length, replies]);
+
+  // Opening the thread reads its answers (clears the unread badge).
+  useEffect(() => {
+    if (user) markSeen(user.id, thread.messages);
+  }, [user, thread.messages]);
 
   // Pick up the team's answers while the thread is open.
   useEffect(() => {

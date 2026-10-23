@@ -149,9 +149,20 @@ export interface Message {
   status: "new" | "done" | "deleted";
   created_at: string | null;
   deleted_at?: string | null;
-  /** The team's answer, shown to the visitor on the web (`replyMessage`). */
+  /** Latest answer (kept on the row by the backend); every answer is in `replies`. */
   reply?: string | null;
   replied_at?: string | null;
+  /** The team's answers, oldest first; filled in by `listMessages`. */
+  replies?: MessageReply[];
   /** The ad it's about; filled in by `listMessages`. */
   car?: Car;
+}
+
+/** One answer to a web chat message; the visitor sees it on the web. */
+export interface MessageReply {
+  id: number;
+  message_id: number;
+  reply: string;
+  created_at: string | null;
+  updated_at: string | null;
 }

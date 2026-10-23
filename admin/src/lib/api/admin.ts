@@ -1,6 +1,6 @@
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
 import { ROLES } from "@/lib/constants";
-import type { BodyType, Brand, Car, CarFile, CarModel, Customer, Dealer, Location, Message, User } from "./types";
+import type { BodyType, Brand, Car, CarFile, CarModel, Customer, Dealer, Location, Message, MessageReply, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
 const NEWEST = [{ selector: "created_at", desc: true }];
@@ -414,13 +414,24 @@ export async function listMessages(status?: Message["status"]) {
     ? (await apiFetch<ApiListResponse<Car>>(`/api/base/vwCars${listQuery({ filter: [["id", "in", carIds]], take: carIds.length })}`)).data.rows
     : [];
   const carById = new Map(cars.map((c) => [c.id, c]));
-  return { ...res.data, rows: res.data.rows.map((m) => ({ ...m, car: m.car_id ? carById.get(m.car_id) : undefined })) };
+  // Every answer of these messages, in one request.
+  const ids = res.data.rows.map((m) => m.id);
+  const replies = ids.length ? (await apiFetch<ApiItemResponse<MessageReply[]>>(`/api/messages/replies?ids=${ids.join(",")}`)).data : [];
+  return {
+    ...res.data,
+    rows: res.data.rows.map((m) => ({ ...m, car: m.car_id ? carById.get(m.car_id) : undefined, replies: replies.filter((r) => r.message_id === m.id) })),
+  };
 }
 
 export const setMessageStatus = (id: number, status: Message["status"]) => updateRow("messages", id, { status });
 export const deleteMessage = (id: number) => deleteRows("messages", [id]);
 
-/** Saves the answer (the visitor sees it on the web, and by SMS once that's connected) and marks the message done. */
+/** Adds an answer (the visitor sees it on the web, and by SMS once that's connected) and marks the message done. */
 export async function replyMessage(id: number, reply: string) {
   await apiFetch("/api/messages/reply", { method: "POST", body: { id, reply } });
+}
+
+/** Changes the text of one answer. */
+export async function editMessageReply(replyId: number, reply: string) {
+  await apiFetch("/api/messages/reply-edit", { method: "POST", body: { reply_id: replyId, reply } });
 }

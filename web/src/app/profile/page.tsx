@@ -5,7 +5,11 @@ import { LoadingState } from "@/components/common/States";
 import { displayName, useAuth } from "@/lib/auth/AuthProvider";
 import { useCompare } from "@/lib/compare/CompareProvider";
 import { useFavorites } from "@/lib/favorites/FavoritesProvider";
+import { getMyMessages } from "@/lib/api/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { readSeen, unreadCount } from "@/lib/messages/seen";
+import { useApi } from "@/lib/useApi";
+import { cn } from "@/lib/utils";
 import { ChevronRight, GitCompare, Heart, LifeBuoy, LogOut, MessageCircle, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,7 +19,12 @@ import { useEffect } from "react";
 export default function ProfilePage() {
   const { t } = useI18n();
   const router = useRouter();
-  const { user, ready, signOut } = useAuth();
+  const { user, token, ready, signOut } = useAuth();
+  // Team answers not opened yet, for the "Мессеж" badge.
+  const unread = useApi(
+    async () => (token && user ? unreadCount(await getMyMessages(token), readSeen(user.id)) : 0),
+    token ?? ""
+  );
   const favorites = useFavorites();
   const compare = useCompare();
 
@@ -26,7 +35,7 @@ export default function ProfilePage() {
   if (!ready || !user) return <LoadingState className="min-h-[50vh]" />;
 
   const links = [
-    { href: "/messages", label: t("Мессеж"), icon: MessageCircle, count: 0 },
+    { href: "/messages", label: t("Мессеж"), icon: MessageCircle, count: unread.data ?? 0, alert: true },
     { href: "/saved", label: t("Хадгалсан"), icon: Heart, count: favorites.ids.size },
     { href: "/compare", label: t("Харьцуулалт"), icon: GitCompare, count: compare.ids.length },
     { href: "/help", label: t("Тусламж"), icon: LifeBuoy },
@@ -47,11 +56,13 @@ export default function ProfilePage() {
       </section>
 
       <nav className="mt-3 overflow-hidden rounded-2xl bg-card">
-        {links.map(({ href, label, icon: Icon, count }) => (
+        {links.map(({ href, label, icon: Icon, count, alert }) => (
           <Link key={href} href={href} className="flex items-center gap-3 border-b border-border px-5 py-4 font-semibold last:border-b-0 hover:bg-muted">
             <Icon className="size-5 text-muted-foreground" />
             <span className="flex-1">{label}</span>
-            {!!count && <span className="rounded-full bg-primary-soft px-2 py-0.5 text-xs font-bold text-primary">{count}</span>}
+            {!!count && (
+              <span className={cn("rounded-full px-2 py-0.5 text-xs font-bold", alert ? "bg-primary text-white" : "bg-primary-soft text-primary")}>{count}</span>
+            )}
             <ChevronRight className="size-4 text-muted-foreground" />
           </Link>
         ))}
