@@ -270,9 +270,9 @@ class _CarsScreenState extends State<CarsScreen> {
                 // Only a filter change dims the list; loading more keeps it as is.
                 opacity: _loading && !_loadingMore ? 0.55 : 1,
                 child: Column(children: [
-                  CarList(cars: rest.take(3).toList()),
+                  CarList(cars: rest.take(3).toList(), featuredBadge: true),
                   if (wide != null) Padding(padding: const EdgeInsets.only(bottom: 12), child: CarWideCard(car: wide)),
-                  CarList(cars: rest.skip(3).toList()),
+                  CarList(cars: rest.skip(3).toList(), featuredBadge: true),
                 ]),
               ),
             if (more && _error == null)

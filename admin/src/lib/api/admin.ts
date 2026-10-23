@@ -153,6 +153,14 @@ export async function listCars({ statuses = [], createdBy, dealerId, search, pag
   return res.data;
 }
 
+/** The newest active "Онцлох" ads (the Самбар's list; all of them are on /cars?status=featured). */
+export async function featuredCars(take = 5) {
+  const res = await apiFetch<ApiListResponse<Car>>(
+    `/api/base/vwCars${listQuery({ filter: [["status", "=", "active"], ["is_featured", "=", 1]], sort: NEWEST, take })}`
+  );
+  return res.data;
+}
+
 /** "YYYY-MM-DD HH:mm:ss" in Ulaanbaatar time (+08:00), the way the backend stamps `created_at`. */
 const ubTimestamp = (ms: number) => new Date(ms + 8 * 3600_000).toISOString().slice(0, 19).replace("T", " ");
 

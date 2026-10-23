@@ -412,6 +412,7 @@ class _ComparePickerState extends State<_ComparePicker> {
       dealerId: _dealer,
       priceMin: band != null && band.$1 > 0 ? band.$1 * _mln : null,
       priceMax: band != null && band.$2 > 0 ? band.$2 * _mln : null,
+      featuredFirst: true,
       pageSize: _take,
     );
     final filtered = _brand != null || _model != null || _dealer != null || _band != null;
@@ -593,6 +594,14 @@ class _ComparePickerState extends State<_ComparePicker> {
                                     TextSpan(
                                       style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground),
                                       children: [
+                                        if (c.isFeatured)
+                                          const WidgetSpan(
+                                            alignment: PlaceholderAlignment.middle,
+                                            child: Padding(
+                                              padding: EdgeInsets.only(right: 6),
+                                              child: Pill('Онцлох', background: AppPalette.successSoft, color: AppPalette.success),
+                                            ),
+                                          ),
                                         TextSpan(
                                           text: formatPriceShort(c.price),
                                           style: const TextStyle(fontWeight: FontWeight.w700, color: AppPalette.primary),

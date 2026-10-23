@@ -245,7 +245,15 @@ class CarWideCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              AspectRatio(aspectRatio: 16 / 9, child: CarImage(car)),
+              Stack(children: [
+                AspectRatio(aspectRatio: 16 / 9, child: CarImage(car)),
+                if (car.isFeatured)
+                  const Positioned(
+                    left: 8,
+                    top: 8,
+                    child: Pill('Онцлох', background: Colors.white, color: AppPalette.success, icon: Icons.verified_rounded),
+                  ),
+              ]),
               const SizedBox(height: 14),
               Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Expanded(

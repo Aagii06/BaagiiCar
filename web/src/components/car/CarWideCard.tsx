@@ -6,7 +6,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { formatPriceShort } from "@/lib/utils";
 import { MessageCircle, Zap } from "lucide-react";
 import Link from "next/link";
-import { carTitle } from "./CarCard";
+import { carTitle, FeaturedBadge } from "./CarCard";
 import CarImage from "./CarImage";
 import CompareButton from "./CompareButton";
 import SpecChips from "./SpecChips";
@@ -17,7 +17,8 @@ export default function CarWideCard({ car }: { car: Car }) {
   const href = `/cars/${car.id}`;
   return (
     <article className="grid gap-5 rounded-2xl border-[1.5px] border-primary bg-card p-3 sm:col-span-2 md:grid-cols-[1.1fr_1fr] xl:col-span-3">
-      <Link href={href}>
+      <Link href={href} className="relative">
+        {car.is_featured ? <FeaturedBadge className="absolute left-2.5 top-2.5 z-10" /> : null}
         <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} className="aspect-[16/9] h-full md:aspect-auto md:min-h-56" alt={carTitle(car, t)} />
       </Link>
       <div className="flex flex-col px-1 pb-1 md:py-2 md:pr-2">

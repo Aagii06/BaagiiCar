@@ -2,7 +2,8 @@
 
 import CarImage from "@/components/car/CarImage";
 import { ErrorState, LoadingState, Spinner } from "@/components/common/States";
-import { countOf, recentCars } from "@/lib/api/admin";
+import { countOf, featuredCars, recentCars } from "@/lib/api/admin";
+import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
@@ -33,6 +34,7 @@ export default function DashboardPage() {
   const stats = useApi(() => loadStats(isAdmin), String(isAdmin));
   const [recentTake, setRecentTake] = useState(RECENT_PAGE);
   const recent = useApi(() => recentCars({ take: recentTake }), String(recentTake));
+  const featured = useApi(() => featuredCars(5));
   const s = stats.data;
 
   // Totals (dealers, active customers, all ads) first, then ads by status (pending first: it needs action).
@@ -105,21 +107,7 @@ export default function DashboardPage() {
         ) : !recent.data?.rows.length ? (
           <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Сүүлийн 2 хоногт зар нэмэгдээгүй</p>
         ) : (
-          recent.data.rows.map((car) => {
-            const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
-            return (
-              <Link key={car.id} href={withFrom(`/cars/${car.id}`, "home")} className="flex items-center gap-3 rounded-2xl bg-card p-2.5">
-                <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} size="thumb" className="h-12 w-16 shrink-0" artClassName="w-[80%]" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold">{carTitle(car)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatPriceShort(car.price)} · {car.dealer_name || car.seller_name || car.phonenumber}
-                  </p>
-                </div>
-                <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", st.className)}>{st.label}</span>
-              </Link>
-            );
-          })
+          recent.data.rows.map((car) => <CarLine key={car.id} car={car} />)
         )}
         {recent.data && recent.data.rows.length < recent.data.count && (
           <button
@@ -132,6 +120,45 @@ export default function DashboardPage() {
           </button>
         )}
       </div>
+
+      <div className="mt-6 flex items-center justify-between">
+        <h2 className="font-bold">
+          Онцлох зарууд
+          {featured.data && <span className="ml-1.5 text-sm font-semibold text-muted-foreground">{featured.data.count}</span>}
+        </h2>
+        <Link href="/cars?status=featured" className="flex items-center gap-1 text-sm font-semibold text-primary">
+          Бүгд
+          <ArrowRight className="size-4" />
+        </Link>
+      </div>
+      <div className="mt-3 space-y-2">
+        {featured.loading && !featured.data ? (
+          <LoadingState className="py-8" />
+        ) : featured.error ? (
+          <ErrorState message={featured.error.message} onRetry={featured.reload} />
+        ) : !featured.data?.rows.length ? (
+          <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Онцлох зар алга</p>
+        ) : (
+          featured.data.rows.map((car) => <CarLine key={car.id} car={car} />)
+        )}
+      </div>
     </div>
+  );
+}
+
+/** An ad in the Самбар's lists; opens it with the back button leading here. */
+function CarLine({ car }: { car: Car }) {
+  const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
+  return (
+    <Link href={withFrom(`/cars/${car.id}`, "home")} className="flex items-center gap-3 rounded-2xl bg-card p-2.5">
+      <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} size="thumb" className="h-12 w-16 shrink-0" artClassName="w-[80%]" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold">{carTitle(car)}</p>
+        <p className="text-xs text-muted-foreground">
+          {formatPriceShort(car.price)} · {car.dealer_name || car.seller_name || car.phonenumber}
+        </p>
+      </div>
+      <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", st.className)}>{st.label}</span>
+    </Link>
   );
 }

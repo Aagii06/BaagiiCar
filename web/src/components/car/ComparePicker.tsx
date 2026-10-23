@@ -85,6 +85,7 @@ export default function ComparePicker({ onClose }: { onClose: () => void }) {
         dealerId: f.dealer,
         priceMin: band?.min ? band.min * MLN : undefined,
         priceMax: band?.max ? band.max * MLN : undefined,
+        featuredFirst: true,
         pageSize: take,
       }),
     `${text}|${f.brand}|${f.model}|${f.dealer}|${f.price}|${take}`
@@ -204,6 +205,9 @@ export default function ComparePicker({ onClose }: { onClose: () => void }) {
                           {c.manufactured_year ? <span className="font-normal text-muted-foreground"> · {c.manufactured_year}</span> : null}
                         </span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">
+                          {c.is_featured ? (
+                            <span className="mr-1.5 rounded-full bg-success-soft px-1.5 py-px text-[10px] font-bold text-success">{t("Онцлох")}</span>
+                          ) : null}
                           <span className="font-bold text-primary">{formatPriceShort(c.price, t)}</span>
                           {c.mileage != null && ` · ${t("{n} км", { n: formatNumber(c.mileage) })}`}
                         </span>
