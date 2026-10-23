@@ -124,7 +124,7 @@ class _CarChatSheetState extends State<_CarChatSheet> {
           listenable: Stores.auth,
           builder: (context, _) {
             if (Stores.auth.user == null) {
-              return const SingleChildScrollView(padding: EdgeInsets.all(16), child: PhoneCodeForm());
+              return const SingleChildScrollView(padding: EdgeInsets.all(16), child: PhoneCodeForm(autofocus: true));
             }
             return Column(children: [
               Expanded(
@@ -240,7 +240,9 @@ class Composer extends StatelessWidget {
 
 /// Phone → 4-digit code sign-in; an unknown number is registered as "Зочин". Signs in through [Stores.auth].
 class PhoneCodeForm extends StatefulWidget {
-  const PhoneCodeForm({super.key});
+  /// Focus the phone field at once (the chat sheet); off on the profile tab, which is built while hidden.
+  final bool autofocus;
+  const PhoneCodeForm({super.key, this.autofocus = false});
   @override
   State<PhoneCodeForm> createState() => _PhoneCodeFormState();
 }
@@ -311,7 +313,7 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
         const SizedBox(height: 12),
         TextField(
           controller: _phone,
-          autofocus: true,
+          autofocus: widget.autofocus,
           keyboardType: TextInputType.phone,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
           decoration: const InputDecoration(hintText: 'Утасны дугаар', prefixIcon: Icon(Icons.phone_iphone_rounded, size: 20)),
