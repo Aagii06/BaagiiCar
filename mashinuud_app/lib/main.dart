@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/l10n/app_localizations.dart';
-import 'app/theme.dart';
-import 'layout/footer.dart';
+import 'package:mashinuud_app/screens/shell.dart';
+import 'package:mashinuud_app/state/stores.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Stores.load();
   runApp(const MyApp());
 }
 
@@ -20,12 +23,12 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      locale: Locale('mn'),
+      locale: const Locale('mn'),
       supportedLocales: const [Locale('en'), Locale('mn')],
       debugShowCheckedModeBanner: false,
-      title: 'AutoZah',
+      title: 'Cardealer',
       theme: AppTheme.light,
-      home: const Footer(),
+      home: const Shell(),
     );
   }
 }

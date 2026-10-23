@@ -13,7 +13,7 @@ import { uploadUrl } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { Check, Eye, EyeOff } from "lucide-react";
+import { Check, Clock, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
@@ -26,6 +26,8 @@ import { Suspense, useState } from "react";
  */
 /** Admin's new-ad steps; the form adds the same list after "Дилер" (dealers start at Мэдээлэл). */
 const NEW_AD_STEPS = ["Дилер", "Мэдээлэл", "Зураг", "Нийтлэх"];
+/** Statuses a dealer's save turns back into "pending" (backend `resubmitStatuses`). */
+const RESUBMIT = ["active", "hidden", "rejected"];
 
 export default function CarEditPage() {
   return (
@@ -132,6 +134,12 @@ function CarEditInner() {
         <EmptyState title="Зар олдсонгүй эсвэл устгагдсан" />
       ) : (
         <div hidden={picking}>
+          {!isAdmin && (data.data.car?.status === "active" || data.data.car?.status === "hidden") && (
+            <div className="mb-4 flex items-center gap-3 rounded-2xl bg-amber-soft p-3.5 text-amber-ink">
+              <Clock className="size-5 shrink-0" />
+              <p className="min-w-0 flex-1 text-sm font-medium">Засварыг хадгалахад зар админ дахин батлах хүртэл вэб дээр харагдахгүй.</p>
+            </div>
+          )}
           {data.data.car?.status === "hidden" && (
             <div className="mb-4 flex items-center gap-3 rounded-2xl bg-amber-soft p-3.5 text-amber-ink">
               <EyeOff className="size-5 shrink-0" />
@@ -153,7 +161,8 @@ function CarEditInner() {
             onBackToLead={() => setRepicking(true)}
             onBusyChange={setSaving}
             onSaved={() => {
-              toast("Хадгаллаа");
+              // The backend sends a dealer's edit of a live / hidden / returned ad back for approval.
+              toast(!isNew && !isAdmin && RESUBMIT.includes(data.data?.car?.status ?? "") ? "Хадгаллаа. Админ батлах хүртэл хүлээгдэнэ" : "Хадгаллаа");
               router.push(back);
             }}
           />
