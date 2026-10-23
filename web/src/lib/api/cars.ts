@@ -10,6 +10,7 @@ export interface CarSearch {
   bodyTypeId?: number;
   bodyTypeIds?: number[];
   locationId?: number;
+  dealerId?: number;
   yearFrom?: number;
   yearTo?: number;
   importedFrom?: number;
@@ -33,6 +34,7 @@ export function searchConditions(s: CarSearch): (Condition | ConditionGroup)[] {
   if (s.bodyTypeId) c.push(["body_type_id", "=", s.bodyTypeId]);
   if (s.bodyTypeIds?.length) c.push(["body_type_id", "in", s.bodyTypeIds]);
   if (s.locationId) c.push(["location_id", "=", s.locationId]);
+  if (s.dealerId) c.push(["dealer_id", "=", s.dealerId]);
   if (s.yearFrom) c.push(["manufactured_year", ">=", s.yearFrom]);
   if (s.yearTo) c.push(["manufactured_year", "<=", s.yearTo]);
   if (s.importedFrom) c.push(["imported_year", ">=", s.importedFrom]);

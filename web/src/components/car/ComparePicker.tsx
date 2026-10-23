@@ -1,7 +1,9 @@
 "use client";
 
+import { Select } from "@/components/common/Field";
 import { Spinner } from "@/components/common/States";
-import { searchCars } from "@/lib/api/cars";
+import { getBrands, getModels, searchCars } from "@/lib/api/cars";
+import { dealerName, getDealers } from "@/lib/api/dealers";
 import { COMPARE_MAX, useCompare } from "@/lib/compare/CompareProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
@@ -12,6 +14,25 @@ import { carTitle } from "./CarCard";
 import CarImage from "./CarImage";
 
 const PAGE = 20;
+const MLN = 1_000_000;
+
+/** Price bands in million ₮; 0 = open end. */
+const PRICES = [
+  { min: 0, max: 30 },
+  { min: 30, max: 60 },
+  { min: 60, max: 100 },
+  { min: 100, max: 0 },
+];
+
+const num = (v: string) => (v ? Number(v) : undefined);
+
+interface Filters {
+  brand?: number;
+  model?: number;
+  dealer?: number;
+  /** Index into PRICES. */
+  price?: number;
+}
 
 /** Modal list of active ads to pick from on the compare page; stays open until the list is full. */
 export default function ComparePicker({ onClose }: { onClose: () => void }) {
@@ -20,6 +41,15 @@ export default function ComparePicker({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [text, setText] = useState("");
   const [take, setTake] = useState(PAGE);
+  const [f, setF] = useState<Filters>({});
+  const brands = useApi(getBrands);
+  const models = useApi(() => (f.brand ? getModels(f.brand) : Promise.resolve([])), String(f.brand ?? ""));
+  const dealers = useApi(getDealers);
+  const filter = (next: Filters) => {
+    setF((prev) => ({ ...prev, ...next }));
+    setTake(PAGE);
+  };
+  const filtered = !!(f.brand || f.model || f.dealer || f.price != null);
 
   // Debounce typing; a new search starts from the first page again.
   useEffect(() => {
@@ -45,7 +75,20 @@ export default function ComparePicker({ onClose }: { onClose: () => void }) {
     if (full) onClose();
   }, [full, onClose]);
 
-  const cars = useApi(() => searchCars({ text, pageSize: take }), `${text}|${take}`);
+  const band = f.price != null ? PRICES[f.price] : undefined;
+  const cars = useApi(
+    () =>
+      searchCars({
+        text,
+        brandIds: f.brand ? [f.brand] : undefined,
+        modelId: f.model,
+        dealerId: f.dealer,
+        priceMin: band?.min ? band.min * MLN : undefined,
+        priceMax: band?.max ? band.max * MLN : undefined,
+        pageSize: take,
+      }),
+    `${text}|${f.brand}|${f.model}|${f.dealer}|${f.price}|${take}`
+  );
   const list = cars.data?.rows ?? [];
   const more = (cars.data?.count ?? 0) > list.length;
 
@@ -86,6 +129,51 @@ export default function ComparePicker({ onClose }: { onClose: () => void }) {
               className="h-full w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/80"
             />
           </label>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <Select value={f.brand ?? ""} onChange={(e) => filter({ brand: num(e.target.value), model: undefined })} aria-label={t("Үйлдвэр")} className="h-10 px-3 text-sm">
+              <option value="">{t("Бүх үйлдвэр")}</option>
+              {brands.data?.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </Select>
+            <Select
+              value={f.model ?? ""}
+              onChange={(e) => filter({ model: num(e.target.value) })}
+              disabled={!f.brand}
+              aria-label={t("Загвар")}
+              className="h-10 px-3 text-sm disabled:opacity-60"
+            >
+              <option value="">{t("Бүх загвар")}</option>
+              {models.data?.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </Select>
+            <Select value={f.dealer ?? ""} onChange={(e) => filter({ dealer: num(e.target.value) })} aria-label={t("Дилер")} className="h-10 px-3 text-sm">
+              <option value="">{t("Бүх дилер")}</option>
+              {dealers.data?.rows.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {dealerName(d)}
+                </option>
+              ))}
+            </Select>
+            <Select value={f.price ?? ""} onChange={(e) => filter({ price: num(e.target.value) })} aria-label={t("Үнэ")} className="h-10 px-3 text-sm">
+              <option value="">{t("Бүх үнэ")}</option>
+              {PRICES.map((p, i) => (
+                <option key={i} value={i}>
+                  {!p.min ? t("{n} сая хүртэл", { n: p.max }) : !p.max ? t("{n} сая +", { n: p.min }) : t("{a} – {b} сая", { a: p.min, b: p.max })}
+                </option>
+              ))}
+            </Select>
+          </div>
+          {filtered && (
+            <button type="button" onClick={() => filter({ brand: undefined, model: undefined, dealer: undefined, price: undefined })} className="mt-2 text-xs font-semibold text-muted-foreground hover:text-destructive">
+              {t("Цэвэрлэх")}
+            </button>
+          )}
         </div>
 
         <div className="min-h-40 flex-1 overflow-y-auto px-2 pb-3">

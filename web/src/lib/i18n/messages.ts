@@ -415,6 +415,7 @@ export const MESSAGES = {
   "Ялгаатай үзүүлэлт алга": { ru: "Различий нет", en: "No differences" },
   "Үйлдвэр, загвараар хайх": { ru: "Поиск по марке, модели", en: "Search by make or model" },
   "Цааш үзэх": { ru: "Показать ещё", en: "Show more" },
+  "Бүх үнэ": { ru: "Любая цена", en: "Any price" },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;
