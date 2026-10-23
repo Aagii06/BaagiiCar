@@ -69,3 +69,10 @@ const TINTS = ["bg-tint-blue", "bg-tint-peach", "bg-tint-mint", "bg-tint-lavende
 export function tintFor(id: number) {
   return TINTS[Math.abs(id) % TINTS.length];
 }
+
+/** "Toyota Aqua 2016/2018": brand, model, then manufactured / imported year (either year alone when the other is missing). */
+export function carTitle(car: { name?: string | null; brand_name?: string | null; model_name?: string | null; manufactured_year?: number | null; imported_year?: number | null }) {
+  const years = [car.manufactured_year, car.imported_year].filter(Boolean).join("/");
+  const title = [car.brand_name, car.model_name, years].filter(Boolean).join(" ");
+  return title || car.name || "";
+}

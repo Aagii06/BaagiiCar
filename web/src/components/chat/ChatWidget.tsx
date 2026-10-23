@@ -2,49 +2,22 @@
 
 import { PhoneInput } from "@/components/common/Field";
 import { LogoMark } from "@/components/layout/Logo";
+import { loginWithCode, sendLoginCode } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 import { CONTACT } from "@/lib/api/config";
 import { sendMessage } from "@/lib/api/messages";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { OPEN_CHAT_EVENT, type ChatTopic } from "@/lib/chat";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import type { T } from "@/lib/i18n/translate";
 import { cn } from "@/lib/utils";
 import { Headset, Phone, SendHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const CONTACT_KEY = "baagii_car_chat_contact";
-
-interface Contact {
-  name: string;
-  phone: string;
-}
+const CODE_LENGTH = 4;
 
 interface ChatLine {
   from: "me" | "team";
   text: string;
-}
-
-function readContact(): Contact {
-  try {
-    const saved = JSON.parse(localStorage.getItem(CONTACT_KEY) ?? "{}");
-    return { name: String(saved.name ?? ""), phone: String(saved.phone ?? "") };
-  } catch {
-    return { name: "", phone: "" };
-  }
-}
-
-/**
- * Where a visitor's message goes and what answers it. Today it is stored for
- * the admin, who calls back; an AI assistant can later answer here instead.
- */
-async function deliver(text: string, contact: Contact, topic: ChatTopic | null, firstMessage: boolean, t: T): Promise<string | null> {
-  await sendMessage({
-    name: contact.name || undefined,
-    phonenumber: contact.phone,
-    message: text,
-    car_id: topic?.carId,
-    page_url: window.location.href,
-  });
-  return firstMessage ? t("Баярлалаа! Мессежийг хүлээн авлаа. Манай ажилтан ажлын цагаар {phone} дугаарт холбогдоно.", { phone: contact.phone }) : null;
 }
 
 const fieldClass =
@@ -55,8 +28,12 @@ export default function ChatWidget() {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [topic, setTopic] = useState<ChatTopic | null>(null);
-  const [contact, setContact] = useState<Contact>({ name: "", phone: "" });
-  const [question, setQuestion] = useState("");
+  const { user, token, ready, signIn, signOut } = useAuth();
+  // Not signed in: phone → code, then the thread.
+  const [step, setStep] = useState<"phone" | "code">("phone");
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [cooldown, setCooldown] = useState(0);
   const [lines, setLines] = useState<ChatLine[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -74,52 +51,72 @@ export default function ChatWidget() {
     return () => window.removeEventListener(OPEN_CHAT_EVENT, onOpen);
   }, []);
 
-  // Fill in the contact used last time.
   useEffect(() => {
-    if (!open) return;
-    Promise.resolve().then(() => {
-      const saved = readContact();
-      setContact((c) => ({ name: c.name || saved.name, phone: c.phone || saved.phone }));
-    });
-  }, [open]);
+    if (cooldown <= 0) return;
+    const timer = window.setTimeout(() => setCooldown((n) => n - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [cooldown]);
 
-  useEffect(() => threadEnd.current?.scrollIntoView({ block: "end" }), [lines, open]);
+  // Braces: newer browsers return a Promise from scrollIntoView, which must not become the effect's cleanup.
+  useEffect(() => {
+    threadEnd.current?.scrollIntoView({ block: "end" });
+  }, [lines, open]);
 
-  const post = async (text: string) => {
+  const run = async (action: () => Promise<void>) => {
     setBusy(true);
     setError(null);
-    const first = !started;
-    setLines((l) => [...l, { from: "me", text }]);
     try {
-      const reply = await deliver(text, contact, topic, first, t);
-      if (reply) setLines((l) => [...l, { from: "team", text: reply }]);
-      try {
-        localStorage.setItem(CONTACT_KEY, JSON.stringify(contact));
-      } catch {
-        // storage blocked — nothing to remember
-      }
-      return true;
+      await action();
     } catch (err) {
-      setLines((l) => l.slice(0, -1));
       setError(err instanceof Error ? err.message : t("Алдаа гарлаа"));
-      return false;
     } finally {
       setBusy(false);
     }
   };
 
-  const start = async (e: React.FormEvent) => {
+  const requestCode = () =>
+    run(async () => {
+      if (!/^\d{8}$/.test(phone)) throw new Error(t("8 оронтой утасны дугаар оруулна уу"));
+      const res = await sendLoginCode(phone);
+      setCode("");
+      setCooldown(res.resend_in ?? 60);
+      setStep("code");
+    });
+
+  const verify = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!contact.name.trim()) return setError(t("Нэрээ оруулна уу"));
-    if (contact.phone.length !== 8) return setError(t("8 оронтой утасны дугаар оруулна уу"));
-    if (!question.trim()) return setError(t("Асуултаа бичнэ үү"));
-    if (await post(question.trim())) setQuestion("");
+    run(async () => {
+      signIn(await loginWithCode(phone, code));
+      setStep("phone");
+      setCode("");
+    });
   };
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!draft.trim() || busy) return;
-    if (await post(draft.trim())) setDraft("");
+    const text = draft.trim();
+    if (!text || busy || !token || !user) return;
+    const first = !started;
+    setDraft("");
+    setLines((l) => [...l, { from: "me", text }]);
+    setBusy(true);
+    setError(null);
+    try {
+      await sendMessage({ message: text, car_id: topic?.carId, page_url: window.location.href }, token);
+      if (first)
+        setLines((l) => [
+          ...l,
+          { from: "team", text: t("Баярлалаа! Мессежийг хүлээн авлаа. Манай ажилтан ажлын цагаар {phone} дугаарт холбогдоно.", { phone: user.phonenumber ?? "" }) },
+        ]);
+    } catch (err) {
+      setLines((l) => l.slice(0, -1));
+      setDraft(text);
+      // Expired session: sign in again with the phone code.
+      if (err instanceof ApiError && err.status === 401) signOut();
+      else setError(err instanceof Error ? err.message : t("Алдаа гарлаа"));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -162,48 +159,75 @@ export default function ChatWidget() {
             </div>
           )}
 
-          {!started ? (
-            <form onSubmit={start} className="flex-1 space-y-2.5 overflow-y-auto p-4">
-              <input
-                className={fieldClass}
-                value={contact.name}
-                onChange={(e) => setContact({ ...contact, name: e.target.value })}
-                maxLength={100}
-                placeholder={`${t("Таны нэр")} *`}
-                aria-label={t("Таны нэр")}
-                autoComplete="name"
-              />
-              <PhoneInput
-                className={fieldClass}
-                maskClassName="left-[15px] text-sm text-muted-foreground/80"
-                value={contact.phone}
-                onChange={(phone) => setContact({ ...contact, phone })}
-                placeholder={`${t("Утасны дугаар")} *`}
-                aria-label={t("Утасны дугаар")}
-                autoComplete="tel"
-              />
-              <textarea
-                className={cn(fieldClass, "h-auto min-h-24 resize-none py-2.5")}
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                maxLength={2000}
-                placeholder={t("Таны асуулт")}
-                aria-label={t("Таны асуулт")}
-              />
-              {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-              <button disabled={busy} className="h-11 w-full rounded-lg bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
-                {busy ? t("Илгээж байна…") : t("Чат эхлүүлэх")}
-              </button>
-              {CONTACT.phone && (
-                <a href={`tel:${CONTACT.phone}`} className="flex items-center justify-center gap-1.5 pt-1 text-sm font-semibold text-muted-foreground hover:text-foreground">
-                  <Phone className="size-3.5" />
-                  {CONTACT.phone}
-                </a>
-              )}
-            </form>
+          {!ready ? null : !user ? (
+            step === "phone" ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  requestCode();
+                }}
+                className="flex-1 space-y-2.5 overflow-y-auto p-4"
+              >
+                <p className="text-sm text-muted-foreground">{t("Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.")}</p>
+                <PhoneInput
+                  className={fieldClass}
+                  maskClassName="left-[15px] text-sm text-muted-foreground/80"
+                  value={phone}
+                  onChange={setPhone}
+                  placeholder={t("Утасны дугаар")}
+                  aria-label={t("Утасны дугаар")}
+                  autoComplete="tel"
+                  autoFocus
+                />
+                {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+                <button disabled={busy || phone.length !== 8} className="h-11 w-full rounded-lg bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+                  {t("Код авах")}
+                </button>
+                {CONTACT.phone && (
+                  <a href={`tel:${CONTACT.phone}`} className="flex items-center justify-center gap-1.5 pt-1 text-sm font-semibold text-muted-foreground hover:text-foreground">
+                    <Phone className="size-3.5" />
+                    {CONTACT.phone}
+                  </a>
+                )}
+              </form>
+            ) : (
+              <form onSubmit={verify} className="flex-1 space-y-2.5 overflow-y-auto p-4">
+                <p className="text-sm text-muted-foreground">{t("{phone} дугаар руу илгээсэн 4 оронтой кодыг оруулна уу.", { phone })}</p>
+                <input
+                  className={cn(fieldClass, "text-center text-xl font-bold tracking-[0.5em]")}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, CODE_LENGTH))}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="0000"
+                  aria-label={t("Баталгаажуулах код")}
+                  autoFocus
+                />
+                {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+                <button disabled={busy || code.length !== CODE_LENGTH} className="h-11 w-full rounded-lg bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+                  {t("Баталгаажуулах")}
+                </button>
+                <div className="flex justify-between gap-4 pt-1 text-sm font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep("phone");
+                      setError(null);
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    {t("← Дугаар солих")}
+                  </button>
+                  <button type="button" onClick={requestCode} disabled={busy || cooldown > 0} className="text-primary disabled:opacity-60">
+                    {cooldown > 0 ? t("Код дахин авах ({n})", { n: cooldown }) : t("Код дахин авах")}
+                  </button>
+                </div>
+              </form>
+            )
           ) : (
             <>
               <div className="flex-1 space-y-2.5 overflow-y-auto p-4" aria-live="polite">
+                {!started && <p className="py-6 text-center text-sm text-muted-foreground">{t("Асуултаа бичээд илгээнэ үү.")}</p>}
                 {lines.map((line, i) => (
                   <div key={i} className={cn("flex", line.from === "me" ? "justify-end" : "justify-start")}>
                     <p
@@ -226,6 +250,7 @@ export default function ChatWidget() {
                   onChange={(e) => setDraft(e.target.value)}
                   maxLength={2000}
                   placeholder={t("Мессеж бичих…")}
+                  autoFocus
                   aria-label={t("Мессеж")}
                 />
                 <button disabled={busy || !draft.trim()} aria-label={t("Илгээх")} className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-white disabled:opacity-50">

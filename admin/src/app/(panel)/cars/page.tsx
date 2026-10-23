@@ -15,7 +15,7 @@ import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { cn, formatPrice } from "@/lib/utils";
+import { carTitle, cn, formatPrice } from "@/lib/utils";
 import { BadgeCheck, Check, Eye, EyeOff, Search, Star, Store, Trash2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -49,7 +49,7 @@ function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => voi
     <div className="flex items-center gap-3 rounded-2xl bg-muted p-2.5 text-left">
       <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} size="thumb" className="h-12 w-16 shrink-0 rounded-lg" artClassName="w-[80%]" />
       <div className="min-w-0">
-        <p className="truncate text-sm font-bold">{car.name}</p>
+        <p className="truncate text-sm font-bold">{carTitle(car)}</p>
         <p className="text-xs font-semibold text-primary">
           {formatPrice(car.price)} <span className="font-medium text-muted-foreground">· #{car.code ?? car.id}</span>
         </p>
@@ -93,7 +93,7 @@ function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => voi
           <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} size="thumb" className="h-16 w-20 shrink-0" artClassName="w-[80%]" />
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
-              <p className="truncate font-bold">{car.name}</p>
+              <p className="truncate font-bold">{carTitle(car)}</p>
               <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold", st.className)}>{st.label}</span>
             </div>
             <p className="text-sm font-semibold text-primary">{formatPrice(car.price)}</p>
