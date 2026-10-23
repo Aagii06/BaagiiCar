@@ -17,7 +17,8 @@ class AppConstants {
           ? api
           : Platform.isAndroid
               ? 'http://10.0.2.2:5011'
-              : 'http://localhost:5011')
+              : 'https://cardealer.mn:8898/')
+              // : 'http://localhost:5011')
       .replaceAll(RegExp(r'/$'), '');
 
   static const int pageSize = 12;
