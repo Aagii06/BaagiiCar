@@ -3,7 +3,7 @@
 import { carTitle } from "@/components/car/CarCard";
 import CarImage from "@/components/car/CarImage";
 import Container, { PageTitle } from "@/components/common/Container";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { ErrorState, LoadingState } from "@/components/common/States";
 import { getCarsByIds } from "@/lib/api/cars";
 import type { Car } from "@/lib/api/types";
 import { COMPARE_MAX, useCompare } from "@/lib/compare/CompareProvider";
@@ -65,10 +65,12 @@ export default function ComparePage() {
     { label: t("Байршил"), value: (c) => c.location_name },
   ];
   const visible = diffOnly ? specs.filter((r) => new Set(rows.map((c) => String(r.value(c) ?? ""))).size > 1) : specs;
+  // One "add" slot while there is room — also shown on an empty page.
   const slots = rows.length < COMPARE_MAX ? 1 : 0;
-  // Label column + one per car (+ the "add" slot); min width keeps phones scrolling sideways instead of squashing.
+  // Label column + one per car and slot. Capped widths so a lone car or "add" slot doesn't stretch
+  // across the page; the min width keeps phones scrolling sideways instead of squashing.
   const cols = rows.length + slots;
-  const grid = { gridTemplateColumns: `minmax(110px,180px) repeat(${cols}, minmax(170px, 1fr))` };
+  const grid = { gridTemplateColumns: `minmax(110px,180px) repeat(${cols}, minmax(170px, 240px))` };
 
   return (
     <Container className="pt-8 md:pt-12">
@@ -92,72 +94,72 @@ export default function ComparePage() {
           <LoadingState />
         ) : cars.error ? (
           <ErrorState message={cars.error.message} onRetry={cars.reload} />
-        ) : !rows.length ? (
-          <EmptyState
-            title={t("Харьцуулах машин алга")}
-            description={t("Машины карт дээрх харьцуулах товчийг дарж {n} хүртэл машин нэмнэ үү.", { n: COMPARE_MAX })}
-            action={<Link href="/cars" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">{t("Машин хайх")}</Link>}
-          />
         ) : (
-          <div className="no-scrollbar -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-            <div className="min-w-max overflow-hidden rounded-2xl bg-card md:min-w-0">
-              {/* Car headers */}
-              <div className="grid gap-3 p-3" style={grid}>
-                <div />
-                {rows.map((c) => (
-                  <div key={c.id} className="relative flex flex-col">
-                    <Link href={`/cars/${c.id}`} className="block">
-                      <CarImage id={c.id} image={c.image} bodyType={c.body_type_name} className="aspect-[4/3]" alt={carTitle(c, t)} />
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => remove(c.id)}
-                      title={t("Харьцуулалтаас хасах")}
-                      aria-label={t("Харьцуулалтаас хасах")}
-                      className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white shadow-sm hover:text-destructive"
+          <>
+            {!rows.length && (
+              <p className="mb-4 text-sm text-muted-foreground">{t("Машины карт дээрх харьцуулах товчийг дарж {n} хүртэл машин нэмнэ үү.", { n: COMPARE_MAX })}</p>
+            )}
+            <div className="no-scrollbar -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+              <div className="min-w-max overflow-hidden rounded-2xl bg-card">
+                {/* Car headers */}
+                <div className="grid gap-3 p-3" style={grid}>
+                  <div />
+                  {rows.map((c) => (
+                    <div key={c.id} className="relative flex flex-col">
+                      <Link href={`/cars/${c.id}`} className="block">
+                        <CarImage id={c.id} image={c.image} bodyType={c.body_type_name} className="aspect-[4/3]" alt={carTitle(c, t)} />
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => remove(c.id)}
+                        title={t("Харьцуулалтаас хасах")}
+                        aria-label={t("Харьцуулалтаас хасах")}
+                        className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white shadow-sm hover:text-destructive"
+                      >
+                        <X className="size-4" />
+                      </button>
+                      <Link href={`/cars/${c.id}`} className="mt-3 px-1 font-bold leading-snug hover:text-primary">
+                        {carTitle(c, t)}
+                        {c.manufactured_year ? <span className="font-medium text-muted-foreground"> · {c.manufactured_year}</span> : null}
+                      </Link>
+                      <p className="mt-1 px-1 font-display text-lg font-bold text-primary">{formatPrice(c.price, t)}</p>
+                    </div>
+                  ))}
+                  {Array.from({ length: slots }, (_, i) => (
+                    <Link
+                      key={i}
+                      href="/cars"
+                      className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
                     >
-                      <X className="size-4" />
-                    </button>
-                    <Link href={`/cars/${c.id}`} className="mt-3 px-1 font-bold leading-snug hover:text-primary">
-                      {carTitle(c, t)}
-                      {c.manufactured_year ? <span className="font-medium text-muted-foreground"> · {c.manufactured_year}</span> : null}
+                      <Plus className="size-6" />
+                      {t("Машин нэмэх")}
                     </Link>
-                    <p className="mt-1 px-1 font-display text-lg font-bold text-primary">{formatPrice(c.price, t)}</p>
-                  </div>
-                ))}
-                {slots > 0 && (
-                  <Link
-                    href="/cars"
-                    className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
-                  >
-                    <Plus className="size-6" />
-                    {t("Машин нэмэх")}
-                  </Link>
-                )}
-              </div>
+                  ))}
+                </div>
 
-              {/* Spec rows */}
-              {visible.map((r, ri) => {
-                const best = bestIndexes(rows, r);
-                return (
-                  <div key={r.label} className={cn("grid items-center gap-3 px-3 py-3", ri % 2 === 0 && "bg-muted/60")} style={grid}>
-                    <div className="px-1 text-xs font-medium text-muted-foreground md:text-sm">{r.label}</div>
-                    {rows.map((c, i) => {
-                      const v = r.value(c);
-                      return (
-                        <div key={c.id} className={cn("flex items-center gap-1.5 px-1 text-sm font-semibold", best.has(i) && "text-success")}>
-                          {v || <span className="font-normal text-muted-foreground">—</span>}
-                          {best.has(i) && <Trophy className="size-3.5 shrink-0" />}
-                        </div>
-                      );
-                    })}
-                    {slots > 0 && <div />}
-                  </div>
-                );
-              })}
-              {diffOnly && !visible.length && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("Ялгаатай үзүүлэлт алга")}</p>}
+                {/* Spec rows */}
+                {visible.map((r, ri) => {
+                  const best = bestIndexes(rows, r);
+                  return (
+                    <div key={r.label} className={cn("grid items-center gap-3 px-3 py-3", ri % 2 === 0 && "bg-muted/60")} style={grid}>
+                      <div className="px-1 text-xs font-medium text-muted-foreground md:text-sm">{r.label}</div>
+                      {rows.map((c, i) => {
+                        const v = r.value(c);
+                        return (
+                          <div key={c.id} className={cn("flex items-center gap-1.5 px-1 text-sm font-semibold", best.has(i) && "text-success")}>
+                            {v || <span className="font-normal text-muted-foreground">—</span>}
+                            {best.has(i) && <Trophy className="size-3.5 shrink-0" />}
+                          </div>
+                        );
+                      })}
+                      {Array.from({ length: slots }, (_, i) => <div key={i} />)}
+                    </div>
+                  );
+                })}
+                {diffOnly && !visible.length && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("Ялгаатай үзүүлэлт алга")}</p>}
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </Container>

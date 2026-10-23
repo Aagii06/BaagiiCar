@@ -44,7 +44,7 @@ const FIELDS: Record<Tab, FieldDef[]> = {
   brands: [
     { key: "name", label: "Нэр", required: true, placeholder: "Toyota" },
     { key: "country", label: "Улс", placeholder: "Japan" },
-    { key: "logo", label: "Лого", type: "image", folder: "brands", placeholder: "Файлын нэр эсвэл https://…" },
+    { key: "logo", label: "Лого", type: "image", folder: "brands" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
   models: [
@@ -53,7 +53,7 @@ const FIELDS: Record<Tab, FieldDef[]> = {
   ],
   bodyTypes: [
     { key: "name", label: "Нэр", required: true, placeholder: "Жийп" },
-    { key: "image", label: "Дүрс", type: "image", folder: "bodyTypes", placeholder: "Файлын нэр эсвэл https://…" },
+    { key: "image", label: "Дүрс", type: "image", folder: "bodyTypes" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
   locations: [
@@ -85,8 +85,8 @@ async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
   return { brands: [], rows: rows.map((l) => ({ id: l.id, name: l.name, values: { ...l } })) };
 }
 
-/** Preview + file upload (stores the returned file name); an https URL can still be typed by hand. */
-function ImageInput({ value, folder, placeholder, onChange }: { value: string; folder: NonNullable<FieldDef["folder"]>; placeholder?: string; onChange: (v: string) => void }) {
+/** Preview + file upload (stores the returned file name); the stored name / URL itself isn't shown. */
+function ImageInput({ value, folder, onChange }: { value: string; folder: NonNullable<FieldDef["folder"]>; onChange: (v: string) => void }) {
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
   const preview = catalogImage(value, folder);
@@ -113,10 +113,10 @@ function ImageInput({ value, folder, placeholder, onChange }: { value: string; f
           <img src={preview} alt="" className="size-9 object-contain" />
         )}
       </span>
-      <input className={cn(inputClass, "min-w-0 flex-1")} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+      <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{uploading ? "Оруулж байна…" : value ? "Зураг оруулсан" : "Зураг оруулаагүй"}</p>
       <label className={cn("flex h-12 shrink-0 cursor-pointer items-center gap-1 rounded-xl bg-primary-soft px-3 text-sm font-bold text-primary", uploading && "pointer-events-none opacity-60")}>
         <ImageUp className="size-4" />
-        {uploading ? "…" : "Оруулах"}
+        {uploading ? "…" : value ? "Солих" : "Оруулах"}
         <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={pick} disabled={uploading} />
       </label>
     </div>
@@ -174,7 +174,7 @@ function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | n
                 ))}
               </Select>
             ) : f.type === "image" && f.folder ? (
-              <ImageInput value={values[f.key]} folder={f.folder} placeholder={f.placeholder} onChange={(v) => setValues({ ...values, [f.key]: v })} />
+              <ImageInput value={values[f.key]} folder={f.folder} onChange={(v) => setValues({ ...values, [f.key]: v })} />
             ) : (
               <input
                 className={inputClass}
