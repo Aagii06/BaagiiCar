@@ -2,26 +2,22 @@
 
 import type { Car } from "@/lib/api/types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { cn, formatEngine, formatNumber } from "@/lib/utils";
-import { Fuel, Gauge, Milestone, Zap } from "lucide-react";
+import { cn, formatNumber } from "@/lib/utils";
 
-/** The four little spec tiles on every card: mileage, fuel, engine, drive. */
+/** Mileage strip on every card: label on the left, the km figure on the right. */
 export default function SpecChips({ car, className }: { car: Car; className?: string }) {
-  const { t, tv } = useI18n();
-  const items = [
-    { icon: Milestone, label: car.mileage != null ? formatNumber(car.mileage) : "—", title: t("Гүйлт (км)") },
-    { icon: Fuel, label: tv(car.fuel_type) || "—", title: t("Түлш") },
-    { icon: Zap, label: formatEngine(car.engine_capacity, t), title: t("Хөдөлгүүр") },
-    { icon: Gauge, label: car.drive_type || "—", title: t("Хөтлөгч") },
-  ];
+  const { t } = useI18n();
   return (
-    <div className={cn("grid grid-cols-4 gap-1.5", className)}>
-      {items.map(({ icon: Icon, label, title }) => (
-        <div key={title} title={title} className="min-w-0 rounded-lg bg-muted px-2 py-2">
-          <Icon className="size-3.5 text-foreground/70" />
-          <p className="mt-1.5 truncate text-[11px] font-semibold">{label}</p>
-        </div>
-      ))}
+    <div className={cn("flex items-baseline justify-between gap-3 rounded-xl bg-muted px-3.5 py-2.5", className)}>
+      <span className="text-xs font-medium text-muted-foreground">{t("Гүйлт")}</span>
+      {car.mileage != null ? (
+        <span className="font-display text-[15px] font-semibold tabular-nums">
+          {formatNumber(car.mileage)}
+          <span className="ml-1 text-xs font-medium text-muted-foreground">{t("км")}</span>
+        </span>
+      ) : (
+        <span className="text-sm text-muted-foreground">—</span>
+      )}
     </div>
   );
 }

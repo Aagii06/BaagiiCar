@@ -104,6 +104,7 @@ export const MESSAGES = {
   "Үйлдвэрлэсэн он": { ru: "Год выпуска", en: "Year made" },
   "Орж ирсэн он": { ru: "Год ввоза", en: "Year imported" },
   "Гүйлт": { ru: "Пробег", en: "Mileage" },
+  "км": { ru: "км", en: "km" },
   "Гүйлт (км)": { ru: "Пробег (км)", en: "Mileage (km)" },
   "Хөдөлгүүр": { ru: "Двигатель", en: "Engine" },
   "Түлш": { ru: "Топливо", en: "Fuel" },

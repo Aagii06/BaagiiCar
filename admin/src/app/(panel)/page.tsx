@@ -2,13 +2,12 @@
 
 import CarImage from "@/components/car/CarImage";
 import { ErrorState, LoadingState } from "@/components/common/States";
-import PageHeader from "@/components/layout/PageHeader";
 import { countOf, recentCars } from "@/lib/api/admin";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPriceShort } from "@/lib/utils";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 async function loadStats(isAdmin: boolean) {
@@ -54,16 +53,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <>
-      <PageHeader
-        title="Самбар"
-        aside={
-          <Link href="/cars/new" className="flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white">
-            <Plus className="size-4" strokeWidth={2.6} />
-            Зар
-          </Link>
-        }
-      />
+    <div className="pt-4">
       {stats.loading && !s ? (
         <LoadingState />
       ) : stats.error ? (
@@ -119,6 +109,6 @@ export default function DashboardPage() {
           })
         )}
       </div>
-    </>
+    </div>
   );
 }
