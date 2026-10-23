@@ -111,6 +111,15 @@ module.exports.save = async (req, res) => {
   applyAutobox(body, prevCar, at);
 
   delete body.user_id;
+  // Дилер өөрөө оруулсан зарын дилерийг админ солихгүй
+  if (isAdmin && prevCar && body.dealer_id !== undefined && body.dealer_id !== null) {
+    const seller = await users.findByPk(prevCar.user_id, { attributes: ["role"], raw: true });
+    if (seller?.role === roles.dealer) {
+      if (Number(body.dealer_id) !== prevCar.dealer_id)
+        return res.status(200).json({ ...result, message: "Дилер өөрөө оруулсан зарын дилерийг солих боломжгүй" });
+      delete body.dealer_id;
+    }
+  }
   // Дилер. Засахдаа dealer_id ирээгүй бол өөрчлөгдөхгүй.
   let dealer = null;
   if (isAdmin && (!id || body.dealer_id !== undefined)) {

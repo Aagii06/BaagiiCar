@@ -47,6 +47,8 @@ export interface Car {
   location_name: string | null;
   seller_name: string | null;
   seller_phone: string | null;
+  /** Зар оруулсан хэрэглэгчийн эрх; DEALER бол админ дилерийг нь солихгүй. */
+  seller_role?: string | null;
   dealer_name: string | null;
   dealer_logo: string | null;
   image: string | null;

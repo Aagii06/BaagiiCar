@@ -208,7 +208,11 @@ function DealerSection({
             <p className="truncate font-bold">{name || "—"}</p>
           )}
           <p className="mt-1 text-xs text-muted-foreground">
-            {editable ? "Зар энэ дилерийн хуудсанд харагдана" : "Таны дилерийн нэр дээр нийтлэгдэнэ"}
+            {editable
+              ? "Зар энэ дилерийн хуудсанд харагдана"
+              : car?.seller_role === ROLES.dealer
+                ? "Дилер өөрөө оруулсан тул солих боломжгүй"
+                : "Таны дилерийн нэр дээр нийтлэгдэнэ"}
             {car && ` · Оруулсан: ${car.seller_name || car.seller_phone || "—"}`}
           </p>
         </div>
@@ -459,7 +463,8 @@ export default function CarForm({
           car={car}
           value={f.dealer_id}
           dealers={dealers.data ?? (dealer ? [dealer] : [])}
-          editable={isAdmin}
+          // Дилер өөрөө оруулсан зарын дилерийг солихгүй (сервер ч зөвшөөрөхгүй)
+          editable={isAdmin && car?.seller_role !== ROLES.dealer}
           onChange={(id, phone) =>
             // Утас хоосон эсвэл өмнөх дилерийн / өөрийн дугаар байвал шинэ дилерийн дугаараар солино
             setF((p) => {

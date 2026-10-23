@@ -60,6 +60,8 @@ module.exports = (sequelize, DataTypes) => {
       location_name: { type: DataTypes.STRING },
       seller_name: { type: DataTypes.STRING },
       seller_phone: { type: DataTypes.STRING },
+      // Зар оруулсан хэрэглэгчийн эрх (DEALER бол дилерийг нь админ солихгүй)
+      seller_role: { type: DataTypes.STRING },
       dealer_name: { type: DataTypes.STRING },
       dealer_logo: { type: DataTypes.STRING },
       image: { type: DataTypes.STRING },
