@@ -13,7 +13,7 @@ void openCar(BuildContext context, Car car) =>
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => CarDetailScreen(carId: car.id, preview: car)));
 
 /// Shown when an ad has no photo, while it loads (however slowly), and if it fails — same as the website.
-const defaultCarImage = 'assets/no-car.jpg';
+const defaultCarImage = 'assets/no-car.png';
 
 /// A car's photo over the default "image coming soon" picture; the photo fades in once loaded.
 class CarImage extends StatelessWidget {
