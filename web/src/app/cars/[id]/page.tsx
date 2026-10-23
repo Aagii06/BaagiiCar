@@ -34,7 +34,7 @@ function Gallery({ car }: { car: Car }) {
 
   if (!total)
     return (
-      <div className={cn("grid aspect-[4/3] place-items-center rounded-2xl md:aspect-auto md:h-[420px]", tintFor(car.id))}>
+      <div className={cn("grid aspect-[4/3] place-items-center rounded-2xl md:aspect-auto md:h-[520px]", tintFor(car.id))}>
         <CarArt shape={shapeFor(car.body_type_name)} className="w-[58%] md:w-[48%]" strokeWidth={1.6} />
       </div>
     );
@@ -56,7 +56,7 @@ function Gallery({ car }: { car: Car }) {
           >
             {photos.map((name, i) => (
               <button key={name} type="button" onClick={() => setViewing(i)} aria-label={t("Зураг томоор харах")} className="aspect-[4/3] w-full shrink-0 snap-center">
-                <Img src={uploadUrl(name, "grid")!} alt={i ? "" : alt} loading={i ? "lazy" : undefined} className="size-full object-cover" />
+                <Img src={uploadUrl(name, "grid")!} alt={i ? "" : alt} loading={i ? "lazy" : undefined} className="size-full object-contain" />
               </button>
             ))}
           </div>
@@ -72,9 +72,9 @@ function Gallery({ car }: { car: Car }) {
       </div>
 
       {/* Desktop: smaller main photo with a thumbnail column beside it. */}
-      <div className="hidden h-[420px] gap-2 md:flex">
+      <div className="hidden h-[520px] gap-2 md:flex">
         <button type="button" onClick={() => setViewing(index)} aria-label={t("Зураг томоор харах")} className="relative min-w-0 flex-1 overflow-hidden rounded-2xl bg-card">
-          <Img src={uploadUrl(photos[index], "full")!} alt={alt} className="size-full object-cover" />
+          <Img src={uploadUrl(photos[index], "full")!} alt={alt} className="size-full object-contain" />
           {counter}
         </button>
         {total > 1 && (

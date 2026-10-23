@@ -194,7 +194,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
   const [index, setIndex] = useState(0);
   const [viewing, setViewing] = useState<number | null>(null);
 
-  if (!photos.length) return <CarImage id={car.id} image={null} bodyType={car.body_type_name} className="aspect-[4/3] rounded-2xl md:aspect-auto md:h-[360px]" />;
+  if (!photos.length) return <CarImage id={car.id} image={null} bodyType={car.body_type_name} className="aspect-[4/3] rounded-2xl md:aspect-auto md:h-[460px]" />;
 
   const counter = (
     <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-dark/80 px-2.5 py-1 text-xs font-bold text-white">
@@ -214,7 +214,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
             {photos.map((name, i) => (
               <button key={name} type="button" onClick={() => setViewing(i)} aria-label="Зураг томоор харах" className="aspect-[4/3] w-full shrink-0 snap-center">
                 {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-                <img src={uploadUrl(name, "grid")!} alt="" loading={i ? "lazy" : undefined} className="size-full object-cover" />
+                <img src={uploadUrl(name, "grid")!} alt="" loading={i ? "lazy" : undefined} className="size-full object-contain" />
               </button>
             ))}
           </div>
@@ -230,10 +230,10 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
       </div>
 
       {/* Desktop: smaller main photo with a thumbnail column beside it. */}
-      <div className="hidden h-[360px] gap-2 md:flex">
+      <div className="hidden h-[460px] gap-2 md:flex">
         <button type="button" onClick={() => setViewing(index)} aria-label="Зураг томоор харах" className="relative min-w-0 flex-1 overflow-hidden rounded-2xl bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-          <img src={uploadUrl(photos[index], "grid")!} alt="" className="size-full object-cover" />
+          <img src={uploadUrl(photos[index], "full")!} alt="" className="size-full object-contain" />
           {counter}
         </button>
         {photos.length > 1 && (

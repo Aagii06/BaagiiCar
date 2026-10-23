@@ -610,7 +610,7 @@ export default function CarForm({
               </Select>
             </Field>
             <Field className="col-span-2" label="Ангилал" hint="Бүртгэлээс бөглөгдөнө">
-              <input className={inputClass} {...bind("vehicle_type")} maxLength={100} placeholder="Туулах чадвар сайтай" />
+              <input className={inputClass} {...bind("vehicle_type")} maxLength={100} placeholder="Ангилал" />
             </Field>
             <Field label="Гадна өнгө">
               <Select {...bind("color")}>
