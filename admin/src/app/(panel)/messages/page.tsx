@@ -12,8 +12,8 @@ import { useApi } from "@/lib/useApi";
 import CarImage from "@/components/car/CarImage";
 import CarPreviewSheet from "@/components/car/CarPreviewSheet";
 import { carTitle, cn, timeAgo } from "@/lib/utils";
-import { Check, ChevronRight, Pencil, Phone, Reply, RotateCcw, SendHorizontal, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Check, ChevronRight, Pencil, Phone, Reply, RotateCcw, SendHorizontal, Trash2, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type Tab = Message["status"] | "all";
 const TABS: { value: Tab; label: string }[] = [
@@ -61,7 +61,66 @@ function ReplyForm({ value, busy, onChange, onCancel, onSubmit }: { value: strin
   );
 }
 
-function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: () => void; onOpenCar: (car: Car) => void }) {
+/** One line per message in the list; tapping it opens the message in a sheet. */
+function MessageRow({ item, onOpen }: { item: Message; onOpen: () => void }) {
+  const badge = BADGE[item.status] ?? BADGE.done;
+  const replies = item.replies?.length ?? 0;
+  return (
+    <button type="button" onClick={onOpen} className="block w-full px-4 py-3 text-left hover:bg-muted/60">
+      <div className="flex items-center gap-2">
+        <p className="min-w-0 flex-1 truncate font-bold">{item.name || item.phonenumber || "Нэргүй"}</p>
+        <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(item.created_at)}</span>
+      </div>
+      <p className="mt-0.5 line-clamp-2 text-sm leading-5 text-muted-foreground">{item.message}</p>
+      <div className="mt-1.5 flex items-center gap-2">
+        <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold", badge.className)}>{badge.label}</span>
+        {item.car && <span className="min-w-0 truncate text-xs font-semibold">{carTitle(item.car)}</span>}
+        {replies > 0 && (
+          <span className="ml-auto flex shrink-0 items-center gap-0.5 text-xs font-semibold text-success">
+            <Reply className="size-3" />
+            {replies}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+/** A message with its answers and actions, in a bottom sheet over the list. */
+function MessageSheet({ item, onChanged, onOpenCar, onClose, carOpen }: { item: Message; onChanged: () => void; onOpenCar: (car: Car) => void; onClose: () => void; carOpen: boolean }) {
+  // Esc closes the sheet, unless the ad preview is open on top of it (that one closes first).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !carOpen && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [carOpen, onClose]);
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 animate-fade-in bg-dark/50 backdrop-blur-[2px]" onClick={onClose} />
+      <div role="dialog" aria-modal="true" aria-label="Мессеж" className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[90vh] max-w-md animate-sheet-up flex-col rounded-t-3xl bg-white shadow-2xl">
+        <div className="flex items-center justify-between px-4 pb-1 pt-3">
+          <div className="mx-auto h-1 w-10 rounded-full bg-border" />
+        </div>
+        <button type="button" onClick={onClose} aria-label="Хаах" className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-muted hover:bg-border">
+          <X className="size-4" />
+        </button>
+        <div className="min-h-0 flex-1 overflow-y-auto pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          <MessageDetail item={item} onChanged={onChanged} onOpenCar={onOpenCar} onDeleted={onClose} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MessageDetail({ item, onChanged, onOpenCar, onDeleted }: { item: Message; onChanged: () => void; onOpenCar: (car: Car) => void; onDeleted: () => void }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   /** Open reply box: a new answer (`replyId` null) or the edit of one, with its draft. */
@@ -92,7 +151,7 @@ function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: 
 
   return (
     <div className={cn("px-4 py-3.5", busy && "pointer-events-none opacity-60")}>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 pr-10">
         <div className="min-w-0">
           <p className="truncate font-bold">{item.name || "Нэргүй"}</p>
           <a href={`tel:${item.phonenumber}`} className="flex items-center gap-1 text-sm font-semibold text-primary">
@@ -170,7 +229,7 @@ function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: 
         )}
         {!isDeleted && (
           <button
-            onClick={() => run(() => deleteMessage(item.id), "Устгалаа", { title: "Мессежийг устгах уу?", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })}
+            onClick={() => run(() => deleteMessage(item.id).then(onDeleted), "Устгалаа", { title: "Мессежийг устгах уу?", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })}
             aria-label="Устгах"
             className="ml-auto grid size-8 place-items-center rounded-lg text-destructive hover:bg-destructive-soft"
           >
@@ -190,6 +249,9 @@ export default function MessagesPage() {
   const list = messages.data?.tab === tab ? messages.data : undefined;
   // The ad a message is about, shown in a sheet over the list instead of leaving the page.
   const [preview, setPreview] = useState<Car | null>(null);
+  // The open message: its fresh row after a reload, else the one tapped (it may have left this tab, e.g. answered under Шинэ).
+  const [opened, setOpened] = useState<Message | null>(null);
+  const open = opened && (list?.rows.find((m) => m.id === opened.id) ?? opened);
 
   return (
     <>
@@ -207,10 +269,11 @@ export default function MessagesPage() {
         // Edge to edge, right under the header, like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
           {list.rows.map((m) => (
-            <MessageRow key={m.id} item={m} onChanged={messages.reload} onOpenCar={setPreview} />
+            <MessageRow key={m.id} item={m} onOpen={() => setOpened(m)} />
           ))}
         </div>
       )}
+      {open && <MessageSheet key={open.id} item={open} onChanged={messages.reload} onOpenCar={setPreview} onClose={() => setOpened(null)} carOpen={!!preview} />}
       {preview && <CarPreviewSheet car={preview} onClose={() => setPreview(null)} />}
     </>
   );
