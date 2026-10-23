@@ -5,6 +5,7 @@ import { useRejectCar } from "@/components/car/useRejectCar";
 import ChipTabs, { type ChipTab } from "@/components/common/ChipTabs";
 import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { inputClass, Select } from "@/components/common/Field";
+import LoadMore from "@/components/common/LoadMore";
 import { EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
@@ -277,11 +278,16 @@ function CarsInner() {
               <CarRow key={car.id} car={car} onChanged={cars.reload} showDealer={isAdmin && !dealerId} />
             ))}
           </div>
-          {cars.data.rows.length < cars.data.count && (
-            <button onClick={() => setTake((t) => t + PAGE_SIZE)} disabled={cars.loading} className="mt-4 w-full rounded-xl bg-card py-3 text-sm font-bold disabled:opacity-60">
-              {cars.loading ? <Spinner className="mx-auto size-5" /> : "Цааш үзэх"}
-            </button>
-          )}
+          {cars.data.rows.length < cars.data.count &&
+            // Like the catalog: the next page loads when the list is scrolled to its end. The sentinel is swapped
+            // for a spinner while a page loads, so it can't ask twice, and fires again on remount if still in view.
+            (cars.loading ? (
+              <div role="status" aria-label="Ачаалж байна" className="flex justify-center py-4">
+                <Spinner className="size-5" />
+              </div>
+            ) : (
+              <LoadMore key={take} onMore={() => setTake((t) => t + PAGE_SIZE)} />
+            ))}
         </>
       )}
     </>

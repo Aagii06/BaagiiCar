@@ -16,7 +16,7 @@ import { Plus, Trophy, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
-/** Which end of a numeric row counts as better; that cell gets highlighted. */
+/** Which end of a numeric row counts as better; the best cell is green, the worst red. */
 type Best = "min" | "max";
 
 interface Row {
@@ -26,15 +26,19 @@ interface Row {
   best?: Best;
 }
 
-function bestIndexes(cars: Car[], row: Row) {
-  if (!row.best || !row.num || cars.length < 2) return new Set<number>();
+function rank(cars: Car[], row: Row) {
+  const none = { best: new Set<number>(), worst: new Set<number>() };
+  if (!row.best || !row.num || cars.length < 2) return none;
   const nums = cars.map((c) => row.num!(c));
   const valid = nums.filter((n): n is number => n != null && n > 0);
-  if (valid.length < 2) return new Set<number>();
-  const target = row.best === "min" ? Math.min(...valid) : Math.max(...valid);
+  if (valid.length < 2) return none;
+  const lo = Math.min(...valid);
+  const hi = Math.max(...valid);
   // Everyone equal — nothing stands out.
-  if (valid.every((n) => n === target)) return new Set<number>();
-  return new Set(nums.flatMap((n, i) => (n === target ? [i] : [])));
+  if (lo === hi) return none;
+  const [good, bad] = row.best === "min" ? [lo, hi] : [hi, lo];
+  const at = (target: number) => new Set(nums.flatMap((n, i) => (n === target ? [i] : [])));
+  return { best: at(good), worst: at(bad) };
 }
 
 export default function ComparePage() {
@@ -143,14 +147,14 @@ export default function ComparePage() {
 
                 {/* Spec rows */}
                 {visible.map((r, ri) => {
-                  const best = bestIndexes(rows, r);
+                  const { best, worst } = rank(rows, r);
                   return (
                     <div key={r.label} className={cn("grid items-center gap-3 px-3 py-3", ri % 2 === 0 && "bg-muted/60")} style={grid}>
                       <div className="px-1 text-xs font-medium text-muted-foreground md:text-sm">{r.label}</div>
                       {rows.map((c, i) => {
                         const v = r.value(c);
                         return (
-                          <div key={c.id} className={cn("flex items-center gap-1.5 px-1 text-sm font-semibold", best.has(i) && "text-success")}>
+                          <div key={c.id} className={cn("flex items-center gap-1.5 px-1 text-sm font-semibold", best.has(i) && "text-success", worst.has(i) && "text-destructive")}>
                             {v || <span className="font-normal text-muted-foreground">—</span>}
                             {best.has(i) && <Trophy className="size-3.5 shrink-0" />}
                           </div>
