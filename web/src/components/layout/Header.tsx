@@ -62,7 +62,10 @@ export default function Header() {
           <Link href="/saved" aria-label={t("Хадгалсан")} className="grid size-11 place-items-center rounded-xl bg-muted hover:bg-border">
             <Heart className="size-[18px]" />
           </Link>
-          <AccountMenu />
+          {/* Phones have the Профайл tab in the bottom bar instead. */}
+          <div className="hidden md:block">
+            <AccountMenu />
+          </div>
         </div>
       </div>
     </header>
