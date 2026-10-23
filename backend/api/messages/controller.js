@@ -37,10 +37,10 @@ module.exports.reply = async (req, res) => {
     const row = await messageReplies.create({ message_id: id, reply, created_by: by, created_at: at, updated_at: at });
     // Устгасан мессежид хариулбал жагсаалтад буцааж гаргана
     await syncLatest(id, { status: "done", updated_by: by, updated_at: at });
-    // Нэг яриа (нэг хэрэглэгч, нэг зар) дахь хариулаагүй бусад мессеж ч хариулагдсан болно
+    // Нэг яриа (нэг хэрэглэгч, нэг зар) дахь хариулаагүй (шинэ / үзсэн) бусад мессеж ч хариулагдсан болно
     await messages.update(
       { status: "done", updated_by: by, updated_at: at },
-      { where: { ...threadOf(item), status: "new" } },
+      { where: { ...threadOf(item), status: { [op.in]: ["new", "seen"] } } },
     );
     await saveLog({
       object_name: "messages",

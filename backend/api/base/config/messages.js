@@ -49,6 +49,7 @@ module.exports = {
   model: messages,
   middleware: { show: one, list, create, update, lookup: list, destroy },
   validation: {
-    update: [body("status").optional().isIn(["new", "done"]).withMessage("Төлөв буруу байна")],
+    // new → seen (админ / дилер нээж уншсан) → done (хариулсан)
+    update: [body("status").optional().isIn(["new", "seen", "done"]).withMessage("Төлөв буруу байна")],
   },
 };
