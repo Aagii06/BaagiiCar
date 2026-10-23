@@ -2,6 +2,7 @@
 
 import CarImage from "@/components/car/CarImage";
 import { useRejectCar } from "@/components/car/useRejectCar";
+import Img from "@/components/common/Img";
 import ChipTabs, { type ChipTab } from "@/components/common/ChipTabs";
 import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { inputClass, Select } from "@/components/common/Field";
@@ -15,7 +16,7 @@ import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { carTitle, cn, formatPrice } from "@/lib/utils";
+import { carTitle, cn, formatPrice, initials } from "@/lib/utils";
 import { BadgeCheck, Check, Eye, EyeOff, Search, Star, Store, Trash2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -79,12 +80,17 @@ function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => voi
           Left out when the list is already one dealer's. */}
       {showDealer && (
         <div className="relative z-10 flex items-center gap-2 bg-slate-500 px-3 py-2 text-white shadow-[0_3px_6px_-2px_rgb(0_0_0/0.18)]">
-          {dealerLogo ? (
-            // eslint-disable-next-line @next/next/no-img-element -- uploaded dealer logo
-            <img src={dealerLogo} alt="" className="size-5 shrink-0 rounded-md bg-white object-contain" />
-          ) : (
-            <Store className="size-4 shrink-0 text-white/70" />
-          )}
+          <Img
+            src={dealerLogo}
+            className="size-5 shrink-0 rounded-md bg-white object-contain"
+            fallback={
+              car.dealer_name ? (
+                <span className="grid size-5 shrink-0 place-items-center rounded-md bg-amber text-[9px] font-bold text-foreground">{initials(car.dealer_name)}</span>
+              ) : (
+                <Store className="size-4 shrink-0 text-white/70" />
+              )
+            }
+          />
           <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-white/70")}>{car.dealer_name || "Дилергүй"}</span>
         </div>
       )}
