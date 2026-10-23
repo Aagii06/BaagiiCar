@@ -47,7 +47,7 @@ class _AccountState extends State<_Account> {
 
   Future<void> _refreshUnread() async {
     try {
-      final n = await SeenReplies.unreadTotal();
+      final n = await unreadTotal();
       if (mounted) setState(() => _unread = n);
     } catch (_) {}
   }

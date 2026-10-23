@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/api/api.dart';
@@ -11,36 +10,11 @@ import 'package:mashinuud_app/screens/car_chat.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-/// Team answers the visitor has opened, kept on the device per user (the backend has no read flag).
-class SeenReplies {
-  static String _key(int userId) => 'baagii_car_seen_replies_$userId';
-
-  static Future<Set<int>> read(int userId) async {
-    try {
-      final raw = jsonDecode((await SharedPreferences.getInstance()).getString(_key(userId)) ?? '[]');
-      return {if (raw is List) ...raw.whereType<num>().map((n) => n.toInt())};
-    } catch (_) {
-      return {};
-    }
-  }
-
-  static Future<void> mark(int userId, List<MyMessage> messages) async {
-    final seen = await read(userId);
-    final before = seen.length;
-    seen.addAll(messages.where((m) => m.reply != null).map((m) => m.id));
-    if (seen.length != before) await (await SharedPreferences.getInstance()).setString(_key(userId), jsonEncode(seen.toList()));
-  }
-
-  static int unread(List<MyMessage> messages, Set<int> seen) => messages.where((m) => m.reply != null && !seen.contains(m.id)).length;
-
-  /// Unread answers across all threads, for the profile badge.
-  static Future<int> unreadTotal() async {
-    final auth = Stores.auth;
-    if (auth.token == null || auth.user == null) return 0;
-    return unread(await Api.getMyMessages(auth.token!), await read(auth.user!.id));
-  }
+/// Unread team answers across all threads, for the profile badge.
+Future<int> unreadTotal() async {
+  final token = Stores.auth.token;
+  return token == null ? 0 : Api.getUnreadCount(token);
 }
 
 /// One ad's messages, oldest first; [carId] 0 = general questions.
@@ -82,20 +56,19 @@ class MessagesScreen extends StatefulWidget {
 }
 
 class _MessagesScreenState extends State<MessagesScreen> {
-  final _loader = GlobalKey<LoaderState<(List<Thread>, Set<int>)>>();
+  final _loader = GlobalKey<LoaderState<List<Thread>>>();
 
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text('Мессеж')),
-        body: Loader<(List<Thread>, Set<int>)>(
+        body: Loader<List<Thread>>(
           key: _loader,
-          fetch: () async => (await _loadThreads(), await SeenReplies.read(Stores.auth.user!.id)),
+          fetch: _loadThreads,
           error: (context, e, retry) {
             if (e is ApiError && e.status == 401) Stores.auth.signOut();
             return Padding(padding: const EdgeInsets.all(16), child: ErrorView(message: '$e', onRetry: retry));
           },
-          builder: (context, data, _) {
-            final (threads, seen) = data;
+          builder: (context, threads, _) {
             if (threads.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.all(16),
@@ -113,7 +86,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                       if (i > 0) const Divider(height: 1),
                       _ThreadTile(
                         thread: threads[i],
-                        unread: SeenReplies.unread(threads[i].messages, seen),
+                        unread: threads[i].messages.fold(0, (n, m) => n + m.unread),
                         onTap: () async {
                           await Navigator.of(context).push(MaterialPageRoute(builder: (_) => ThreadScreen(carId: threads[i].carId)));
                           _loader.currentState?.reload();
@@ -138,7 +111,7 @@ class _ThreadTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final last = thread.messages.last;
-    final preview = last.reply != null ? 'Хариу: ${last.reply}' : last.message;
+    final preview = last.allReplies.isNotEmpty ? 'Хариу: ${last.allReplies.last.reply}' : last.message;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -231,14 +204,16 @@ class _ThreadScreenState extends State<ThreadScreen> {
       Car? car = t?.car;
       if (t == null && widget.carId != 0) car = await Api.getCar(widget.carId);
       if (!mounted) return;
-      final grew = (t?.messages.length ?? 0) != (_thread?.messages.length ?? 0) ||
-          (t?.messages.where((m) => m.reply != null).length ?? 0) != (_thread?.messages.where((m) => m.reply != null).length ?? 0);
+      int lines(Thread? th) => th?.messages.fold<int>(0, (n, m) => n + 1 + m.allReplies.length) ?? 0;
+      final grew = lines(t) != lines(_thread);
       setState(() {
         _thread = t ?? Thread(widget.carId, car, []);
         _error = null;
       });
-      // Opening the thread reads its answers.
-      if (t != null) SeenReplies.mark(Stores.auth.user!.id, t.messages);
+      // Opening the thread reads its answers (clears the badges on the server).
+      if (t != null && t.messages.any((m) => m.unread > 0)) {
+        Api.markRead(Stores.auth.token!, widget.carId == 0 ? null : widget.carId).catchError((_) {});
+      }
       if (grew) _scrollDown();
     } catch (e) {
       if (e is ApiError && e.status == 401) Stores.auth.signOut();
@@ -311,8 +286,13 @@ class _ThreadScreenState extends State<ThreadScreen> {
                           child: Center(child: Text('Асуултаа бичээд илгээнэ үү.', style: TextStyle(color: AppPalette.mutedForeground))),
                         ),
                       for (final m in t.messages) ...[
-                        ChatBubble(text: m.message, mine: true, caption: m.reply == null ? '${timeAgo(m.createdAt)} · ${m.status == 'done' ? 'Холбогдсон' : 'Хүлээгдэж байна'}' : timeAgo(m.createdAt)),
-                        if (m.reply != null) ChatBubble(text: m.reply!, mine: false, caption: '${t.car?.dealerName ?? 'Cardealer'} · ${timeAgo(m.repliedAt)}'),
+                        ChatBubble(
+                          text: m.message,
+                          mine: true,
+                          caption: m.allReplies.isEmpty ? '${timeAgo(m.createdAt)} · ${m.status == 'done' ? 'Холбогдсон' : 'Хүлээгдэж байна'}' : timeAgo(m.createdAt),
+                        ),
+                        for (final reply in m.allReplies)
+                          ChatBubble(text: reply.reply, mine: false, caption: '${t.car?.dealerName ?? 'Cardealer'} · ${timeAgo(reply.createdAt)}'),
                       ],
                       const Padding(
                         padding: EdgeInsets.only(top: 4),
