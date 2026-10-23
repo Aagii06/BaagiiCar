@@ -1,7 +1,6 @@
 "use client";
 
-import BodyTypeTabs from "@/components/car/BodyTypeTabs";
-import CarArt from "@/components/car/CarArt";
+import CarArt, { shapeFor } from "@/components/car/CarArt";
 import CarCard from "@/components/car/CarCard";
 import Container, { SectionTitle, ViewAll } from "@/components/common/Container";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
@@ -14,11 +13,11 @@ import type { BodyType } from "@/lib/api/types";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { T } from "@/lib/i18n/translate";
+import { bodyTypeLabel } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ArrowRight, CreditCard, Heart, LifeBuoy, Search } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const MLN = 1_000_000;
 
@@ -112,6 +111,47 @@ function BrandGrid() {
   );
 }
 
+const TINTS = ["bg-tint-blue", "bg-tint-lavender", "bg-tint-rose", "bg-tint-mint", "bg-tint-peach"];
+
+function BodyTypes({ items, loading }: { items: BodyType[]; loading: boolean }) {
+  const { t } = useI18n();
+  if (!loading && !items.length) return null;
+  return (
+    <Container className="mt-20 md:mt-28">
+      <SectionTitle kicker={t("Төрөл")} light={t("Төрлөөр")} bold={t("хайх")} />
+      <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {loading &&
+          Array.from({ length: 4 }, (_, i) => <div key={i} className="h-[104px] animate-pulse rounded-2xl bg-card md:h-[120px]" />)}
+        {items.map((b, i) => {
+          const image = catalogImage(b.image, "bodyTypes");
+          return (
+            <Link
+              key={b.id}
+              href={`/cars?body=${b.id}`}
+              className={cn("group relative flex items-center gap-3 overflow-hidden rounded-2xl p-5 md:p-6", TINTS[i % TINTS.length])}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-display text-xl font-semibold md:text-2xl">{bodyTypeLabel(b.name, t)}</span>
+                <span className="mt-1 block text-sm text-foreground/60">{t("{n} машин", { n: b.car_count ?? 0 })}</span>
+              </span>
+              {image ? (
+                <Img
+                  src={image}
+                  loading="lazy"
+                  placeholderClassName="h-12 w-20 rounded-md"
+                  className="h-12 w-20 shrink-0 object-contain transition-transform group-hover:scale-105 md:h-14 md:w-24"
+                />
+              ) : (
+                <CarArt shape={shapeFor(b.name)} className="w-16 shrink-0 text-foreground/70 md:w-20" strokeWidth={2.2} />
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    </Container>
+  );
+}
+
 function Budgets() {
   const { t } = useI18n();
   const counts = useApi(() =>
@@ -142,7 +182,6 @@ function Budgets() {
 }
 
 export default function HomePage() {
-  const router = useRouter();
   const { t } = useI18n();
   const bodyTypes = useApi(getBodyTypes);
   const featured = useApi(() => featuredCars(6));
@@ -194,10 +233,7 @@ export default function HomePage() {
 
       <BrandGrid />
 
-      <Container className="mt-20 md:mt-28">
-        <SectionTitle kicker={t("Төрөл")} light={t("Төрлөөр")} bold={t("хайх")} />
-        <BodyTypeTabs className="mt-8" items={bodyTypes.data ?? []} onSelect={(id) => id && router.push(`/cars?body=${id}`)} />
-      </Container>
+      <BodyTypes items={bodyTypes.data ?? []} loading={bodyTypes.loading && !bodyTypes.data} />
 
       <Budgets />
 
