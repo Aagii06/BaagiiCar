@@ -50,7 +50,7 @@ const STEPS: { n: string; title: MessageKey; text: MessageKey }[] = [
 function Hero({ bodyTypes }: { bodyTypes: BodyType[] }) {
   return (
     <section className="relative">
-      <HeroCarousel bodyTypes={bodyTypes} className="h-[520px] lg:h-[560px]" />
+      <HeroCarousel bodyTypes={bodyTypes} className="h-[400px] md:h-[520px] lg:h-[560px]" />
       {/* Phones / tablets: below the photo with a slight overlap. Desktop: floats over its bottom edge. */}
       <Container className="relative z-10 -mt-12 lg:absolute lg:inset-x-0 lg:bottom-0 lg:mt-0 lg:translate-y-[38%]">
         <HeroSearch />
@@ -65,7 +65,7 @@ function BrandGrid() {
   const loading = brands.loading && !brands.data;
   if (!loading && !brands.data?.length) return null;
   return (
-    <Container className="mt-20 md:mt-28">
+    <Container className="mt-10 md:mt-28">
       <SectionTitle kicker={t("Бүх үйлдвэр")} light={t("Машины")} bold={t("үйлдвэр")} action={<ViewAll href="/cars" />} />
       <div className="mt-8 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
         {loading &&
@@ -117,7 +117,7 @@ function BodyTypes({ items, loading }: { items: BodyType[]; loading: boolean }) 
   const { t } = useI18n();
   if (!loading && !items.length) return null;
   return (
-    <Container className="mt-20 md:mt-28">
+    <Container className="mt-10 md:mt-28">
       <SectionTitle kicker={t("Төрөл")} light={t("Төрлөөр")} bold={t("хайх")} />
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {loading &&
@@ -162,7 +162,7 @@ function Budgets() {
     )
   );
   return (
-    <Container className="mt-20 md:mt-28">
+    <Container className="mt-10 md:mt-28">
       <SectionTitle light={t("Төсвөөрөө")} bold={t("сонго")} />
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {BUDGETS.map((b, i) => {
@@ -193,7 +193,7 @@ export default function HomePage() {
       {/* Space for the overlapping search card (taller when it stacks). */}
       <div className="hidden h-[80px] lg:block" />
 
-      <Container className="mt-10">
+      <Container className="mt-6 md:mt-10">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {QUICK.map(({ icon: Icon, tint, title, text, href }) => (
             <Link key={title} href={href} className="group flex items-center gap-4 rounded-2xl bg-card p-4 transition hover:shadow-xl hover:shadow-black/5 md:p-5">
@@ -210,7 +210,7 @@ export default function HomePage() {
         </div>
       </Container>
 
-      <Container className="mt-20 md:mt-28">
+      <Container className="mt-10 md:mt-28">
         <SectionTitle kicker={t("Онцлох")} light={t("Онцлох")} bold={t("машинууд")} action={<ViewAll href="/cars" />} />
         <div className="mt-8">
           {featured.loading && !featured.data ? (
@@ -238,9 +238,9 @@ export default function HomePage() {
       <Budgets />
 
       {/* Full-bleed banner, like the reference's "Don't dream it, drive it". */}
-      <section className="relative mt-20 overflow-hidden bg-[linear-gradient(110deg,#eef3f8_0%,#f8fafc_55%,#e6eef6_100%)] md:mt-28">
+      <section className="relative mt-10 overflow-hidden bg-[linear-gradient(110deg,#eef3f8_0%,#f8fafc_55%,#e6eef6_100%)] md:mt-28">
         <CarArt className="pointer-events-none absolute -right-16 bottom-0 hidden w-[46%] text-foreground/10 lg:block" strokeWidth={1.2} />
-        <Container className="relative grid gap-10 py-16 md:py-24 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+        <Container className="relative grid gap-10 py-10 md:py-24 lg:grid-cols-[1fr_1.1fr] lg:items-center">
           <div>
             <p className="kicker">{t("Машин авах")}</p>
             <h2 className="mt-3 font-display text-[44px] font-light leading-[0.98] md:text-[64px]">
