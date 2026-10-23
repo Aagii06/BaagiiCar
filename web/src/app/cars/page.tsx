@@ -11,7 +11,7 @@ import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from 
 import Img from "@/components/common/Img";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
 import { catalogImage } from "@/lib/api/config";
-import { getDealers } from "@/lib/api/dealers";
+import { dealerName, getDealers, type Dealer } from "@/lib/api/dealers";
 import type { BodyType, Brand, CarModel } from "@/lib/api/types";
 import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -28,6 +28,7 @@ type Params = {
   model?: number;
   body: number[];
   location?: number;
+  dealer?: number;
   yearFrom?: number;
   yearTo?: number;
   importFrom?: number;
@@ -51,6 +52,7 @@ function readParams(sp: URLSearchParams): Params {
     model: num(sp.get("model")),
     body: list(sp.get("body")).map(Number).filter((n) => Number.isInteger(n) && n > 0),
     location: num(sp.get("location")),
+    dealer: num(sp.get("dealer")),
     yearFrom: num(sp.get("yearFrom")),
     yearTo: num(sp.get("yearTo")),
     importFrom: num(sp.get("importFrom")),
@@ -70,6 +72,7 @@ function writeParams(p: Params) {
   if (p.model) q.set("model", String(p.model));
   if (p.body.length) q.set("body", p.body.join(","));
   if (p.location) q.set("location", String(p.location));
+  if (p.dealer) q.set("dealer", String(p.dealer));
   if (p.yearFrom) q.set("yearFrom", String(p.yearFrom));
   if (p.yearTo) q.set("yearTo", String(p.yearTo));
   if (p.importFrom) q.set("importFrom", String(p.importFrom));
@@ -152,9 +155,11 @@ function Filters({
   brands,
   models,
   bodyTypes,
+  dealers,
 }: {
   p: Params;
   set: (patch: Partial<Params>) => void;
+  dealers: Dealer[];
   brands: Loaded<Brand[]>;
   models: Loaded<CarModel[]>;
   bodyTypes: BodyType[];
@@ -167,7 +172,7 @@ function Filters({
   const brandsLoading = brandPending || !brands.data;
   const modelsLoading = (brandPending && !!pending.brand) || (!!p.brand && models.loading);
   const hasFilters =
-    p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
+    p.dealer || p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
 
   return (
     <section className="space-y-4 rounded-2xl bg-card p-5">
@@ -178,6 +183,7 @@ function Filters({
             className="text-[13px] font-semibold text-primary"
             onClick={() =>
               set({
+                dealer: undefined,
                 brand: undefined,
                 model: undefined,
                 body: [],
@@ -196,6 +202,19 @@ function Filters({
           </button>
         ) : null}
       </div>
+
+      {dealers.length > 0 && (
+        <Group title={t("Дилер")}>
+          <Select value={p.dealer ?? ""} onChange={(e) => set({ dealer: num(e.target.value) })} aria-label={t("Дилер")}>
+            <option value="">{t("Бүх дилер")}</option>
+            {dealers.map((d) => (
+              <option key={d.id} value={d.id}>
+                {dealerName(d)}
+              </option>
+            ))}
+          </Select>
+        </Group>
+      )}
 
       <Group title={t("Үйлдвэр, загвар")}>
         <div className="space-y-2.5">
@@ -337,12 +356,14 @@ function Filters({
  */
 function MobileFilters({
   p,
+  dealers,
   brands,
   bodyTypes,
   onApply,
   onClose,
 }: {
   p: Params;
+  dealers: Dealer[];
   brands: Loaded<Brand[]>;
   bodyTypes: BodyType[];
   onApply: (next: Params) => void;
@@ -376,6 +397,7 @@ function MobileFilters({
           key={writeParams(draft)}
           p={draft}
           set={(patch) => setDraft((d) => ({ ...d, ...patch }))}
+          dealers={dealers}
           brands={brands}
           models={models}
           bodyTypes={bodyTypes}
@@ -411,6 +433,7 @@ function CarsPageInner() {
         modelId: p.model,
         bodyTypeIds: p.body,
         locationId: p.location,
+        dealerId: p.dealer,
         yearFrom: p.yearFrom,
         yearTo: p.yearTo,
         importedFrom: p.importFrom,
@@ -471,7 +494,13 @@ function CarsPageInner() {
         {(dealers.loading && !dealers.data) || dealers.data?.rows.length ? (
           <>
             <p className="mt-3 text-xs font-semibold text-muted-foreground md:mt-6">{t("Дилерүүд")}</p>
-            <DealerTabs className="mt-2" items={dealers.data?.rows ?? []} loading={dealers.loading && !dealers.data} />
+            <DealerTabs
+              className="mt-2"
+              items={dealers.data?.rows ?? []}
+              loading={dealers.loading && !dealers.data}
+              selectedId={p.dealer}
+              onSelect={(id) => set({ dealer: id })}
+            />
           </>
         ) : null}
 
@@ -495,11 +524,12 @@ function CarsPageInner() {
               {t("Шүүлтүүр")}
             </button>
             <div className="hidden lg:block">
-              <Filters key={key} p={p} set={set} brands={brands} models={models} bodyTypes={bodyTypes.data ?? []} />
+              <Filters key={key} p={p} set={set} dealers={dealers.data?.rows ?? []} brands={brands} models={models} bodyTypes={bodyTypes.data ?? []} />
             </div>
             {showFilters && (
               <MobileFilters
                 p={p}
+                dealers={dealers.data?.rows ?? []}
                 brands={brands}
                 bodyTypes={bodyTypes.data ?? []}
                 onClose={() => setShowFilters(false)}

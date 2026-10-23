@@ -4,7 +4,6 @@ import 'package:mashinuud_app/api/client.dart';
 import 'package:mashinuud_app/api/models.dart';
 import 'package:mashinuud_app/app/constant.dart';
 import 'package:mashinuud_app/app/theme.dart';
-import 'package:mashinuud_app/screens/dealers.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/app_bar.dart';
 import 'package:mashinuud_app/widgets/car.dart';
@@ -15,6 +14,7 @@ const _mln = 1000000;
 
 CarSearch _copy(
   CarSearch s, {
+  Object? dealerId = _keep,
   List<int>? brandIds,
   Object? modelId = _keep,
   List<int>? bodyTypeIds,
@@ -33,7 +33,7 @@ CarSearch _copy(
       modelId: modelId == _keep ? s.modelId : modelId as int?,
       bodyTypeIds: bodyTypeIds ?? s.bodyTypeIds,
       locationId: s.locationId,
-      dealerId: s.dealerId,
+      dealerId: dealerId == _keep ? s.dealerId : dealerId as int?,
       yearFrom: yearFrom == _keep ? s.yearFrom : yearFrom as int?,
       yearTo: yearTo == _keep ? s.yearTo : yearTo as int?,
       importedFrom: importedFrom == _keep ? s.importedFrom : importedFrom as int?,
@@ -117,6 +117,7 @@ class _CarsScreenState extends State<CarsScreen> {
         modelId: s.modelId,
         bodyTypeIds: s.bodyTypeIds,
         locationId: s.locationId,
+        dealerId: s.dealerId,
         yearFrom: s.yearFrom,
         yearTo: s.yearTo,
         importedFrom: s.importedFrom,
@@ -147,6 +148,7 @@ class _CarsScreenState extends State<CarsScreen> {
   int get _filterCount {
     final s = _search;
     return [
+      s.dealerId != null,
       s.brandIds.isNotEmpty,
       s.modelId != null,
       s.bodyTypeIds.isNotEmpty,
@@ -160,7 +162,7 @@ class _CarsScreenState extends State<CarsScreen> {
 
   Future<void> _openFilters() async {
     final next = await Navigator.of(context).push<CarSearch>(
-      MaterialPageRoute(fullscreenDialog: true, builder: (_) => FiltersScreen(initial: _search, brands: _brands ?? [], bodyTypes: _bodyTypes)),
+      MaterialPageRoute(fullscreenDialog: true, builder: (_) => FiltersScreen(initial: _search, dealers: _dealers ?? [], brands: _brands ?? [], bodyTypes: _bodyTypes)),
     );
     if (next != null) _apply(next);
   }
@@ -189,7 +191,9 @@ class _CarsScreenState extends State<CarsScreen> {
                     _LogoTile(
                       label: d.name,
                       image: uploadUrl(d.logo, folder: 'dealers'),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DealerScreen(dealerId: d.id, preview: d))),
+                      // Picks the dealer filter (tap again to clear), like the brand row.
+                      selected: _search.dealerId == d.id,
+                      onTap: () => _apply(_copy(_search, dealerId: _search.dealerId == d.id ? null : d.id)),
                     ),
                 ],
               ),
@@ -375,9 +379,10 @@ class _LogoTile extends StatelessWidget {
 /// Full-screen filters over a draft copy; "Хайх" applies it, the back arrow drops it.
 class FiltersScreen extends StatefulWidget {
   final CarSearch initial;
+  final List<Dealer> dealers;
   final List<Brand> brands;
   final List<BodyType> bodyTypes;
-  const FiltersScreen({super.key, required this.initial, required this.brands, required this.bodyTypes});
+  const FiltersScreen({super.key, required this.initial, required this.dealers, required this.brands, required this.bodyTypes});
   @override
   State<FiltersScreen> createState() => _FiltersScreenState();
 }
@@ -411,6 +416,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
   }
 
   bool get _hasFilters =>
+      _d.dealerId != null ||
       _d.brandIds.isNotEmpty ||
       _d.modelId != null ||
       _d.bodyTypeIds.isNotEmpty ||
@@ -443,6 +449,18 @@ class _FiltersScreenState extends State<FiltersScreen> {
         children: [
           Panel(
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              if (widget.dealers.isNotEmpty)
+                _group(
+                  'Дилер',
+                  SelectField<int>(
+                    label: 'Дилер',
+                    placeholder: 'Бүх дилер',
+                    value: _d.dealerId,
+                    options: [for (final d in widget.dealers) Option(d.id, d.name)],
+                    onChanged: (v) => setState(() => _d = _copy(_d, dealerId: v)),
+                  ),
+                  first: true,
+                ),
               _group('Үйлдвэр, загвар', Column(children: [
                 SelectField<int>(
                   label: 'Үйлдвэр',
@@ -467,7 +485,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
                   options: [for (final m in _models) Option(m.id, m.name)],
                   onChanged: (v) => setState(() => _d = _copy(_d, modelId: v)),
                 ),
-              ]), first: true),
+              ]), first: widget.dealers.isEmpty),
               if (widget.bodyTypes.isNotEmpty)
                 _group(
                   'Төрөл',

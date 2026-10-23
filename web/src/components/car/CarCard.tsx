@@ -32,7 +32,7 @@ export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadg
   const href = `/cars/${car.id}`;
   return (
     <article className="flex gap-3 rounded-2xl bg-card p-2.5 transition-shadow hover:shadow-lg hover:shadow-black/5 sm:flex-col sm:gap-0 sm:p-3">
-      <div className="relative w-[42%] max-w-44 shrink-0 self-start sm:w-auto sm:max-w-none">
+      <div className="relative w-[42%] max-w-44 shrink-0 self-start sm:w-full sm:max-w-none sm:self-stretch">
         <Link href={href} className="block">
           <CarImage id={car.id} image={car.image} bodyType={car.body_type_name} className="aspect-[4/3]" alt={carTitle(car, t)} />
         </Link>
