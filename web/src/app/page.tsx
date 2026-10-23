@@ -67,7 +67,7 @@ function BrandGrid() {
   return (
     <Container className="mt-10 md:mt-28">
       <SectionTitle kicker={t("Бүх үйлдвэр")} light={t("Машины")} bold={t("үйлдвэр")} action={<ViewAll href="/cars" />} />
-      <div className="mt-8 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
+      <div className="mt-4 grid md:mt-8 grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
         {loading &&
           Array.from({ length: 16 }, (_, i) => (
             <div
@@ -119,7 +119,7 @@ function BodyTypes({ items, loading }: { items: BodyType[]; loading: boolean }) 
   return (
     <Container className="mt-10 md:mt-28">
       <SectionTitle kicker={t("Төрөл")} light={t("Төрлөөр")} bold={t("хайх")} />
-      <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mt-4 grid md:mt-8 grid-cols-2 gap-3 lg:grid-cols-4">
         {loading &&
           Array.from({ length: 4 }, (_, i) => <div key={i} className="h-[104px] animate-pulse rounded-2xl bg-card md:h-[120px]" />)}
         {items.map((b, i) => {
@@ -164,7 +164,7 @@ function Budgets() {
   return (
     <Container className="mt-10 md:mt-28">
       <SectionTitle light={t("Төсвөөрөө")} bold={t("сонго")} />
-      <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mt-4 grid md:mt-8 grid-cols-2 gap-3 lg:grid-cols-4">
         {BUDGETS.map((b, i) => {
           const q = new URLSearchParams();
           if (b.min) q.set("priceMin", String(b.min));
@@ -212,7 +212,7 @@ export default function HomePage() {
 
       <Container className="mt-10 md:mt-28">
         <SectionTitle kicker={t("Онцлох")} light={t("Онцлох")} bold={t("машинууд")} action={<ViewAll href="/cars" />} />
-        <div className="mt-8">
+        <div className="mt-4 md:mt-8">
           {featured.loading && !featured.data ? (
             <CardGridSkeleton count={3} />
           ) : featured.error ? (
