@@ -13,7 +13,7 @@ import { useApi } from "@/lib/useApi";
 import { carTitle, cn, timeAgo } from "@/lib/utils";
 import { Check, ChevronRight, Pencil, Phone, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 
 /**
  * `/messages/thread?m=<message id>`: one chat (the visitor's messages about one ad and our answers) as its own page.
@@ -29,7 +29,18 @@ export default function ThreadPage() {
 
 function ThreadInner() {
   const id = useSearchParams().get("m") ?? "";
-  const thread = useApi(async () => (id ? getMessageThread(id).then((rows) => (rows?.length ? toThreads(rows)[0] : null)) : null), id);
+  // Chat already marked read on this visit: a reload after "Уншаагүй болгох" must not mark it again.
+  const markedRead = useRef<string | null>(null);
+  const thread = useApi(async () => {
+    const rows = id ? await getMessageThread(id) : null;
+    if (!rows?.length) return null;
+    // Opening the chat reads it: Шинэ → Үзсэн (answering then makes it Хариулсан).
+    const unread = rows.filter((m) => m.status === "new");
+    if (!unread.length || markedRead.current === id) return toThreads(rows)[0];
+    markedRead.current = id;
+    await Promise.all(unread.map((m) => setMessageStatus(m.id, "seen")));
+    return toThreads(rows.map((m) => (m.status === "new" ? { ...m, status: "seen" as const } : m)))[0];
+  }, id);
 
   return (
     <>
@@ -164,7 +175,7 @@ function ThreadView({ thread, onChanged }: { thread: Thread; onChanged: () => vo
               <RotateCcw className="size-3.5" />
               Сэргээх
             </button>
-          ) : status === "new" ? (
+          ) : status === "new" || status === "seen" ? (
             // Answered by phone: just mark it done.
             <button onClick={() => setAll("done", "Хариулсан гэж тэмдэглэлээ")} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
               <Check className="size-3.5" />
@@ -173,7 +184,7 @@ function ThreadView({ thread, onChanged }: { thread: Thread; onChanged: () => vo
           ) : (
             <button onClick={() => setAll("new", "Шинэ болголоо")} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
               <RotateCcw className="size-3.5" />
-              Шинэ болгох
+              Уншаагүй болгох
             </button>
           )}
           {!isDeleted && (

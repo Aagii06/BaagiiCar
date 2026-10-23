@@ -9,13 +9,14 @@ export type MessageStatus = Message["status"];
 
 export const BADGE: Record<MessageStatus, { label: string; className: string }> = {
   new: { label: "Шинэ", className: "bg-primary text-white" },
-  done: { label: "Хариулсан", className: "bg-muted" },
+  seen: { label: "Үзсэн", className: "bg-amber-soft text-amber-ink" },
+  done: { label: "Хариулсан", className: "bg-success-soft text-success" },
   deleted: { label: "Устгагдсан", className: "bg-destructive-soft text-destructive" },
 };
 
 /**
  * One chat: everything a visitor wrote about one ad (or about nothing in particular), with the team's answers.
- * New while any message in it is unanswered.
+ * New while any message in it is unread, then Үзсэн until it's answered (a new message makes it new again).
  */
 export interface Thread {
   key: string;
@@ -43,7 +44,8 @@ export function toThreads(rows: Message[]): Thread[] {
       const messages = [...list].sort((a, b) => a.id - b.id);
       const last = messages[messages.length - 1];
       const times = messages.flatMap((m) => [m.created_at, ...(m.replies ?? []).map((r) => r.created_at)]).filter((t): t is string => !!t);
-      const status: MessageStatus = messages.some((m) => m.status === "new") ? "new" : messages.every((m) => m.status === "deleted") ? "deleted" : "done";
+      const has = (s: MessageStatus) => messages.some((m) => m.status === s);
+      const status: MessageStatus = has("new") ? "new" : has("seen") ? "seen" : messages.every((m) => m.status === "deleted") ? "deleted" : "done";
       return { key, messages, last, status, car: messages.find((m) => m.car)?.car, activeAt: times.sort().at(-1) ?? "" };
     })
     .sort((a, b) => b.activeAt.localeCompare(a.activeAt));

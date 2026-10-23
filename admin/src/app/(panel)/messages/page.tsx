@@ -14,6 +14,7 @@ type Tab = MessageStatus | "all";
 const TABS: { value: Tab; label: string }[] = [
   { value: "all", label: "Бүгд" },
   { value: "new", label: "Шинэ" },
+  { value: "seen", label: "Үзсэн" },
   { value: "done", label: "Хариулсан" },
   { value: "deleted", label: "Устгагдсан" },
 ];
@@ -50,7 +51,7 @@ export default function MessagesPage() {
   const messages = useApi(() => listMessages(source === "deleted" ? "deleted" : undefined).then((res) => ({ ...res, source })), source);
   const loaded = messages.data?.source === source ? messages.data : undefined;
   const allThreads = useMemo(() => (loaded ? toThreads(loaded.rows) : undefined), [loaded]);
-  const threads = allThreads && (tab === "new" || tab === "done" ? allThreads.filter((t) => t.status === tab) : allThreads);
+  const threads = allThreads && (tab === "all" || tab === "deleted" ? allThreads : allThreads.filter((t) => t.status === tab));
 
   return (
     <>
@@ -63,7 +64,7 @@ export default function MessagesPage() {
       ) : !threads ? (
         <LoadingState />
       ) : !threads.length ? (
-        <EmptyState title={tab === "new" ? "Шинэ мессеж алга" : tab === "deleted" ? "Устгагдсан мессеж алга" : "Мессеж алга"} />
+        <EmptyState title={tab === "all" ? "Мессеж алга" : `${TABS.find((t) => t.value === tab)?.label} мессеж алга`} />
       ) : (
         // Edge to edge, right under the header, like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
