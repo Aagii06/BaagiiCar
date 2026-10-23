@@ -7,7 +7,9 @@ import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/St
 import HeroCarousel from "@/components/home/HeroCarousel";
 import HeroSearch from "@/components/home/HeroSearch";
 import Img from "@/components/common/Img";
+import DealerAvatar from "@/components/common/DealerAvatar";
 import { featuredCars, getBodyTypes, getBrands, searchCars } from "@/lib/api/cars";
+import { dealerName, getDealers } from "@/lib/api/dealers";
 import { catalogImage } from "@/lib/api/config";
 import type { BodyType } from "@/lib/api/types";
 import type { MessageKey } from "@/lib/i18n/messages";
@@ -56,6 +58,50 @@ function Hero({ bodyTypes }: { bodyTypes: BodyType[] }) {
         <HeroSearch />
       </Container>
     </section>
+  );
+}
+
+const HOME_DEALERS = 8;
+
+/** Busiest dealers, right under the hero. */
+function DealerGrid() {
+  const { t } = useI18n();
+  const dealers = useApi(getDealers);
+  const loading = dealers.loading && !dealers.data;
+  const rows = dealers.data?.rows.slice(0, HOME_DEALERS) ?? [];
+  if (!loading && !rows.length) return null;
+  return (
+    <Container className="mt-6 md:mt-10">
+      <SectionTitle kicker={t("Дилерүүд")} light={t("Манай")} bold={t("дилерүүд")} action={<ViewAll href="/dealers" />} />
+      <div className="mt-4 grid grid-cols-2 gap-3 md:mt-8 sm:grid-cols-3 lg:grid-cols-4">
+        {loading &&
+          Array.from({ length: HOME_DEALERS }, (_, i) => <div key={i} className="h-[76px] animate-pulse rounded-2xl bg-card md:h-[88px]" />)}
+        {rows.map((dealer) => {
+          const name = dealerName(dealer) || t("Дилер");
+          return (
+            <Link
+              key={dealer.id}
+              href={`/dealers?d=${dealer.id}`}
+              className="flex items-center gap-3 rounded-2xl bg-card p-3 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5 md:gap-4 md:p-4"
+            >
+              <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted md:size-14">
+                <DealerAvatar
+                  logo={dealer.logo}
+                  name={name}
+                  loading="lazy"
+                  imgClassName="size-full object-contain"
+                  letterClassName="font-display text-xl font-bold text-foreground/60"
+                />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold md:text-base">{name}</span>
+                <span className="block text-xs text-muted-foreground">{t("{n} зар", { n: dealer.car_count })}</span>
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </Container>
   );
 }
 
@@ -192,6 +238,8 @@ export default function HomePage() {
 
       {/* Space for the overlapping search card (taller when it stacks). */}
       <div className="hidden h-[80px] lg:block" />
+
+      <DealerGrid />
 
       <Container className="mt-6 md:mt-10">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
