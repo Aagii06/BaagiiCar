@@ -203,15 +203,21 @@ class Page<T> {
 class MyMessage {
   final int id;
   final String message;
+
+  /// The team's / dealer's answer.
+  final String? reply;
+  final String? repliedAt;
   final int? carId;
 
   /// "new" until the team marks it "done".
   final String? status;
   final String? createdAt;
-  const MyMessage({required this.id, required this.message, this.carId, this.status, this.createdAt});
+  const MyMessage({required this.id, required this.message, this.reply, this.repliedAt, this.carId, this.status, this.createdAt});
   factory MyMessage.fromJson(Map<String, dynamic> j) => MyMessage(
         id: _int(j['id'])!,
         message: _str(j['message']) ?? '',
+        reply: (_str(j['reply'])?.isNotEmpty ?? false) ? _str(j['reply']) : null,
+        repliedAt: _str(j['replied_at']),
         carId: _int(j['car_id']),
         status: _str(j['status']),
         createdAt: _str(j['created_at']),

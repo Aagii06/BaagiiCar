@@ -93,6 +93,7 @@ function MessagesInner() {
           <ul className="overflow-hidden rounded-2xl bg-card">
             {list.map((th) => {
               const last = th.messages[th.messages.length - 1];
+              const preview = last.reply ? `${t("Хариу")}: ${last.reply}` : last.message;
               return (
                 <li key={th.carId} className="border-b border-border last:border-b-0">
                   <Link href={`/messages?car=${th.carId}`} className="flex items-center gap-3 px-4 py-3.5 hover:bg-muted">
@@ -106,11 +107,11 @@ function MessagesInner() {
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2">
                         <span className="min-w-0 flex-1 truncate font-bold">{threadTitle(th, t)}</span>
-                        <span className="shrink-0 text-xs text-muted-foreground">{timeAgo(last.created_at, t)}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">{timeAgo(last.replied_at || last.created_at, t)}</span>
                       </span>
                       <span className="mt-1 flex items-center gap-2">
-                        <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{last.message}</span>
-                        <Status done={last.status === "done"} />
+                        <span className={cn("min-w-0 flex-1 truncate text-sm", last.reply ? "font-semibold text-foreground" : "text-muted-foreground")}>{preview}</span>
+                        <Status done={last.status === "done" || !!last.reply} />
                       </span>
                     </span>
                     <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -134,10 +135,17 @@ function ThreadView({ thread, token, onSent }: { thread: Thread; token: string; 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const end = useRef<HTMLDivElement>(null);
+  const replies = thread.messages.filter((m) => m.reply).length;
 
   useEffect(() => {
     end.current?.scrollIntoView({ block: "end" });
-  }, [thread.messages.length, sent.length]);
+  }, [thread.messages.length, sent.length, replies]);
+
+  // Pick up the team's answers while the thread is open.
+  useEffect(() => {
+    const timer = window.setInterval(onSent, 15000);
+    return () => window.clearInterval(timer);
+  }, [onSent]);
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,8 +185,16 @@ function ThreadView({ thread, token, onSent }: { thread: Thread; token: string; 
             <p className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-br-md bg-primary px-3.5 py-2 text-[15px] text-white">{m.message}</p>
             <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
               {timeAgo(m.created_at, t)}
-              <Status done={m.status === "done"} />
+              {!m.reply && <Status done={m.status === "done"} />}
             </span>
+            {m.reply && (
+              <div className="mt-1 flex w-full flex-col items-start gap-1">
+                <p className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-bl-md bg-white px-3.5 py-2 text-[15px] text-foreground shadow-sm">{m.reply}</p>
+                <span className="text-[11px] text-muted-foreground">
+                  {thread.car?.dealer_name || "Cardealer"} · {timeAgo(m.replied_at, t)}
+                </span>
+              </div>
+            )}
           </div>
         ))}
         {pending.map((text, i) => (

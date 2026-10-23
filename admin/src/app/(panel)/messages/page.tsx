@@ -155,7 +155,7 @@ function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: 
 
 /** Messages left in the web site's chat box; answer here (the visitor sees it on the web) or by phone and mark done. */
 export default function MessagesPage() {
-  const [tab, setTab] = useState<Tab>("new");
+  const [tab, setTab] = useState<Tab>("all");
   // Tagged with its tab: right after a switch the previous tab's list is still in `messages` and must not show.
   const messages = useApi(() => listMessages(tab === "all" ? undefined : tab).then((res) => ({ ...res, tab })), tab);
   const list = messages.data?.tab === tab ? messages.data : undefined;

@@ -21,6 +21,9 @@ export interface MyMessage {
   id: number;
   type: string | null;
   message: string;
+  /** The team's / dealer's answer, shown in the thread. */
+  reply: string | null;
+  replied_at: string | null;
   car_id: number | null;
   /** "new" until the team marks it "done". */
   status: string | null;
