@@ -127,7 +127,8 @@ class _HeroState extends State<_Hero> {
   @override
   Widget build(BuildContext context) {
     final s = _slides[_index];
-    return Column(children: [
+    // The search card overlaps the photo's bottom 48px.
+    return Stack(clipBehavior: Clip.none, children: [
       SizedBox(
         height: 400,
         child: GestureDetector(
@@ -217,8 +218,7 @@ class _HeroState extends State<_Hero> {
           ]),
         ),
       ),
-      Transform.translate(offset: const Offset(0, -48), child: const Padding(padding: _gutter, child: _HeroSearch())),
-      const SizedBox(height: 0),
+      const Padding(padding: EdgeInsets.fromLTRB(16, 352, 16, 0), child: _HeroSearch()),
     ]);
   }
 }
