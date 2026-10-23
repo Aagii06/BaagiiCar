@@ -1,6 +1,7 @@
 "use client";
 
 import CarImage from "@/components/car/CarImage";
+import Img from "@/components/common/Img";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { Spinner } from "@/components/common/States";
 import { getCarFiles } from "@/lib/api/admin";
@@ -74,8 +75,7 @@ export default function CarPreviewSheet({ car, onClose }: { car: Car; onClose: (
                   aria-label={`${i + 1}-р зураг томоор харах`}
                   className={cn("aspect-[4/3] shrink-0 snap-center overflow-hidden rounded-2xl bg-muted", photos.length > 1 ? "w-[85%]" : "w-full")}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-                  <img src={uploadUrl(name, "grid")!} alt="" className="size-full object-cover" />
+                  <Img src={uploadUrl(name, "grid")} alt="" className="size-full object-cover" />
                 </button>
               ))}
             </div>

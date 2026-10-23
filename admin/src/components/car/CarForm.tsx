@@ -1,6 +1,7 @@
 "use client";
 
 import { Field, FormError, inputClass, PhoneInput, Select } from "@/components/common/Field";
+import Img from "@/components/common/Img";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import Stepper from "@/components/common/Stepper";
 import { RejectNote } from "./useRejectCar";
@@ -481,8 +482,7 @@ export default function CarForm({
             {photos.map((p, i) => (
               <div key={p.url} className="relative aspect-square overflow-hidden rounded-xl bg-muted">
                 <button type="button" onClick={() => setViewing(i)} aria-label="Зураг томоор харах" className="size-full">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- local previews / backend uploads */}
-                  <img src={p.url} alt="" className="size-full object-cover" />
+                  <Img src={p.url} alt="" className="size-full object-cover" />
                 </button>
                 {i === 0 && <span className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold text-white">Нүүр</span>}
                 <button type="button" onClick={() => removePhoto(i)} aria-label="Зураг хасах" className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-dark/80 text-white">

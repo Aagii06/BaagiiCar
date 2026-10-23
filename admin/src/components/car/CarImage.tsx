@@ -1,11 +1,12 @@
 "use client";
 
+import { DEFAULT_CAR_IMAGE } from "@/components/common/Img";
 import { uploadUrl, type ImageSize } from "@/lib/api/config";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
 /** Shown when the ad has no photo, while it loads (however slowly), and if it fails — same as the website. */
-export const DEFAULT_CAR_IMAGE = "/no-car.png";
+export { DEFAULT_CAR_IMAGE };
 
 /**
  * A car's photo over the default "image coming soon" picture: the photo fades in

@@ -1,5 +1,6 @@
 "use client";
 
+import Img from "@/components/common/Img";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -68,8 +69,7 @@ export default function PhotoViewer({ urls, start, onClose }: { urls: string[]; 
         >
           {urls.map((url) => (
             <div key={url} className="flex h-full w-full shrink-0 snap-center items-center justify-center p-2">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local previews / backend uploads */}
-              <img src={url} alt="" className="max-h-full max-w-full select-none object-contain" draggable={false} />
+              <Img src={url} alt="" className="max-h-full max-w-full select-none object-contain" draggable={false} />
             </div>
           ))}
         </div>

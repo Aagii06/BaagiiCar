@@ -4,6 +4,7 @@ import CarImage from "@/components/car/CarImage";
 import { carSpecs } from "@/components/car/carSpecs";
 import { RejectNote, useRejectCar } from "@/components/car/useRejectCar";
 import { useConfirm } from "@/components/common/Confirm";
+import Img from "@/components/common/Img";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
@@ -225,8 +226,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
           >
             {photos.map((name, i) => (
               <button key={name} type="button" onClick={() => setViewing(i)} aria-label="Зураг томоор харах" className="aspect-[4/3] w-full shrink-0 snap-center">
-                {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-                <img src={uploadUrl(name, "grid")!} alt="" loading={i ? "lazy" : undefined} className="size-full object-contain" />
+                <Img src={uploadUrl(name, "grid")} alt="" loading={i ? "lazy" : undefined} className="size-full object-contain" />
               </button>
             ))}
           </div>
@@ -244,8 +244,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
       {/* Desktop: smaller main photo with a thumbnail column beside it. */}
       <div className="hidden h-[460px] gap-2 md:flex">
         <button type="button" onClick={() => setViewing(index)} aria-label="Зураг томоор харах" className="relative min-w-0 flex-1 overflow-hidden rounded-2xl bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-          <img src={uploadUrl(photos[index], "full")!} alt="" className="size-full object-contain" />
+          <Img src={uploadUrl(photos[index], "full")} alt="" className="size-full object-contain" />
           {counter}
         </button>
         {photos.length > 1 && (
@@ -258,8 +257,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
                 aria-label={`${i + 1}-р зураг`}
                 className={cn("aspect-[4/3] w-full shrink-0 overflow-hidden rounded-lg border-2", i === index ? "border-foreground" : "border-transparent opacity-80 hover:opacity-100")}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element -- backend-served uploads */}
-                <img src={uploadUrl(name, "thumb")!} alt="" className="size-full object-cover" />
+                <Img src={uploadUrl(name, "thumb")} alt="" className="size-full object-cover" />
               </button>
             ))}
           </div>
