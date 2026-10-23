@@ -20,7 +20,11 @@ Future<void> openCarChat(BuildContext context, Car? car) => showModalBottomSheet
       showDragHandle: false,
       backgroundColor: AppPalette.background,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl))),
-      builder: (_) => FractionallySizedBox(heightFactor: 0.85, child: _CarChatSheet(car: car)),
+      // Lifted above the keyboard while typing.
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        child: FractionallySizedBox(heightFactor: 0.85, child: _CarChatSheet(car: car)),
+      ),
     );
 
 class _Line {
@@ -196,7 +200,7 @@ class Composer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: EdgeInsets.fromLTRB(12, 10, 12, 10 + MediaQuery.viewInsetsOf(context).bottom * 0),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
         decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppPalette.border))),
         child: SafeArea(
           top: false,
