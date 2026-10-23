@@ -6,11 +6,10 @@ import Container, { PageTitle } from "@/components/common/Container";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { getCarsByIds } from "@/lib/api/cars";
 import { ApiError } from "@/lib/api/client";
-import { getMyMessages, sendMessage, type MyMessage } from "@/lib/api/messages";
+import { getMyMessages, markRead, sendMessage, type MyMessage } from "@/lib/api/messages";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { markSeen, readSeen, unreadCount } from "@/lib/messages/seen";
 import { useApi } from "@/lib/useApi";
 import { cn, timeAgo } from "@/lib/utils";
 import { ChevronRight, MessageCircle, SendHorizontal } from "lucide-react";
@@ -80,7 +79,6 @@ function MessagesInner() {
   }
 
   const list = threads.data ?? [];
-  const seen = readSeen(user.id);
   return (
     <Container className="max-w-2xl pt-4 md:pt-12">
       <PageTitle count={list.length}>{t("Мессеж")}</PageTitle>
@@ -96,7 +94,7 @@ function MessagesInner() {
             {list.map((th) => {
               const last = th.messages[th.messages.length - 1];
               const preview = last.reply ? `${t("Хариу")}: ${last.reply}` : last.message;
-              const unread = unreadCount(th.messages, seen);
+              const unread = th.messages.reduce((n, m) => n + (m.unread ?? 0), 0);
               return (
                 <li key={th.carId} className="border-b border-border last:border-b-0">
                   <Link href={`/messages?car=${th.carId}`} className="flex items-center gap-3 px-4 py-3.5 hover:bg-muted">
@@ -136,7 +134,7 @@ function MessagesInner() {
 /** One conversation: the visitor's messages as chat bubbles, and a box to keep writing about the same ad. */
 function ThreadView({ thread, token, onSent }: { thread: Thread; token: string; onSent: () => void }) {
   const { t } = useI18n();
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const [draft, setDraft] = useState("");
   const [sent, setSent] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -148,10 +146,11 @@ function ThreadView({ thread, token, onSent }: { thread: Thread; token: string; 
     end.current?.scrollIntoView({ block: "end" });
   }, [thread.messages.length, sent.length, replies]);
 
-  // Opening the thread reads its answers (clears the unread badge).
+  // Opening the thread reads its answers on the server (clears the unread badges), then refreshes.
+  const hasUnread = thread.messages.some((m) => m.unread);
   useEffect(() => {
-    if (user) markSeen(user.id, thread.messages);
-  }, [user, thread.messages]);
+    if (hasUnread) markRead(thread.carId, token).then(onSent, () => {});
+  }, [hasUnread, thread.carId, token, onSent]);
 
   // Pick up the team's answers while the thread is open.
   useEffect(() => {

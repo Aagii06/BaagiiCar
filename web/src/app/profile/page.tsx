@@ -5,9 +5,8 @@ import { LoadingState } from "@/components/common/States";
 import { displayName, useAuth } from "@/lib/auth/AuthProvider";
 import { useCompare } from "@/lib/compare/CompareProvider";
 import { useFavorites } from "@/lib/favorites/FavoritesProvider";
-import { getMyMessages } from "@/lib/api/messages";
+import { getUnreadCount } from "@/lib/api/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { readSeen, unreadCount } from "@/lib/messages/seen";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ChevronRight, GitCompare, Heart, LifeBuoy, LogOut, MessageCircle, User } from "lucide-react";
@@ -22,7 +21,7 @@ export default function ProfilePage() {
   const { user, token, ready, signOut } = useAuth();
   // Team answers not opened yet, for the "Мессеж" badge.
   const unread = useApi(
-    async () => (token && user ? unreadCount(await getMyMessages(token), readSeen(user.id)) : 0),
+    async () => (token ? getUnreadCount(token) : 0),
     token ?? ""
   );
   const favorites = useFavorites();

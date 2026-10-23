@@ -25,6 +25,8 @@ export interface MyMessage {
   reply: string | null;
   replied_at: string | null;
   car_id: number | null;
+  /** The team's / dealer's answers the visitor hasn't opened yet (server-side, for the badge). */
+  unread?: number;
   /** "new" until the team marks it "done". */
   status: string | null;
   created_at: string | null;
@@ -34,4 +36,19 @@ export interface MyMessage {
 export async function getMyMessages(token: string) {
   const res = await apiFetch<ApiListResponse<MyMessage>>("/web/messages", { headers: { Authorization: `Bearer ${token}` } });
   return res.data.rows;
+}
+
+/** Answers from the team / dealers the visitor hasn't opened yet, across all their messages. */
+export async function getUnreadCount(token: string) {
+  const res = await apiFetch<ApiItemResponse<{ count: number }>>("/web/messages/unread", { headers: { Authorization: `Bearer ${token}` } });
+  return res.data.count;
+}
+
+/** Marks the answers in one thread read: an ad's (`carId`) or the general questions (0). */
+export async function markRead(carId: number, token: string) {
+  await apiFetch("/web/messages/read", {
+    method: "POST",
+    body: { car_id: carId || null },
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
