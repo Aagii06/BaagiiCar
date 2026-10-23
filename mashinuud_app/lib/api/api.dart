@@ -145,6 +145,12 @@ class Api {
     return WebUser.fromJson(res['data'] as Map<String, dynamic>);
   }
 
+  /// The signed-in visitor's own messages, newest first.
+  static Future<List<MyMessage>> getMyMessages(String token) async {
+    final res = await apiFetch('/web/messages', token: token);
+    return _rows(res, MyMessage.fromJson);
+  }
+
   /// Question about an ad, stored for the team (name and number come from the token).
   static Future<void> sendMessage({required String token, required String message, int? carId}) async {
     await apiFetch('/web/messages', method: 'POST', token: token, body: {

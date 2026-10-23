@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
       name: { type: DataTypes.STRING(100) },
       phonenumber: { type: DataTypes.STRING(20) },
       message: { type: DataTypes.TEXT },
+      // Админ / дилерийн хариу (хэрэглэгч вэбийн чатад харна)
+      reply: { type: DataTypes.TEXT },
+      replied_by: { type: DataTypes.INTEGER },
+      replied_at: { type: DataTypes.STRING },
       car_id: { type: DataTypes.INTEGER },
       page_url: { type: DataTypes.STRING(500) },
       status: { type: DataTypes.STRING(20) },

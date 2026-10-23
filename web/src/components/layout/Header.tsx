@@ -36,6 +36,7 @@ const TAB_TITLES: Record<string, MessageKey> = {
 const PAGE_TITLES: [prefix: string, title: MessageKey][] = [
   ["/cars/", "Дэлгэрэнгүй"],
   ["/saved", "Хадгалсан"],
+  ["/messages", "Мессеж"],
   ["/help", "Тусламж"],
   ["/dealers", "Дилерүүд"],
   ["/leasing", "Лизинг"],

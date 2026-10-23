@@ -1,5 +1,5 @@
 const moment = require("moment");
-const { messages, cars } = require("../../models");
+const { messages, cars, op } = require("../../models");
 
 // Вэбийн чат цонх: нэвтэрсэн хэрэглэгчийн мессежийг админд хадгална (нэр, утас нь токеноос)
 module.exports.send = async (req, res) => {
@@ -24,6 +24,28 @@ module.exports.send = async (req, res) => {
     });
     result.success = true;
     result.data = { id: item.id };
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    result.message = "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
+// Нэвтэрсэн хэрэглэгчийн өөрийн илгээсэн мессежүүд (профайлын "Мессеж" цэс), шинэ нь эхэндээ
+module.exports.mine = async (req, res) => {
+  let result = { success: false, data: null, message: "Амжилттай" };
+  try {
+    const rows = await messages.findAll({
+      where: { created_by: req.loggedUser?.id ?? 0, deleted_at: { [op.is]: null } },
+      // reply / replied_at: админ / дилерийн хариу (api/messages/reply)
+      attributes: ["id", "type", "message", "reply", "replied_at", "car_id", "status", "created_at"],
+      order: [["id", "DESC"]],
+      limit: 200,
+      raw: true,
+    });
+    result.success = true;
+    result.data = { rows, count: rows.length };
     return res.status(200).json(result);
   } catch (error) {
     console.log(error);

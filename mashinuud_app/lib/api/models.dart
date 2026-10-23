@@ -199,3 +199,21 @@ class Page<T> {
   final int count;
   const Page(this.rows, this.count);
 }
+
+class MyMessage {
+  final int id;
+  final String message;
+  final int? carId;
+
+  /// "new" until the team marks it "done".
+  final String? status;
+  final String? createdAt;
+  const MyMessage({required this.id, required this.message, this.carId, this.status, this.createdAt});
+  factory MyMessage.fromJson(Map<String, dynamic> j) => MyMessage(
+        id: _int(j['id'])!,
+        message: _str(j['message']) ?? '',
+        carId: _int(j['car_id']),
+        status: _str(j['status']),
+        createdAt: _str(j['created_at']),
+      );
+}

@@ -6,7 +6,7 @@ import { displayName, useAuth } from "@/lib/auth/AuthProvider";
 import { useCompare } from "@/lib/compare/CompareProvider";
 import { useFavorites } from "@/lib/favorites/FavoritesProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { ChevronRight, GitCompare, Heart, LifeBuoy, LogOut, User } from "lucide-react";
+import { ChevronRight, GitCompare, Heart, LifeBuoy, LogOut, MessageCircle, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -26,6 +26,7 @@ export default function ProfilePage() {
   if (!ready || !user) return <LoadingState className="min-h-[50vh]" />;
 
   const links = [
+    { href: "/messages", label: t("Мессеж"), icon: MessageCircle, count: 0 },
     { href: "/saved", label: t("Хадгалсан"), icon: Heart, count: favorites.ids.size },
     { href: "/compare", label: t("Харьцуулалт"), icon: GitCompare, count: compare.ids.length },
     { href: "/help", label: t("Тусламж"), icon: LifeBuoy },

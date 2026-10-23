@@ -45,6 +45,7 @@ const destroy = async (req, res, next) => {
 const create = (req, res) => denied(res);
 
 module.exports = {
+  ownScope,
   model: messages,
   middleware: { show: one, list, create, update, lookup: list, destroy },
   validation: {

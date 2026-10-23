@@ -1,4 +1,4 @@
-import { apiFetch, type ApiItemResponse } from "./client";
+import { apiFetch, type ApiItemResponse, type ApiListResponse } from "./client";
 
 export interface MessageInput {
   /** "car": about ads (the only kind until the AI assistant is connected). */
@@ -15,4 +15,20 @@ export async function sendMessage(input: MessageInput, token: string) {
     body: input,
     headers: { Authorization: `Bearer ${token}` },
   });
+}
+
+export interface MyMessage {
+  id: number;
+  type: string | null;
+  message: string;
+  car_id: number | null;
+  /** "new" until the team marks it "done". */
+  status: string | null;
+  created_at: string | null;
+}
+
+/** The signed-in visitor's own messages, newest first. */
+export async function getMyMessages(token: string) {
+  const res = await apiFetch<ApiListResponse<MyMessage>>("/web/messages", { headers: { Authorization: `Bearer ${token}` } });
+  return res.data.rows;
 }
