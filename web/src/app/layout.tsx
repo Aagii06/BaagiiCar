@@ -1,4 +1,5 @@
 import CompareBar from "@/components/car/CompareBar";
+import CarChatDialog from "@/components/chat/CarChatDialog";
 import ChatWidget from "@/components/chat/ChatWidget";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <div className="h-[calc(4.5rem+env(safe-area-inset-bottom))] bg-dark md:hidden" />
               <MobileNav />
               <ChatWidget />
+              <CarChatDialog />
               <CompareBar />
               <PushPrompt />
               </CompareProvider>
