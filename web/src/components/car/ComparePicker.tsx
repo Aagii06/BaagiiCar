@@ -8,7 +8,7 @@ import { COMPARE_MAX, useCompare } from "@/lib/compare/CompareProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatNumber, formatPriceShort } from "@/lib/utils";
-import { Check, Plus, Search, X } from "lucide-react";
+import { Check, Loader2, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { carTitle } from "./CarCard";
 import CarImage from "./CarImage";
@@ -227,9 +227,11 @@ export default function ComparePicker({ onClose }: { onClose: () => void }) {
               type="button"
               disabled={cars.loading}
               onClick={() => setTake((n) => n + PAGE)}
-              className="mx-2 mt-2 h-10 w-[calc(100%-1rem)] rounded-xl bg-muted text-sm font-bold hover:bg-border disabled:opacity-60"
+              aria-busy={cars.loading}
+              className="mx-2 mt-2 flex h-10 w-[calc(100%-1rem)] items-center justify-center gap-2 rounded-xl bg-muted text-sm font-bold hover:bg-border disabled:cursor-wait"
             >
-              {t("Цааш үзэх")}
+              {cars.loading && <Loader2 className="size-4 animate-spin text-primary" />}
+              {cars.loading ? t("Ачаалж байна...") : t("Цааш үзэх")}
             </button>
           )}
         </div>
