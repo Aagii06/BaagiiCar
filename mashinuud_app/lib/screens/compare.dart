@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/api/api.dart';
-import 'package:mashinuud_app/api/client.dart';
 import 'package:mashinuud_app/api/models.dart';
 import 'package:mashinuud_app/app/constant.dart';
 import 'package:mashinuud_app/app/format.dart';
@@ -436,7 +435,7 @@ class _ComparePickerState extends State<_ComparePicker> {
       ),
       const Divider(height: 1),
       Expanded(
-        child: Loader<Page<Car>>(
+        child: Loader<ListPage<Car>>(
           fetchKey: '$_text|$_brand|$_model|$_dealer|$_band|$_take',
           fetch: () => Api.searchCars(search),
           builder: (context, page, refreshing) {

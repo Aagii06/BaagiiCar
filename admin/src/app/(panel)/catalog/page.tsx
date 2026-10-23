@@ -29,6 +29,9 @@ const TABS: { value: Tab; label: string }[] = [
   { value: "locations", label: "Байршил" },
 ];
 
+/** Word after the row count above the list. */
+const UNIT: Record<Tab, string> = { brands: "үйлдвэр", models: "загвар", bodyTypes: "төрөл", locations: "байршил" };
+
 /** Backend table each tab writes to (`/api/base/:target`). */
 const TARGET: Record<Tab, string> = { brands: "brands", models: "carModels", bodyTypes: "bodyTypes", locations: "locations" };
 
@@ -300,34 +303,39 @@ function CatalogInner() {
       ) : !rows.length ? (
         <EmptyState title="Бичлэг алга" />
       ) : (
-        // Edge to edge right under the header like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
-        // A next page keeps the rows already shown bright; a new search / reload dims them.
-        <div className={cn("-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white", list.loading && !loadingMore && "opacity-60")}>
-          {shown.map((row) => (
-            <div key={row.id} className="flex items-center gap-3 px-4 py-3">
-              {row.image !== undefined && (
-                <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted text-sm font-bold">
-                  {row.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- remote seeded logos
-                    <img src={row.image} alt="" className="size-7 object-contain" />
-                  ) : (
-                    row.name[0]
-                  )}
-                </span>
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{row.name}</p>
-                {row.subtitle && <p className="truncate text-xs text-muted-foreground">{row.subtitle}</p>}
+        <>
+          {/* Total like the Зарууд list (all pages, not just the rows loaded so far). */}
+          <p className="mb-2 text-xs font-semibold text-muted-foreground">
+            {total} {UNIT[tab]}
+          </p>
+          {/* Edge to edge like the Дилерүүд list (cancels main's px-4). A next page keeps the rows already shown bright; a new search / reload dims them. */}
+          <div className={cn("-mx-4 divide-y divide-border border-y border-border bg-white", list.loading && !loadingMore && "opacity-60")}>
+            {shown.map((row) => (
+              <div key={row.id} className="flex items-center gap-3 px-4 py-3">
+                {row.image !== undefined && (
+                  <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted text-sm font-bold">
+                    {row.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- remote seeded logos
+                      <img src={row.image} alt="" className="size-7 object-contain" />
+                    ) : (
+                      row.name[0]
+                    )}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{row.name}</p>
+                  {row.subtitle && <p className="truncate text-xs text-muted-foreground">{row.subtitle}</p>}
+                </div>
+                <button onClick={() => setEditing(row)} aria-label="Засах" className="grid size-9 place-items-center rounded-lg hover:bg-muted">
+                  <Pencil className="size-4" />
+                </button>
+                <button onClick={() => remove(row)} aria-label="Устгах" className="grid size-9 place-items-center rounded-lg text-destructive hover:bg-destructive-soft">
+                  <Trash2 className="size-4" />
+                </button>
               </div>
-              <button onClick={() => setEditing(row)} aria-label="Засах" className="grid size-9 place-items-center rounded-lg hover:bg-muted">
-                <Pencil className="size-4" />
-              </button>
-              <button onClick={() => remove(row)} aria-label="Устгах" className="grid size-9 place-items-center rounded-lg text-destructive hover:bg-destructive-soft">
-                <Trash2 className="size-4" />
-              </button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       )}
       {shown.length > 0 &&
         shown.length < total &&

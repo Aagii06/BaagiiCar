@@ -58,7 +58,7 @@ class CarsScreen extends StatefulWidget {
 class _CarsScreenState extends State<CarsScreen> {
   CarSearch _search = const CarSearch(featuredFirst: true);
   int _pages = 1;
-  Page<Car>? _result;
+  ListPage<Car>? _result;
   Object? _error;
   bool _loading = true;
   bool _loadingMore = false;

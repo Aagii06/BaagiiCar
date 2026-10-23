@@ -91,7 +91,7 @@ class _DealerScreenState extends State<DealerScreen> {
             builder: (context, d, _) => _header(d),
           ),
           const SizedBox(height: 24),
-          Loader<Page<Car>>(
+          Loader<ListPage<Car>>(
             fetchKey: _take,
             fetch: () => Api.getDealerCars(widget.dealerId, take: _take),
             loading: const CarCardSkeleton(count: 3),

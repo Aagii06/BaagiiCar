@@ -11,12 +11,12 @@ class Api {
   static List<T> _rows<T>(Map<String, dynamic> res, T Function(Map<String, dynamic>) parse) =>
       ((res['data']?['rows'] as List?) ?? []).cast<Map<String, dynamic>>().map(parse).toList();
 
-  static Page<T> _page<T>(Map<String, dynamic> res, T Function(Map<String, dynamic>) parse) =>
-      Page(_rows(res, parse), (res['data']?['count'] as num?)?.toInt() ?? 0);
+  static ListPage<T> _page<T>(Map<String, dynamic> res, T Function(Map<String, dynamic>) parse) =>
+      ListPage(_rows(res, parse), (res['data']?['count'] as num?)?.toInt() ?? 0);
 
   // --- cars -----------------------------------------------------------------
 
-  static Future<Page<Car>> searchCars(CarSearch s) async {
+  static Future<ListPage<Car>> searchCars(CarSearch s) async {
     final sort = <Map<String, Object>>[
       if (s.featuredFirst) {'selector': 'is_featured', 'desc': true},
       ...s.sort.order,
@@ -119,7 +119,7 @@ class Api {
     return Dealer.fromJson(res['data'] as Map<String, dynamic>);
   }
 
-  static Future<Page<Car>> getDealerCars(int id, {int take = 12}) async {
+  static Future<ListPage<Car>> getDealerCars(int id, {int take = 12}) async {
     final res = await apiFetch('/web/dealers/$id/cars?take=$take&skip=0');
     return _page(res, Car.fromJson);
   }

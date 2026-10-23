@@ -13,7 +13,7 @@ import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// An ad's page (website /cars/<id>): edge-to-edge photos, summary, specs, leasing, similar ads,
+/// An ad's page (website `/cars/<id>`): edge-to-edge photos, summary, specs, leasing, similar ads,
 /// and an action bar in place of the tab bar.
 class CarDetailScreen extends StatelessWidget {
   final int carId;

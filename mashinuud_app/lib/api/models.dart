@@ -194,10 +194,10 @@ class Session {
   const Session(this.token, this.user);
 }
 
-class Page<T> {
+class ListPage<T> {
   final List<T> rows;
   final int count;
-  const Page(this.rows, this.count);
+  const ListPage(this.rows, this.count);
 }
 
 class MyMessage {

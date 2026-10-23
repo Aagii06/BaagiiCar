@@ -29,9 +29,9 @@ class LoaderState<T> extends State<Loader<T>> {
   }
 
   @override
-  void didUpdateWidget(covariant Loader<T> old) {
-    super.didUpdateWidget(old);
-    if (old.fetchKey != widget.fetchKey) reload();
+  void didUpdateWidget(covariant Loader<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.fetchKey != widget.fetchKey) reload();
   }
 
   Future<void> reload() async {
