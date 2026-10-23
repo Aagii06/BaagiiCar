@@ -116,7 +116,7 @@ export default function MessagesPage() {
 
   return (
     <>
-      <PageHeader title="Мессеж">
+      <PageHeader>
         <ChipTabs items={TABS} value={tab} onChange={setTab} />
       </PageHeader>
 

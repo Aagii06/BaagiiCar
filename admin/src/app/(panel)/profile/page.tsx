@@ -1,6 +1,5 @@
 "use client";
 
-import PageHeader from "@/components/layout/PageHeader";
 import { WEB_URL } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
@@ -18,8 +17,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      <PageHeader title="Профайл" />
-      <section className="flex items-center gap-3 rounded-2xl bg-dark p-4 text-white">
+      <section className="mt-4 flex items-center gap-3 rounded-2xl bg-dark p-4 text-white">
         <UserAvatar user={user} className="size-12 bg-primary text-white" />
         <div className="min-w-0">
           <p className="truncate font-bold">{userName(user)}</p>
