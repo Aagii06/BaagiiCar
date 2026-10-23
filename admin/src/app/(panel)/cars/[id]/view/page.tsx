@@ -1,6 +1,7 @@
 "use client";
 
 import CarImage from "@/components/car/CarImage";
+import { carSpecs } from "@/components/car/carSpecs";
 import { RejectNote, useRejectCar } from "@/components/car/useRejectCar";
 import { useConfirm } from "@/components/common/Confirm";
 import PhotoViewer from "@/components/common/PhotoViewer";
@@ -11,9 +12,9 @@ import { approveCar, getCar, getCarFiles, setHidden } from "@/lib/api/admin";
 import type { Car } from "@/lib/api/types";
 import { uploadUrl, WEB_URL } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { bodyTypeLabel, CAR_STATUS, ROLES } from "@/lib/constants";
+import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { cn, formatEngine, formatNumber, formatPrice, timeAgo } from "@/lib/utils";
+import { cn, formatPrice, timeAgo } from "@/lib/utils";
 import { Check, ExternalLink, Eye, EyeOff, Heart, Pencil, Phone, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
@@ -271,20 +272,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
 }
 
 function Specs({ car }: { car: Car }) {
-  const specs: [string, string | number | null | undefined][] = [
-    ["Үйлдвэрлэсэн он", car.manufactured_year],
-    ["Орж ирсэн он", car.imported_year],
-    ["Гүйлт", car.mileage != null ? `${formatNumber(car.mileage)} км` : null],
-    ["Хөдөлгүүр", car.engine_capacity ? formatEngine(car.engine_capacity) : null],
-    ["Түлш", car.fuel_type],
-    ["Хурдны хайрцаг", car.transmission],
-    ["Хүрд", car.steering],
-    ["Хөтлөгч", car.drive_type],
-    ["Ангилал", car.vehicle_type],
-    ["Гадна өнгө", car.color],
-    ["Дотор өнгө", car.interior_color],
-    ["Төрөл", bodyTypeLabel(car.body_type_name)],
-  ];
+  const specs = carSpecs(car);
   return (
     <section className="rounded-2xl bg-card p-4 md:p-5">
       <h2 className="font-bold">Үзүүлэлт</h2>

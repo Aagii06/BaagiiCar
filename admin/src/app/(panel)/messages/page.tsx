@@ -6,13 +6,12 @@ import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import { deleteMessage, listMessages, setMessageStatus } from "@/lib/api/admin";
-import type { Message } from "@/lib/api/types";
+import type { Car, Message } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
-import { withFrom } from "@/lib/useBackTo";
 import CarImage from "@/components/car/CarImage";
+import CarPreviewSheet from "@/components/car/CarPreviewSheet";
 import { carTitle, cn, timeAgo } from "@/lib/utils";
 import { Check, ChevronRight, Phone, RotateCcw, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
 type Tab = Message["status"] | "all";
@@ -29,7 +28,7 @@ const BADGE: Record<Message["status"], { label: string; className: string }> = {
   deleted: { label: "Устгагдсан", className: "bg-destructive-soft text-destructive" },
 };
 
-function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void }) {
+function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: () => void; onOpenCar: (car: Car) => void }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const isNew = item.status === "new";
@@ -69,11 +68,11 @@ function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void 
       </div>
       <p className="mt-3 whitespace-pre-line text-sm leading-6">{item.message}</p>
       {item.car && (
-          <Link href={withFrom(`/cars/${item.car_id}`, "messages")} className="mt-3 flex items-center gap-3 rounded-xl bg-muted p-2 hover:bg-border">
+          <button type="button" onClick={() => onOpenCar(item.car!)} className="mt-3 flex w-full items-center gap-3 rounded-xl bg-muted p-2 text-left hover:bg-border">
             <CarImage id={item.car.id} image={item.car.image} bodyType={item.car.body_type_name} size="thumb" className="h-10 w-14 shrink-0" artClassName="w-[80%]" />
             <span className="min-w-0 flex-1 truncate text-sm font-bold">{carTitle(item.car)}</span>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-          </Link>
+          </button>
       )}
       <div className="mt-3 flex gap-2">
         {isDeleted ? (
@@ -110,6 +109,8 @@ function MessageRow({ item, onChanged }: { item: Message; onChanged: () => void 
 export default function MessagesPage() {
   const [tab, setTab] = useState<Tab>("new");
   const messages = useApi(() => listMessages(tab === "all" ? undefined : tab), tab);
+  // The ad a message is about, shown in a sheet over the list instead of leaving the page.
+  const [preview, setPreview] = useState<Car | null>(null);
 
   return (
     <>
@@ -127,10 +128,11 @@ export default function MessagesPage() {
         // Edge to edge, right under the header, like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
           {messages.data.rows.map((m) => (
-            <MessageRow key={m.id} item={m} onChanged={messages.reload} />
+            <MessageRow key={m.id} item={m} onChanged={messages.reload} onOpenCar={setPreview} />
           ))}
         </div>
       )}
+      {preview && <CarPreviewSheet car={preview} from="messages" onClose={() => setPreview(null)} />}
     </>
   );
 }
