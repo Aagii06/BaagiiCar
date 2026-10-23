@@ -33,7 +33,6 @@ export default function CarWideCard({ car }: { car: Car }) {
           </span>
         </div>
         <SpecChips car={car} className="mt-4" />
-        {car.description && <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted-foreground">{car.description}</p>}
         <div className="mt-auto flex gap-2 pt-5">
           <Link href={href} className="flex h-11 flex-1 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white hover:bg-primary-hover">
             {t("Дэлгэрэнгүй")}

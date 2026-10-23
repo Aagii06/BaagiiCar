@@ -522,11 +522,11 @@ function CarsPageInner() {
             ) : (
               <div className={cn("grid gap-4 sm:grid-cols-2 xl:grid-cols-3", result.loading && "opacity-60")}>
                 {rest.slice(0, 3).map((car) => (
-                  <CarCard key={car.id} car={car} showDescription />
+                  <CarCard key={car.id} car={car} />
                 ))}
                 {wide && <CarWideCard car={wide} />}
                 {rest.slice(3).map((car) => (
-                  <CarCard key={car.id} car={car} showDescription />
+                  <CarCard key={car.id} car={car} />
                 ))}
               </div>
             )}

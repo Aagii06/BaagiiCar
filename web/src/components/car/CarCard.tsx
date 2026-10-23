@@ -26,7 +26,7 @@ export function FeaturedBadge({ className }: { className?: string }) {
 }
 
 /** Grid card from "Онцлох зарууд" / "Машин авах". */
-export default function CarCard({ car, showDescription, featuredBadge }: { car: Car; showDescription?: boolean; featuredBadge?: boolean }) {
+export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadge?: boolean }) {
   const { t } = useI18n();
   const href = `/cars/${car.id}`;
   return (
@@ -61,7 +61,6 @@ export default function CarCard({ car, showDescription, featuredBadge }: { car: 
             {car.location_name}
           </p>
         )}
-        {showDescription && car.description && <p className="mt-2 line-clamp-2 text-[13px] leading-5 text-muted-foreground">{car.description}</p>}
 
         <div className="mt-auto flex gap-2 pt-4">
           <Link href={href} className="flex h-10 flex-1 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white hover:bg-primary-hover">
