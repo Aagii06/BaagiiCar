@@ -40,7 +40,7 @@ export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadg
         {car.status === "sold" && (
           <span className="absolute left-2.5 top-2.5 rounded-full bg-dark px-2.5 py-1 text-[11px] font-bold text-white">{t("Зарагдсан")}</span>
         )}
-        {!featuredBadge && <FavoriteButton carId={car.id} className="absolute right-2.5 top-2.5" />}
+        <FavoriteButton carId={car.id} className="absolute right-2.5 top-2.5" />
       </div>
 
       <div className="flex flex-1 flex-col px-1 pb-1 pt-3">

@@ -421,6 +421,7 @@ function CarsPageInner() {
         fuelTypes: p.fuel,
         steering: p.steering,
         sort: p.sort,
+        featuredFirst: true,
         page: p.page,
         pageSize: PAGE_SIZE,
       }),

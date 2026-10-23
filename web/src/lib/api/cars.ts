@@ -23,6 +23,8 @@ export interface CarSearch {
   /** Matched against brand and model names. */
   text?: string;
   sort?: CarSort;
+  /** Featured ads ahead of the rest, each group in `sort` order. */
+  featuredFirst?: boolean;
   page?: number;
   pageSize?: number;
 }
@@ -73,7 +75,7 @@ export async function searchCars(s: CarSearch) {
   const res = await apiFetch<ApiListResponse<Car>>(
     `/web/base/vwCars${listQuery({
       filter: searchConditions(s),
-      sort: SORTS[s.sort ?? "new"],
+      sort: s.featuredFirst ? [{ selector: "is_featured", desc: true }, ...SORTS[s.sort ?? "new"]] : SORTS[s.sort ?? "new"],
       take: pageSize,
       skip: ((s.page ?? 1) - 1) * pageSize,
     })}`
