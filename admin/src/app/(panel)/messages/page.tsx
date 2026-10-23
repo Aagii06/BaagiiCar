@@ -108,7 +108,9 @@ function MessageRow({ item, onChanged, onOpenCar }: { item: Message; onChanged: 
 /** Messages left in the web site's chat box; reply by phone, then mark done. */
 export default function MessagesPage() {
   const [tab, setTab] = useState<Tab>("new");
-  const messages = useApi(() => listMessages(tab === "all" ? undefined : tab), tab);
+  // Tagged with its tab: right after a switch the previous tab's list is still in `messages` and must not show.
+  const messages = useApi(() => listMessages(tab === "all" ? undefined : tab).then((res) => ({ ...res, tab })), tab);
+  const list = messages.data?.tab === tab ? messages.data : undefined;
   // The ad a message is about, shown in a sheet over the list instead of leaving the page.
   const [preview, setPreview] = useState<Car | null>(null);
 
@@ -118,16 +120,16 @@ export default function MessagesPage() {
         <ChipTabs items={TABS} value={tab} onChange={setTab} />
       </PageHeader>
 
-      {messages.loading && !messages.data ? (
-        <LoadingState />
-      ) : messages.error ? (
+      {messages.error ? (
         <ErrorState message={messages.error.message} onRetry={messages.reload} />
-      ) : !messages.data?.rows.length ? (
+      ) : !list ? (
+        <LoadingState />
+      ) : !list.rows.length ? (
         <EmptyState title={tab === "new" ? "Шинэ мессеж алга" : tab === "deleted" ? "Устгагдсан мессеж алга" : "Мессеж алга"} />
       ) : (
         // Edge to edge, right under the header, like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
-          {messages.data.rows.map((m) => (
+          {list.rows.map((m) => (
             <MessageRow key={m.id} item={m} onChanged={messages.reload} onOpenCar={setPreview} />
           ))}
         </div>
