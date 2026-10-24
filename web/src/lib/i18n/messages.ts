@@ -388,6 +388,7 @@ export const MESSAGES = {
     en: "You sign in with this number, so it can't be changed.",
   },
   "Хадгалагдлаа": { ru: "Сохранено", en: "Saved" },
+  "Шалгаж байна…": { ru: "Проверяем…", en: "Checking…" },
   "Шинэ хаяг руу баталгаажуулах код илгээнэ.": {
     ru: "На новый адрес будет отправлен код подтверждения.",
     en: "We'll send a verification code to the new address.",

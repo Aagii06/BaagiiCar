@@ -69,7 +69,10 @@ function ProfileForm({ user }: { user: WebUser }) {
   const trimmedEmail = email.trim().toLowerCase();
   const nameDirty = trimmedName !== (user.firstname ?? "");
   const emailDirty = trimmedEmail !== (user.email ?? "").toLowerCase();
-  const canSave = !busy && (nameDirty || emailDirty) && trimmedName.length > 0;
+  const emailRemoved = emailDirty && !trimmedEmail;
+  // A new address is saved through its code (the "Код авах" button), not this button.
+  const canSave = !busy && (nameDirty || emailRemoved) && trimmedName.length > 0;
+  const canRequestCode = !busy && emailDirty && /^\S+@\S+\.\S+$/.test(trimmedEmail);
 
   const showSaved = () => {
     setSaved(true);
@@ -77,26 +80,35 @@ function ProfileForm({ user }: { user: WebUser }) {
     savedTimer.current = setTimeout(() => setSaved(false), 2000);
   };
 
-  // Name (and a removed e-mail) save at once; a new e-mail is saved only after its code is entered.
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSave || !token) return;
+  const run = async (action: () => Promise<void>) => {
     setBusy(true);
     setError(null);
     try {
-      if (nameDirty || (emailDirty && !trimmedEmail)) {
-        setUser(await updateMe(token, { firstname: trimmedName, ...(emailDirty && !trimmedEmail ? { email: null } : {}) }));
-        if (!emailDirty || !trimmedEmail) showSaved();
-      }
-      if (emailDirty && trimmedEmail) {
-        await sendEmailCode(token, trimmedEmail);
-        setVerifying(trimmedEmail);
-      }
+      await action();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setBusy(false);
     }
+  };
+
+  // Name (and a removed e-mail) save here.
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSave || !token) return;
+    run(async () => {
+      setUser(await updateMe(token, { firstname: trimmedName, ...(emailRemoved ? { email: null } : {}) }));
+      showSaved();
+    });
+  };
+
+  // New e-mail: code to that address, then the modal saves it once the code is filled in.
+  const requestCode = () => {
+    if (!canRequestCode || !token) return;
+    run(async () => {
+      await sendEmailCode(token, trimmedEmail);
+      setVerifying(trimmedEmail);
+    });
   };
 
   return (
@@ -113,7 +125,32 @@ function ProfileForm({ user }: { user: WebUser }) {
         <input value={user.phonenumber ?? ""} disabled readOnly className={inputClass} />
       </Field>
       <Field label={t("И-мэйл")} hint={emailDirty && trimmedEmail ? t("Шинэ хаяг руу баталгаажуулах код илгээнэ.") : undefined}>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" autoComplete="email" className={inputClass} />
+        <span className="relative block">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => {
+              // Enter on a new address asks for its code instead of submitting the form.
+              if (e.key !== "Enter" || !emailDirty || !trimmedEmail) return;
+              e.preventDefault();
+              requestCode();
+            }}
+            placeholder="name@example.com"
+            autoComplete="email"
+            className={cn(inputClass, emailDirty && trimmedEmail && "pr-28")}
+          />
+          {emailDirty && trimmedEmail && (
+            <button
+              type="button"
+              onClick={requestCode}
+              disabled={!canRequestCode}
+              className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-lg bg-primary px-3 text-sm font-bold text-white transition hover:bg-primary-hover disabled:opacity-60"
+            >
+              {t("Код авах")}
+            </button>
+          )}
+        </span>
       </Field>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -194,9 +231,15 @@ function EmailCodeDialog({
     }
   };
 
-  const verify = () =>
+  // Filling in the last digit checks the code; a wrong one is cleared for another try.
+  const verify = (value: string) =>
     run(async () => {
-      onVerified(await verifyEmailCode(token, email, code));
+      try {
+        onVerified(await verifyEmailCode(token, email, value));
+      } catch (err) {
+        setCode("");
+        throw err;
+      }
     });
 
   return (
@@ -221,13 +264,15 @@ function EmailCodeDialog({
         <Field label={t("Баталгаажуулах код")}>
           <input
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, EMAIL_CODE_LENGTH))}
-            onKeyDown={(e) => {
-              // Enter would submit the profile form behind the modal.
-              if (e.key !== "Enter") return;
-              e.preventDefault();
-              if (!busy && code.length === EMAIL_CODE_LENGTH) verify();
+            onChange={(e) => {
+              const next = e.target.value.replace(/\D/g, "").slice(0, EMAIL_CODE_LENGTH);
+              setCode(next);
+              if (next.length === EMAIL_CODE_LENGTH) verify(next);
             }}
+            // Enter would submit the profile form behind the modal.
+            onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+            // readOnly, not disabled, so the field keeps focus for a retry.
+            readOnly={busy}
             inputMode="numeric"
             autoComplete="one-time-code"
             placeholder="000000"
@@ -236,15 +281,8 @@ function EmailCodeDialog({
           />
         </Field>
         {error && <p className="rounded-xl bg-destructive-soft px-4 py-3 text-sm font-medium text-destructive">{error}</p>}
-        <button
-          type="button"
-          onClick={verify}
-          disabled={busy || code.length !== EMAIL_CODE_LENGTH}
-          className="h-12 w-full rounded-xl bg-primary text-[15px] font-bold text-white transition hover:bg-primary-hover disabled:opacity-60"
-        >
-          {t("Баталгаажуулах")}
-        </button>
-        <div className="flex justify-end text-sm font-semibold">
+        <div className="flex items-center justify-between gap-4 text-sm font-semibold">
+          <span className="text-muted-foreground">{busy && code.length === EMAIL_CODE_LENGTH ? t("Шалгаж байна…") : ""}</span>
           <button
             type="button"
             onClick={() =>
