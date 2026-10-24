@@ -48,8 +48,8 @@ export default function DashboardPage() {
   const tiles = s && [
     ...(isAdmin
       ? [
-          { label: "Нийт дилер", value: s.dealers, href: "/dealers", icon: Store, className: "bg-tint-blue", iconClassName: "bg-[#2f80ed] text-white" },
-          { label: "Идэвхтэй хэрэглэгч", value: s.users, href: "/customers", icon: Users, className: "bg-tint-mint", iconClassName: "bg-success text-white" },
+          { label: "Нийт дилер", value: s.dealers, href: withFrom("/dealers", "home"), icon: Store, className: "bg-tint-blue", iconClassName: "bg-[#2f80ed] text-white" },
+          { label: "Идэвхтэй хэрэглэгч", value: s.users, href: withFrom("/customers", "home"), icon: Users, className: "bg-tint-mint", iconClassName: "bg-success text-white" },
         ]
       : []),
     { label: "Нийт зар", value: s.total, href: "/cars", icon: CarFront, className: "bg-tint-lavender", iconClassName: "bg-[#7b61ff] text-white" },

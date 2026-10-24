@@ -8,9 +8,10 @@ import PageHeader from "@/components/layout/PageHeader";
 import { listCustomers } from "@/lib/api/admin";
 import type { Customer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
+import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { timeAgo } from "@/lib/utils";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 const STATUS_TABS: { value: "" | Customer["status"]; label: string }[] = [
   { value: "", label: "Бүгд" },
@@ -20,6 +21,16 @@ const STATUS_TABS: { value: "" | Customer["status"]; label: string }[] = [
 
 /** Web visitors (`customers` table): they sign up themselves with a one-time code. */
 export default function CustomersPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CustomersList />
+    </Suspense>
+  );
+}
+
+function CustomersList() {
+  // Opened from home (`?from=home`) → back returns there, else to Профайл.
+  const { from, back } = useBackTo("/profile");
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"" | Customer["status"]>("");
@@ -27,7 +38,7 @@ export default function CustomersPage() {
 
   return (
     <>
-      <PageHeader title="Хэрэглэгч" back="/profile">
+      <PageHeader title="Хэрэглэгч" back={back}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -51,7 +62,7 @@ export default function CustomersPage() {
           {/* Edge to edge, like the Admin & Dealer list. */}
           <div className="-mx-4 divide-y divide-border border-y border-border bg-white">
             {customers.data.rows.map((c) => (
-              <Link key={c.id} href={`/customers/${c.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/60">
+              <Link key={c.id} href={withFrom(`/customers/${c.id}`, from)} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/60">
                 <CustomerAvatar customer={c} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{customerName(c)}</p>

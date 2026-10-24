@@ -9,14 +9,16 @@ import { DetailHeader } from "@/components/layout/PageHeader";
 import { createDealer, deleteDealer, getDealer, updateDealer, type DealerInput } from "@/lib/api/admin";
 import type { Dealer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
+import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { useRouteId } from "@/lib/useRouteId";
 import { cn } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-function DealerForm({ dealer }: { dealer: Dealer | null }) {
+/** `listHref`: the list to return to after save / delete (keeps `?from=`). */
+function DealerForm({ dealer, listHref }: { dealer: Dealer | null; listHref: string }) {
   const router = useRouter();
   const toast = useToast();
   const confirm = useConfirm();
@@ -52,7 +54,7 @@ function DealerForm({ dealer }: { dealer: Dealer | null }) {
       if (dealer) await updateDealer(dealer.id, body);
       else await createDealer(body);
       toast("Хадгаллаа");
-      router.push("/dealers");
+      router.push(listHref);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
@@ -72,7 +74,7 @@ function DealerForm({ dealer }: { dealer: Dealer | null }) {
     try {
       await deleteDealer(dealer.id);
       toast("Устгалаа");
-      router.push("/dealers");
+      router.push(listHref);
     } catch (err) {
       toast(errorMessage(err), "error");
     }
@@ -129,15 +131,24 @@ function DealerForm({ dealer }: { dealer: Dealer | null }) {
 }
 
 export default function DealerPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <DealerDetail />
+    </Suspense>
+  );
+}
+
+function DealerDetail() {
+  const listHref = withFrom("/dealers", useBackTo("/dealers").from);
   const id = useRouteId();
   const isNew = id === "new";
   const data = useApi(() => (isNew ? Promise.resolve(null) : getDealer(id)), id);
 
   return (
     <>
-      <DetailHeader title={isNew ? "Шинэ дилер" : (data.data?.name ?? "Дилер")} back="/dealers" />
+      <DetailHeader title={isNew ? "Шинэ дилер" : (data.data?.name ?? "Дилер")} back={listHref} />
       {isNew ? (
-        <DealerForm dealer={null} />
+        <DealerForm dealer={null} listHref={listHref} />
       ) : data.loading && !data.data ? (
         <LoadingState />
       ) : data.error ? (
@@ -145,7 +156,7 @@ export default function DealerPage() {
       ) : !data.data || data.data.status === "deleted" ? (
         <EmptyState title="Дилер олдсонгүй" />
       ) : (
-        <DealerForm key={data.data.id} dealer={data.data} />
+        <DealerForm key={data.data.id} dealer={data.data} listHref={listHref} />
       )}
     </>
   );

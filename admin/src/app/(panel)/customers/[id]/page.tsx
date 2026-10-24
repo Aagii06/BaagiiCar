@@ -9,13 +9,15 @@ import { DetailHeader } from "@/components/layout/PageHeader";
 import { deleteCustomer, getCustomer, updateCustomer, type CustomerInput } from "@/lib/api/admin";
 import type { Customer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
+import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { useRouteId } from "@/lib/useRouteId";
 import { timeAgo } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-function CustomerForm({ customer }: { customer: Customer }) {
+/** `listHref`: the list to return to after save / delete (keeps `?from=`). */
+function CustomerForm({ customer, listHref }: { customer: Customer; listHref: string }) {
   const router = useRouter();
   const toast = useToast();
   const confirm = useConfirm();
@@ -46,7 +48,7 @@ function CustomerForm({ customer }: { customer: Customer }) {
     try {
       await updateCustomer(customer.id, body);
       toast("Хадгаллаа");
-      router.push("/customers");
+      router.push(listHref);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
@@ -65,7 +67,7 @@ function CustomerForm({ customer }: { customer: Customer }) {
     try {
       await deleteCustomer(customer.id);
       toast("Устгалаа");
-      router.push("/customers");
+      router.push(listHref);
     } catch (err) {
       toast(errorMessage(err), "error");
     }
@@ -116,12 +118,21 @@ function CustomerForm({ customer }: { customer: Customer }) {
 }
 
 export default function CustomerPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CustomerDetail />
+    </Suspense>
+  );
+}
+
+function CustomerDetail() {
+  const listHref = withFrom("/customers", useBackTo("/customers").from);
   const id = useRouteId();
   const data = useApi(() => getCustomer(id), id);
 
   return (
     <>
-      <DetailHeader title={data.data ? customerName(data.data) : "Хэрэглэгч"} back="/customers" />
+      <DetailHeader title={data.data ? customerName(data.data) : "Хэрэглэгч"} back={listHref} />
       {data.loading && !data.data ? (
         <LoadingState />
       ) : data.error ? (
@@ -129,7 +140,7 @@ export default function CustomerPage() {
       ) : !data.data || data.data.status === "deleted" ? (
         <EmptyState title="Хэрэглэгч олдсонгүй" />
       ) : (
-        <CustomerForm key={data.data.id} customer={data.data} />
+        <CustomerForm key={data.data.id} customer={data.data} listHref={listHref} />
       )}
     </>
   );

@@ -12,7 +12,7 @@ import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, toNumber } from "@/lib/utils";
-import { Check, Plus, Trophy, X } from "lucide-react";
+import { Plus, Trophy, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
@@ -89,11 +89,9 @@ export default function ComparePage() {
         {rows.length > 1 && (
           // Phones: its own full-width row under the title, "Цэвэрлэх" on the right.
           <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-start">
-            <label className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold">
-              <input type="checkbox" className="sr-only" checked={diffOnly} onChange={(e) => setDiffOnly(e.target.checked)} />
-              <span className={cn("grid size-5 place-items-center rounded-[5px] border-[1.5px]", diffOnly ? "border-primary bg-primary text-white" : "border-input bg-white")}>
-                {diffOnly && <Check className="size-3.5" strokeWidth={3.2} />}
-              </span>
+            <label className="flex cursor-pointer select-none items-center gap-3 text-sm font-semibold">
+              <input type="checkbox" role="switch" className="peer sr-only" checked={diffOnly} onChange={(e) => setDiffOnly(e.target.checked)} />
+              <span className="relative h-7 w-12 shrink-0 rounded-full border border-border bg-card transition-colors after:absolute after:left-1 after:top-1/2 after:size-5 after:-translate-y-1/2 after:rounded-full after:bg-muted-foreground/30 after:transition-all peer-checked:border-primary peer-checked:bg-primary peer-checked:after:left-6 peer-checked:after:bg-white peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40" />
               {t("Зөвхөн ялгааг харуулах")}
             </label>
             <button
