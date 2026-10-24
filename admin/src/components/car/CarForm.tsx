@@ -573,7 +573,14 @@ export default function CarForm({
               <input className={inputClass} {...digits("mileage")} placeholder="120000" />
             </Field>
             <Field className="col-span-2" label="Улсын дугаар">
-              <Chips options={withCurrent(PLATE_TYPES, f.plate_type)} value={f.plate_type} onChange={(v) => set("plate_type", v)} />
+              <Select {...bind("plate_type")}>
+                <option value="">Сонгох</option>
+                {withCurrent(PLATE_TYPES, f.plate_type).map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </Select>
             </Field>
             <Field className="col-span-2" label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : "Жишээ: 45000000"}>
               <input className={inputClass} {...digits("price")} placeholder="45000000" required />

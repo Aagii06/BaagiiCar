@@ -12,7 +12,7 @@ import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, toNumber } from "@/lib/utils";
-import { Plus, Trophy, X } from "lucide-react";
+import { Check, Plus, Trophy, X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
@@ -90,7 +90,10 @@ export default function ComparePage() {
           // Phones: its own full-width row under the title, "Цэвэрлэх" on the right.
           <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-start">
             <label className="flex cursor-pointer select-none items-center gap-2 text-sm font-semibold">
-              <input type="checkbox" checked={diffOnly} onChange={(e) => setDiffOnly(e.target.checked)} className="size-4 accent-primary" />
+              <input type="checkbox" className="sr-only" checked={diffOnly} onChange={(e) => setDiffOnly(e.target.checked)} />
+              <span className={cn("grid size-5 place-items-center rounded-[5px] border-[1.5px]", diffOnly ? "border-primary bg-primary text-white" : "border-input bg-white")}>
+                {diffOnly && <Check className="size-3.5" strokeWidth={3.2} />}
+              </span>
               {t("Зөвхөн ялгааг харуулах")}
             </label>
             <button

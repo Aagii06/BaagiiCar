@@ -26,17 +26,18 @@ const normalize = (v: string) => v.replace(/\s+/g, "").toUpperCase();
  * the result is handed to the form to fill itself.
  */
 export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, plateType: string | null) => string | null }) {
-  const [type, setType] = useState<SearchType>("ub");
+  // Nothing picked at first: the user chooses УБ / Орон нутаг / Арлын themselves.
+  const [type, setType] = useState<SearchType | "">("");
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
-  const t = TYPES[type];
+  const t = type ? TYPES[type] : null;
   const q = normalize(value);
-  // The search button stays off until the number has the right format.
-  const valid = t.check.test(q);
+  // The search button stays off until a type is picked and the number has the right format.
+  const valid = !!t && t.check.test(q);
 
   const search = async () => {
-    if (!valid || busy) return;
+    if (!t || !valid || busy) return;
     setBusy(true);
     setNote(null);
     try {
@@ -61,7 +62,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, 
             title="Хайх төрөл"
             value={type}
             // Short on the field, full name in the sheet.
-            valueLabel={t.short}
+            valueLabel={t?.short ?? "Сонгох"}
             onChange={(e) => {
               setType(e.target.value as SearchType);
               setNote(null);
@@ -70,6 +71,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, 
             className="cursor-pointer bg-transparent pl-3 pr-7 text-[13px] font-semibold text-primary"
             chevronClassName="right-2 size-3.5 text-primary"
           >
+            {!type && <option value="">Сонгох</option>}
             {(Object.keys(TYPES) as SearchType[]).map((k) => (
               <option key={k} value={k}>
                 {TYPES[k].label}
@@ -90,7 +92,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, 
               search();
             }
           }}
-          placeholder={`${t.label}: ${t.placeholder}`}
+          placeholder={t ? `${t.label}: ${t.placeholder}` : "Эхлээд дугаарын төрлөө сонгоно уу"}
           maxLength={20}
           autoComplete="off"
         />
@@ -105,7 +107,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, 
         </button>
       </div>
       {/* Explains the disabled button while the typed number doesn't match yet. */}
-      {!note && q && !valid && <p className="mt-2 text-xs font-semibold text-destructive">{t.error}</p>}
+      {!note && q && !valid && <p className="mt-2 text-xs font-semibold text-destructive">{t ? t.error : "Дугаарын төрлөө сонгоно уу (УБ, Орон нутаг эсвэл Арлын)"}</p>}
       {note && <p className={cn("mt-2 text-xs font-semibold", note.tone === "ok" ? "text-success" : "text-destructive")}>{note.text}</p>}
     </section>
   );
