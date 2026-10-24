@@ -5,6 +5,7 @@ const {
   transmissions,
   driveTypes,
   steerings,
+  plateTypes,
   exteriorColors,
   interiorColors,
 } = require("../../config/constants");
@@ -59,6 +60,10 @@ module.exports.saveValidation = [
     .optional(optional)
     .isIn(steerings)
     .withMessage("Жолооны хүрд буруу байна"),
+  body("plate_type")
+    .optional(optional)
+    .isIn(plateTypes)
+    .withMessage("Улсын дугаарын төлөв буруу байна"),
   body("vehicle_type")
     .optional(optional)
     .isLength({ max: 100 })

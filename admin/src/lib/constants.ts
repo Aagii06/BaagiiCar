@@ -3,6 +3,7 @@ export const FUEL_TYPES = ["Бензин", "Дизель", "Хайбрид", "Г
 export const TRANSMISSIONS = ["Автомат", "Механик", "CVT", "Типтроник"];
 export const DRIVE_TYPES = ["FWD", "RWD", "4WD"];
 export const STEERINGS = ["Зүүн", "Баруун"];
+export const PLATE_TYPES = ["Дугаар аваагүй", "УБ дугаартай", "Орон нутаг дугаартай"];
 export const EXTERIOR_COLORS = ["Цагаан", "Хар", "Саарал", "Мөнгөлөг", "Улаан", "Цэнхэр", "Ногоон", "Шар", "Улбар шар", "Хүрэн", "Бор", "Шампань", "Ягаан", "Нил ягаан", "Бусад"];
 export const INTERIOR_COLORS = ["Хар", "Саарал", "Бор", "Шаргал", "Цагаан", "Хүрэн", "Улаан", "Хослол", "Бусад"];
 

@@ -7,11 +7,15 @@ import { cn } from "@/lib/utils";
 import { Loader2, Search } from "lucide-react";
 import { useState } from "react";
 
-type SearchType = "plate" | "vin";
+type SearchType = "ub" | "local" | "vin";
 
-const TYPES: Record<SearchType, { label: string; short: string; placeholder: string; check: RegExp; error: string }> = {
-  plate: { label: "Улсын дугаар", short: "Улсын", placeholder: "1234 УБА", check: /^\d{4}[А-ЯЁӨҮ]{3}$/, error: "Улсын дугаарын формат буруу байна (жш: 1234 УБА)" },
-  vin: { label: "Арлын дугаар", short: "Арлын", placeholder: "NHP106487692", check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, error: "Арлын дугаарын формат буруу байна" },
+const PLATE = { check: /^\d{4}[А-ЯЁӨҮ]{3}$/, error: "Улсын дугаарын формат буруу байна (жш: 1234 УБА)" };
+
+/** The plate's region isn't read from the number: the user picks УБ / Орон нутаг, and it fills the ad's plate_type. */
+const TYPES: Record<SearchType, { label: string; short: string; placeholder: string; check: RegExp; error: string; query: "plate" | "vin"; plateType: string | null }> = {
+  ub: { label: "УБ дугаар", short: "УБ", placeholder: "1234 УБА", ...PLATE, query: "plate", plateType: "УБ дугаартай" },
+  local: { label: "Орон нутаг дугаар", short: "Орон нутаг", placeholder: "1234 ДАА", ...PLATE, query: "plate", plateType: "Орон нутаг дугаартай" },
+  vin: { label: "Арлын дугаар", short: "Арлын", placeholder: "NHP106487692", check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, error: "Арлын дугаарын формат буруу байна", query: "vin", plateType: null },
 };
 
 /** "1698 уао" → "1698УАО" */
@@ -21,8 +25,8 @@ const normalize = (v: string) => v.replace(/\s+/g, "").toUpperCase();
  * Search the vehicle registry (autobox.mn via the backend) by plate or chassis number;
  * the result is handed to the form to fill itself.
  */
-export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) => string | null }) {
-  const [type, setType] = useState<SearchType>("plate");
+export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, plateType: string | null) => string | null }) {
+  const [type, setType] = useState<SearchType>("ub");
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
@@ -36,8 +40,8 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
     setBusy(true);
     setNote(null);
     try {
-      const info = await vehicleLookup({ [type]: q });
-      setNote({ tone: "ok", text: onFound(info) ?? "Мэдээлэл бөглөгдлөө" });
+      const info = await vehicleLookup({ [t.query]: q });
+      setNote({ tone: "ok", text: onFound(info, t.plateType) ?? "Мэдээлэл бөглөгдлөө" });
     } catch (err) {
       setNote({ tone: "error", text: err instanceof Error ? err.message : "Машины мэдээлэл олдсонгүй" });
     } finally {

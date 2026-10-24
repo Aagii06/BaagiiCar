@@ -22,6 +22,8 @@ export interface Car {
   vehicle_type: string | null;
   /** JSON текст: autobox-оос татсан `{ plate, vin, fetched_at, fields }`; fields-ийн утгыг засахад сервер өөрчлүүлэхгүй. */
   autobox_data?: string | null;
+  /** Улсын дугаар: "Дугаар аваагүй" / "УБ дугаартай" / "Орон нутаг дугаартай". */
+  plate_type?: string | null;
   engine_capacity: string | number | null;
   color: string | null;
   /** Салоны өнгө. */

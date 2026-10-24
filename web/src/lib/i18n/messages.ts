@@ -95,6 +95,9 @@ export const MESSAGES = {
   "Типтроник": { ru: "Типтроник", en: "Tiptronic" },
   "Зүүн": { ru: "Левый", en: "Left" },
   "Баруун": { ru: "Правый", en: "Right" },
+  "Дугаар аваагүй": { ru: "Без номера", en: "Not registered" },
+  "УБ дугаартай": { ru: "Номер Улан-Батора", en: "Ulaanbaatar plates" },
+  "Орон нутаг дугаартай": { ru: "Номер аймака", en: "Provincial plates" },
 
   // --- car specs -------------------------------------------------------------
   "Үйлдвэр": { ru: "Марка", en: "Make" },
@@ -114,6 +117,7 @@ export const MESSAGES = {
   "Өнгө": { ru: "Цвет", en: "Color" },
   "Гадна өнгө": { ru: "Цвет кузова", en: "Exterior color" },
   "Ангилал": { ru: "Категория", en: "Category" },
+  "Улсын дугаар": { ru: "Госномер", en: "License plate" },
   "Дотор өнгө": { ru: "Цвет салона", en: "Interior color" },
   "Төрөл": { ru: "Тип", en: "Type" },
   "Тайлбар": { ru: "Описание", en: "Description" },

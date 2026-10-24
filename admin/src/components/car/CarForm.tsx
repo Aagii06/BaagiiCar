@@ -11,7 +11,7 @@ import PublishChoiceSheet from "./PublishChoiceSheet";
 import { getBodyTypes, getBrands, getDealers, getLocations, getModels, parseAutobox, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
 import type { Car, CarModel, Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, ROLES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
+import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, PLATE_TYPES, ROLES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "lucide-react";
@@ -44,6 +44,7 @@ type FormState = Record<
   | "transmission"
   | "drive_type"
   | "steering"
+  | "plate_type"
   | "vehicle_type"
   | "engine_capacity"
   | "color"
@@ -75,6 +76,7 @@ function initialState(car: Car | null | undefined, phone: string | null | undefi
     transmission: str(car?.transmission),
     drive_type: str(car?.drive_type),
     steering: str(car?.steering),
+    plate_type: str(car?.plate_type),
     vehicle_type: str(car?.vehicle_type),
     engine_capacity: str(car?.engine_capacity ? Number(car.engine_capacity) : ""),
     color: str(car?.color),
@@ -105,6 +107,7 @@ function toInput(f: FormState, car?: Car | null): CarInput {
     transmission: f.transmission || null,
     drive_type: f.drive_type || null,
     steering: f.steering || null,
+    plate_type: f.plate_type || null,
     vehicle_type: f.vehicle_type.trim() || null,
     engine_capacity: f.engine_capacity ? f.engine_capacity : null,
     color: f.color.trim() || null,
@@ -313,8 +316,11 @@ export default function CarForm({
       return prev.filter((_, j) => j !== i);
     });
 
-  /** Fills the form from a registry lookup; only overwrites fields the registry knows. Returns a note for the user. */
-  const applyLookup = (info: VehicleInfo) => {
+  /**
+   * Fills the form from a registry lookup; only overwrites fields the registry knows. Returns a note for the user.
+   * `plateType` is what the user picked for a plate search (УБ / Орон нутаг): filled in but left editable.
+   */
+  const applyLookup = (info: VehicleInfo, plateType: string | null) => {
     const brand = brands.data?.find((b) => norm(b.name) === norm(info.brand));
     // Models of the found brand are fetched right away so the model can be picked in the same step.
     const pickModel = brand
@@ -338,7 +344,7 @@ export default function CarForm({
     put("mileage", info.mileage);
     put("color", info.color, EXTERIOR_COLORS);
     put("vin", info.vin);
-    setF((p) => ({ ...p, ...fill, ...(brand && brand.id !== Number(p.brand_id) ? { car_model_id: "" } : {}) }));
+    setF((p) => ({ ...p, ...fill, ...(plateType && { plate_type: plateType }), ...(brand && brand.id !== Number(p.brand_id) ? { car_model_id: "" } : {}) }));
     // A new lookup replaces the previous lock; fields the registry left empty stay editable.
     const lock = new Set(Object.keys(fill) as (keyof FormState)[]);
     setLocked(lock);
@@ -563,6 +569,9 @@ export default function CarForm({
             </Field>
             <Field label="Гүйлт (км)">
               <input className={inputClass} {...digits("mileage")} placeholder="120000" />
+            </Field>
+            <Field className="col-span-2" label="Улсын дугаар">
+              <Chips options={withCurrent(PLATE_TYPES, f.plate_type)} value={f.plate_type} onChange={(v) => set("plate_type", v)} />
             </Field>
             <Field className="col-span-2" label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : "Жишээ: 45000000"}>
               <input className={inputClass} {...digits("price")} placeholder="45000000" required />

@@ -15,6 +15,8 @@ export interface Car {
   drive_type: string | null;
   steering: string | null;
   vehicle_type?: string | null;
+  /** "Дугаар аваагүй" / "УБ дугаартай" / "Орон нутаг дугаартай". */
+  plate_type?: string | null;
   engine_capacity: string | number | null;
   color: string | null;
   interior_color?: string | null;

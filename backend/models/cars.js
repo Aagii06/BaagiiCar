@@ -43,6 +43,8 @@ module.exports = (sequelize, DataTypes) => {
       vehicle_type: { type: DataTypes.STRING },
       // autobox.mn-ээс татсан мэдээлэл (JSON): { plate, vin, fetched_at, fields } - fields-ийг засахгүй
       autobox_data: { type: DataTypes.TEXT },
+      // Улсын дугаар: config/constants.js-ийн plateTypes
+      plate_type: { type: DataTypes.STRING(30) },
       engine_capacity: { type: DataTypes.DECIMAL(4, 1) },
       color: { type: DataTypes.STRING },
       // Салоны (дотор) өнгө
