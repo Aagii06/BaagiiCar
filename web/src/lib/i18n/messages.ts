@@ -388,6 +388,11 @@ export const MESSAGES = {
     en: "You sign in with this number, so it can't be changed.",
   },
   "Хадгалагдлаа": { ru: "Сохранено", en: "Saved" },
+  "Шинэ хаяг руу баталгаажуулах код илгээнэ.": {
+    ru: "На новый адрес будет отправлен код подтверждения.",
+    en: "We'll send a verification code to the new address.",
+  },
+  "И-мэйл баталгаажуулах": { ru: "Подтверждение e-mail", en: "Verify email" },
   "Хувийн мэдээлэл, мессеж, хадгалсан зарууд": {
     ru: "Личные данные, сообщения и избранное",
     en: "Personal details, messages and saved listings",
