@@ -114,6 +114,7 @@ function Specs({ car }: { car: Car }) {
     [t("Улсын дугаар"), tv(car.plate_type)],
     [t("Гадна өнгө"), car.color],
     [t("Дотор өнгө"), car.interior_color],
+    [t("Лизинг"), t(Number(car.is_leasing) ? "Боломжтой" : "Боломжгүй")],
     [t("Төрөл"), bodyTypeLabel(car.body_type_name, t)],
   ];
   return (

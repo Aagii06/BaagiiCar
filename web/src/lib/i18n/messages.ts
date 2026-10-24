@@ -119,6 +119,8 @@ export const MESSAGES = {
   "Ангилал": { ru: "Категория", en: "Category" },
   "Улсын дугаар": { ru: "Госномер", en: "License plate" },
   "Дотор өнгө": { ru: "Цвет салона", en: "Interior color" },
+  "Боломжтой": { ru: "Доступен", en: "Available" },
+  "Боломжгүй": { ru: "Недоступен", en: "Not available" },
   "Төрөл": { ru: "Тип", en: "Type" },
   "Тайлбар": { ru: "Описание", en: "Description" },
 

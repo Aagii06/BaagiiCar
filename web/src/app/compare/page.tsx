@@ -69,6 +69,7 @@ export default function ComparePage() {
     { label: t("Ангилал"), value: (c) => c.vehicle_type },
     { label: t("Гадна өнгө"), value: (c) => c.color },
     { label: t("Дотор өнгө"), value: (c) => c.interior_color },
+    { label: t("Лизинг"), value: (c) => t(Number(c.is_leasing) ? "Боломжтой" : "Боломжгүй") },
     { label: t("Байршил"), value: (c) => c.location_name },
   ];
   // Only meaningful with 2+ cars (the toggle is hidden otherwise); left on after "clear" it would hide every row.
