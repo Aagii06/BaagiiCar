@@ -39,12 +39,32 @@ export async function getMe(token: string) {
   return res.data;
 }
 
-/** Saves the signed-in user's name and e-mail (the phone number can't change); returns the updated profile. */
-export async function updateMe(token: string, body: { firstname: string; email: string | null }) {
+/** Saves the signed-in user's name; `email: null` removes the e-mail (a new one goes through `sendEmailCode`). Returns the updated profile. */
+export async function updateMe(token: string, body: { firstname: string; email?: null }) {
   const res = await apiFetch<ApiItemResponse<WebUser>>("/web/auth/me", {
     method: "PUT",
     headers: { Authorization: `Bearer ${token}` },
     body,
+  });
+  return res.data;
+}
+
+/** E-mails a 6-digit code to the new address before it replaces the current one. */
+export async function sendEmailCode(token: string, email: string) {
+  const res = await apiFetch<ApiItemResponse<{ expires_in: number; resend_in: number }>>("/web/auth/email-change/send", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: { email },
+  });
+  return res.data;
+}
+
+/** Checks the code and saves the new e-mail; returns the updated profile. */
+export async function verifyEmailCode(token: string, email: string, code: string) {
+  const res = await apiFetch<ApiItemResponse<WebUser>>("/web/auth/email-change/verify", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: { email, code },
   });
   return res.data;
 }
