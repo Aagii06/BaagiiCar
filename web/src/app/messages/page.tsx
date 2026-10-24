@@ -38,6 +38,46 @@ function Status({ done }: { done: boolean }) {
   );
 }
 
+/** Grey rows shaped like the conversation list while it loads. */
+function ListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <ul className="animate-pulse overflow-hidden rounded-2xl bg-card" aria-hidden>
+      {Array.from({ length: count }, (_, i) => (
+        <li key={i} className="flex items-center gap-3 border-b border-border px-4 py-3.5 last:border-b-0">
+          <div className="h-11 w-14 shrink-0 rounded-lg bg-muted" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="h-3.5 w-2/5 rounded bg-muted" />
+              <div className="ml-auto h-3 w-12 rounded bg-muted" />
+            </div>
+            <div className="h-3 w-3/5 rounded bg-muted" />
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Grey car header + bubbles shaped like an open conversation while it loads. */
+function ThreadSkeleton() {
+  return (
+    <div className="animate-pulse space-y-4 md:rounded-2xl md:bg-card md:p-5" aria-hidden>
+      <div className="flex items-center gap-3 rounded-2xl bg-card p-3 md:p-0">
+        <div className="h-11 w-14 shrink-0 rounded-lg bg-muted" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 w-1/3 rounded bg-muted" />
+          <div className="h-3 w-1/2 rounded bg-muted" />
+        </div>
+      </div>
+      <div className="space-y-3 md:pt-2">
+        <div className="ml-auto h-10 w-3/5 rounded-2xl rounded-br-md bg-muted md:w-2/5" />
+        <div className="h-10 w-1/2 rounded-2xl rounded-bl-md bg-muted md:w-1/3" />
+        <div className="ml-auto h-14 w-2/3 rounded-2xl rounded-br-md bg-muted md:w-1/2" />
+      </div>
+    </div>
+  );
+}
+
 /** List of conversations; `?car=<id>` opens one, where the visitor can keep writing. */
 function MessagesInner() {
   const { t } = useI18n();
@@ -92,7 +132,7 @@ function MessagesInner() {
         <ProfileSidebar className="hidden lg:block lg:sticky lg:top-28" />
         <div className="min-w-0">
           {loading ? (
-            <LoadingState className="min-h-[50vh]" />
+            open !== null ? <ThreadSkeleton /> : <ListSkeleton />
           ) : threads.error ? (
             <ErrorState message={threads.error.message} onRetry={threads.reload} />
           ) : selected ? (
