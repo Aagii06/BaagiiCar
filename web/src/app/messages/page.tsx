@@ -3,6 +3,7 @@
 import { carTitle } from "@/components/car/CarCard";
 import CarImage from "@/components/car/CarImage";
 import Container from "@/components/common/Container";
+import ProfileSidebar from "@/components/layout/ProfileSidebar";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { getCarsByIds } from "@/lib/api/cars";
 import { ApiError } from "@/lib/api/client";
@@ -78,7 +79,7 @@ function MessagesInner() {
   const selected = selectedId === undefined ? undefined : (list.find((th) => th.carId === selectedId) ?? { carId: selectedId, messages: [] });
 
   return (
-    <Container className="max-w-[1024px] pt-3 md:pt-10">
+    <Container className="pt-3 md:pt-10">
       <div className="mb-6 hidden items-end justify-between gap-4 md:flex">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("Мессеж")}</h1>
@@ -87,67 +88,73 @@ function MessagesInner() {
         {!!list.length && <span className="text-sm text-muted-foreground">{t("{n} ярилцлага", { n: list.length })}</span>}
       </div>
 
-      {!list.length && open === null ? (
-        <EmptyState
-          title={t("Мессеж алга")}
-          description={t("Зар дээрх чат товчоор асуултаа илгээгээрэй.")}
-          action={<Link href="/cars" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">{t("Машин хайх")}</Link>}
-        />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-[320px_1fr] md:items-start">
-          <ul className={cn("overflow-hidden rounded-2xl bg-card md:sticky md:top-28", open !== null && "hidden md:block")}>
-            {list.map((th) => {
-              const last = th.messages[th.messages.length - 1];
-              const preview = last.reply ? `${t("Хариу")}: ${last.reply}` : last.message;
-              const unread = th.messages.reduce((n, m) => n + (m.unread ?? 0), 0);
-              const active = th.carId === selectedId;
-              return (
-                <li key={th.carId} className="border-b border-border last:border-b-0">
-                  <Link
-                    href={`/messages?car=${th.carId}`}
-                    replace={open !== null}
-                    scroll={false}
-                    className={cn("flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted", active && "md:bg-primary-soft md:hover:bg-primary-soft")}
-                  >
-                    {th.car ? (
-                      <CarImage id={th.car.id} image={th.car.image} bodyType={th.car.body_type_name} size="thumb" className="h-11 w-14 shrink-0 rounded-lg" artClassName="w-9" />
-                    ) : (
-                      <span className="grid h-11 w-14 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
-                        <MessageCircle className="size-5" />
-                      </span>
-                    )}
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2">
-                        <span className="min-w-0 flex-1 truncate text-sm font-bold">{threadTitle(th, t)}</span>
-                        <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(last.replied_at || last.created_at, t)}</span>
-                      </span>
-                      <span className="mt-1 flex items-center gap-2">
-                        <span className={cn("min-w-0 flex-1 truncate text-[13px]", unread ? "font-semibold text-foreground" : "text-muted-foreground")}>{preview}</span>
-                        {unread ? (
-                          <span className="grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-bold text-white">{unread}</span>
-                        ) : (
-                          <Status done={last.status === "done" || !!last.reply} />
-                        )}
-                      </span>
-                    </span>
-                    <ChevronRight className="size-4 shrink-0 text-muted-foreground md:hidden" />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-
-          {selected && (
-            <ThreadView
-              key={selected.carId}
-              thread={selected}
-              token={token!}
-              onSent={threads.reload}
-              className={cn(open === null && "hidden md:flex")}
+      {/* Desktop: the account menu on the left. */}
+      <div className="lg:grid lg:grid-cols-[300px_1fr] lg:items-start lg:gap-5">
+        <ProfileSidebar className="hidden lg:block lg:sticky lg:top-28" />
+        <div className="min-w-0">
+          {!list.length && open === null ? (
+            <EmptyState
+              title={t("Мессеж алга")}
+              description={t("Зар дээрх чат товчоор асуултаа илгээгээрэй.")}
+              action={<Link href="/cars" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">{t("Машин хайх")}</Link>}
             />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-[320px_1fr] md:items-start lg:grid-cols-[280px_1fr]">
+              <ul className={cn("overflow-hidden rounded-2xl bg-card md:sticky md:top-28", open !== null && "hidden md:block")}>
+                {list.map((th) => {
+                  const last = th.messages[th.messages.length - 1];
+                  const preview = last.reply ? `${t("Хариу")}: ${last.reply}` : last.message;
+                  const unread = th.messages.reduce((n, m) => n + (m.unread ?? 0), 0);
+                  const active = th.carId === selectedId;
+                  return (
+                    <li key={th.carId} className="border-b border-border last:border-b-0">
+                      <Link
+                        href={`/messages?car=${th.carId}`}
+                        replace={open !== null}
+                        scroll={false}
+                        className={cn("flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted", active && "md:bg-primary-soft md:hover:bg-primary-soft")}
+                      >
+                        {th.car ? (
+                          <CarImage id={th.car.id} image={th.car.image} bodyType={th.car.body_type_name} size="thumb" className="h-11 w-14 shrink-0 rounded-lg" artClassName="w-9" />
+                        ) : (
+                          <span className="grid h-11 w-14 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
+                            <MessageCircle className="size-5" />
+                          </span>
+                        )}
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className="min-w-0 flex-1 truncate text-sm font-bold">{threadTitle(th, t)}</span>
+                            <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(last.replied_at || last.created_at, t)}</span>
+                          </span>
+                          <span className="mt-1 flex items-center gap-2">
+                            <span className={cn("min-w-0 flex-1 truncate text-[13px]", unread ? "font-semibold text-foreground" : "text-muted-foreground")}>{preview}</span>
+                            {unread ? (
+                              <span className="grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-bold text-white">{unread}</span>
+                            ) : (
+                              <Status done={last.status === "done" || !!last.reply} />
+                            )}
+                          </span>
+                        </span>
+                        <ChevronRight className="size-4 shrink-0 text-muted-foreground md:hidden" />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {selected && (
+                <ThreadView
+                  key={selected.carId}
+                  thread={selected}
+                  token={token!}
+                  onSent={threads.reload}
+                  className={cn(open === null && "hidden md:flex")}
+                />
+              )}
+            </div>
           )}
         </div>
-      )}
+      </div>
     </Container>
   );
 }
