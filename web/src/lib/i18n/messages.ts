@@ -388,6 +388,10 @@ export const MESSAGES = {
     en: "You sign in with this number, so it can't be changed.",
   },
   "Хадгалагдлаа": { ru: "Сохранено", en: "Saved" },
+  "Хувийн мэдээлэл, мессеж, хадгалсан зарууд": {
+    ru: "Личные данные, сообщения и избранное",
+    en: "Personal details, messages and saved listings",
+  },
   "Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.": {
     ru: "Введите номер телефона. Мы отправим 4-значный код.",
     en: "Enter your phone number and we'll text you a 4-digit code.",

@@ -2,7 +2,7 @@
 
 import { carTitle } from "@/components/car/CarCard";
 import CarImage from "@/components/car/CarImage";
-import Container from "@/components/common/Container";
+import Container, { AccountTitle } from "@/components/common/Container";
 import ProfileSidebar from "@/components/layout/ProfileSidebar";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import { getCarsByIds } from "@/lib/api/cars";
@@ -81,13 +81,11 @@ function MessagesInner() {
 
   return (
     <Container className="pt-3 md:pt-10">
-      <div className="mb-6 hidden items-end justify-between gap-4 md:flex">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("Мессеж")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t("Зарын талаарх асуулт, хариултууд")}</p>
-        </div>
-        {!loading && !!list.length && <span className="text-sm text-muted-foreground">{t("{n} ярилцлага", { n: list.length })}</span>}
-      </div>
+      <AccountTitle
+        title={t("Мессеж")}
+        subtitle={t("Зарын талаарх асуулт, хариултууд")}
+        aside={!loading && !!list.length && t("{n} ярилцлага", { n: list.length })}
+      />
 
       {/* Desktop: the account menu on the left. */}
       <div className="lg:grid lg:grid-cols-[300px_1fr] lg:items-start lg:gap-5">

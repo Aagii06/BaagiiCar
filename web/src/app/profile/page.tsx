@@ -1,6 +1,6 @@
 "use client";
 
-import Container, { PageTitle } from "@/components/common/Container";
+import Container, { AccountTitle } from "@/components/common/Container";
 import { Field, inputClass } from "@/components/common/Field";
 import { LoadingState } from "@/components/common/States";
 import { updateMe, type WebUser } from "@/lib/api/auth";
@@ -24,10 +24,10 @@ export default function ProfilePage() {
   if (!ready || !user) return <LoadingState className="min-h-[50vh]" />;
 
   return (
-    <Container className="pt-4 md:pt-12">
-      <PageTitle>{t("Миний бүртгэл")}</PageTitle>
+    <Container className="pt-3 md:pt-10">
+      <AccountTitle title={t("Миний бүртгэл")} subtitle={t("Хувийн мэдээлэл, мессеж, хадгалсан зарууд")} />
 
-      <div className="mt-3 grid gap-3 md:mt-6 lg:grid-cols-[300px_1fr] lg:items-start lg:gap-5">
+      <div className="grid gap-3 lg:grid-cols-[300px_1fr] lg:items-start lg:gap-5">
         <ProfileSidebar />
         <ProfileForm key={user.id} user={user} />
 

@@ -1,7 +1,7 @@
 "use client";
 
 import CarCard from "@/components/car/CarCard";
-import Container, { PageTitle } from "@/components/common/Container";
+import Container, { AccountTitle } from "@/components/common/Container";
 import ProfileSidebar from "@/components/layout/ProfileSidebar";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import { getCarsByIds } from "@/lib/api/cars";
@@ -25,10 +25,10 @@ export default function SavedPage() {
   const loading = !loadedIds || (favorites.loading && !favorites.data);
 
   return (
-    <Container className="pt-4 md:pt-12">
-      <PageTitle count={loading ? undefined : rows.length}>{t("Хадгалсан")}</PageTitle>
+    <Container className="pt-3 md:pt-10">
+      <AccountTitle title={t("Хадгалсан")} subtitle={t("Таалагдсан машинууд")} aside={!loading && !!rows.length && t("{n} зар", { n: rows.length })} />
       {/* Signed in, desktop: the account menu on the left (favorites also work signed out). */}
-      <div className={cn("mt-0 md:mt-8", user && "lg:grid lg:grid-cols-[300px_1fr] lg:items-start lg:gap-5")}>
+      <div className={cn(user && "lg:grid lg:grid-cols-[300px_1fr] lg:items-start lg:gap-5")}>
         <ProfileSidebar className="hidden lg:block" />
         <div className="min-w-0">
           {loading ? (

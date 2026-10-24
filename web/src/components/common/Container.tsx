@@ -19,6 +19,19 @@ export function PageTitle({ children, count, className }: { children: React.Reac
   );
 }
 
+/** Smaller heading for the account pages (profile, saved, messages); hidden on phones like PageTitle. */
+export function AccountTitle({ title, subtitle, aside }: { title: string; subtitle?: string; aside?: React.ReactNode }) {
+  return (
+    <div className="mb-6 hidden items-end justify-between gap-4 md:flex">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+      </div>
+      {aside && <span className="text-sm text-muted-foreground">{aside}</span>}
+    </div>
+  );
+}
+
 /**
  * Reference-style section heading: spaced kicker, then a light word and a
  * bold word ("ОНЦЛОХ / зарууд"), with an optional "view all" link.
