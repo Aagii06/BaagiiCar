@@ -13,7 +13,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, timeAgo } from "@/lib/utils";
-import { ChevronRight, MessageCircle, SendHorizontal } from "lucide-react";
+import { ArrowLeft, ChevronRight, MessageCircle, SendHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -70,12 +70,13 @@ function MessagesInner() {
     if (threads.error instanceof ApiError && threads.error.status === 401) signOut();
   }, [threads.error, signOut]);
 
-  if (!ready || !user || (threads.loading && !threads.data)) return <LoadingState className="min-h-[50vh]" />;
-  if (threads.error) return <Container className="pt-4"><ErrorState message={threads.error.message} onRetry={threads.reload} /></Container>;
+  if (!ready || !user) return <LoadingState className="min-h-[50vh]" />;
 
+  // Only the content column waits; the title and account menu stay put.
+  const loading = threads.loading && !threads.data;
   const list = threads.data ?? [];
-  // Phones: the list, or one thread (`?car=`). From md: list on the left, the open thread (or the latest) on the right.
-  const selectedId = open !== null ? Number(open) || 0 : list[0]?.carId;
+  // The list, or one thread (`?car=`) — opened from the list, back arrow returns to it.
+  const selectedId = open !== null ? Number(open) || 0 : undefined;
   const selected = selectedId === undefined ? undefined : (list.find((th) => th.carId === selectedId) ?? { carId: selectedId, messages: [] });
 
   return (
@@ -85,73 +86,71 @@ function MessagesInner() {
           <h1 className="text-2xl font-bold tracking-tight">{t("Мессеж")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("Зарын талаарх асуулт, хариултууд")}</p>
         </div>
-        {!!list.length && <span className="text-sm text-muted-foreground">{t("{n} ярилцлага", { n: list.length })}</span>}
+        {!loading && !!list.length && <span className="text-sm text-muted-foreground">{t("{n} ярилцлага", { n: list.length })}</span>}
       </div>
 
       {/* Desktop: the account menu on the left. */}
       <div className="lg:grid lg:grid-cols-[300px_1fr] lg:items-start lg:gap-5">
         <ProfileSidebar className="hidden lg:block lg:sticky lg:top-28" />
         <div className="min-w-0">
-          {!list.length && open === null ? (
+          {loading ? (
+            <LoadingState className="min-h-[50vh]" />
+          ) : threads.error ? (
+            <ErrorState message={threads.error.message} onRetry={threads.reload} />
+          ) : selected ? (
+            <>
+              {/* Phones: the app bar's back arrow does this. */}
+              <Link href="/messages" className="mb-3 hidden w-fit items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground md:flex">
+                <ArrowLeft className="size-4" />
+                {t("Буцах")}
+              </Link>
+              <ThreadView key={selected.carId} thread={selected} token={token!} onSent={threads.reload} />
+            </>
+          ) : !list.length ? (
             <EmptyState
               title={t("Мессеж алга")}
               description={t("Зар дээрх чат товчоор асуултаа илгээгээрэй.")}
               action={<Link href="/cars" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">{t("Машин хайх")}</Link>}
             />
           ) : (
-            <div className="grid gap-4 md:grid-cols-[320px_1fr] md:items-start lg:grid-cols-[280px_1fr]">
-              <ul className={cn("overflow-hidden rounded-2xl bg-card md:sticky md:top-28", open !== null && "hidden md:block")}>
-                {list.map((th) => {
-                  const last = th.messages[th.messages.length - 1];
-                  const preview = last.reply ? `${t("Хариу")}: ${last.reply}` : last.message;
-                  const unread = th.messages.reduce((n, m) => n + (m.unread ?? 0), 0);
-                  const active = th.carId === selectedId;
-                  return (
-                    <li key={th.carId} className="border-b border-border last:border-b-0">
-                      <Link
-                        href={`/messages?car=${th.carId}`}
-                        replace={open !== null}
-                        scroll={false}
-                        className={cn("flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted", active && "md:bg-primary-soft md:hover:bg-primary-soft")}
-                      >
-                        {th.car ? (
-                          <CarImage id={th.car.id} image={th.car.image} bodyType={th.car.body_type_name} size="thumb" className="h-11 w-14 shrink-0 rounded-lg" artClassName="w-9" />
-                        ) : (
-                          <span className="grid h-11 w-14 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
-                            <MessageCircle className="size-5" />
-                          </span>
-                        )}
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-center gap-2">
-                            <span className="min-w-0 flex-1 truncate text-sm font-bold">{threadTitle(th, t)}</span>
-                            <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(last.replied_at || last.created_at, t)}</span>
-                          </span>
-                          <span className="mt-1 flex items-center gap-2">
-                            <span className={cn("min-w-0 flex-1 truncate text-[13px]", unread ? "font-semibold text-foreground" : "text-muted-foreground")}>{preview}</span>
-                            {unread ? (
-                              <span className="grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-bold text-white">{unread}</span>
-                            ) : (
-                              <Status done={last.status === "done" || !!last.reply} />
-                            )}
-                          </span>
+            <ul className="overflow-hidden rounded-2xl bg-card">
+              {list.map((th) => {
+                const last = th.messages[th.messages.length - 1];
+                const preview = last.reply ? `${t("Хариу")}: ${last.reply}` : last.message;
+                const unread = th.messages.reduce((n, m) => n + (m.unread ?? 0), 0);
+                return (
+                  <li key={th.carId} className="border-b border-border last:border-b-0">
+                    <Link
+                      href={`/messages?car=${th.carId}`}
+                      className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted"
+                    >
+                      {th.car ? (
+                        <CarImage id={th.car.id} image={th.car.image} bodyType={th.car.body_type_name} size="thumb" className="h-11 w-14 shrink-0 rounded-lg" artClassName="w-9" />
+                      ) : (
+                        <span className="grid h-11 w-14 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
+                          <MessageCircle className="size-5" />
                         </span>
-                        <ChevronRight className="size-4 shrink-0 text-muted-foreground md:hidden" />
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-
-              {selected && (
-                <ThreadView
-                  key={selected.carId}
-                  thread={selected}
-                  token={token!}
-                  onSent={threads.reload}
-                  className={cn(open === null && "hidden md:flex")}
-                />
-              )}
-            </div>
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          <span className="min-w-0 flex-1 truncate text-sm font-bold">{threadTitle(th, t)}</span>
+                          <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(last.replied_at || last.created_at, t)}</span>
+                        </span>
+                        <span className="mt-1 flex items-center gap-2">
+                          <span className={cn("min-w-0 flex-1 truncate text-[13px]", unread ? "font-semibold text-foreground" : "text-muted-foreground")}>{preview}</span>
+                          {unread ? (
+                            <span className="grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-bold text-white">{unread}</span>
+                          ) : (
+                            <Status done={last.status === "done" || !!last.reply} />
+                          )}
+                        </span>
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
       </div>

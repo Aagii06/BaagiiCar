@@ -2,12 +2,11 @@
 
 import { getUnreadCount } from "@/lib/api/messages";
 import { displayName, useAuth } from "@/lib/auth/AuthProvider";
-import { useCompare } from "@/lib/compare/CompareProvider";
 import { useFavorites } from "@/lib/favorites/FavoritesProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ChevronRight, GitCompare, Heart, LifeBuoy, LogOut, MessageCircle, User, UserRound } from "lucide-react";
+import { ChevronRight, Heart, LogOut, MessageCircle, User, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -23,7 +22,6 @@ export default function ProfileSidebar({ className }: { className?: string }) {
     token ?? ""
   );
   const favorites = useFavorites();
-  const compare = useCompare();
 
   if (!user) return null;
 
@@ -31,8 +29,6 @@ export default function ProfileSidebar({ className }: { className?: string }) {
     { href: "/profile", label: t("Хувийн мэдээлэл"), icon: UserRound },
     { href: "/messages", label: t("Мессеж"), icon: MessageCircle, count: unread.data ?? 0, alert: true },
     { href: "/saved", label: t("Хадгалсан"), icon: Heart, count: favorites.ids.size },
-    { href: "/compare", label: t("Харьцуулалт"), icon: GitCompare, count: compare.ids.length },
-    { href: "/help", label: t("Тусламж"), icon: LifeBuoy },
   ];
 
   return (
