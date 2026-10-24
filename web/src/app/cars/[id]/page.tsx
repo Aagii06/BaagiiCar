@@ -123,7 +123,7 @@ function Specs({ car }: { car: Car }) {
         {specs.map(([label, value]) => (
           <div key={label} className="rounded-xl bg-muted px-3 py-2.5">
             <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
-            <p className="mt-1 truncate font-bold">{value || "—"}</p>
+            <p className="mt-1 break-words font-bold">{value || "—"}</p>
           </div>
         ))}
       </div>

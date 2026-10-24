@@ -54,7 +54,7 @@ type FormState = Record<
   | "description"
   | "status",
   string
-> & { is_featured: boolean };
+> & { is_featured: boolean; is_leasing: boolean };
 
 /** Keeps a value saved before the list existed selectable. */
 const withCurrent = (list: string[], current: string) => (current && !list.includes(current) ? [current, ...list] : list);
@@ -86,6 +86,7 @@ function initialState(car: Car | null | undefined, phone: string | null | undefi
     description: str(car?.description),
     status: car?.status ?? "active",
     is_featured: Boolean(Number(car?.is_featured ?? 0)),
+    is_leasing: Boolean(Number(car?.is_leasing ?? 0)),
   };
 }
 
@@ -108,6 +109,7 @@ function toInput(f: FormState, car?: Car | null): CarInput {
     drive_type: f.drive_type || null,
     steering: f.steering || null,
     plate_type: f.plate_type || null,
+    is_leasing: f.is_leasing,
     vehicle_type: f.vehicle_type.trim() || null,
     engine_capacity: f.engine_capacity ? f.engine_capacity : null,
     color: f.color.trim() || null,
@@ -295,9 +297,9 @@ export default function CarForm({
   }, [photos]);
   useEffect(() => () => photosRef.current.forEach((p) => p.kind === "new" && URL.revokeObjectURL(p.url)), []);
 
-  const set = (k: Exclude<keyof FormState, "is_featured">, v: string) => setF((prev) => ({ ...prev, [k]: v }));
-  const bind = (k: Exclude<keyof FormState, "is_featured">) => ({ value: f[k], disabled: isLocked(k), onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set(k, e.target.value) });
-  const digits = (k: Exclude<keyof FormState, "is_featured">) => ({ value: f[k], disabled: isLocked(k), inputMode: "numeric" as const, onChange: (e: React.ChangeEvent<HTMLInputElement>) => set(k, e.target.value.replace(/\D/g, "")) });
+  const set = (k: Exclude<keyof FormState, "is_featured" | "is_leasing">, v: string) => setF((prev) => ({ ...prev, [k]: v }));
+  const bind = (k: Exclude<keyof FormState, "is_featured" | "is_leasing">) => ({ value: f[k], disabled: isLocked(k), onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => set(k, e.target.value) });
+  const digits = (k: Exclude<keyof FormState, "is_featured" | "is_leasing">) => ({ value: f[k], disabled: isLocked(k), inputMode: "numeric" as const, onChange: (e: React.ChangeEvent<HTMLInputElement>) => set(k, e.target.value.replace(/\D/g, "")) });
 
   const addFiles = (files: FileList | null) => {
     if (!files) return;
@@ -327,7 +329,7 @@ export default function CarForm({
       ? getModels(brand.id).then((rows) => matchModel(rows, info.model))
       : Promise.resolve(undefined);
     const fill: Partial<FormState> = {};
-    const put = (k: Exclude<keyof FormState, "is_featured">, v: string | number | null | undefined, allowed?: string[]) => {
+    const put = (k: Exclude<keyof FormState, "is_featured" | "is_leasing">, v: string | number | null | undefined, allowed?: string[]) => {
       if (v === null || v === undefined || v === "") return;
       if (allowed && !allowed.includes(String(v))) return;
       fill[k] = String(v);
@@ -641,6 +643,13 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
+            <label className="col-span-2 flex items-center justify-between gap-4">
+              <span>
+                <span className="block text-sm font-semibold">Лизинг боломжтой</span>
+                <span className="block text-xs text-muted-foreground">Лизингээр авах боломжтой бол сонгоно</span>
+              </span>
+              <input type="checkbox" className="size-5 accent-[var(--primary)]" checked={f.is_leasing} onChange={(e) => setF((p) => ({ ...p, is_leasing: e.target.checked }))} />
+            </label>
           </div>
         </Section>
       )}

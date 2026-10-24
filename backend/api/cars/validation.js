@@ -64,6 +64,10 @@ module.exports.saveValidation = [
     .optional(optional)
     .isIn(plateTypes)
     .withMessage("Улсын дугаарын төлөв буруу байна"),
+  body("is_leasing")
+    .optional({ nullable: true })
+    .isBoolean()
+    .withMessage("Лизинг буруу байна"),
   body("vehicle_type")
     .optional(optional)
     .isLength({ max: 100 })

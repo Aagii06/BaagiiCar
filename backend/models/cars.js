@@ -45,6 +45,8 @@ module.exports = (sequelize, DataTypes) => {
       autobox_data: { type: DataTypes.TEXT },
       // Улсын дугаар: config/constants.js-ийн plateTypes
       plate_type: { type: DataTypes.STRING(30) },
+      // Лизингээр авах боломжтой эсэх
+      is_leasing: { type: DataTypes.BOOLEAN, defaultValue: false },
       engine_capacity: { type: DataTypes.DECIMAL(4, 1) },
       color: { type: DataTypes.STRING },
       // Салоны (дотор) өнгө
