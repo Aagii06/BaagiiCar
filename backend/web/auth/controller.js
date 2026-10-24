@@ -102,14 +102,19 @@ module.exports.me = async (req, res) => {
   }
 };
 
-// Нэвтэрсэн хэрэглэгч өөрийн нэр, и-мэйлээ засна. Буцаах: шинэчлэгдсэн хэрэглэгч
+// Нэвтэрсэн хэрэглэгч нэрээ засна; email: null бол и-мэйлээ устгана (шинэ и-мэйл /email-change-ээр).
+// Буцаах: шинэчлэгдсэн хэрэглэгч
 module.exports.updateMe = async (req, res) => {
   const { firstname, email, by, at } = req.body;
+  if (email)
+    return res.status(200).json({ success: false, data: null, message: "И-мэйлээ кодоор баталгаажуулна уу" });
   try {
     const user = await users.findOne({ where: { id: req.loggedUser?.id, status: "active" } });
     if (user === null) return res.status(401).json({ success: false, data: null, message: "Систем рүү нэвтэрнэ үү" });
 
-    await user.update({ firstname: firstname.trim(), email: email?.trim() || null, updated_by: by, updated_at: at });
+    const values = { firstname: firstname.trim(), updated_by: by, updated_at: at };
+    if (email === null || email === "") values.email = null;
+    await user.update(values);
     const { user: data } = await findUserData(user.id);
     return res.status(200).json({ success: true, data, message: "Амжилттай хадгаллаа" });
   } catch (error) {

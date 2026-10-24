@@ -22,13 +22,8 @@ module.exports.otpLoginValidation = [
   validation,
 ];
 
-// Профайл засах: нэр заавал, и-мэйл сонголттой (утасны дугаар өөрчлөгдөхгүй)
+// Профайл засах: нэр заавал. И-мэйлийг энд зөвхөн устгаж болно - шинэ хаягийг /email-change кодоор баталгаажуулна
 module.exports.updateMeValidation = [
   body("firstname").trim().notEmpty().withMessage("Нэр оруулна уу").isLength({ max: 100 }).withMessage("Нэр хэт урт байна"),
-  body("email")
-    .optional({ nullable: true, checkFalsy: true })
-    .trim()
-    .isEmail()
-    .withMessage("И-мэйл формат буруу байна"),
   validation,
 ];
