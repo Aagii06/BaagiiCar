@@ -21,3 +21,14 @@ module.exports.otpLoginValidation = [
     .withMessage("Код 4 оронтой тоо байна"),
   validation,
 ];
+
+// Профайл засах: нэр заавал, и-мэйл сонголттой (утасны дугаар өөрчлөгдөхгүй)
+module.exports.updateMeValidation = [
+  body("firstname").trim().notEmpty().withMessage("Нэр оруулна уу").isLength({ max: 100 }).withMessage("Нэр хэт урт байна"),
+  body("email")
+    .optional({ nullable: true, checkFalsy: true })
+    .trim()
+    .isEmail()
+    .withMessage("И-мэйл формат буруу байна"),
+  validation,
+];

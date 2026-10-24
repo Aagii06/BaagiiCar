@@ -2,7 +2,7 @@
 
 import { displayName, useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -58,6 +58,14 @@ export default function AccountMenu() {
             <p className="text-xs text-muted-foreground">{t("Миний бүртгэл")}</p>
             <p className="truncate text-sm font-semibold">{name}</p>
           </div>
+          <Link
+            href="/profile"
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold hover:bg-muted"
+          >
+            <UserRound className="size-4" />
+            {t("Профайл")}
+          </Link>
           <button
             onClick={() => {
               signOut();

@@ -38,3 +38,13 @@ export async function getMe(token: string) {
   const res = await apiFetch<ApiItemResponse<WebUser>>("/web/auth/me", { headers: { Authorization: `Bearer ${token}` } });
   return res.data;
 }
+
+/** Saves the signed-in user's name and e-mail (the phone number can't change); returns the updated profile. */
+export async function updateMe(token: string, body: { firstname: string; email: string | null }) {
+  const res = await apiFetch<ApiItemResponse<WebUser>>("/web/auth/me", {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+    body,
+  });
+  return res.data;
+}

@@ -13,6 +13,8 @@ interface AuthValue {
   ready: boolean;
   signIn: (session: Session) => void;
   signOut: () => void;
+  /** Replaces the cached profile after it was edited. */
+  setUser: (user: WebUser) => void;
 }
 
 const AuthContext = createContext<AuthValue | null>(null);
@@ -78,9 +80,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
   }, []);
 
+  const setUser = useCallback((user: WebUser) => {
+    setSession((cur) => {
+      if (!cur) return cur;
+      const next = { ...cur, user };
+      writeStored(next);
+      return next;
+    });
+  }, []);
+
   const value = useMemo(
-    () => ({ user: session?.user ?? null, token: session?.token ?? null, ready, signIn, signOut }),
-    [session, ready, signIn, signOut]
+    () => ({ user: session?.user ?? null, token: session?.token ?? null, ready, signIn, signOut, setUser }),
+    [session, ready, signIn, signOut, setUser]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

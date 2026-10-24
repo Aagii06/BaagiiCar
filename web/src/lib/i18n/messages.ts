@@ -381,6 +381,13 @@ export const MESSAGES = {
   "Нэвтрэх": { ru: "Войти", en: "Sign in" },
   "Гарах": { ru: "Выйти", en: "Sign out" },
   "Миний бүртгэл": { ru: "Мой аккаунт", en: "My account" },
+  "Хувийн мэдээлэл": { ru: "Личные данные", en: "Personal details" },
+  "Нэр, и-мэйлээ шинэчлэх": { ru: "Обновите имя и e-mail", en: "Update your name and email" },
+  "Утасны дугаараар нэвтэрдэг тул өөрчлөх боломжгүй.": {
+    ru: "Номер используется для входа, его нельзя изменить.",
+    en: "You sign in with this number, so it can't be changed.",
+  },
+  "Хадгалагдлаа": { ru: "Сохранено", en: "Saved" },
   "Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.": {
     ru: "Введите номер телефона. Мы отправим 4-значный код.",
     en: "Enter your phone number and we'll text you a 4-digit code.",
