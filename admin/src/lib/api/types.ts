@@ -139,6 +139,8 @@ export interface Dealer {
   description: string | null;
   status: "active" | "inactive" | "deleted";
   created_at?: string | null;
+  /** Non-deleted ads; only from the vwDealers list. */
+  car_count?: number;
 }
 
 /** Visitor message from the web chat box. */

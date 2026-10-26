@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 
 const MENU_DEALERS = 5;
 
-/** Header "Dealers" item: opens on hover (or click / keyboard) with the top dealers; the list is fetched on first open. */
+/** Header "Dealers" item: links to /dealers and opens on hover (or keyboard focus) with the top dealers; the list is fetched on first open. */
 export default function DealersMenu({ className }: { className?: string }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -43,16 +43,18 @@ export default function DealersMenu({ className }: { className?: string }) {
 
   return (
     <div ref={ref} className="relative flex" onMouseEnter={show} onMouseLeave={() => setOpen(false)}>
-      <button
-        type="button"
-        onClick={() => (open ? setOpen(false) : show())}
+      {/* Clicking goes to the full list; the dropdown is a hover / focus preview. */}
+      <Link
+        href="/dealers"
+        onClick={() => setOpen(false)}
+        onFocus={show}
         aria-expanded={open}
         aria-haspopup="true"
         className={cn("gap-1", className)}
       >
         {t("Дилерүүд")}
         <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
-      </button>
+      </Link>
 
       {open && (
         <div className="absolute left-1/2 top-full z-50 w-80 -translate-x-1/2">

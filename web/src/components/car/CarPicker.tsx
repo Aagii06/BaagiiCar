@@ -40,14 +40,17 @@ export default function CarPicker({
   counter,
   isPicked,
   onPick,
+  onUnpick,
   onClose,
 }: {
   title: string;
   /** Shown beside the title, e.g. "2 / 4". */
   counter?: React.ReactNode;
-  /** Already-picked cars are checked and can't be picked again. */
+  /** Already-picked cars are checked and can't be picked again (unless onUnpick is given). */
   isPicked?: (id: number) => boolean;
   onPick: (car: Car) => void;
+  /** When given, clicking a checked car un-picks it instead of being disabled. */
+  onUnpick?: (car: Car) => void;
   onClose: () => void;
 }) {
   const { t } = useI18n();
@@ -201,9 +204,10 @@ export default function CarPicker({
                   <li key={c.id}>
                     <button
                       type="button"
-                      disabled={added}
-                      onClick={() => onPick(c)}
-                      className="flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-muted disabled:hover:bg-transparent"
+                      disabled={added && !onUnpick}
+                      onClick={() => (added ? onUnpick?.(c) : onPick(c))}
+                      aria-pressed={onUnpick ? added : undefined}
+                      className="group flex w-full items-center gap-3 rounded-xl p-2 text-left transition hover:bg-muted disabled:hover:bg-transparent"
                     >
                       <CarImage id={c.id} image={c.image} bodyType={c.body_type_name} size="thumb" className="h-14 w-20 shrink-0 rounded-lg" artClassName="w-12" />
                       <span className="min-w-0 flex-1">
@@ -222,7 +226,7 @@ export default function CarPicker({
                       <span
                         className={cn(
                           "grid size-9 shrink-0 place-items-center rounded-full",
-                          added ? "bg-success-soft text-success" : "border-[1.5px] border-primary text-primary"
+                          added ? cn("bg-success-soft text-success", onUnpick && "group-hover:bg-destructive-soft group-hover:text-destructive") : "border-[1.5px] border-primary text-primary"
                         )}
                       >
                         {added ? <Check className="size-4" /> : <Plus className="size-4" />}

@@ -370,7 +370,8 @@ export async function listDealers(search?: string) {
   const filter: Condition[] = [NOT_DELETED];
   const q = search?.trim();
   if (q) filter.push(/^\d+$/.test(q) ? ["phonenumber", "contains", q] : ["name", "contains", q]);
-  const res = await apiFetch<ApiListResponse<Dealer>>(`/api/base/dealers${listQuery({ filter, sort: BY_NAME, take: 500 })}`);
+  // vwDealers = dealers + each one's ad count.
+  const res = await apiFetch<ApiListResponse<Dealer>>(`/api/base/vwDealers${listQuery({ filter, sort: BY_NAME, take: 500 })}`);
   return res.data;
 }
 

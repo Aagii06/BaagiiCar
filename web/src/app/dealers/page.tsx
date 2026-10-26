@@ -3,6 +3,7 @@
 import CarCard from "@/components/car/CarCard";
 import Container, { PageTitle } from "@/components/common/Container";
 import DealerAvatar from "@/components/common/DealerAvatar";
+import PageBanner from "@/components/common/PageBanner";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import { dealerName, getDealer, getDealerCars, getDealers, type Dealer } from "@/lib/api/dealers";
@@ -63,28 +64,36 @@ function DealerList() {
   const rows = dealers.data?.rows ?? [];
 
   return (
-    <Container className="pt-4 md:pt-12">
-      <PageTitle count={dealers.loading ? undefined : rows.length}>{t("Дилерүүд")}</PageTitle>
-      <div className="md:mt-8">
-        {dealers.loading && !dealers.data ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />
-            ))}
-          </div>
-        ) : dealers.error ? (
-          <ErrorState message={dealers.error.message} onRetry={dealers.reload} />
-        ) : rows.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {rows.map((dealer) => (
-              <DealerCard key={dealer.id} dealer={dealer} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState title={t("Бүртгэлтэй дилер алга")} />
-        )}
-      </div>
-    </Container>
+    <>
+      <PageBanner
+        title={t("Дилерүүд")}
+        image="showroom"
+        imagePosition="object-[center_62%]"
+        aside={dealers.loading ? "…" : t("{n} дилер", { n: rows.length })}
+        asideLoading={dealers.loading}
+      />
+      <Container className="pt-4 md:pt-8">
+        <div>
+          {dealers.loading && !dealers.data ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />
+              ))}
+            </div>
+          ) : dealers.error ? (
+            <ErrorState message={dealers.error.message} onRetry={dealers.reload} />
+          ) : rows.length ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {rows.map((dealer) => (
+                <DealerCard key={dealer.id} dealer={dealer} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState title={t("Бүртгэлтэй дилер алга")} />
+          )}
+        </div>
+      </Container>
+    </>
   );
 }
 

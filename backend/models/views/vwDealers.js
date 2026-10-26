@@ -5,10 +5,18 @@ module.exports = (sequelize, DataTypes) => {
 
   vwDealers.init(
     {
-      id: { type: DataTypes.INTEGER, primaryKey: true },
+      id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+
       name: { type: DataTypes.STRING },
-      phonenumber: { type: DataTypes.STRING },
       logo: { type: DataTypes.STRING },
+      phonenumber: { type: DataTypes.STRING },
+      email: { type: DataTypes.STRING },
+      address: { type: DataTypes.STRING },
+      description: { type: DataTypes.TEXT },
+
+      status: { type: DataTypes.STRING },
+      created_at: { type: DataTypes.STRING },
+
       car_count: { type: DataTypes.INTEGER },
     },
     {

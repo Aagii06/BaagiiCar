@@ -7,7 +7,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import { listDealers } from "@/lib/api/admin";
 import { useApi } from "@/lib/useApi";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
-import { Plus } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useState } from "react";
 
@@ -59,14 +59,22 @@ function DealersList() {
         // Edge to edge, right under the header (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
           {dealers.data.rows.map((d) => (
-            <Link key={d.id} href={withFrom(`/dealers/${d.id}`, from)} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/60">
-              <DealerAvatar dealer={d} className="size-10" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{d.name}</p>
-                <p className="truncate text-xs text-muted-foreground">{[d.phonenumber, d.address].filter(Boolean).join(" · ")}</p>
-              </div>
-              {d.status !== "active" && <span className="text-[10px] font-semibold text-destructive">Идэвхгүй</span>}
-            </Link>
+            // Two sibling links (a link can't nest another): the row opens the dealer, the right button its ads.
+            <div key={d.id} className="flex items-center hover:bg-muted/60">
+              <Link href={withFrom(`/dealers/${d.id}`, from)} className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4">
+                <DealerAvatar dealer={d} className="size-10" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{d.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">{[d.phonenumber, d.address].filter(Boolean).join(" · ")}</p>
+                </div>
+                {d.status !== "active" && <span className="text-[10px] font-semibold text-destructive">Идэвхгүй</span>}
+              </Link>
+              <Link href={`/cars?dealer=${d.id}`} className="mx-3 flex shrink-0 items-center gap-0.5 rounded-lg bg-muted px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-border">
+                Зарууд
+                {d.car_count != null && <span className="ml-0.5 rounded-full bg-primary px-1.5 text-[10px] leading-4 text-white">{d.car_count}</span>}
+                <ChevronRight className="size-3.5" strokeWidth={2.6} />
+              </Link>
+            </div>
           ))}
         </div>
       )}
