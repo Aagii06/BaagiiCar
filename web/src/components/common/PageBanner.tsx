@@ -3,20 +3,33 @@ import Img from "@/components/common/Img";
 import { cn } from "@/lib/utils";
 
 /**
- * Title band over a road photo (Unsplash, see public/hero/CREDITS.md), darkened so the white text reads.
+ * Title band over a hero photo (road by default; Unsplash, see public/hero/CREDITS.md), darkened so the white text reads.
  * Phones: hidden — the app bar carries the title instead.
  */
-export default function PageBanner({ title, aside, asideLoading }: { title: string; aside?: React.ReactNode; asideLoading?: boolean }) {
+export default function PageBanner({
+  title,
+  aside,
+  asideLoading,
+  image = "road",
+  imagePosition = "object-[center_60%]",
+}: {
+  title: string;
+  aside?: React.ReactNode;
+  asideLoading?: boolean;
+  /** File name in public/hero (without extension); each needs a 1920w and a -sm 900w WebP. */
+  image?: string;
+  imagePosition?: string;
+}) {
   return (
     <section className="relative isolate hidden overflow-hidden bg-dark text-white md:block">
       <div className="absolute inset-0 -z-10">
         <Img
-          src="/hero/road.webp"
-          srcSet="/hero/road-sm.webp 900w, /hero/road.webp 1920w"
+          src={`/hero/${image}.webp`}
+          srcSet={`/hero/${image}-sm.webp 900w, /hero/${image}.webp 1920w`}
           sizes="100vw"
           alt=""
           fetchPriority="high"
-          className="size-full object-cover object-[center_60%]"
+          className={cn("size-full object-cover", imagePosition)}
         />
       </div>
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />

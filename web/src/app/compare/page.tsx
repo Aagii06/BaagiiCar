@@ -85,7 +85,7 @@ export default function ComparePage() {
 
   return (
     <>
-      <PageBanner title={t("Харьцуулалт")} aside={loading ? "…" : t("{n} машин", { n: rows.length })} asideLoading={loading} />
+      <PageBanner title={t("Харьцуулалт")} image="coupe-forest" imagePosition="object-[center_72%]" aside={loading ? "…" : t("{n} машин", { n: rows.length })} asideLoading={loading} />
       <Container className="pt-4 md:pt-8">
         <div className="flex flex-wrap items-end justify-end gap-4">
           {rows.length > 1 && (
