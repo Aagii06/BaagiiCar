@@ -251,14 +251,17 @@ export const MESSAGES = {
   "Машины үнэ (₮)": { ru: "Цена авто (₮)", en: "Car price (₮)" },
   "Урьдчилгаа: үнийн {n}%": { ru: "Первый взнос: {n}% от цены", en: "Down payment: {n}% of the price" },
   "Хугацаа: {terms} сар": { ru: "Срок: {terms} мес.", en: "Term: {terms} months" },
-  "Жишиг хүү: сарын {rate}% — бодит хүү банк, лизингийн компаниас хамаарна": {
-    ru: "Примерная ставка: {rate}% в месяц — реальная ставка зависит от банка или лизинговой компании",
-    en: "Sample rate: {rate}% per month — the actual rate depends on the bank or leasing company",
+  "Хүү: анх сарын {rate}% — тооцоолуур дээр өөрийн хүүгээ оруулж болно": {
+    ru: "Ставка: по умолчанию {rate}% в месяц — в калькуляторе можно указать свою",
+    en: "Rate: {rate}% per month by default — enter your own rate in the calculator",
   },
   "Машин сонгох": { ru: "Выбрать авто", en: "Choose a car" },
+  "Өөр машин сонгох": { ru: "Выбрать другое авто", en: "Choose another car" },
   "Зээлийн тооцоолуур": { ru: "Кредитный калькулятор", en: "Loan calculator" },
   "Урьдчилгаа {n}%": { ru: "Первый взнос {n}%", en: "Down payment {n}%" },
   "Сарын төлбөр ({n} сар)": { ru: "Ежемесячный платёж ({n} мес.)", en: "Monthly payment ({n} mo)" },
+  "Сарын хүү": { ru: "Ставка в месяц", en: "Monthly rate" },
+  "Анхны хүү": { ru: "По умолчанию", en: "Reset" },
   "Жишиг тооцоо: сарын {rate}% хүүтэй. Бодит нөхцөл банк, лизингийн компаниас хамаарна.": {
     ru: "Примерный расчёт по ставке {rate}% в месяц. Реальные условия зависят от банка или лизинговой компании.",
     en: "Sample estimate at {rate}% per month. Actual terms depend on the bank or leasing company.",

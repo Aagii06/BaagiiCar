@@ -10,10 +10,10 @@ import { Select } from "@/components/common/Field";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import Img from "@/components/common/Img";
 import PageBanner from "@/components/common/PageBanner";
-import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
+import { CAR_SORTS, getBodyTypes, getBrands, getLocations, getModels, searchCars, type CarSort } from "@/lib/api/cars";
 import { catalogImage } from "@/lib/api/config";
 import { dealerName, getDealers, type Dealer } from "@/lib/api/dealers";
-import type { BodyType, Brand, CarModel } from "@/lib/api/types";
+import type { BodyType, Brand, CarModel, Location } from "@/lib/api/types";
 import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
@@ -157,11 +157,14 @@ function Filters({
   models,
   bodyTypes,
   dealers,
+  locations,
 }: {
   p: Params;
   set: (patch: Partial<Params>) => void;
   /** undefined while loading. */
   dealers: Dealer[] | undefined;
+  /** undefined while loading. */
+  locations: Location[] | undefined;
   brands: Loaded<Brand[]>;
   models: Loaded<CarModel[]>;
   bodyTypes: BodyType[];
@@ -174,7 +177,7 @@ function Filters({
   const brandsLoading = brandPending || !brands.data;
   const modelsLoading = (brandPending && !!pending.brand) || (!!p.brand && models.loading);
   const hasFilters =
-    p.dealer || p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
+    p.location || p.dealer || p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
 
   return (
     <section className="space-y-4 rounded-2xl bg-card p-5">
@@ -185,6 +188,7 @@ function Filters({
             className="text-[13px] font-semibold text-primary"
             onClick={() =>
               set({
+                location: undefined,
                 dealer: undefined,
                 brand: undefined,
                 model: undefined,
@@ -204,6 +208,26 @@ function Filters({
           </button>
         ) : null}
       </div>
+
+      <Group title={t("Байршил")}>
+        <div className="relative">
+          <Select
+            value={locations ? (p.location ?? "") : ""}
+            onChange={(e) => set({ location: num(e.target.value) })}
+            disabled={!locations}
+            aria-busy={!locations}
+            aria-label={t("Байршил")}
+          >
+            <option value="">{locations ? t("Бүх байршил") : t("Ачаалж байна...")}</option>
+            {locations?.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name === "Улаанбаатар" ? t("Улаанбаатар") : l.name}
+              </option>
+            ))}
+          </Select>
+          {!locations && <SelectSpinner />}
+        </div>
+      </Group>
 
       {/* Hidden only once loaded with no dealers; while loading it spins like the brand list. */}
       {(!dealers || dealers.length > 0) && (
@@ -369,6 +393,7 @@ function Filters({
 function MobileFilters({
   p,
   dealers,
+  locations,
   brands,
   bodyTypes,
   onApply,
@@ -376,6 +401,7 @@ function MobileFilters({
 }: {
   p: Params;
   dealers: Dealer[] | undefined;
+  locations: Location[] | undefined;
   brands: Loaded<Brand[]>;
   bodyTypes: BodyType[];
   onApply: (next: Params) => void;
@@ -410,6 +436,7 @@ function MobileFilters({
           p={draft}
           set={(patch) => setDraft((d) => ({ ...d, ...patch }))}
           dealers={dealers}
+          locations={locations}
           brands={brands}
           models={models}
           bodyTypes={bodyTypes}
@@ -437,6 +464,8 @@ function CarsPageInner() {
   const models = useApi(() => (p.brand ? getModels(p.brand) : Promise.resolve([])), String(p.brand ?? ""));
   const bodyTypes = useApi(getBodyTypes);
   const dealers = useApi(getDealers);
+  const locations = useApi(getLocations);
+  const locationList = locations.data ?? (locations.error ? [] : undefined);
   const key = writeParams(p);
   const result = useApi(
     () =>
@@ -519,12 +548,13 @@ function CarsPageInner() {
               {t("Шүүлтүүр")}
             </button>
             <div className="hidden lg:block">
-              <Filters key={key} p={p} set={set} dealers={dealers.data?.rows ?? (dealers.error ? [] : undefined)} brands={brands} models={models} bodyTypes={bodyTypes.data ?? []} />
+              <Filters key={key} p={p} set={set} dealers={dealers.data?.rows ?? (dealers.error ? [] : undefined)} locations={locationList} brands={brands} models={models} bodyTypes={bodyTypes.data ?? []} />
             </div>
             {showFilters && (
               <MobileFilters
                 p={p}
                 dealers={dealers.data?.rows ?? (dealers.error ? [] : undefined)}
+                locations={locationList}
                 brands={brands}
                 bodyTypes={bodyTypes.data ?? []}
                 onClose={() => setShowFilters(false)}

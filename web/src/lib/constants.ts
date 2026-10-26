@@ -19,10 +19,11 @@ export const LEASING = {
   terms: [12, 24, 36, 48],
 };
 
-export function monthlyPayment(price: number, months: number, downRate = LEASING.downPaymentRate) {
+export function monthlyPayment(price: number, months: number, downRate = LEASING.downPaymentRate, monthlyRate = LEASING.monthlyRate) {
   const principal = price * (1 - downRate);
-  const r = LEASING.monthlyRate;
+  const r = monthlyRate;
   if (!principal || !months) return 0;
+  if (!r) return principal / months;
   return (principal * r) / (1 - Math.pow(1 + r, -months));
 }
 
