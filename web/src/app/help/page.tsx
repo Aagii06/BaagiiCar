@@ -139,7 +139,7 @@ function HelpInner() {
 
         <aside id="contact" className="scroll-mt-24 self-start rounded-2xl bg-card p-5 md:p-6">
           <h2 className="text-lg font-bold">{t("Бидэнд бичих")}</h2>
-          <p className="mt-1.5 text-sm text-muted-foreground">{t("Хариулт олдсонгүй бол бичээрэй. Ажлын цагаар хариулна.")}</p>
+          <p className="mt-1.5 text-sm text-muted-foreground">{t("Тусламж хэрэгтэй бол бидэнд хандана уу.")}</p>
           <div className="mt-5 space-y-4">
             <Field label={t("Нэр")}>
               <input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />

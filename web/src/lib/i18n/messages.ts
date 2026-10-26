@@ -302,9 +302,9 @@ export const MESSAGES = {
     ru: "Подходящих вопросов нет. Напишите нам через форму ниже.",
     en: "No matching questions. Write to us using the form below.",
   },
-  "Хариулт олдсонгүй бол бичээрэй. Ажлын цагаар хариулна.": {
-    ru: "Не нашли ответ — напишите. Отвечаем в рабочее время.",
-    en: "Didn't find an answer? Write to us — we reply during business hours.",
+  "Тусламж хэрэгтэй бол бидэнд хандана уу.": {
+    ru: "Если нужна помощь, обращайтесь к нам.",
+    en: "If you need help, please contact us.",
   },
   "Нэр": { ru: "Имя", en: "Name" },
   "Утас": { ru: "Телефон", en: "Phone" },
