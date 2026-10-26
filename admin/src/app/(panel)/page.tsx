@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
       <div className="mt-6 flex items-center justify-between">
         <h2 className="font-bold">
-          Сүүлийн 2 хоногт нэмэгдсэн
+          Сүүлийн 3 хоногт нэмэгдсэн
           {recent.data && <span className="ml-1.5 text-sm font-semibold text-muted-foreground">{recent.data.count}</span>}
         </h2>
         <Link href="/cars" className="flex items-center gap-1 text-sm font-semibold text-primary">
@@ -101,7 +101,7 @@ export default function DashboardPage() {
         ) : recent.error ? (
           <ErrorState message={recent.error.message} onRetry={recent.reload} />
         ) : !recent.data?.rows.length ? (
-          <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Сүүлийн 2 хоногт зар нэмэгдээгүй</p>
+          <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Сүүлийн 3 хоногт зар нэмэгдээгүй</p>
         ) : (
           recent.data.rows.map((car) => <CarLine key={car.id} car={car} />)
         )}

@@ -43,10 +43,11 @@ export default function Footer() {
             <p className="mt-4 max-w-sm text-sm leading-6 text-white/80">
               {t("Монголын машин авах, зарах платформ. Оношилгоотой зар, зээлийн тооцоолуур, зарлагчтай шууд чат.")}
             </p>
+            {/* Апп түр нуув:
             <div className="mt-5 flex gap-2">
               <span className="rounded-lg bg-dark-2 px-3 py-2 text-xs font-bold">App Store</span>
               <span className="rounded-lg bg-dark-2 px-3 py-2 text-xs font-bold">Google Play</span>
-            </div>
+            </div> */}
           </div>
           {COLUMNS.map((col) => (
             <div key={col.title}>

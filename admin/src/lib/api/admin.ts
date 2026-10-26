@@ -165,7 +165,7 @@ export async function featuredCars(take = 5) {
 const ubTimestamp = (ms: number) => new Date(ms + 8 * 3600_000).toISOString().slice(0, 19).replace("T", " ");
 
 /** Ads added in the last `days` days (rolling), newest first; `take` grows for "Цааш үзэх". */
-export async function recentCars({ days = 2, take }: { days?: number; take: number }) {
+export async function recentCars({ days = 3, take }: { days?: number; take: number }) {
   const since = ubTimestamp(Date.now() - days * 24 * 3600_000);
   const res = await apiFetch<ApiListResponse<Car>>(
     `/api/base/vwCars${listQuery({ filter: [NOT_DELETED, ["created_at", ">=", since]], sort: NEWEST, take })}`

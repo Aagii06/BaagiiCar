@@ -57,6 +57,9 @@ export default function AccountMenu() {
           <div className="px-3 py-2">
             <p className="text-xs text-muted-foreground">{t("Миний бүртгэл")}</p>
             <p className="truncate text-sm font-semibold">{name}</p>
+            {user.phonenumber && user.phonenumber !== name && (
+              <p className="truncate text-xs text-muted-foreground">{user.phonenumber}</p>
+            )}
           </div>
           <Link
             href="/profile"
