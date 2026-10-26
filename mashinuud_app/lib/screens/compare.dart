@@ -559,7 +559,8 @@ class _ComparePickerState extends State<_ComparePicker> {
                     final added = Stores.compare.has(c.id);
                     return InkWell(
                       borderRadius: BorderRadius.circular(AppRadius.md),
-                      onTap: added ? null : () => Stores.compare.toggle(c.id),
+                      // Tapping a checked car removes it again.
+                      onTap: () => Stores.compare.toggle(c.id),
                       child: Padding(
                         padding: const EdgeInsets.all(8),
                         child: Row(

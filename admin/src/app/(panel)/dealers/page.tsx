@@ -73,7 +73,13 @@ function DealersList() {
                 </div>
                 {d.status !== "active" && <span className="text-[10px] font-semibold text-destructive">Идэвхгүй</span>}
               </Link>
-              <button type="button" onClick={() => setCarsOf(d)} className="mx-3 flex shrink-0 items-center gap-0.5 rounded-lg bg-muted px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-border">
+              {/* Nothing to show for a dealer without ads, so the button stays inert. */}
+              <button
+                type="button"
+                disabled={d.car_count === 0}
+                onClick={() => setCarsOf(d)}
+                className="mx-3 flex shrink-0 items-center gap-0.5 rounded-lg bg-muted px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-border disabled:pointer-events-none disabled:opacity-40"
+              >
                 Зарууд
                 {d.car_count != null && <span className="ml-0.5 rounded-full bg-primary px-1.5 text-[10px] leading-4 text-white">{d.car_count}</span>}
                 <ChevronRight className="size-3.5" strokeWidth={2.6} />
