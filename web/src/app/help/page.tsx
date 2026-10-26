@@ -140,7 +140,9 @@ function HelpInner() {
                 {t("Илгээх")}
               </a>
             ) : (
-              <p className="rounded-xl bg-muted px-4 py-3 text-sm text-muted-foreground">{t("Холбоо барих и-мэйл тохируулаагүй байна (NEXT_PUBLIC_CONTACT_EMAIL).")}</p>
+              <button type="button" disabled className="block w-full rounded-xl bg-primary py-3.5 text-center font-bold text-white opacity-60">
+                {t("Илгээх")}
+              </button>
             )}
           </div>
           <div className="mt-5 grid grid-cols-2 gap-2 border-t border-border pt-5">

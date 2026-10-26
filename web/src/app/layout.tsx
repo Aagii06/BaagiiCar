@@ -1,6 +1,7 @@
 import CompareBar from "@/components/car/CompareBar";
 import CarChatDialog from "@/components/chat/CarChatDialog";
 import ChatWidget from "@/components/chat/ChatWidget";
+import AuthGate from "@/components/layout/AuthGate";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
@@ -43,16 +44,23 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <AuthProvider>
             <FavoritesProvider>
               <CompareProvider>
-              <Header />
-              <main className="min-h-[60vh]">{children}</main>
-              <Footer />
-              {/* Room for the mobile tab bar. */}
-              <div className="h-[calc(5.5rem+env(safe-area-inset-bottom))] md:hidden" />
-              <MobileNav />
-              <ChatWidget />
-              <CarChatDialog />
-              <CompareBar />
-              <PushPrompt />
+              <AuthGate
+                header={<Header />}
+                chrome={
+                  <>
+                    <Footer />
+                    {/* Room for the mobile tab bar. */}
+                    <div className="h-[calc(5.5rem+env(safe-area-inset-bottom))] md:hidden" />
+                    <MobileNav />
+                    <ChatWidget />
+                    <CarChatDialog />
+                    <CompareBar />
+                    <PushPrompt />
+                  </>
+                }
+              >
+                {children}
+              </AuthGate>
               </CompareProvider>
             </FavoritesProvider>
           </AuthProvider>

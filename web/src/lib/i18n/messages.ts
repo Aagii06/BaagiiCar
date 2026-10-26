@@ -312,10 +312,6 @@ export const MESSAGES = {
   "И-мэйл": { ru: "Эл. почта", en: "Email" },
   "Асуулт": { ru: "Вопрос", en: "Question" },
   "Илгээх": { ru: "Отправить", en: "Send" },
-  "Холбоо барих и-мэйл тохируулаагүй байна (NEXT_PUBLIC_CONTACT_EMAIL).": {
-    ru: "Контактный e-mail не настроен (NEXT_PUBLIC_CONTACT_EMAIL).",
-    en: "Contact email is not configured (NEXT_PUBLIC_CONTACT_EMAIL).",
-  },
 
   // --- saved -----------------------------------------------------------------
   "Хадгалсан зар алга": { ru: "Нет сохранённых объявлений", en: "No saved ads" },

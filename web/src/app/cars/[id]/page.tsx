@@ -27,10 +27,14 @@ import { useEffect, useState } from "react";
 function Gallery({ car }: { car: Car }) {
   const { t } = useI18n();
   const files = useApi(() => getCarFiles(car.id), String(car.id));
-  const photos = (files.data ?? []).map((f) => f.generated_name).filter(Boolean) as string[];
-  const [index, setIndex] = useState(0);
+  // Photos whose file is missing on the server are dropped; if none are left the default picture shows.
+  const [broken, setBroken] = useState<string[]>([]);
+  const photos = (files.data ?? []).map((f) => f.generated_name).filter((n): n is string => !!n && !broken.includes(n));
+  const drop = (name: string) => () => setBroken((cur) => (cur.includes(name) ? cur : [...cur, name]));
+  const [rawIndex, setIndex] = useState(0);
   const [viewing, setViewing] = useState<number | null>(null);
   const total = photos.length;
+  const index = Math.min(rawIndex, Math.max(total - 1, 0));
   const alt = carTitle(car, t);
 
   if (!total)
@@ -56,7 +60,7 @@ function Gallery({ car }: { car: Car }) {
           >
             {photos.map((name, i) => (
               <button key={name} type="button" onClick={() => setViewing(i)} aria-label={t("Зураг томоор харах")} className="aspect-[4/3] w-full shrink-0 snap-center">
-                <Img src={uploadUrl(name, "grid")!} alt={i ? "" : alt} loading={i ? "lazy" : undefined} className="size-full object-contain" />
+                <Img src={uploadUrl(name, "grid")!} alt={i ? "" : alt} loading={i ? "lazy" : undefined} onError={drop(name)} className="size-full object-contain" />
               </button>
             ))}
           </div>
@@ -74,7 +78,7 @@ function Gallery({ car }: { car: Car }) {
       {/* Desktop: smaller main photo with a thumbnail column beside it. */}
       <div className="hidden h-[520px] gap-2 md:flex">
         <button type="button" onClick={() => setViewing(index)} aria-label={t("Зураг томоор харах")} className="relative min-w-0 flex-1 overflow-hidden rounded-2xl bg-card">
-          <Img src={uploadUrl(photos[index], "full")!} alt={alt} className="size-full object-contain" />
+          <Img src={uploadUrl(photos[index], "full")!} alt={alt} onError={drop(photos[index])} className="size-full object-contain" />
           {counter}
         </button>
         {total > 1 && (
@@ -87,7 +91,7 @@ function Gallery({ car }: { car: Car }) {
                 aria-label={t("Зураг {n}", { n: i + 1 })}
                 className={cn("aspect-[4/3] w-full shrink-0 overflow-hidden rounded-lg border-2", i === index ? "border-foreground" : "border-transparent opacity-80 hover:opacity-100")}
               >
-                <Img src={uploadUrl(name, "thumb")!} className="size-full object-cover" />
+                <Img src={uploadUrl(name, "thumb")!} onError={drop(name)} className="size-full object-cover" />
               </button>
             ))}
           </div>
