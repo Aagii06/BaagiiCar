@@ -19,9 +19,10 @@ import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, initials, timeAgo } from "@/lib/utils";
-import { MapPin, MessageCircle, Phone } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
+import { useWheelScrollX } from "@/lib/useWheelScrollX";
 import { useEffect, useState } from "react";
 
 function Gallery({ car }: { car: Car }) {
@@ -136,12 +137,14 @@ function Specs({ car }: { car: Car }) {
   );
 }
 
+const SIMILAR_COUNT = 12;
+
 function Similar({ car }: { car: Car }) {
-  const { t, tv } = useI18n();
+  const { t } = useI18n();
   const similar = useApi(
     () =>
-      searchCars({ bodyTypeId: car.body_type_id ?? undefined, brandIds: car.body_type_id ? undefined : [car.brand_id], pageSize: 5 }).then((r) =>
-        r.rows.filter((c) => c.id !== car.id).slice(0, 4)
+      searchCars({ bodyTypeId: car.body_type_id ?? undefined, brandIds: car.body_type_id ? undefined : [car.brand_id], pageSize: SIMILAR_COUNT + 1 }).then((r) =>
+        r.rows.filter((c) => c.id !== car.id).slice(0, SIMILAR_COUNT)
       ),
     String(car.id)
   );
@@ -149,12 +152,29 @@ function Similar({ car }: { car: Car }) {
   return (
     <section className="mt-14">
       <h2 className="font-display text-2xl font-bold tracking-tight md:text-[30px]">{t("Төстэй машинууд")}</h2>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {similar.data.map((c) => (
-          <Link key={c.id} href={`/cars/${c.id}`} className="rounded-2xl bg-card p-3 transition-shadow hover:shadow-lg hover:shadow-black/5">
+      <SimilarRow cars={similar.data} />
+    </section>
+  );
+}
+
+/** Sideways-scrolling row of cards; mounted with its cars so the wheel hook finds the element. */
+function SimilarRow({ cars }: { cars: Car[] }) {
+  const { t, tv } = useI18n();
+  const rowRef = useWheelScrollX<HTMLDivElement>();
+  const scrollBy = (dir: 1 | -1) => rowRef.current?.scrollBy({ left: dir * rowRef.current.clientWidth * 0.8, behavior: "smooth" });
+
+  return (
+    <div className="relative mt-6">
+      <div ref={rowRef} className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:scroll-px-0 md:px-0">
+        {cars.map((c) => (
+          <Link
+            key={c.id}
+            href={`/cars/${c.id}`}
+            className="w-[72%] shrink-0 snap-start rounded-2xl bg-card p-3 transition-shadow hover:shadow-lg hover:shadow-black/5 sm:w-[calc((100%-1rem)/2.3)] lg:w-[calc((100%-3rem)/4.3)]"
+          >
             <CarImage id={c.id} image={c.image} bodyType={c.body_type_name} className="aspect-[16/10]" />
             <div className="px-1 pb-1 pt-3">
-              <p className="font-bold">{carTitle(c, t)}</p>
+              <p className="truncate font-bold">{carTitle(c, t)}</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {[c.manufactured_year, c.mileage != null && t("{n} км", { n: formatNumber(c.mileage) }), tv(c.fuel_type)].filter(Boolean).join(" · ")}
               </p>
@@ -163,7 +183,27 @@ function Similar({ car }: { car: Car }) {
           </Link>
         ))}
       </div>
-    </section>
+      {cars.length > 4 && (
+        <>
+          <button
+            type="button"
+            onClick={() => scrollBy(-1)}
+            aria-label={t("Өмнөх")}
+            className="absolute -left-5 top-[38%] hidden size-10 -translate-y-1/2 place-items-center rounded-full bg-white shadow-lg shadow-black/10 hover:bg-muted md:grid"
+          >
+            <ChevronLeft className="size-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollBy(1)}
+            aria-label={t("Дараах")}
+            className="absolute -right-5 top-[38%] hidden size-10 -translate-y-1/2 place-items-center rounded-full bg-white shadow-lg shadow-black/10 hover:bg-muted md:grid"
+          >
+            <ChevronRight className="size-5" />
+          </button>
+        </>
+      )}
+    </div>
   );
 }
 

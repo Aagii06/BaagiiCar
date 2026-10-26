@@ -3,7 +3,8 @@
 import { carTitle } from "@/components/car/CarCard";
 import CarImage from "@/components/car/CarImage";
 import ComparePicker from "@/components/car/ComparePicker";
-import Container, { PageTitle } from "@/components/common/Container";
+import Container from "@/components/common/Container";
+import PageBanner from "@/components/common/PageBanner";
 import { ErrorState, LoadingState } from "@/components/common/States";
 import { getCarsByIds } from "@/lib/api/cars";
 import type { Car } from "@/lib/api/types";
@@ -83,9 +84,10 @@ export default function ComparePage() {
   const grid = { gridTemplateColumns: `minmax(110px,180px) repeat(${cols}, minmax(170px, 240px))` };
 
   return (
-    <Container className="pt-4 md:pt-12">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <PageTitle count={loading ? undefined : rows.length}>{t("Харьцуулалт")}</PageTitle>
+    <>
+    <PageBanner title={t("Харьцуулалт")} aside={loading ? "…" : t("{n} машин", { n: rows.length })} asideLoading={loading} />
+    <Container className="pt-4 md:pt-8">
+      <div className="flex flex-wrap items-end justify-end gap-4">
         {rows.length > 1 && (
           // Phones: its own full-width row under the title, "Цэвэрлэх" on the right.
           <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-start">
@@ -187,5 +189,6 @@ export default function ComparePage() {
 
       {picking && <ComparePicker onClose={closePicker} />}
     </Container>
+    </>
   );
 }

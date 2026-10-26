@@ -9,6 +9,7 @@ import Container from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
 import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
 import Img from "@/components/common/Img";
+import PageBanner from "@/components/common/PageBanner";
 import { CAR_SORTS, getBodyTypes, getBrands, getModels, searchCars, type CarSort } from "@/lib/api/cars";
 import { catalogImage } from "@/lib/api/config";
 import { dealerName, getDealers, type Dealer } from "@/lib/api/dealers";
@@ -478,28 +479,11 @@ function CarsPageInner() {
 
   return (
     <>
-      {/* Title band over a road photo (Unsplash, see public/hero/CREDITS.md), darkened so the white text reads.
-          Phones: the app bar carries the title instead. */}
-      <section className="relative isolate hidden overflow-hidden bg-dark text-white md:block">
-        <div className="absolute inset-0 -z-10">
-          <Img
-            src="/hero/road.webp"
-            srcSet="/hero/road-sm.webp 900w, /hero/road.webp 1920w"
-            sizes="100vw"
-            alt=""
-            fetchPriority="high"
-            className="size-full object-cover object-[center_60%]"
-          />
-        </div>
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
-        <Container className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-10 md:py-16">
-          <h1 className="font-display text-3xl font-bold uppercase leading-tight tracking-tight md:text-5xl">{t("Машин хайх")}</h1>
-          {/* Total beside the title; pulses while results are loading. */}
-          <span aria-live="polite" className={cn("text-sm font-medium tabular-nums text-white/75 md:text-base", result.loading && "animate-pulse")}>
-            {result.data ? t("{n} машин", { n: result.data.count.toLocaleString("en-US") }) : "…"}
-          </span>
-        </Container>
-      </section>
+      <PageBanner
+        title={t("Машин хайх")}
+        aside={result.data ? t("{n} машин", { n: result.data.count.toLocaleString("en-US") }) : "…"}
+        asideLoading={result.loading}
+      />
 
       <Container className="pt-1 md:pt-3">
         {(dealers.loading && !dealers.data) || dealers.data?.rows.length ? (
