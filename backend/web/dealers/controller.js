@@ -1,4 +1,4 @@
-const { dealers, vwCars, vwDealers, sequelize } = require("../../models");
+const { dealers, vwCars, sequelize } = require("../../models");
 const { carStatuses } = require("../../config/constants");
 
 // Имэйл гэх мэт дотоод талбарыг буцаахгүй
@@ -16,11 +16,15 @@ const publicAttributes = [
 
 const activeDealer = { status: "active" };
 
-// Вэб дээр харагдах дилерүүд (vwDealers: идэвхтэй зартай идэвхтэй дилер), зарын тоогоор
+// Вэб дээр харагдах дилерүүд: идэвхтэй зартай идэвхтэй дилер, зарын тоогоор.
+// vwDealers нь админд зориулсан (бүх дилер, имэйлтэй) тул энд ашиглахгүй.
 module.exports.list = async (req, res) => {
   try {
-    const rows = await vwDealers.findAll({
-      order: [["car_count", "DESC"], ["name", "ASC"]],
+    const rows = await dealers.findAll({
+      where: activeDealer,
+      attributes: publicAttributes,
+      having: sequelize.literal("car_count > 0"),
+      order: [[sequelize.literal("car_count"), "DESC"], ["name", "ASC"]],
       raw: true,
     });
     return res.status(200).json({ success: true, data: { rows, count: rows.length }, message: "" });
