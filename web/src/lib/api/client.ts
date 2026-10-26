@@ -2,6 +2,9 @@ import type { MessageKey } from "../i18n/messages";
 import { documentLocale, translate, type Vars } from "../i18n/translate";
 import { API_BASE_URL } from "./config";
 
+/** Fired when a signed-in request comes back 401 (token expired or account removed); the session is dropped. */
+export const UNAUTHORIZED_EVENT = "web-unauthorized";
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -61,6 +64,8 @@ export async function apiFetch<T>(
   const data = isJson ? await response.json() : undefined;
 
   if (!response.ok || data?.success === false) {
+    if (response.status === 401 && requestHeaders.has("Authorization") && typeof window !== "undefined")
+      window.dispatchEvent(new CustomEvent(UNAUTHORIZED_EVENT));
     // express-validator failures come as `{ type: "validation", errors: [{ field, message }] }`.
     const firstError = Array.isArray(data?.errors) ? data.errors[0]?.message : undefined;
     throw new ApiError(response.status, data?.message || firstError || statusMessage(response.status));

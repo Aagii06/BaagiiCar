@@ -1,6 +1,6 @@
 "use client";
 
-import { ApiError } from "@/lib/api/client";
+import { UNAUTHORIZED_EVENT } from "@/lib/api/client";
 import { getMe, type Session, type WebUser } from "@/lib/api/auth";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
@@ -56,18 +56,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           writeStored(next);
           setSession((cur) => (cur?.token === stored.token ? next : cur));
         },
-        (err: unknown) => {
-          // Expired token or removed account; other failures (offline) keep the cached session.
-          if (err instanceof ApiError && err.status === 401) {
-            writeStored(null);
-            setSession((cur) => (cur?.token === stored.token ? null : cur));
-          }
-        }
+        // A 401 is handled by the UNAUTHORIZED_EVENT listener; other failures (offline) keep the cached session.
+        () => {}
       );
 
+    // Any signed-in request rejected with 401 (expired token, removed account): drop the session,
+    // the visitor signs in again with their phone number and a code.
+    const onUnauthorized = () => {
+      writeStored(null);
+      setSession(null);
+    };
     const onStorage = (e: StorageEvent) => e.key === STORAGE_KEY && setSession(readStored());
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   const signIn = useCallback((next: Session) => {

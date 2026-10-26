@@ -4,6 +4,7 @@ const Router = require("express").Router();
 Router.use("/base", require("./base/router"));
 Router.use("/cars", require("./cars/router"));
 Router.use("/messages", require("./messages/router"));
+Router.use("/favorites", require("./favorites/router"));
 Router.use("/subscriptions", require("./subscriptions/router"));
 Router.use("/dealers", require("./dealers/router"));
 // Вэбийн хэрэглэгчийн нэвтрэлт (утас + код)
