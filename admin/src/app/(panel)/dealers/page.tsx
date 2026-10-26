@@ -1,10 +1,12 @@
 "use client";
 
+import DealerCarsSheet from "@/components/car/DealerCarsSheet";
 import { DealerAvatar } from "@/components/car/DealerPicker";
 import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listDealers } from "@/lib/api/admin";
+import type { Dealer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { ChevronRight, Plus } from "lucide-react";
@@ -26,6 +28,8 @@ function DealersList() {
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
   const dealers = useApi(() => listDealers(q), q);
+  // Dealer whose ads are open in the full-screen sheet.
+  const [carsOf, setCarsOf] = useState<Dealer | null>(null);
 
   return (
     <>
@@ -59,7 +63,7 @@ function DealersList() {
         // Edge to edge, right under the header (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
           {dealers.data.rows.map((d) => (
-            // Two sibling links (a link can't nest another): the row opens the dealer, the right button its ads.
+            // The row opens the dealer; the right button (outside the link) its ads in a sheet.
             <div key={d.id} className="flex items-center hover:bg-muted/60">
               <Link href={withFrom(`/dealers/${d.id}`, from)} className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4">
                 <DealerAvatar dealer={d} className="size-10" />
@@ -69,14 +73,25 @@ function DealersList() {
                 </div>
                 {d.status !== "active" && <span className="text-[10px] font-semibold text-destructive">Идэвхгүй</span>}
               </Link>
-              <Link href={`/cars?dealer=${d.id}`} className="mx-3 flex shrink-0 items-center gap-0.5 rounded-lg bg-muted px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-border">
+              <button type="button" onClick={() => setCarsOf(d)} className="mx-3 flex shrink-0 items-center gap-0.5 rounded-lg bg-muted px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-border">
                 Зарууд
                 {d.car_count != null && <span className="ml-0.5 rounded-full bg-primary px-1.5 text-[10px] leading-4 text-white">{d.car_count}</span>}
                 <ChevronRight className="size-3.5" strokeWidth={2.6} />
-              </Link>
+              </button>
             </div>
           ))}
         </div>
+      )}
+
+      {carsOf && (
+        <DealerCarsSheet
+          dealer={carsOf}
+          onClose={() => {
+            setCarsOf(null);
+            // Ads may have been deleted in the sheet, so refresh the counts.
+            dealers.reload();
+          }}
+        />
       )}
     </>
   );
