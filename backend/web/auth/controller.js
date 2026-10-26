@@ -1,17 +1,14 @@
-const { users, op } = require("../../models");
+const { customers, sequelize, op } = require("../../models");
 const { authLogin } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
-const { roles } = require("../../config/constants");
-const { sendPhoneOtp, verifyPhoneOtp } = require("../../helper/otpHelper");
+const { sendPhoneOtp, verifyPhoneOtp, sendEmailOtp, verifyEmailOtp } = require("../../helper/otpHelper");
 
-const findUserData = async (id) => {
-  const user = await users.findOne({
-    where: { id, status: "active" },
-    attributes: { exclude: ["password", "forgot_pass_token", "forgot_pass_expire_date"] },
-    raw: true,
-  });
-  if (user === null) return { success: false, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
-  return { success: true, user, message: "" };
+// Вэбийн зочин хэрэглэгч customers хүснэгтэд (users-д зөвхөн ADMIN, DEALER).
+// Токенд customer: true - protectCustomer үүгээр users-ийн токеноос ялгана.
+const findCustomerData = async (id) => {
+  const customer = await customers.findOne({ where: { id, status: "active" }, raw: true });
+  if (customer === null) return { success: false, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
+  return { success: true, user: customer, message: "" };
 };
 
 // Утас руу нэвтрэх код илгээнэ (SMS холбогдох хүртэл OTP_DEV_CODE - helper/otpHelper.js)
@@ -26,24 +23,19 @@ module.exports.otpSend = async (req, res) => {
   }
 };
 
-// Утас + кодоор нэвтрэх. Бүртгэлгүй дугаар бол "Зочин" нэртэй CUSTOMER эрхтэй шинэ хэрэглэгч үүсгэнэ.
+// Утас + кодоор нэвтрэх. Бүртгэлгүй дугаар бол "Зочин" нэртэй шинэ customer үүсгэнэ.
 // Буцаах: { token, loggedUser }
 module.exports.otpLogin = async (req, res) => {
   let result = { success: false, data: null, message: "" };
   const { phonenumber, code, at } = req.body;
   try {
-    let user = await users.findOne({
+    let customer = await customers.findOne({
       where: { phonenumber, status: { [op.ne]: "deleted" } },
-      attributes: ["id", "role", "status"],
+      attributes: ["id", "status"],
       raw: true,
     });
 
-    // Админ самбар нууц үгээр нэвтэрнэ
-    if (user && user.role === roles.admin) {
-      result.message = "Админ эрхтэй хэрэглэгч нууц үгээр нэвтэрнэ үү";
-      return res.status(200).json(result);
-    }
-    if (user && user.status !== "active") {
+    if (customer && customer.status !== "active") {
       result.message = "Таны бүртгэл идэвхгүй байна";
       return res.status(200).json(result);
     }
@@ -54,31 +46,31 @@ module.exports.otpLogin = async (req, res) => {
       return res.status(200).json(result);
     }
 
-    if (!user) {
-      const created = await users.create({
+    if (!customer) {
+      const created = await customers.create({
         phonenumber,
         firstname: "Зочин",
-        role: roles.customer,
         status: "active",
         created_at: at,
       });
       await saveLog({
-        object_name: "users",
+        object_name: "customers",
         object_id: created.id,
         log_action: "registered",
         log_action_mn: "Утасны кодоор бүртгүүлсэн",
         created_by: created.id,
         created_at: at,
       });
-      user = { id: created.id };
+      customer = { id: created.id };
     }
+    await customers.update({ last_login_at: at }, { where: { id: customer.id } });
 
-    const { success, user: loggedUser, message } = await findUserData(user.id);
+    const { success, user: loggedUser, message } = await findCustomerData(customer.id);
     if (!success) {
       result.message = message;
       return res.status(200).json(result);
     }
-    authLogin(loggedUser, (token) => {
+    authLogin({ ...loggedUser, customer: true }, (token) => {
       result.success = true;
       result.data = { token, loggedUser };
       return res.status(200).json(result);
@@ -93,7 +85,7 @@ module.exports.otpLogin = async (req, res) => {
 // Хэрэглэгч устгагдсан / идэвхгүй болсон бол 401 - вэб талд гарсан төлөвт оруулна
 module.exports.me = async (req, res) => {
   try {
-    const { success, user, message } = await findUserData(req.loggedUser?.id);
+    const { success, user, message } = await findCustomerData(req.loggedUser?.id);
     if (!success) return res.status(401).json({ success: false, data: null, message: "Систем рүү нэвтэрнэ үү" });
     return res.status(200).json({ success: true, data: user, message });
   } catch (error) {
@@ -109,16 +101,88 @@ module.exports.updateMe = async (req, res) => {
   if (email)
     return res.status(200).json({ success: false, data: null, message: "И-мэйлээ кодоор баталгаажуулна уу" });
   try {
-    const user = await users.findOne({ where: { id: req.loggedUser?.id, status: "active" } });
-    if (user === null) return res.status(401).json({ success: false, data: null, message: "Систем рүү нэвтэрнэ үү" });
+    const customer = await customers.findOne({ where: { id: req.loggedUser?.id, status: "active" } });
+    if (customer === null) return res.status(401).json({ success: false, data: null, message: "Систем рүү нэвтэрнэ үү" });
 
     const values = { firstname: firstname.trim(), updated_by: by, updated_at: at };
     if (email === null || email === "") values.email = null;
-    await user.update(values);
-    const { user: data } = await findUserData(user.id);
+    await customer.update(values);
+    const { user: data } = await findCustomerData(customer.id);
     return res.status(200).json({ success: true, data, message: "Амжилттай хадгаллаа" });
   } catch (error) {
     console.log(error);
     return res.status(200).json({ success: false, data: null, message: typeof error === "string" ? error : "Алдаа" });
+  }
+};
+
+// --- Имэйл солих: шинэ хаяг руу код илгээж, баталгаажуулсны дараа л солино ----
+// users-ийн "email:<id>"-тэй андуурагдахгүйн тулд тусдаа purpose
+const emailChangePurpose = (customerId) => `customer-email:${customerId}`;
+
+module.exports.emailChangeSend = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const me = await customers.findOne({ where: { id: req.loggedUser?.id, status: "active" }, attributes: ["id", "email"], raw: true });
+    if (!me) return res.status(200).json({ success: false, data: null, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" });
+    if ((me.email || "").toLowerCase() === email)
+      return res.status(200).json({ success: false, data: null, message: "Одоогийн имэйлтэй ижил байна" });
+    const taken = await customers.count({ where: { email, status: { [op.ne]: "deleted" }, id: { [op.ne]: me.id } } });
+    if (taken) return res.status(200).json({ success: false, data: null, message: "И-мэйл хаяг давхардаж байна" });
+
+    const result = await sendEmailOtp(email, emailChangePurpose(me.id));
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Код илгээж чадсангүй" });
+  }
+};
+
+module.exports.emailChangeVerify = async (req, res) => {
+  let result = { success: false, data: null, message: "" };
+  const { email, code, by, at } = req.body;
+  const { loggedUser } = req;
+  try {
+    const verified = await verifyEmailOtp(email, emailChangePurpose(loggedUser?.id), code);
+    if (!verified.success) {
+      result.message = verified.message;
+      return res.status(200).json(result);
+    }
+    const taken = await customers.count({ where: { email, status: { [op.ne]: "deleted" }, id: { [op.ne]: loggedUser.id } } });
+    if (taken) {
+      result.message = "И-мэйл хаяг давхардаж байна";
+      return res.status(200).json(result);
+    }
+    const t = await sequelize.transaction();
+    try {
+      await customers.update(
+        { email, updated_by: by, updated_at: at },
+        { where: { id: loggedUser.id, status: "active" }, transaction: t },
+      );
+      await saveLog(
+        {
+          object_name: "customers",
+          object_id: loggedUser.id,
+          log_action: "email_changed",
+          log_action_mn: "Имэйл солисон",
+          modify_data: JSON.stringify({ email }),
+          created_by: by,
+          created_at: at,
+        },
+        t,
+      );
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+    const { user } = await findCustomerData(loggedUser.id);
+    result.success = true;
+    result.data = user;
+    result.message = "Имэйл баталгаажиж шинэчлэгдлээ";
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    result.message = typeof error === "string" ? error : "Алдаа";
+    return res.status(200).json(result);
   }
 };

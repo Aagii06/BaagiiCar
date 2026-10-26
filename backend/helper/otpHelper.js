@@ -73,6 +73,8 @@ const subjects = {
   login: "нэвтрэх код",
   // "email:<userId>" - нэвтэрсэн хэрэглэгч имэйлээ солих
   email: "имэйл баталгаажуулах код",
+  // "customer-email:<customerId>" - вэбийн зочин имэйлээ солих
+  "customer-email": "имэйл баталгаажуулах код",
 };
 const titleFor = (purpose) => `Cardealer ${subjects[purpose.split(":")[0]] || "баталгаажуулах код"}`;
 
