@@ -72,7 +72,8 @@ function CarsInner() {
           {/* Dealers only ever see their own dealer's ads, so the filter is for admins. */}
           {isAdmin && (
             <span className="w-36 shrink-0">
-              <Select title="Дилер" value={dealerId ? String(dealerId) : ""} onChange={(e) => setParam({ dealer: e.target.value })} className={dealerId ? "font-semibold text-foreground" : undefined}>
+              {/* Unpicked, the closed field reads "Дилер" as a placeholder; "Бүгд" stays the sheet's first row. */}
+              <Select title="Дилер" value={dealerId ? String(dealerId) : ""} valueLabel={dealerId ? undefined : "Дилер"} onChange={(e) => setParam({ dealer: e.target.value })} className={dealerId ? "font-semibold text-foreground" : undefined}>
                 <option value="">Бүгд</option>
                 {dealers.data?.map((d) => (
                   <option key={d.id} value={d.id}>

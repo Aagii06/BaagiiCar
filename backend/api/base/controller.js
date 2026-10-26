@@ -126,7 +126,7 @@ exports.create = async (req, res) => {
     if (model) {
       const item = await model
         .create({ ...body, created_by: by, created_at: at }, { transaction: t })
-        .then(async (item) => await model.findByPk(item.id, { raw: true }));
+        .then(async (item) => await model.findByPk(item.id, { raw: true, transaction: t }));
 
       await saveLog(
         {
