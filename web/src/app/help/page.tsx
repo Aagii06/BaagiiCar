@@ -1,15 +1,18 @@
 "use client";
 
 import Container from "@/components/common/Container";
+import EmailCodeDialog from "@/components/common/EmailCodeDialog";
 import { Field, inputClass, PhoneInput } from "@/components/common/Field";
 import { LoadingState } from "@/components/common/States";
 import { EmailSignup } from "@/components/layout/NotifySignup";
+import { sendEmailCode } from "@/lib/api/auth";
 import { CONTACT } from "@/lib/api/config";
+import { displayName, useAuth } from "@/lib/auth/AuthProvider";
 import { openChat } from "@/lib/chat";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { CreditCard, Mail, MessageCircle, Minus, Phone, Plus, Search, ShieldCheck } from "lucide-react";
+import { BadgeCheck, CreditCard, Mail, MessageCircle, Minus, Phone, Plus, Search, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
@@ -39,10 +42,11 @@ function HelpInner() {
   const car = sp.get("car");
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(topic === "leasing" ? "leasing" : "sell");
+  const { user, token, setUser } = useAuth();
   const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    email: "",
+    name: user ? displayName(user) : "",
+    phone: user?.phonenumber ?? "",
+    email: user?.email ?? "",
     message: topic === "leasing" ? `${t("Лизингийн хүсэлт")}${car ? ` — ${t("зар #{id}", { id: car })}` : ""}\n` : "",
   });
 
@@ -50,6 +54,27 @@ function HelpInner() {
     const q = query.trim().toLowerCase();
     return q ? FAQ.filter((f) => (t(f.q) + t(f.a)).toLowerCase().includes(q)) : FAQ;
   }, [query, t]);
+
+  // The e-mail typed here becomes the customer's own (profile) address once its code checks out.
+  const trimmedEmail = form.email.trim().toLowerCase();
+  const emailVerified = !!trimmedEmail && trimmedEmail === (user?.email ?? "").toLowerCase();
+  const [verifying, setVerifying] = useState<string | null>(null);
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const canRequestCode = !emailBusy && !emailVerified && /^\S+@\S+\.\S+$/.test(trimmedEmail);
+  const requestCode = async () => {
+    if (!canRequestCode || !token) return;
+    setEmailBusy(true);
+    setEmailError(null);
+    try {
+      await sendEmailCode(token, trimmedEmail);
+      setVerifying(trimmedEmail);
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setEmailBusy(false);
+    }
+  };
 
   // No contact endpoint on the backend yet, so the form opens the user's mail app.
   const mailto = CONTACT.email
@@ -122,15 +147,43 @@ function HelpInner() {
             <Field label={t("Утас")}>
               <PhoneInput autoComplete="tel" placeholder={t("Утасны дугаар")} value={form.phone} onChange={(phone) => setForm({ ...form, phone })} />
             </Field>
-            <Field label={t("И-мэйл")}>
-              <input
-                className={inputClass}
-                type="email"
-                autoComplete="email"
-                placeholder="name@example.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
+            <Field
+              label={t("И-мэйл")}
+              hint={trimmedEmail && !emailVerified ? t("Шинэ хаяг руу баталгаажуулах код илгээнэ.") : undefined}
+              error={emailError ?? undefined}
+            >
+              <span className="relative block">
+                <input
+                  className={cn(inputClass, trimmedEmail && "pr-28")}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="name@example.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter") return;
+                    e.preventDefault();
+                    requestCode();
+                  }}
+                />
+                {emailVerified ? (
+                  <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 text-sm font-semibold text-success">
+                    <BadgeCheck className="size-4" />
+                    {t("Баталгаажсан")}
+                  </span>
+                ) : (
+                  trimmedEmail && (
+                    <button
+                      type="button"
+                      onClick={requestCode}
+                      disabled={!canRequestCode}
+                      className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-lg bg-primary px-3 text-sm font-bold text-white transition hover:bg-primary-hover disabled:opacity-60"
+                    >
+                      {t("Код авах")}
+                    </button>
+                  )
+                )}
+              </span>
             </Field>
             <Field label={t("Асуулт")}>
               <textarea className={cn(inputClass, "h-auto min-h-28 py-3")} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
@@ -163,6 +216,19 @@ function HelpInner() {
           </div>
         </aside>
       </Container>
+
+      {verifying && token && (
+        <EmailCodeDialog
+          email={verifying}
+          token={token}
+          onClose={() => setVerifying(null)}
+          onVerified={(next) => {
+            setVerifying(null);
+            setUser(next);
+            setForm((f) => ({ ...f, email: next.email ?? f.email }));
+          }}
+        />
+      )}
 
       <Container className="mt-10">
         <section id="alerts" className="grid scroll-mt-24 gap-5 rounded-[28px] bg-dark px-6 py-8 text-white md:grid-cols-[1fr_1.2fr] md:items-center md:px-10 md:py-10">
