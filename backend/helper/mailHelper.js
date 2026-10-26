@@ -1,5 +1,4 @@
 const nodemailer = require("nodemailer");
-const smtpTransport = require("nodemailer-smtp-transport");
 
 // local хэсэг: 1-64 тэмдэгт, цэгээр эхлэх/төгсөх болон ".." хориотой
 // домэйн: label бүр 1-63 тэмдэгт, "-"-ээр эхлэх/төгсөхгүй, TLD үсгээр эхэлнэ
@@ -11,26 +10,27 @@ const isValidEmail = (email) =>
 
 module.exports.isValidEmail = isValidEmail;
 
-module.exports.sendMail = (mail, data) => {
-  const user = process.env.MAIL_USER_NAME;
-  const pass = process.env.MAIL_USER_PASS;
+// Холболтыг нэг удаа үүсгээд дахин ашиглана (имэйл бүрт TLS + нэвтрэлт хийхгүй)
+let transporter = null;
+const getTransporter = () => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      pool: true,
+      maxConnections: 3,
+      tls: { rejectUnauthorized: true, minVersion: "TLSv1.2" },
+      auth: { user: process.env.MAIL_USER_NAME, pass: process.env.MAIL_USER_PASS },
+    });
+  }
+  return transporter;
+};
 
+module.exports.sendMail = (mail, data) => {
   try {
     if (isValidEmail(mail)) {
-      const transporter = nodemailer.createTransport(
-        smtpTransport({
-          service: "Gmail",
-          host: "smtp.gmail.com",
-          port: 587,
-          secure: false,
-          logger: true,
-          debug: true,
-          tls: { rejectUnauthorized: true, minVersion: "TLSv1.2" },
-          auth: { user, pass },
-        }),
-      );
-
-      return transporter.sendMail({ from: user, to: mail, ...data });
+      return getTransporter().sendMail({ from: `Cardealer <${process.env.MAIL_USER_NAME}>`, to: mail, ...data });
     } else {
       return null;
     }
