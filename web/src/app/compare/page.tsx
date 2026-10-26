@@ -85,110 +85,110 @@ export default function ComparePage() {
 
   return (
     <>
-    <PageBanner title={t("Харьцуулалт")} aside={loading ? "…" : t("{n} машин", { n: rows.length })} asideLoading={loading} />
-    <Container className="pt-4 md:pt-8">
-      <div className="flex flex-wrap items-end justify-end gap-4">
-        {rows.length > 1 && (
-          // Phones: its own full-width row under the title, "Цэвэрлэх" on the right.
-          <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-start">
-            <label className="flex cursor-pointer select-none items-center gap-3 text-sm font-semibold">
-              <input type="checkbox" role="switch" className="peer sr-only" checked={diffOnly} onChange={(e) => setDiffOnly(e.target.checked)} />
-              <span className="relative h-7 w-12 shrink-0 rounded-full border border-border bg-card transition-colors after:absolute after:left-1 after:top-1/2 after:size-5 after:-translate-y-1/2 after:rounded-full after:bg-muted-foreground/30 after:transition-all peer-checked:border-primary peer-checked:bg-primary peer-checked:after:left-6 peer-checked:after:bg-white peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40" />
-              {t("Зөвхөн ялгааг харуулах")}
-            </label>
-            <button
-              type="button"
-              onClick={() => {
-                // Back to the page as on first visit.
-                clear();
-                setDiffOnly(false);
-              }}
-              className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-muted px-3 text-sm font-semibold text-muted-foreground transition hover:bg-destructive-soft hover:text-destructive"
-            >
-              <X className="size-3.5" />
-              {t("Цэвэрлэх")}
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-4 md:mt-8">
-        {loading ? (
-          <LoadingState />
-        ) : cars.error ? (
-          <ErrorState message={cars.error.message} onRetry={cars.reload} />
-        ) : (
-          <>
-            {!rows.length && (
-              <p className="mb-4 text-sm text-muted-foreground">{t("Машины карт дээрх харьцуулах товчийг дарж {n} хүртэл машин нэмнэ үү.", { n: COMPARE_MAX })}</p>
-            )}
-            <div className="no-scrollbar -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-              <div className="min-w-max overflow-hidden rounded-2xl bg-card">
-                {/* Car headers */}
-                <div className="grid gap-3 p-3" style={grid}>
-                  <div />
-                  {rows.map((c) => (
-                    <div key={c.id} className="relative flex flex-col">
-                      <Link href={`/cars/${c.id}`} className="block">
-                        <CarImage id={c.id} image={c.image} bodyType={c.body_type_name} className="aspect-[4/3]" alt={carTitle(c, t)} />
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => remove(c.id)}
-                        title={t("Харьцуулалтаас хасах")}
-                        aria-label={t("Харьцуулалтаас хасах")}
-                        className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white shadow-sm hover:text-destructive"
-                      >
-                        <X className="size-4" />
-                      </button>
-                      <Link href={`/cars/${c.id}`} className="mt-3 px-1 font-bold leading-snug hover:text-primary">
-                        {carTitle(c, t)}
-                        {c.manufactured_year ? <span className="font-medium text-muted-foreground"> · {c.manufactured_year}</span> : null}
-                      </Link>
-                      <p className="mt-1 px-1 font-display text-lg font-bold text-primary">{formatPrice(c.price, t)}</p>
-                    </div>
-                  ))}
-                  {Array.from({ length: slots }, (_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setPicking(true)}
-                      className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
-                    >
-                      <Plus className="size-6" />
-                      {t("Машин нэмэх")}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Spec rows */}
-                {visible.map((r, ri) => {
-                  const { best, worst } = rank(rows, r);
-                  return (
-                    <div key={r.label} className={cn("grid items-center gap-3 px-3 py-3", ri % 2 === 0 && "bg-muted/60")} style={grid}>
-                      <div className="px-1 text-xs font-medium text-muted-foreground md:text-sm">{r.label}</div>
-                      {rows.map((c, i) => {
-                        const v = r.value(c);
-                        return (
-                          <div key={c.id} className={cn("flex items-center gap-1.5 px-1 text-sm font-semibold", best.has(i) && "text-success", worst.has(i) && "text-destructive")}>
-                            {v || <span className="font-normal text-muted-foreground">—</span>}
-                            {best.has(i) && <Trophy className="size-3.5 shrink-0" />}
-                          </div>
-                        );
-                      })}
-                      {Array.from({ length: slots }, (_, i) => <div key={i} />)}
-                    </div>
-                  );
-                })}
-                {diff && !visible.length && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("Ялгаатай үзүүлэлт алга")}</p>}
-              </div>
+      <PageBanner title={t("Харьцуулалт")} aside={loading ? "…" : t("{n} машин", { n: rows.length })} asideLoading={loading} />
+      <Container className="pt-4 md:pt-8">
+        <div className="flex flex-wrap items-end justify-end gap-4">
+          {rows.length > 1 && (
+            // Phones: its own full-width row under the title, "Цэвэрлэх" on the right.
+            <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-start">
+              <label className="flex cursor-pointer select-none items-center gap-3 text-sm font-semibold">
+                <input type="checkbox" role="switch" className="peer sr-only" checked={diffOnly} onChange={(e) => setDiffOnly(e.target.checked)} />
+                <span className="relative h-7 w-12 shrink-0 rounded-full border border-border bg-card transition-colors after:absolute after:left-1 after:top-1/2 after:size-5 after:-translate-y-1/2 after:rounded-full after:bg-muted-foreground/30 after:transition-all peer-checked:border-primary peer-checked:bg-primary peer-checked:after:left-6 peer-checked:after:bg-white peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40" />
+                {t("Зөвхөн ялгааг харуулах")}
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  // Back to the page as on first visit.
+                  clear();
+                  setDiffOnly(false);
+                }}
+                className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-muted px-3 text-sm font-semibold text-muted-foreground transition hover:bg-destructive-soft hover:text-destructive"
+              >
+                <X className="size-3.5" />
+                {t("Цэвэрлэх")}
+              </button>
             </div>
-          </>
-        )}
-      </div>
+          )}
+        </div>
 
-      {picking && <ComparePicker onClose={closePicker} />}
-    </Container>
+        <div className="mt-4 md:mt-8">
+          {loading ? (
+            <LoadingState />
+          ) : cars.error ? (
+            <ErrorState message={cars.error.message} onRetry={cars.reload} />
+          ) : (
+            <>
+              {!rows.length && (
+                <p className="mb-4 text-sm text-muted-foreground">{t("Машины карт дээрх харьцуулах товчийг дарж {n} хүртэл машин нэмнэ үү.", { n: COMPARE_MAX })}</p>
+              )}
+              <div className="no-scrollbar -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+                <div className="min-w-max overflow-hidden rounded-2xl bg-card">
+                  {/* Car headers */}
+                  <div className="grid gap-3 p-3" style={grid}>
+                    <div />
+                    {rows.map((c) => (
+                      <div key={c.id} className="relative flex flex-col">
+                        <Link href={`/cars/${c.id}`} className="block">
+                          <CarImage id={c.id} image={c.image} bodyType={c.body_type_name} className="aspect-[4/3]" alt={carTitle(c, t)} />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => remove(c.id)}
+                          title={t("Харьцуулалтаас хасах")}
+                          aria-label={t("Харьцуулалтаас хасах")}
+                          className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-white shadow-sm hover:text-destructive"
+                        >
+                          <X className="size-4" />
+                        </button>
+                        <Link href={`/cars/${c.id}`} className="mt-3 px-1 font-bold leading-snug hover:text-primary">
+                          {carTitle(c, t)}
+                          {c.manufactured_year ? <span className="font-medium text-muted-foreground"> · {c.manufactured_year}</span> : null}
+                        </Link>
+                        <p className="mt-1 px-1 font-display text-lg font-bold text-primary">{formatPrice(c.price, t)}</p>
+                      </div>
+                    ))}
+                    {Array.from({ length: slots }, (_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setPicking(true)}
+                        className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground transition hover:border-primary hover:text-primary"
+                      >
+                        <Plus className="size-6" />
+                        {t("Машин нэмэх")}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Spec rows */}
+                  {visible.map((r, ri) => {
+                    const { best, worst } = rank(rows, r);
+                    return (
+                      <div key={r.label} className={cn("grid items-center gap-3 px-3 py-3", ri % 2 === 0 && "bg-muted/60")} style={grid}>
+                        <div className="px-1 text-xs font-medium text-muted-foreground md:text-sm">{r.label}</div>
+                        {rows.map((c, i) => {
+                          const v = r.value(c);
+                          return (
+                            <div key={c.id} className={cn("flex items-center gap-1.5 px-1 text-sm font-semibold", best.has(i) && "text-success", worst.has(i) && "text-destructive")}>
+                              {v || <span className="font-normal text-muted-foreground">—</span>}
+                              {best.has(i) && <Trophy className="size-3.5 shrink-0" />}
+                            </div>
+                          );
+                        })}
+                        {Array.from({ length: slots }, (_, i) => <div key={i} />)}
+                      </div>
+                    );
+                  })}
+                  {diff && !visible.length && <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("Ялгаатай үзүүлэлт алга")}</p>}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {picking && <ComparePicker onClose={closePicker} />}
+      </Container>
     </>
   );
 }
