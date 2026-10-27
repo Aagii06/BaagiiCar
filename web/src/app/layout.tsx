@@ -24,8 +24,12 @@ const oswald = Oswald({ variable: "--font-oswald", subsets: ["latin", "cyrillic"
 const locale = DEFAULT_LOCALE;
 
 export const metadata: Metadata = {
+  // Public domain: absolute URLs for Open Graph images, canonical links, etc.
+  metadataBase: new URL("https://cardealer.mn"),
   title: { default: `Cardealer — ${translate(locale, "Машин авах, зарах")}`, template: "%s · Cardealer" },
   description: translate(locale, "Монголын машин авах, зарах платформ. Оношилгоотой зар, зээлийн тооцоолуур, зарлагчтай шууд холбогдох."),
+  // iOS "Add to Home Screen": open full-screen without Safari's address bar.
+  appleWebApp: { capable: true, title: "Cardealer", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

@@ -105,6 +105,11 @@
   [role="button"] {
     -webkit-tap-highlight-color: transparent;
   }
+  /* Tailwind v4 dropped the pointer cursor on buttons; bring it back everywhere. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
   /* Phones: app-like touch — no grey flash, pressed state instead of hover, no page bounce. */
   @media (max-width: 767px) {
     body {
