@@ -2,6 +2,7 @@
   "name": "baagii-car-dealer-web",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://cardealer.mn",
   "scripts": {
     "dev": "next dev -p 3880",
     "build": "next build",
