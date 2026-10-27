@@ -9,6 +9,7 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || "Cardealer", {
       body: data.body || "",
+      icon: "/icons/icon-192.png",
       tag: data.url,
       data: { url: data.url || "/" },
     })
