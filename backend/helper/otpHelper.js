@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 const moment = require("moment");
-const { emailOtps, phoneOtps } = require("../models");
+const { emailOtps, phoneOtps, customers, users, op } = require("../models");
 const { sendMail } = require("./mailHelper");
 const { isSmsConfigured, sendSms } = require("./smsHelper");
 
@@ -136,3 +136,13 @@ module.exports.sendPhoneOtp = (phonenumber, purpose) => {
 
 module.exports.verifyPhoneOtp = (phonenumber, purpose, code) =>
   verifyOtp({ model: phoneOtps, where: { phonenumber, purpose }, key: phoneKey(phonenumber, purpose), code });
+
+// Кодоор баталгаажсан имэйлийг бусад бүртгэлээс (customers, users) хасна - имэйл давхардахгүй,
+// эзэмшигч нь кодоор нотлогдсон тул хуучин бүртгэлээс шууд чөлөөлнө. Өөрийн бүртгэлийг алгасна.
+module.exports.releaseEmail = async (email, { customerId, userId } = {}, transaction) => {
+  await customers.update(
+    { email: null },
+    { where: { email, ...(customerId && { id: { [op.ne]: customerId } }) }, transaction },
+  );
+  await users.update({ email: null }, { where: { email, ...(userId && { id: { [op.ne]: userId } }) }, transaction });
+};

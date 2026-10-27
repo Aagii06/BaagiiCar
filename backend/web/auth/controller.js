@@ -1,7 +1,7 @@
 const { customers, sequelize, op } = require("../../models");
 const { authLogin } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
-const { sendPhoneOtp, verifyPhoneOtp, sendEmailOtp, verifyEmailOtp } = require("../../helper/otpHelper");
+const { sendPhoneOtp, verifyPhoneOtp, sendEmailOtp, verifyEmailOtp, releaseEmail } = require("../../helper/otpHelper");
 
 // Вэбийн зочин хэрэглэгч customers хүснэгтэд (users-д зөвхөн ADMIN, DEALER).
 // Токенд customer: true - protectCustomer үүгээр users-ийн токеноос ялгана.
@@ -126,8 +126,6 @@ module.exports.emailChangeSend = async (req, res) => {
     if (!me) return res.status(200).json({ success: false, data: null, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" });
     if ((me.email || "").toLowerCase() === email)
       return res.status(200).json({ success: false, data: null, message: "Одоогийн имэйлтэй ижил байна" });
-    const taken = await customers.count({ where: { email, status: { [op.ne]: "deleted" }, id: { [op.ne]: me.id } } });
-    if (taken) return res.status(200).json({ success: false, data: null, message: "И-мэйл хаяг давхардаж байна" });
 
     const result = await sendEmailOtp(email, emailChangePurpose(me.id));
     return res.status(200).json(result);
@@ -147,13 +145,10 @@ module.exports.emailChangeVerify = async (req, res) => {
       result.message = verified.message;
       return res.status(200).json(result);
     }
-    const taken = await customers.count({ where: { email, status: { [op.ne]: "deleted" }, id: { [op.ne]: loggedUser.id } } });
-    if (taken) {
-      result.message = "И-мэйл хаяг давхардаж байна";
-      return res.status(200).json(result);
-    }
     const t = await sequelize.transaction();
     try {
+      // Давхардлыг алдаа болгохгүй - кодоор баталсан тул бусад бүртгэлээс хасна
+      await releaseEmail(email, { customerId: loggedUser.id }, t);
       await customers.update(
         { email, updated_by: by, updated_at: at },
         { where: { id: loggedUser.id, status: "active" }, transaction: t },

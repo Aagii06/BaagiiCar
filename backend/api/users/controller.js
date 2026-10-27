@@ -7,7 +7,7 @@ const { uploadImage } = require("../../helper/fileHelper");
 const { authLogin } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
 const { roles } = require("../../config/constants");
-const { sendEmailOtp, verifyEmailOtp } = require("../../helper/otpHelper");
+const { sendEmailOtp, verifyEmailOtp, releaseEmail } = require("../../helper/otpHelper");
 
 module.exports.save = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
@@ -334,8 +334,6 @@ module.exports.emailChangeSend = async (req, res) => {
     if (!me) return res.status(200).json({ success: false, data: null, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" });
     if ((me.email || "").toLowerCase() === email)
       return res.status(200).json({ success: false, data: null, message: "Одоогийн имэйлтэй ижил байна" });
-    const taken = await users.count({ where: { email, status: { [op.ne]: "deleted" }, id: { [op.ne]: me.id } } });
-    if (taken) return res.status(200).json({ success: false, data: null, message: "И-мэйл хаяг давхардаж байна" });
 
     const result = await sendEmailOtp(email, emailChangePurpose(me.id));
     return res.status(200).json(result);
@@ -357,10 +355,11 @@ module.exports.emailChangeVerify = async (req, res) => {
     }
     const t = await sequelize.transaction();
     try {
-      // individualHooks: давхардлыг users.beforeSave дахин шалгана
+      // Давхардлыг алдаа болгохгүй - кодоор баталсан тул бусад бүртгэлээс хасна
+      await releaseEmail(email, { userId: loggedUser.id }, t);
       await users.update(
         { email, updated_by: by, updated_at: at },
-        { where: { id: loggedUser.id, status: "active" }, transaction: t, individualHooks: true },
+        { where: { id: loggedUser.id, status: "active" }, transaction: t },
       );
       await saveLog(
         {
