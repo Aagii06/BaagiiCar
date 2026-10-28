@@ -1,21 +1,17 @@
 "use client";
 
 import Select from "@/components/common/Select";
-
 import { vehicleLookup, type VehicleInfo } from "@/lib/api/cars";
 import { cn } from "@/lib/utils";
 import { Loader2, Search } from "lucide-react";
 import { useState } from "react";
 
-type SearchType = "ub" | "local" | "vin";
+type SearchType = "plate" | "vin";
 
-const PLATE = { check: /^\d{4}[А-ЯЁӨҮ]{3}$/, error: "Улсын дугаарын формат буруу байна (жш: 1234 УБА)" };
-
-/** The plate's region isn't read from the number: the user picks УБ / Орон нутаг, and it fills the ad's plate_type. */
-const TYPES: Record<SearchType, { label: string; short: string; placeholder: string; check: RegExp; error: string; query: "plate" | "vin"; plateType: string | null }> = {
-  ub: { label: "УБ дугаар", short: "УБ", placeholder: "1234 УБА", ...PLATE, query: "plate", plateType: "УБ дугаартай" },
-  local: { label: "Орон нутаг дугаар", short: "Орон нутаг", placeholder: "1234 ДАА", ...PLATE, query: "plate", plateType: "Орон нутаг дугаартай" },
-  vin: { label: "Арлын дугаар", short: "Арлын", placeholder: "NHP106487692", check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, error: "Арлын дугаарын формат буруу байна", query: "vin", plateType: null },
+/** УБ / Орон нутаг isn't asked here: the user picks it in the form. */
+const TYPES: Record<SearchType, { label: string; short: string; placeholder: string; check: RegExp; error: string }> = {
+  plate: { label: "Улсын дугаар", short: "Улсын", placeholder: "1234 УБА", check: /^\d{4}[А-ЯЁӨҮ]{3}$/, error: "Улсын дугаарын формат буруу байна (жш: 1234 УБА)" },
+  vin: { label: "Арлын дугаар", short: "Арлын", placeholder: "NHP106487692", check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, error: "Арлын дугаарын формат буруу байна" },
 };
 
 /** "1698 уао" → "1698УАО" */
@@ -25,24 +21,23 @@ const normalize = (v: string) => v.replace(/\s+/g, "").toUpperCase();
  * Search the vehicle registry (autobox.mn via the backend) by plate or chassis number;
  * the result is handed to the form to fill itself.
  */
-export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, plateType: string | null) => string | null }) {
-  // Nothing picked at first: the user chooses УБ / Орон нутаг / Арлын themselves.
-  const [type, setType] = useState<SearchType | "">("");
+export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) => string | null }) {
+  const [type, setType] = useState<SearchType>("plate");
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
-  const t = type ? TYPES[type] : null;
   const q = normalize(value);
-  // The search button stays off until a type is picked and the number has the right format.
-  const valid = !!t && t.check.test(q);
+  const t = TYPES[type];
+  // The search button stays off until the number has the right format.
+  const valid = t.check.test(q);
 
   const search = async () => {
-    if (!t || !valid || busy) return;
+    if (!valid || busy) return;
     setBusy(true);
     setNote(null);
     try {
-      const info = await vehicleLookup({ [t.query]: q });
-      setNote({ tone: "ok", text: onFound(info, t.plateType) ?? "Мэдээлэл бөглөгдлөө" });
+      const info = await vehicleLookup({ [type]: q });
+      setNote({ tone: "ok", text: onFound(info) ?? "Мэдээлэл бөглөгдлөө" });
     } catch (err) {
       setNote({ tone: "error", text: err instanceof Error ? err.message : "Машины мэдээлэл олдсонгүй" });
     } finally {
@@ -62,7 +57,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, 
             title="Хайх төрөл"
             value={type}
             // Short on the field, full name in the sheet.
-            valueLabel={t?.short ?? "Сонгох"}
+            valueLabel={t.short}
             onChange={(e) => {
               setType(e.target.value as SearchType);
               setNote(null);
@@ -71,7 +66,6 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, 
             className="cursor-pointer bg-transparent pl-3 pr-7 text-[13px] font-semibold text-primary"
             chevronClassName="right-2 size-3.5 text-primary"
           >
-            {!type && <option value="">Сонгох</option>}
             {(Object.keys(TYPES) as SearchType[]).map((k) => (
               <option key={k} value={k}>
                 {TYPES[k].label}
@@ -92,7 +86,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, 
               search();
             }
           }}
-          placeholder={t ? `${t.label}: ${t.placeholder}` : "Эхлээд дугаарын төрлөө сонгоно уу"}
+          placeholder={`${t.label}: ${t.placeholder}`}
           maxLength={20}
           autoComplete="off"
         />
@@ -107,7 +101,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo, 
         </button>
       </div>
       {/* Explains the disabled button while the typed number doesn't match yet. */}
-      {!note && q && !valid && <p className="mt-2 text-xs font-semibold text-destructive">{t ? t.error : "Дугаарын төрлөө сонгоно уу (УБ, Орон нутаг эсвэл Арлын)"}</p>}
+      {!note && q && !valid && <p className="mt-2 text-xs font-semibold text-destructive">{t.error}</p>}
       {note && <p className={cn("mt-2 text-xs font-semibold", note.tone === "ok" ? "text-success" : "text-destructive")}>{note.text}</p>}
     </section>
   );

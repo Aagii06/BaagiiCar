@@ -17,7 +17,7 @@ import type { BodyType, Brand, CarModel, Location } from "@/lib/api/types";
 import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
-import { cn } from "@/lib/utils";
+import { cn, formatNumber } from "@/lib/utils";
 import { ArrowLeft, Check, Loader2, SlidersHorizontal } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -38,6 +38,8 @@ type Params = {
   priceMax?: number;
   fuel: string[];
   transmission: string[];
+  mileageMin?: number; // км
+  mileageMax?: number;
   steering?: string;
   sort: CarSort;
   page: number;
@@ -63,6 +65,8 @@ function readParams(sp: URLSearchParams): Params {
     priceMax: num(sp.get("priceMax")),
     fuel: list(sp.get("fuel")),
     transmission: list(sp.get("transmission")),
+    mileageMin: num(sp.get("mileageMin")),
+    mileageMax: num(sp.get("mileageMax")),
     steering: sp.get("steering") || undefined,
     sort: CAR_SORTS.find((o) => o.value === sort)?.value ?? "new",
     page: num(sp.get("page")) ?? 1,
@@ -84,6 +88,8 @@ function writeParams(p: Params) {
   if (p.priceMax) q.set("priceMax", String(p.priceMax));
   if (p.fuel.length) q.set("fuel", p.fuel.join(","));
   if (p.transmission.length) q.set("transmission", p.transmission.join(","));
+  if (p.mileageMin) q.set("mileageMin", String(p.mileageMin));
+  if (p.mileageMax) q.set("mileageMax", String(p.mileageMax));
   if (p.steering) q.set("steering", p.steering);
   if (p.sort !== "new") q.set("sort", p.sort);
   if (p.page > 1) q.set("page", String(p.page));
@@ -106,6 +112,7 @@ const FIRST_YEAR = 1950;
 const YEARS = Array.from({ length: THIS_YEAR - FIRST_YEAR + 1 }, (_, i) => THIS_YEAR - i);
 // Million ₮ steps, as on unegui.mn's car listings.
 const PRICES = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 200, 300];
+const MILEAGES = [10_000, 20_000, 30_000, 50_000, 75_000, 100_000, 150_000, 200_000, 250_000, 300_000]; // км
 
 /**
  * From / to dropdowns over a fixed list of steps (in display order); each side only
@@ -117,11 +124,16 @@ function RangeSelect({
   from,
   to,
   onChange,
+  labels,
+  format = String,
 }: {
   options: number[];
   from?: number;
   to?: number;
   onChange: (from: number | undefined, to: number | undefined) => void;
+  /** Placeholders of the two sides; "Доод" / "Дээд" by default. */
+  labels?: [string, string];
+  format?: (v: number) => string;
 }) {
   const { t } = useI18n();
   const descending = options[0] > options[options.length - 1];
@@ -131,15 +143,15 @@ function RangeSelect({
       <option value="">{label}</option>
       {all.filter(keep).map((v) => (
         <option key={v} value={v}>
-          {v}
+          {format(v)}
         </option>
       ))}
     </Select>
   );
   return (
     <div className="grid grid-cols-2 gap-2">
-      {side(t("Доод"), from, (v) => !to || v <= to, (v) => onChange(v, to))}
-      {side(t("Дээд"), to, (v) => !from || v >= from, (v) => onChange(from, v))}
+      {side(labels?.[0] ?? t("Доод"), from, (v) => !to || v <= to, (v) => onChange(v, to))}
+      {side(labels?.[1] ?? t("Дээд"), to, (v) => !from || v >= from, (v) => onChange(from, v))}
     </div>
   );
 }
@@ -180,7 +192,7 @@ function Filters({
   const brandsLoading = brandPending || !brands.data;
   const modelsLoading = (brandPending && !!pending.brand) || (!!p.brand && models.loading);
   const hasFilters =
-    p.location || p.dealer || p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.transmission.length || p.steering;
+    p.location || p.dealer || p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.transmission.length || p.mileageMin || p.mileageMax || p.steering;
 
   return (
     <section className="space-y-4 rounded-2xl bg-card p-5">
@@ -204,6 +216,8 @@ function Filters({
                 priceMax: undefined,
                 fuel: [],
                 transmission: [],
+                mileageMin: undefined,
+                mileageMax: undefined,
                 steering: undefined,
               })
             }
@@ -398,6 +412,17 @@ function Filters({
         </div>
       </Group>
 
+      <Group title={t("Гүйлт (км)")}>
+        <RangeSelect
+          options={MILEAGES}
+          from={p.mileageMin}
+          to={p.mileageMax}
+          onChange={(mileageMin, mileageMax) => set({ mileageMin, mileageMax })}
+          labels={[t("Хамгийн бага"), t("Хамгийн их")]}
+          format={formatNumber}
+        />
+      </Group>
+
       <Group title={t("Хүрд")}>
         <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
           {[undefined, ...STEERINGS].map((s) => (
@@ -513,6 +538,8 @@ function CarsPageInner() {
         priceMax: p.priceMax && p.priceMax * MLN,
         fuelTypes: p.fuel,
         transmissions: p.transmission,
+        mileageMin: p.mileageMin,
+        mileageMax: p.mileageMax,
         steering: p.steering,
         sort: p.sort,
         featuredFirst: true,

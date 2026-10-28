@@ -11,7 +11,7 @@ import PublishChoiceSheet from "./PublishChoiceSheet";
 import { getBodyTypes, getBrands, getDealers, getLocations, getModels, parseAutobox, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
 import type { Car, CarModel, Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, PLATE_TYPES, ROLES, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
+import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, PLATE_TYPES, ROLES, STEERINGS, TRANSMISSIONS, VEHICLE_TYPES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "lucide-react";
@@ -320,9 +320,8 @@ export default function CarForm({
 
   /**
    * Fills the form from a registry lookup; only overwrites fields the registry knows. Returns a note for the user.
-   * `plateType` is what the user picked for a plate search (УБ / Орон нутаг): filled in but left editable.
    */
-  const applyLookup = (info: VehicleInfo, plateType: string | null) => {
+  const applyLookup = (info: VehicleInfo) => {
     const brand = brands.data?.find((b) => norm(b.name) === norm(info.brand));
     // Models of the found brand are fetched right away so the model can be picked in the same step.
     const pickModel = brand
@@ -346,7 +345,7 @@ export default function CarForm({
     put("mileage", info.mileage);
     put("color", info.color, EXTERIOR_COLORS);
     put("vin", info.vin);
-    setF((p) => ({ ...p, ...fill, ...(plateType && { plate_type: plateType }), ...(brand && brand.id !== Number(p.brand_id) ? { car_model_id: "" } : {}) }));
+    setF((p) => ({ ...p, ...fill, ...(brand && brand.id !== Number(p.brand_id) ? { car_model_id: "" } : {}) }));
     // A new lookup replaces the previous lock; fields the registry left empty stay editable.
     const lock = new Set(Object.keys(fill) as (keyof FormState)[]);
     setLocked(lock);
@@ -628,7 +627,14 @@ export default function CarForm({
               </Select>
             </Field>
             <Field className="col-span-2" label="Ангилал" hint="Бүртгэлээс бөглөгдөнө">
-              <input className={inputClass} {...bind("vehicle_type")} maxLength={100} placeholder="Ангилал" />
+              <Select {...bind("vehicle_type")}>
+                <option value="">Сонгох</option>
+                {withCurrent(VEHICLE_TYPES, f.vehicle_type).map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </Select>
             </Field>
             <Field label="Гадна өнгө">
               <Select {...bind("color")}>
