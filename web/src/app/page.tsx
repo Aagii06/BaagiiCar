@@ -72,7 +72,7 @@ function DealerGrid() {
   if (!loading && !rows.length) return null;
   return (
     <Container className="mt-6 md:mt-10">
-      <SectionTitle kicker={t("Дилерүүд")} light={t("Манай")} bold={t("дилерүүд")} action={<ViewAll href="/dealers" />} />
+      <SectionTitle light={t("Манай")} bold={t("дилерүүд")} action={<ViewAll href="/dealers" />} />
       <div className="mt-4 grid grid-cols-2 gap-3 md:mt-8 sm:grid-cols-3 lg:grid-cols-4">
         {loading &&
           Array.from({ length: HOME_DEALERS }, (_, i) => <div key={i} className="h-[76px] animate-pulse rounded-2xl bg-card md:h-[88px]" />)}
@@ -112,7 +112,7 @@ function BrandGrid() {
   if (!loading && !brands.data?.length) return null;
   return (
     <Container className="mt-10 md:mt-28">
-      <SectionTitle kicker={t("Бүх үйлдвэр")} light={t("Машины")} bold={t("үйлдвэр")} action={<ViewAll href="/cars" />} />
+      <SectionTitle light={t("Машины")} bold={t("үйлдвэр")} action={<ViewAll href="/cars" />} />
       <div className="mt-4 grid md:mt-8 grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
         {loading &&
           Array.from({ length: 16 }, (_, i) => (
@@ -164,7 +164,7 @@ function BodyTypes({ items, loading }: { items: BodyType[]; loading: boolean }) 
   if (!loading && !items.length) return null;
   return (
     <Container className="mt-10 md:mt-28">
-      <SectionTitle kicker={t("Төрөл")} light={t("Төрлөөр")} bold={t("хайх")} />
+      <SectionTitle light={t("Төрлөөр")} bold={t("хайх")} />
       <div className="mt-4 grid md:mt-8 grid-cols-2 gap-3 lg:grid-cols-4">
         {loading &&
           Array.from({ length: 4 }, (_, i) => <div key={i} className="h-[104px] animate-pulse rounded-2xl bg-card md:h-[120px]" />)}
@@ -259,7 +259,7 @@ export default function HomePage() {
       </Container>
 
       <Container className="mt-10 md:mt-28">
-        <SectionTitle kicker={t("Онцлох")} light={t("Онцлох")} bold={t("машинууд")} action={<ViewAll href="/cars" />} />
+        <SectionTitle light={t("Онцлох")} bold={t("машинууд")} action={<ViewAll href="/cars" />} />
         <div className="mt-4 md:mt-8">
           {featured.loading && !featured.data ? (
             <CardGridSkeleton count={3} />
