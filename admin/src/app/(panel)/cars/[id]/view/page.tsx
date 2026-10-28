@@ -6,7 +6,7 @@ import { RejectNote, useRejectCar } from "@/components/car/useRejectCar";
 import { useConfirm } from "@/components/common/Confirm";
 import Img from "@/components/common/Img";
 import PhotoViewer from "@/components/common/PhotoViewer";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { CarDetailSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
 import { approveCar, getCar, getCarFiles, setHidden } from "@/lib/api/admin";
@@ -28,7 +28,7 @@ import { Suspense, useState } from "react";
  */
 export default function CarViewPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<CarDetailSkeleton />}>
       <CarViewInner />
     </Suspense>
   );
@@ -77,7 +77,7 @@ function CarViewInner() {
         }
       />
       {data.loading && !data.data ? (
-        <LoadingState />
+        <CarDetailSkeleton />
       ) : data.error ? (
         <ErrorState message={data.error.message} onRetry={data.reload} />
       ) : !car ? (

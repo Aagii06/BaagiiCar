@@ -3,7 +3,7 @@
 import CarImage from "@/components/car/CarImage";
 import CarPreviewSheet from "@/components/car/CarPreviewSheet";
 import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { ChatSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
 import { BADGE, ReplyForm, toThreads, type MessageStatus, type Thread } from "@/components/messages/thread";
@@ -21,7 +21,7 @@ import { Suspense, useRef, useState } from "react";
  */
 export default function ThreadPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<ChatSkeleton />}>
       <ThreadInner />
     </Suspense>
   );
@@ -46,7 +46,7 @@ function ThreadInner() {
     <>
       <DetailHeader title={thread.data?.last.name || thread.data?.last.phonenumber || "Мессеж"} back="/messages" />
       {thread.loading && !thread.data ? (
-        <LoadingState />
+        <ChatSkeleton />
       ) : thread.error ? (
         <ErrorState message={thread.error.message} onRetry={thread.reload} />
       ) : !thread.data ? (

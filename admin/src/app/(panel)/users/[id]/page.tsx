@@ -1,7 +1,7 @@
 "use client";
 
 import { Field, FormError, inputClass, PasswordInput, PhoneInput, Select } from "@/components/common/Field";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, FormSkeleton } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
@@ -214,7 +214,7 @@ export default function UserPage() {
       {isNew ? (
         <UserForm user={null} />
       ) : data.loading && !data.data ? (
-        <LoadingState />
+        <FormSkeleton sections={[6, 2]} />
       ) : data.error ? (
         <ErrorState message={data.error.message} onRetry={data.reload} />
       ) : !data.data || data.data.status === "deleted" ? (

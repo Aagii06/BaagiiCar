@@ -1,7 +1,7 @@
 "use client";
 
 import ChipTabs from "@/components/common/ChipTabs";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, ThreadListSkeleton } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { BADGE, toThreads, type MessageStatus, type Thread } from "@/components/messages/thread";
 import { listMessages } from "@/lib/api/admin";
@@ -62,7 +62,7 @@ export default function MessagesPage() {
       {messages.error ? (
         <ErrorState message={messages.error.message} onRetry={messages.reload} />
       ) : !threads ? (
-        <LoadingState />
+        <ThreadListSkeleton />
       ) : !threads.length ? (
         <EmptyState title={tab === "all" ? "Мессеж алга" : `${TABS.find((t) => t.value === tab)?.label} мессеж алга`} />
       ) : (

@@ -4,7 +4,7 @@ import CarRow, { PAGE_SIZE, TABS, type Tab } from "@/components/car/CarRow";
 import { DealerAvatar } from "@/components/car/DealerPicker";
 import ChipTabs from "@/components/common/ChipTabs";
 import LoadMore from "@/components/common/LoadMore";
-import { EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
+import { CarRowsSkeleton, EmptyState, ErrorState, Spinner } from "@/components/common/States";
 import { listCars, type CarStatusFilter } from "@/lib/api/admin";
 import type { Dealer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
@@ -59,7 +59,7 @@ export default function DealerCarsSheet({ dealer, onClose }: { dealer: Dealer; o
 
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {cars.loading && !cars.data ? (
-            <LoadingState />
+            <CarRowsSkeleton />
           ) : cars.error ? (
             <ErrorState message={cars.error.message} onRetry={cars.reload} />
           ) : !cars.data?.rows.length ? (

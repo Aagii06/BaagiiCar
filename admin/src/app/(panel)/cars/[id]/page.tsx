@@ -3,7 +3,7 @@
 import CarForm, { CAR_FORM_ID } from "@/components/car/CarForm";
 import DealerPicker from "@/components/car/DealerPicker";
 import Stepper from "@/components/common/Stepper";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, FormSkeleton } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
@@ -31,7 +31,7 @@ const RESUBMIT = ["active", "hidden", "rejected"];
 
 export default function CarEditPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<FormSkeleton sections={[4, 4]} />}>
       <CarEditInner />
     </Suspense>
   );
@@ -123,11 +123,11 @@ function CarEditInner() {
         </div>
       )}
       {picking && !picked ? null : waitingOwnDealer ? (
-        <LoadingState />
+        <FormSkeleton sections={[4, 4]} />
       ) : noOwnDealer ? (
         <EmptyState title="Таны бүртгэл дилерт харьяалагдаагүй байна" description="Зар нэмэхийн тулд админд хандаж дилерт харьяалуулна уу." />
       ) : data.loading && !data.data ? (
-        <LoadingState />
+        <FormSkeleton sections={[4, 4]} />
       ) : data.error ? (
         <ErrorState message={data.error.message} onRetry={data.reload} />
       ) : !data.data || data.data.car?.status === "deleted" ? (

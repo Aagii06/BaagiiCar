@@ -2,7 +2,7 @@
 
 import ChipTabs from "@/components/common/ChipTabs";
 import { inputClass } from "@/components/common/Field";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import UserAvatar from "@/components/common/UserAvatar";
 import { listUsers } from "@/lib/api/admin";
@@ -52,7 +52,7 @@ export default function UsersPage() {
       </PageHeader>
 
       {users.loading && !users.data ? (
-        <LoadingState />
+        <ListSkeleton className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white" />
       ) : users.error ? (
         <ErrorState message={users.error.message} onRetry={users.reload} />
       ) : !users.data?.rows.length ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import CarImage from "@/components/car/CarImage";
-import { ErrorState, LoadingState } from "@/components/common/States";
+import { CarLinesSkeleton, ErrorState, StatsSkeleton } from "@/components/common/States";
 import { countOf, featuredCars, recentCars } from "@/lib/api/admin";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -58,7 +58,7 @@ export default function DashboardPage() {
   return (
     <div className="pt-4">
       {stats.loading && !s ? (
-        <LoadingState />
+        <StatsSkeleton admin={isAdmin} />
       ) : stats.error ? (
         <ErrorState message={stats.error.message} onRetry={stats.reload} />
       ) : (
@@ -97,7 +97,7 @@ export default function DashboardPage() {
       </div>
       <div className="mt-3 space-y-2">
         {recent.loading && !recent.data ? (
-          <LoadingState className="py-8" />
+          <CarLinesSkeleton />
         ) : recent.error ? (
           <ErrorState message={recent.error.message} onRetry={recent.reload} />
         ) : !recent.data?.rows.length ? (
@@ -119,7 +119,7 @@ export default function DashboardPage() {
       </div>
       <div className="mt-3 space-y-2">
         {featured.loading && !featured.data ? (
-          <LoadingState className="py-8" />
+          <CarLinesSkeleton />
         ) : featured.error ? (
           <ErrorState message={featured.error.message} onRetry={featured.reload} />
         ) : !featured.data?.rows.length ? (

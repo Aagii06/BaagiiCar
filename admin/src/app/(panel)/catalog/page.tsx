@@ -2,7 +2,7 @@
 
 import ChipTabs from "@/components/common/ChipTabs";
 import { Field, FormError, inputClass, Select } from "@/components/common/Field";
-import { EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
+import { EmptyState, ErrorState, ListSkeleton, Spinner } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
 import LoadMore from "@/components/common/LoadMore";
 import { errorMessage, useToast } from "@/components/common/Toast";
@@ -299,7 +299,7 @@ function CatalogInner() {
       {data.error || (paged && page.error) ? (
         <ErrorState message={(data.error ?? page.error)!.message} onRetry={() => (data.error ? data.reload() : page.reload())} />
       ) : !tabData || (paged && !pageReady) ? (
-        <LoadingState />
+        <ListSkeleton avatar="square" />
       ) : !rows.length ? (
         <EmptyState title="Бичлэг алга" />
       ) : (
@@ -367,7 +367,7 @@ function CatalogInner() {
 
 export default function CatalogPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<ListSkeleton avatar="square" />}>
       <CatalogInner />
     </Suspense>
   );

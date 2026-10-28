@@ -4,7 +4,7 @@ import CarRow, { PAGE_SIZE, TABS, type Tab } from "@/components/car/CarRow";
 import ChipTabs from "@/components/common/ChipTabs";
 import { inputClass, Select } from "@/components/common/Field";
 import LoadMore from "@/components/common/LoadMore";
-import { EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
+import { CarRowsSkeleton, EmptyState, ErrorState, Spinner } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listCars, listDealers, type CarStatusFilter } from "@/lib/api/admin";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -88,7 +88,7 @@ function CarsInner() {
       </PageHeader>
 
       {cars.loading && !cars.data ? (
-        <LoadingState />
+        <CarRowsSkeleton />
       ) : cars.error ? (
         <ErrorState message={cars.error.message} onRetry={cars.reload} />
       ) : !cars.data?.rows.length ? (
@@ -119,7 +119,7 @@ function CarsInner() {
 
 export default function CarsPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<CarRowsSkeleton />}>
       <CarsInner />
     </Suspense>
   );

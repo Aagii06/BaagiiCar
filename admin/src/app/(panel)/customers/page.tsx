@@ -3,7 +3,7 @@
 import ChipTabs from "@/components/common/ChipTabs";
 import { useConfirm } from "@/components/common/Confirm";
 import { inputClass } from "@/components/common/Field";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { CustomerAvatar, customerName } from "@/components/customer/CustomerAvatar";
 import PageHeader from "@/components/layout/PageHeader";
@@ -25,7 +25,7 @@ const STATUS_TABS: { value: "" | Customer["status"]; label: string }[] = [
 /** Web visitors (`customers` table): they sign up themselves with a one-time code. */
 export default function CustomersPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<ListSkeleton />}>
       <CustomersList />
     </Suspense>
   );
@@ -74,7 +74,7 @@ function CustomersList() {
       </PageHeader>
 
       {customers.loading && !customers.data ? (
-        <LoadingState />
+        <ListSkeleton />
       ) : customers.error ? (
         <ErrorState message={customers.error.message} onRetry={customers.reload} />
       ) : !customers.data?.rows.length ? (

@@ -2,7 +2,7 @@
 
 import { CustomerAvatar, customerName } from "@/components/customer/CustomerAvatar";
 import { Field, FormError, inputClass, PhoneInput, Select } from "@/components/common/Field";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, FormSkeleton } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
@@ -119,7 +119,7 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
 
 export default function CustomerPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<FormSkeleton />}>
       <CustomerDetail />
     </Suspense>
   );
@@ -134,7 +134,7 @@ function CustomerDetail() {
     <>
       <DetailHeader title={data.data ? customerName(data.data) : "Хэрэглэгч"} back={listHref} />
       {data.loading && !data.data ? (
-        <LoadingState />
+        <FormSkeleton />
       ) : data.error ? (
         <ErrorState message={data.error.message} onRetry={data.reload} />
       ) : !data.data || data.data.status === "deleted" ? (

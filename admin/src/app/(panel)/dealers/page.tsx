@@ -3,7 +3,7 @@
 import DealerCarsSheet from "@/components/car/DealerCarsSheet";
 import { DealerAvatar } from "@/components/car/DealerPicker";
 import { inputClass } from "@/components/common/Field";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listDealers } from "@/lib/api/admin";
 import type { Dealer } from "@/lib/api/types";
@@ -16,7 +16,7 @@ import { Suspense, useState } from "react";
 /** Dealer registry: showrooms that ads and admin / dealer users belong to. */
 export default function DealersPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<ListSkeleton avatar="square" className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white" />}>
       <DealersList />
     </Suspense>
   );
@@ -54,7 +54,7 @@ function DealersList() {
       </PageHeader>
 
       {dealers.loading && !dealers.data ? (
-        <LoadingState />
+        <ListSkeleton avatar="square" className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white" />
       ) : dealers.error ? (
         <ErrorState message={dealers.error.message} onRetry={dealers.reload} />
       ) : !dealers.data?.rows.length ? (

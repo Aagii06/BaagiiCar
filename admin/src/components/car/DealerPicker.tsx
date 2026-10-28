@@ -2,7 +2,7 @@
 
 import Img from "@/components/common/Img";
 import { inputClass } from "@/components/common/Field";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
 import { catalogImage } from "@/lib/api/config";
 import type { Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -50,7 +50,7 @@ export default function DealerPicker({ onPick }: { onPick: (dealer: Dealer) => v
         <h2 className="text-lg font-bold">Дилер сонгох</h2>
         <input className={inputClass} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Дилерийн нэр эсвэл утас" />
         {dealers.loading && !dealers.data ? (
-          <LoadingState />
+          <ListSkeleton count={5} avatar="square" className="-mx-1 divide-y divide-border" rowClassName="px-1 py-2.5" />
         ) : dealers.error ? (
           <ErrorState message={dealers.error.message} onRetry={dealers.reload} />
         ) : !rows.length ? (
