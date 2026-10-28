@@ -519,7 +519,7 @@ export default function CarForm({
         <Section title="Үндсэн мэдээлэл">
           <div className="grid grid-cols-2 gap-3">
             {/* Both years on one row: buyers compare them. */}
-            <Field label="Үйлдвэр *">
+            <Field className="col-span-2" label="Үйлдвэр *">
               <Select value={f.brand_id} onChange={(e) => setF((p) => ({ ...p, brand_id: e.target.value, car_model_id: "" }))} disabled={isLocked("brand_id")} required>
                 <option value="">Сонгох</option>
                 {brands.data?.map((b) => (
@@ -529,7 +529,7 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Загвар">
+            <Field className="col-span-2" label="Загвар">
               <Select {...bind("car_model_id")} disabled={!f.brand_id || isLocked("car_model_id")}>
                 <option value="">Сонгох</option>
                 {models.data?.map((m) => (

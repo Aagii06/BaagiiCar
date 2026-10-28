@@ -348,22 +348,24 @@ function Filters({
       </Group>
 
       <Group title={t("Түлш")}>
-        <div className="space-y-3">
+        {/* Toggle chips like the body types: any number at once. */}
+        <div className="flex flex-wrap gap-2">
           {FUEL_TYPES.map((f) => {
             const on = p.fuel.includes(f);
             return (
-              <label key={f} className="flex cursor-pointer items-center gap-3 text-[15px]">
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={on}
-                  onChange={() => set({ fuel: on ? p.fuel.filter((x) => x !== f) : [...p.fuel, f] })}
-                />
-                <span className={cn("grid size-5 place-items-center rounded-[5px] border-[1.5px]", on ? "border-primary bg-primary text-white" : "border-input bg-white")}>
-                  {on && <Check className="size-3.5" strokeWidth={3.2} />}
-                </span>
+              <button
+                key={f}
+                type="button"
+                aria-pressed={on}
+                onClick={() => set({ fuel: on ? p.fuel.filter((x) => x !== f) : [...p.fuel, f] })}
+                className={cn(
+                  "flex h-10 items-center gap-1.5 rounded-xl border-2 bg-muted px-3.5 text-sm font-semibold transition-colors",
+                  on ? "border-primary bg-primary-soft text-primary" : "border-transparent hover:border-border"
+                )}
+              >
+                {on && <Check className="size-3.5" strokeWidth={3.2} />}
                 {tv(f)}
-              </label>
+              </button>
             );
           })}
         </div>
