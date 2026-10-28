@@ -349,7 +349,11 @@ function Filters({
             })}
           </div>
         ) : (
-          <Spinner className="mx-auto size-5" />
+          <div className="grid animate-pulse grid-cols-2 gap-2" aria-hidden>
+            {Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="h-[76px] rounded-xl bg-muted" />
+            ))}
+          </div>
         )}
       </Group>
 

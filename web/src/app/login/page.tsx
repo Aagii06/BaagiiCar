@@ -65,7 +65,7 @@ function LoginInner() {
       setStep("code");
     });
 
-  if (!ready || user) return <LoadingState className="min-h-[50vh]" />;
+  if (!ready || user) return <LoginSkeleton />;
 
   return (
     <Container className="max-w-md py-4 md:py-20">
