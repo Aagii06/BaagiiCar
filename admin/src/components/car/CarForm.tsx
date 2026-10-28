@@ -656,10 +656,10 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <label className="col-span-2 flex w-fit cursor-pointer select-none items-center gap-3">
+            <label className="col-span-2 my-3 flex w-fit cursor-pointer select-none items-center gap-3">
               <input type="checkbox" role="switch" className="peer sr-only" checked={f.is_leasing} onChange={(e) => setF((p) => ({ ...p, is_leasing: e.target.checked }))} />
               <span className="relative h-7 w-12 shrink-0 rounded-full border border-border bg-card transition-colors after:absolute after:left-1 after:top-1/2 after:size-5 after:-translate-y-1/2 after:rounded-full after:bg-muted-foreground/30 after:transition-all peer-checked:border-[var(--primary)] peer-checked:bg-[var(--primary)] peer-checked:after:left-6 peer-checked:after:bg-white peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--primary)]/40" />
-              <span className="text-base">Лизинг боломжтой эсэх</span>
+              <span className="text-base font-bold">Лизинг боломжтой эсэх</span>
             </label>
           </div>
         </Section>
