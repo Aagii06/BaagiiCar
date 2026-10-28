@@ -67,7 +67,7 @@ export default function ComparePage() {
     { label: t("Хүрд"), value: (c) => tv(c.steering) },
     { label: t("Хөтлөгч"), value: (c) => c.drive_type },
     { label: t("Төрөл"), value: (c) => bodyTypeLabel(c.body_type_name, t) },
-    { label: t("Ангилал"), value: (c) => c.vehicle_type },
+    { label: t("Зориулалт"), value: (c) => c.vehicle_type },
     { label: t("Гадна өнгө"), value: (c) => c.color },
     { label: t("Дотор өнгө"), value: (c) => c.interior_color },
     { label: t("Лизинг"), value: (c) => t(Number(c.is_leasing) ? "Боломжтой" : "Боломжгүй") },

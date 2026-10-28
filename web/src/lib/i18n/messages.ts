@@ -120,7 +120,7 @@ export const MESSAGES = {
   "Хөтлөгч": { ru: "Привод", en: "Drive" },
   "Өнгө": { ru: "Цвет", en: "Color" },
   "Гадна өнгө": { ru: "Цвет кузова", en: "Exterior color" },
-  "Ангилал": { ru: "Категория", en: "Category" },
+  "Зориулалт": { ru: "Назначение", en: "Purpose" },
   "Улсын дугаар": { ru: "Госномер", en: "License plate" },
   "Дотор өнгө": { ru: "Цвет салона", en: "Interior color" },
   "Боломжтой": { ru: "Доступен", en: "Available" },

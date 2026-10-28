@@ -115,7 +115,7 @@ function Specs({ car }: { car: Car }) {
     [t("Хурдны хайрцаг"), tv(car.transmission)],
     [t("Хүрд"), tv(car.steering)],
     [t("Хөтлөгч"), car.drive_type],
-    [t("Ангилал"), car.vehicle_type],
+    [t("Зориулалт"), car.vehicle_type],
     [t("Улсын дугаар"), tv(car.plate_type)],
     [t("Гадна өнгө"), car.color],
     [t("Дотор өнгө"), car.interior_color],

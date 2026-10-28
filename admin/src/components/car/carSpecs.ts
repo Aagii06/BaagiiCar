@@ -13,7 +13,7 @@ export function carSpecs(car: Car): [string, string | number | null | undefined]
     ["Хурдны хайрцаг", car.transmission],
     ["Хүрд", car.steering],
     ["Хөтлөгч", car.drive_type],
-    ["Ангилал", car.vehicle_type],
+    ["Зориулалт", car.vehicle_type],
     ["Гадна өнгө", car.color],
     ["Дотор өнгө", car.interior_color],
     ["Төрөл", bodyTypeLabel(car.body_type_name)],

@@ -626,7 +626,7 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field className="col-span-2" label="Ангилал" hint="Бүртгэлээс бөглөгдөнө">
+            <Field className="col-span-2" label="Зориулалт" hint="Бүртгэлээс бөглөгдөнө">
               <Select {...bind("vehicle_type")}>
                 <option value="">Сонгох</option>
                 {withCurrent(VEHICLE_TYPES, f.vehicle_type).map((v) => (
