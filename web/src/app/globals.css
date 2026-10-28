@@ -100,6 +100,11 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* No pinch or double-tap page zoom (iOS ignores the viewport's user-scalable); scrolling still works. */
+  html,
+  body {
+    touch-action: pan-x pan-y;
+  }
   a,
   button,
   [role="button"] {

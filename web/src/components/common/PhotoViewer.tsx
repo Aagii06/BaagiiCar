@@ -3,23 +3,43 @@
 import Img from "./Img";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+/** How far the zoom button (or a double tap) enlarges the photo. */
+const ZOOM = 2.5;
+
+/** Keeps a pan offset within ±max. */
+const clamp = (v: number, max: number) => Math.max(-max, Math.min(max, v));
+
 /**
  * Fullscreen photo slider. Swipe (native scroll-snap), ‹ › buttons or ←/→ keys
- * move between photos; ✕ / Esc closes.
+ * move between photos; ✕ / Esc closes. The page itself can't be zoomed on phones,
+ * so the zoom button (or a double tap) enlarges the current photo; drag to look around.
  */
 export default function PhotoViewer({ urls, start, onClose }: { urls: string[]; start: number; onClose: () => void }) {
   const { t } = useI18n();
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(start);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  // Pointer and pan at the start of a drag over the zoomed photo.
+  const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const zoomed = zoom > 1;
+
+  const resetZoom = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
 
   const go = useCallback(
     (i: number) => {
       const el = track.current;
       if (!el || i < 0 || i >= urls.length) return;
+      setZoom(1);
+      setPan({ x: 0, y: 0 });
       el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
     },
     [urls.length]
@@ -58,28 +78,80 @@ export default function PhotoViewer({ urls, start, onClose }: { urls: string[]; 
         <span className="text-sm font-semibold tabular-nums">
           {index + 1} / {urls.length}
         </span>
-        <button type="button" onClick={onClose} aria-label={t("Хаах")} className="grid size-10 place-items-center rounded-full hover:bg-white/10">
-          <X className="size-6" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => (zoomed ? resetZoom() : setZoom(ZOOM))}
+            aria-label={zoomed ? t("Жижигрүүлэх") : t("Томруулах")}
+            className="grid size-10 place-items-center rounded-full hover:bg-white/10"
+          >
+            {zoomed ? <ZoomOut className="size-6" /> : <ZoomIn className="size-6" />}
+          </button>
+          <button type="button" onClick={onClose} aria-label={t("Хаах")} className="grid size-10 place-items-center rounded-full hover:bg-white/10">
+            <X className="size-6" />
+          </button>
+        </div>
       </div>
 
       <div className="relative min-h-0 flex-1">
         <div
           ref={track}
-          onScroll={(e) => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
-          className="no-scrollbar flex h-full snap-x snap-mandatory overflow-x-auto"
+          onScroll={(e) => {
+            const i = Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth);
+            if (i === index) return;
+            setIndex(i);
+            resetZoom();
+          }}
+          // Zoomed, a swipe pans the photo instead of moving to the next one.
+          className={cn("no-scrollbar flex h-full snap-x snap-mandatory", zoomed ? "overflow-x-hidden" : "overflow-x-auto")}
         >
-          {urls.map((url) => (
-            <div key={url} className="flex h-full w-full shrink-0 snap-center items-center justify-center p-2">
-              <Img
-                src={url}
-                className="max-h-full max-w-full select-none object-contain"
-                skeletonClassName="bg-white/10"
-                placeholderClassName="aspect-[4/3] w-full"
-                draggable={false}
-              />
-            </div>
-          ))}
+          {urls.map((url, i) => {
+            const current = i === index;
+            return (
+              <div key={url} className="h-full w-full shrink-0 snap-center overflow-hidden">
+                <div
+                  onDoubleClick={() => (zoomed ? resetZoom() : setZoom(ZOOM))}
+                  onPointerDown={(e) => {
+                    if (!zoomed || !current) return;
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                    drag.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+                    setDragging(true);
+                  }}
+                  onPointerMove={(e) => {
+                    const d = drag.current;
+                    if (!d) return;
+                    // The enlarged photo may move until its edge reaches the screen's.
+                    const el = e.currentTarget;
+                    const maxX = (el.clientWidth * (zoom - 1)) / 2;
+                    const maxY = (el.clientHeight * (zoom - 1)) / 2;
+                    setPan({ x: clamp(d.panX + e.clientX - d.x, maxX), y: clamp(d.panY + e.clientY - d.y, maxY) });
+                  }}
+                  onPointerUp={() => {
+                    drag.current = null;
+                    setDragging(false);
+                  }}
+                  onPointerCancel={() => {
+                    drag.current = null;
+                    setDragging(false);
+                  }}
+                  style={current && zoomed ? { transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` } : undefined}
+                  className={cn(
+                    "flex size-full items-center justify-center p-2",
+                    !dragging && "transition-transform duration-200",
+                    current && zoomed && "cursor-grab touch-none active:cursor-grabbing"
+                  )}
+                >
+                  <Img
+                    src={url}
+                    className="max-h-full max-w-full select-none object-contain"
+                    skeletonClassName="bg-white/10"
+                    placeholderClassName="aspect-[4/3] w-full"
+                    draggable={false}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
         <button type="button" onClick={() => go(index - 1)} disabled={index === 0} aria-label={t("Өмнөх зураг")} className={cn(arrow, "left-3")}>
           <ChevronLeft className="size-6" />

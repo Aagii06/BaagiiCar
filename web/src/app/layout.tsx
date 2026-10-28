@@ -35,8 +35,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#ffffff",
   viewportFit: "cover",
-  // App-like on phones: iOS no longer zooms into small inputs on focus (pinch-zoom still works there).
+  // App-like on phones: no page zoom at all (iOS ignores this for pinch, so globals.css also sets touch-action).
+  // Photos zoom inside PhotoViewer instead.
   maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
