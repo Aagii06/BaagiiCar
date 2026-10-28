@@ -4,6 +4,7 @@ import { WEB_URL } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
 import UserAvatar from "@/components/common/UserAvatar";
+import InstallAppButton from "@/components/profile/InstallAppButton";
 import { getDealers } from "@/lib/api/admin";
 import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
@@ -62,6 +63,7 @@ export default function ProfilePage() {
           Нууц үг солих
           <ChevronRight className="size-4" />
         </Link>
+        <InstallAppButton />
         {WEB_URL && (
           <a href={WEB_URL} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold">
             Вэб сайт нээх

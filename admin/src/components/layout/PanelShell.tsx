@@ -10,6 +10,8 @@ import BrandMark from "./BrandMark";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLES } from "@/lib/constants";
 import { isActivePath, NAV_ITEMS } from "./nav";
+// Starts listening for the install prompt as soon as the panel loads (see InstallAppButton).
+import "@/lib/installPrompt";
 
 // Tab pages get the brand header and bottom nav; detail pages bring their
 // own back-button header instead.
