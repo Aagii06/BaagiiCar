@@ -4,6 +4,8 @@ import Img from "@/components/common/Img";
 import { TileRowSkeleton } from "@/components/common/States";
 import { catalogImage } from "@/lib/api/config";
 import type { Brand } from "@/lib/api/types";
+import { catalogName } from "@/lib/constants";
+import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useWheelScrollX } from "@/lib/useWheelScrollX";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +23,7 @@ export default function BrandTabs({
   onSelect: (id: number | undefined) => void;
   className?: string;
 }) {
+  const { t } = useI18n();
   const rowRef = useWheelScrollX<HTMLDivElement>();
   return (
     // One scrolling row at every width — there are too many brands to wrap.
@@ -34,8 +37,8 @@ export default function BrandTabs({
             key={b.id}
             type="button"
             aria-pressed={active}
-            aria-label={b.name}
-            title={b.name}
+            aria-label={catalogName(b.name, t)}
+            title={catalogName(b.name, t)}
             onClick={() => onSelect(active ? undefined : b.id)}
             className={cn(
               "group flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 bg-card p-2 transition-colors md:size-[72px]",
@@ -52,7 +55,7 @@ export default function BrandTabs({
                 className={cn("h-full w-full object-contain transition", active ? "" : "opacity-80 grayscale group-hover:opacity-100 group-hover:grayscale-0")}
               />
             ) : (
-              <span className="font-display text-base font-bold leading-none text-foreground/70">{b.name[0]}</span>
+              <span className="font-display text-base font-bold leading-none text-foreground/70">{catalogName(b.name, t)[0]}</span>
             )}
           </button>
         );

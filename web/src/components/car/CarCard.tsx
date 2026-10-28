@@ -1,6 +1,7 @@
 "use client";
 
 import type { Car } from "@/lib/api/types";
+import { catalogName } from "@/lib/constants";
 import { openChat } from "@/lib/chat";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { T } from "@/lib/i18n/translate";
@@ -13,7 +14,7 @@ import FavoriteButton from "./FavoriteButton";
 import SpecChips from "./SpecChips";
 
 export function carTitle(car: Car, t: T) {
-  return [car.brand_name, car.model_name].filter(Boolean).join(" ") || car.name || t("Машин");
+  return [catalogName(car.brand_name, t), catalogName(car.model_name, t)].filter(Boolean).join(" ") || car.name || t("Машин");
 }
 
 export function FeaturedBadge({ className }: { className?: string }) {

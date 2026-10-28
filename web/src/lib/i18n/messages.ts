@@ -23,6 +23,7 @@ export const MESSAGES = {
   "Бүх байршил": { ru: "Все регионы", en: "All locations" },
   "Байршил": { ru: "Регион", en: "Location" },
   "Хайх": { ru: "Поиск", en: "Search" },
+  "Бусад": { ru: "Другое", en: "Other" },
   "Сонгох": { ru: "Выбрать", en: "Select" },
   "Олдсонгүй": { ru: "Ничего не найдено", en: "Nothing found" },
   "Буцах": { ru: "Назад", en: "Back" },

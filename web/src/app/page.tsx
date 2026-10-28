@@ -15,7 +15,7 @@ import type { BodyType } from "@/lib/api/types";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { T } from "@/lib/i18n/translate";
-import { bodyTypeLabel } from "@/lib/constants";
+import { bodyTypeLabel, catalogName } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ArrowRight, CreditCard, Heart, LifeBuoy, Search } from "lucide-react";
@@ -129,8 +129,8 @@ function BrandGrid() {
             <Link
               key={b.id}
               href={`/cars?brand=${b.id}`}
-              title={b.name}
-              aria-label={b.name}
+              title={catalogName(b.name, t)}
+              aria-label={catalogName(b.name, t)}
               className={cn(
                 "group flex-col items-center justify-center rounded-xl bg-card p-3 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5",
                 // 4×2 on phones, 6×2 on tablets, the full 16 from lg up.
@@ -146,7 +146,7 @@ function BrandGrid() {
                     className="max-h-8 max-w-8 object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
                   />
                 ) : (
-                  <span className="font-display text-2xl font-bold text-foreground/70">{b.name[0]}</span>
+                  <span className="font-display text-2xl font-bold text-foreground/70">{catalogName(b.name, t)[0]}</span>
                 )}
               </span>
             </Link>

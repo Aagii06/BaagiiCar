@@ -2,6 +2,7 @@
 
 import { Select } from "@/components/common/Field";
 import { getBrands, getModels } from "@/lib/api/cars";
+import { catalogName } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { Search } from "lucide-react";
@@ -63,7 +64,7 @@ export default function HeroSearch() {
           <option value="">{t("Бүгд")}</option>
           {brands.data?.map((b) => (
             <option key={b.id} value={b.id}>
-              {b.name}
+              {catalogName(b.name, t)}
             </option>
           ))}
         </Select>
@@ -73,7 +74,7 @@ export default function HeroSearch() {
           <option value="">{t("Бүгд")}</option>
           {models.data?.map((m) => (
             <option key={m.id} value={m.id}>
-              {m.name}
+              {catalogName(m.name, t)}
             </option>
           ))}
         </Select>

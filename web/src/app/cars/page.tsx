@@ -14,7 +14,7 @@ import { CAR_SORTS, getBodyTypes, getBrands, getLocations, getModels, searchCars
 import { catalogImage } from "@/lib/api/config";
 import { dealerName, getDealers, type Dealer } from "@/lib/api/dealers";
 import type { BodyType, Brand, CarModel, Location } from "@/lib/api/types";
-import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
+import { bodyTypeLabel, catalogName, FUEL_TYPES, PAGE_SIZE, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatNumber } from "@/lib/utils";
@@ -288,7 +288,7 @@ function Filters({
               {!brandsLoading &&
                 brands.data?.map((b) => (
                   <option key={b.id} value={b.id}>
-                    {b.name}
+                    {catalogName(b.name, t)}
                   </option>
                 ))}
             </Select>
@@ -306,7 +306,7 @@ function Filters({
               {!modelsLoading &&
                 models.data?.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.name}
+                    {catalogName(m.name, t)}
                   </option>
                 ))}
             </Select>

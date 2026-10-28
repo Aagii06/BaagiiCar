@@ -13,6 +13,12 @@ export function bodyTypeLabel(name: string | null | undefined, t: T) {
   return name in MESSAGES ? t(name as MessageKey) : name;
 }
 
+/** Brand / model names come as is, except the catch-all "Other", shown as "Бусад". */
+export function catalogName(name: string | null | undefined, t: T) {
+  if (!name) return "";
+  return name === "Other" ? t("Бусад") : name;
+}
+
 /** Leasing estimate: illustrative terms until a partner's real rates are wired in. */
 export const LEASING = {
   downPaymentRate: 0.3,

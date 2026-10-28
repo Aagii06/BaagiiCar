@@ -5,6 +5,7 @@ import { Spinner } from "@/components/common/States";
 import { getBrands, getModels, searchCars } from "@/lib/api/cars";
 import { dealerName, getDealers } from "@/lib/api/dealers";
 import type { Car } from "@/lib/api/types";
+import { catalogName } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatNumber, formatPriceShort } from "@/lib/utils";
@@ -145,7 +146,7 @@ export default function CarPicker({
               <option value="">{t("Бүх үйлдвэр")}</option>
               {brands.data?.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.name}
+                  {catalogName(b.name, t)}
                 </option>
               ))}
             </Select>
@@ -159,7 +160,7 @@ export default function CarPicker({
               <option value="">{t("Бүх загвар")}</option>
               {models.data?.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.name}
+                  {catalogName(m.name, t)}
                 </option>
               ))}
             </Select>
