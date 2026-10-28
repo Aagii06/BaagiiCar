@@ -56,7 +56,7 @@ function CarsInner() {
 
   return (
     <>
-      {/* No title: the tab bar says where we are, and "Зар нэмэх" sits in the top app bar. */}
+      {/* No title: the tab bar says where we are, and "Зар нэмэх" is the + button in the bottom nav. */}
       <PageHeader>
         <div className="flex gap-2">
           <form
