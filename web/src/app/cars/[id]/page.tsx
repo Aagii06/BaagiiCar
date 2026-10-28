@@ -207,6 +207,44 @@ function SimilarRow({ cars }: { cars: Car[] }) {
   );
 }
 
+/** Grey photo, summary and specs shaped like the ad page while it loads. */
+function DetailSkeleton() {
+  return (
+    <Container className="animate-pulse md:pt-6">
+      <div className="hidden h-5 w-64 rounded bg-card md:block" />
+      <div className="grid gap-3 md:mt-5 md:gap-5 lg:grid-cols-[1fr_380px]">
+        <div className="min-w-0 space-y-3 md:space-y-5">
+          <div className="-mx-4 aspect-[4/3] bg-muted md:mx-0 md:aspect-auto md:h-[520px] md:rounded-2xl" />
+          <SummarySkeleton className="lg:hidden" />
+          <section className="rounded-2xl bg-card p-5 md:p-6">
+            <div className="h-5 w-28 rounded bg-muted" />
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {Array.from({ length: 10 }, (_, i) => (
+                <div key={i} className="h-[62px] rounded-xl bg-muted" />
+              ))}
+            </div>
+          </section>
+        </div>
+        <SummarySkeleton className="hidden lg:block" />
+      </div>
+    </Container>
+  );
+}
+
+function SummarySkeleton({ className }: { className?: string }) {
+  return (
+    <section className={cn("rounded-2xl bg-card p-5 md:p-6", className)}>
+      <div className="flex gap-2">
+        <div className="h-6 w-16 rounded-full bg-muted" />
+        <div className="h-6 w-28 rounded-full bg-muted" />
+      </div>
+      <div className="mt-4 h-8 w-3/4 rounded bg-muted" />
+      <div className="mt-3 h-9 w-1/2 rounded bg-muted" />
+      <div className="mt-5 h-12 rounded-xl bg-muted" />
+    </section>
+  );
+}
+
 export default function CarDetailPage() {
   const id = useRouteId();
   const { t } = useI18n();
@@ -219,7 +257,7 @@ export default function CarDetailPage() {
     window.scrollTo(0, 0);
   }, [id]);
 
-  if (car.loading && !car.data) return <LoadingState className="min-h-[60vh]" />;
+  if (car.loading && !car.data) return <DetailSkeleton />;
   if (car.error) return <Container className="pt-10"><ErrorState message={car.error.message} onRetry={car.reload} /></Container>;
   if (!car.data || car.data.status === "deleted")
     return (

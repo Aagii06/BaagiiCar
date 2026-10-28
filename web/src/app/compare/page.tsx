@@ -114,7 +114,23 @@ export default function ComparePage() {
 
         <div className="mt-4 md:mt-8">
           {loading ? (
-            <LoadingState />
+            // Grey car headers and spec rows shaped like the table while it loads.
+            <div className="animate-pulse rounded-2xl bg-card p-3" aria-hidden>
+              <div className="grid grid-cols-[80px_1fr_1fr] gap-3 md:grid-cols-[160px_1fr_1fr_1fr]">
+                <div />
+                {Array.from({ length: 3 }, (_, i) => (
+                  <div key={i} className={cn("space-y-2", i === 2 && "hidden md:block")}>
+                    <div className="aspect-[4/3] rounded-xl bg-muted" />
+                    <div className="h-4 w-3/4 rounded bg-muted" />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 space-y-2">
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div key={i} className="h-9 rounded-lg bg-muted" />
+                ))}
+              </div>
+            </div>
           ) : cars.error ? (
             <ErrorState message={cars.error.message} onRetry={cars.reload} />
           ) : (

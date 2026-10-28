@@ -61,9 +61,7 @@ export default function DealersMenu({ className }: { className?: string }) {
           <div className="overflow-hidden border border-border bg-white shadow-lg">
             <div className="max-h-[60vh] overflow-y-auto">
               {dealers.loading && !dealers.data ? (
-                <div className="grid place-items-center py-8">
-                  <Spinner />
-                </div>
+                <RowsSkeleton count={4} thumb="avatar" />
               ) : dealers.error ? (
                 <p className="px-3 py-4 text-sm text-destructive">{dealers.error.message}</p>
               ) : rows.length ? (

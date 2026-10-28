@@ -1,5 +1,6 @@
 "use client";
 
+import Container from "@/components/common/Container";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Loader2 } from "lucide-react";
@@ -47,6 +48,71 @@ export function EmptyState({
       <p className="font-bold">{title}</p>
       {description && <p className="max-w-sm text-sm text-muted-foreground">{description}</p>}
       {action && <div className="mt-3">{action}</div>}
+    </div>
+  );
+}
+
+/** Account pages (profile, messages) while the session is checked: the account card beside a form card. */
+export function AccountSkeleton() {
+  return (
+    <div className="animate-pulse" aria-hidden>
+      <Container className="pt-3 md:pt-10">
+        <div className="mb-6 hidden md:block">
+          <div className="h-7 w-48 rounded bg-card" />
+          <div className="mt-2 h-4 w-72 rounded bg-card" />
+        </div>
+        <div className="grid gap-3 lg:grid-cols-[300px_1fr] lg:items-start lg:gap-5">
+          <div className="flex items-center gap-4 rounded-2xl bg-card p-5">
+            <div className="size-14 shrink-0 rounded-full bg-muted" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-2/3 rounded bg-muted" />
+              <div className="h-3 w-1/2 rounded bg-muted" />
+            </div>
+          </div>
+          <div className="max-w-2xl space-y-4 rounded-2xl bg-card p-5 md:p-6">
+            <div className="h-5 w-40 rounded bg-muted" />
+            {Array.from({ length: 3 }, (_, i) => (
+              <div key={i} className="h-12 rounded-xl bg-muted" />
+            ))}
+            <div className="h-12 w-32 rounded-xl bg-muted" />
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
+}
+
+/** Content pages (help) before they render: the desktop banner, then a few text cards. */
+export function PageSkeleton() {
+  return (
+    <div className="animate-pulse" aria-hidden>
+      <div className="hidden h-[184px] bg-muted md:block" />
+      <Container className="space-y-4 pt-4 md:pt-10">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="space-y-3 rounded-2xl bg-card p-5 md:p-6">
+            <div className="h-5 w-1/3 rounded bg-muted" />
+            <div className="h-3.5 w-full rounded bg-muted" />
+            <div className="h-3.5 w-4/5 rounded bg-muted" />
+          </div>
+        ))}
+      </Container>
+    </div>
+  );
+}
+
+/** Rows of a car picker / dealer menu: car thumb or round avatar, two lines. */
+export function RowsSkeleton({ count = 5, thumb = "car", className }: { count?: number; thumb?: "car" | "avatar"; className?: string }) {
+  return (
+    <div className={cn("animate-pulse", className)} aria-hidden>
+      {Array.from({ length: count }, (_, i) => (
+        <div key={i} className={cn("flex items-center gap-3", thumb === "car" ? "p-2" : "px-4 py-2.5")}>
+          <div className={cn("shrink-0 bg-muted", thumb === "car" ? "h-14 w-20 rounded-lg" : "size-10 rounded-full")} />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className={cn("h-3.5 rounded bg-muted", ["w-3/5", "w-1/2", "w-2/3"][i % 3])} />
+            <div className="h-3 w-1/3 rounded bg-muted" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

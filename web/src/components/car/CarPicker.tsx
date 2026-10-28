@@ -190,9 +190,7 @@ export default function CarPicker({
 
         <div className="min-h-40 flex-1 overflow-y-auto px-2 pb-3">
           {cars.loading && !cars.data ? (
-            <div className="grid place-items-center py-12">
-              <Spinner />
-            </div>
+            <RowsSkeleton count={6} />
           ) : cars.error ? (
             <p className="px-3 py-10 text-center text-sm text-destructive">{cars.error.message}</p>
           ) : !list.length ? (
