@@ -14,7 +14,7 @@ import { CAR_SORTS, getBodyTypes, getBrands, getLocations, getModels, searchCars
 import { catalogImage } from "@/lib/api/config";
 import { dealerName, getDealers, type Dealer } from "@/lib/api/dealers";
 import type { BodyType, Brand, CarModel, Location } from "@/lib/api/types";
-import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS } from "@/lib/constants";
+import { bodyTypeLabel, FUEL_TYPES, PAGE_SIZE, STEERINGS, TRANSMISSIONS } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,7 @@ type Params = {
   priceMin?: number; // сая ₮
   priceMax?: number;
   fuel: string[];
+  transmission: string[];
   steering?: string;
   sort: CarSort;
   page: number;
@@ -61,6 +62,7 @@ function readParams(sp: URLSearchParams): Params {
     priceMin: num(sp.get("priceMin")),
     priceMax: num(sp.get("priceMax")),
     fuel: list(sp.get("fuel")),
+    transmission: list(sp.get("transmission")),
     steering: sp.get("steering") || undefined,
     sort: CAR_SORTS.find((o) => o.value === sort)?.value ?? "new",
     page: num(sp.get("page")) ?? 1,
@@ -81,6 +83,7 @@ function writeParams(p: Params) {
   if (p.priceMin) q.set("priceMin", String(p.priceMin));
   if (p.priceMax) q.set("priceMax", String(p.priceMax));
   if (p.fuel.length) q.set("fuel", p.fuel.join(","));
+  if (p.transmission.length) q.set("transmission", p.transmission.join(","));
   if (p.steering) q.set("steering", p.steering);
   if (p.sort !== "new") q.set("sort", p.sort);
   if (p.page > 1) q.set("page", String(p.page));
@@ -177,7 +180,7 @@ function Filters({
   const brandsLoading = brandPending || !brands.data;
   const modelsLoading = (brandPending && !!pending.brand) || (!!p.brand && models.loading);
   const hasFilters =
-    p.location || p.dealer || p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.steering;
+    p.location || p.dealer || p.brand || p.model || p.body.length || p.yearFrom || p.yearTo || p.importFrom || p.importTo || p.priceMin || p.priceMax || p.fuel.length || p.transmission.length || p.steering;
 
   return (
     <section className="space-y-4 rounded-2xl bg-card p-5">
@@ -200,6 +203,7 @@ function Filters({
                 priceMin: undefined,
                 priceMax: undefined,
                 fuel: [],
+                transmission: [],
                 steering: undefined,
               })
             }
@@ -371,6 +375,29 @@ function Filters({
         </div>
       </Group>
 
+      <Group title={t("Хурдны хайрцаг")}>
+        <div className="flex flex-wrap gap-2">
+          {TRANSMISSIONS.map((f) => {
+            const on = p.transmission.includes(f);
+            return (
+              <button
+                key={f}
+                type="button"
+                aria-pressed={on}
+                onClick={() => set({ transmission: on ? p.transmission.filter((x) => x !== f) : [...p.transmission, f] })}
+                className={cn(
+                  "flex h-10 items-center gap-1.5 rounded-xl border-2 bg-muted px-3.5 text-sm font-semibold transition-colors",
+                  on ? "border-primary bg-primary-soft text-primary" : "border-transparent hover:border-border"
+                )}
+              >
+                {on && <Check className="size-3.5" strokeWidth={3.2} />}
+                {tv(f)}
+              </button>
+            );
+          })}
+        </div>
+      </Group>
+
       <Group title={t("Хүрд")}>
         <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
           {[undefined, ...STEERINGS].map((s) => (
@@ -485,6 +512,7 @@ function CarsPageInner() {
         priceMin: p.priceMin && p.priceMin * MLN,
         priceMax: p.priceMax && p.priceMax * MLN,
         fuelTypes: p.fuel,
+        transmissions: p.transmission,
         steering: p.steering,
         sort: p.sort,
         featuredFirst: true,

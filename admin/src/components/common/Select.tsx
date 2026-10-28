@@ -100,6 +100,7 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
   const [q, setQ] = useState("");
   const titleId = useId();
   const listRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const searchable = options.length >= SEARCH_FROM;
   const needle = q.trim().toLowerCase();
   const rows = needle ? options.filter((o) => o.text.toLowerCase().includes(needle)) : options;
@@ -109,6 +110,8 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
     window.addEventListener("keydown", onKey);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    // Focus the sheet, not the search box: on mobile the keyboard would cover half the list.
+    dialogRef.current?.focus();
     // Start with the chosen row in view.
     listRef.current?.querySelector("[aria-selected='true']")?.scrollIntoView({ block: "center" });
     return () => {
@@ -122,11 +125,13 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 animate-fade-in bg-dark/50 backdrop-blur-[2px]" onClick={onClose} />
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         // Sized to its options, never higher than 25% from the top.
-        className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[75dvh] max-w-md animate-sheet-up flex-col rounded-t-3xl bg-white shadow-2xl"
+        className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[75dvh] max-w-md animate-sheet-up flex-col rounded-t-3xl bg-white shadow-2xl outline-none"
       >
         <div className="shrink-0 px-5 pt-3">
           <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
@@ -136,7 +141,7 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
           {searchable && (
             <label className="relative mt-3 block">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Хайх" className={cn(inputClass, "pl-10")} />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Хайх" className={cn(inputClass, "pl-10")} />
             </label>
           )}
         </div>

@@ -19,6 +19,7 @@ export interface CarSearch {
   priceMin?: number;
   priceMax?: number;
   fuelTypes?: string[];
+  transmissions?: string[];
   steering?: string;
   /** Matched against brand and model names. */
   text?: string;
@@ -44,6 +45,7 @@ export function searchConditions(s: CarSearch): (Condition | ConditionGroup)[] {
   if (s.priceMin) c.push(["price", ">=", s.priceMin]);
   if (s.priceMax) c.push(["price", "<=", s.priceMax]);
   if (s.fuelTypes?.length) c.push(["fuel_type", "in", s.fuelTypes]);
+  if (s.transmissions?.length) c.push(["transmission", "in", s.transmissions]);
   if (s.steering) c.push(["steering", "=", s.steering]);
   const text = s.text?.trim();
   if (text) c.push([["brand_name", "contains", text], "or", ["model_name", "contains", text]]);
