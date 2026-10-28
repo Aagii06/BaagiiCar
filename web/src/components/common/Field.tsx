@@ -120,7 +120,7 @@ export function OptionSheet({ title, options, value, onPick, onClose }: { title:
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[75dvh] max-w-md animate-sheet-up flex-col rounded-t-3xl bg-white shadow-2xl"
+        className="absolute inset-x-0 bottom-0 flex max-h-[75dvh] animate-sheet-up flex-col rounded-t-3xl bg-white shadow-2xl"
       >
         <div className="shrink-0 px-5 pt-3">
           <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
@@ -134,7 +134,7 @@ export function OptionSheet({ title, options, value, onPick, onClose }: { title:
             </label>
           )}
         </div>
-        <div ref={listRef} role="listbox" aria-labelledby={titleId} className="mt-2 min-h-0 flex-1 divide-y divide-border overflow-y-auto pb-[env(safe-area-inset-bottom)]">
+        <div ref={listRef} role="listbox" aria-labelledby={titleId} className="mt-2 min-h-0 flex-1 divide-y divide-border overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]">
           {rows.length ? (
             rows.map((o) => {
               const active = o.value === value;

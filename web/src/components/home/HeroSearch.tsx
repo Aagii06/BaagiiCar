@@ -118,7 +118,7 @@ export default function HeroSearch() {
         </Cell>
         <Cell label={t("Үнэ")}>
           <Select className={cellSelect} title={t("Үнэ")} value={priceMax} onChange={(e) => setPriceMax(e.target.value)}>
-            <option value="">{t("Хязгааргүй")}</option>
+            <option value="">{t("Сонгох")}</option>
             {PRICE_MAX_OPTIONS.map((p) => (
               <option key={p} value={p}>
                 {t("{n} сая ₮ хүртэл", { n: p })}

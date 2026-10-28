@@ -430,7 +430,8 @@ function MobileFilters({
           {t("Хайх")}
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto overscroll-contain p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      {/* Card runs edge to edge: no gap at the sides or bottom. */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-card pb-[env(safe-area-inset-bottom)] [&>section]:rounded-none">
         <Filters
           key={writeParams(draft)}
           p={draft}
