@@ -9,14 +9,6 @@ export function Spinner({ className }: { className?: string }) {
   return <Loader2 className={cn("size-6 animate-spin text-primary", className)} />;
 }
 
-export function LoadingState({ className }: { className?: string }) {
-  return (
-    <div className={cn("grid place-items-center py-20", className)}>
-      <Spinner />
-    </div>
-  );
-}
-
 export function ErrorState({ message, onRetry, className }: { message: string; onRetry?: () => void; className?: string }) {
   const { t } = useI18n();
   return (

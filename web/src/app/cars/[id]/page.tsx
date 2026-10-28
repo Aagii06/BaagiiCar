@@ -8,7 +8,7 @@ import LeasingCalculator from "@/components/car/LeasingCalculator";
 import Container from "@/components/common/Container";
 import ShareButtons from "@/components/car/ShareButtons";
 import PhotoViewer from "@/components/common/PhotoViewer";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { EmptyState, ErrorState } from "@/components/common/States";
 import DealerAvatar from "@/components/common/DealerAvatar";
 import Img from "@/components/common/Img";
 import { getCar, getCarFiles, searchCars } from "@/lib/api/cars";

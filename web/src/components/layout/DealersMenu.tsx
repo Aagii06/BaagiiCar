@@ -1,7 +1,7 @@
 "use client";
 
 import DealerAvatar from "@/components/common/DealerAvatar";
-import { Spinner } from "@/components/common/States";
+import { RowsSkeleton } from "@/components/common/States";
 import { dealerName, getDealers } from "@/lib/api/dealers";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";

@@ -3,7 +3,7 @@
 import Container from "@/components/common/Container";
 import EmailCodeDialog from "@/components/common/EmailCodeDialog";
 import { Field, inputClass, PhoneInput } from "@/components/common/Field";
-import { LoadingState } from "@/components/common/States";
+import { PageSkeleton } from "@/components/common/States";
 import { EmailSignup } from "@/components/layout/NotifySignup";
 import { sendEmailCode } from "@/lib/api/auth";
 import { CONTACT } from "@/lib/api/config";
@@ -249,7 +249,7 @@ function HelpInner() {
 
 export default function HelpPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<PageSkeleton />}>
       <HelpInner />
     </Suspense>
   );

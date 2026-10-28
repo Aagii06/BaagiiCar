@@ -7,7 +7,7 @@ import CarWideCard from "@/components/car/CarWideCard";
 import DealerTabs from "@/components/car/DealerTabs";
 import Container from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
-import { CardGridSkeleton, EmptyState, ErrorState, LoadingState, Spinner } from "@/components/common/States";
+import { CardGridSkeleton, EmptyState, ErrorState, Spinner } from "@/components/common/States";
 import Img from "@/components/common/Img";
 import PageBanner from "@/components/common/PageBanner";
 import { CAR_SORTS, getBodyTypes, getBrands, getLocations, getModels, searchCars, type CarSort } from "@/lib/api/cars";
@@ -687,7 +687,7 @@ function CarsPageInner() {
 
 export default function CarsPage() {
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense fallback={<Container className="pt-4 md:pt-10"><CardGridSkeleton /></Container>}>
       <CarsPageInner />
     </Suspense>
   );

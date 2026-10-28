@@ -5,7 +5,7 @@ import CarImage from "@/components/car/CarImage";
 import ComparePicker from "@/components/car/ComparePicker";
 import Container from "@/components/common/Container";
 import PageBanner from "@/components/common/PageBanner";
-import { ErrorState, LoadingState } from "@/components/common/States";
+import { ErrorState } from "@/components/common/States";
 import { getCarsByIds } from "@/lib/api/cars";
 import type { Car } from "@/lib/api/types";
 import { COMPARE_MAX, useCompare } from "@/lib/compare/CompareProvider";

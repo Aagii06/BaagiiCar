@@ -3,7 +3,7 @@
 import Container, { AccountTitle } from "@/components/common/Container";
 import EmailCodeDialog from "@/components/common/EmailCodeDialog";
 import { Field, inputClass } from "@/components/common/Field";
-import { LoadingState } from "@/components/common/States";
+import { AccountSkeleton } from "@/components/common/States";
 import { sendEmailCode, updateMe, type WebUser } from "@/lib/api/auth";
 import ProfileSidebar from "@/components/layout/ProfileSidebar";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -23,7 +23,7 @@ export default function ProfilePage() {
     if (ready && !user) router.replace("/login?next=/profile");
   }, [ready, user, router]);
 
-  if (!ready || !user) return <LoadingState className="min-h-[50vh]" />;
+  if (!ready || !user) return <AccountSkeleton />;
 
   return (
     <Container className="pt-3 md:pt-10">

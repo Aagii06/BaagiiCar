@@ -2,7 +2,6 @@
 
 import Container from "@/components/common/Container";
 import { Field, inputClass, PhoneInput } from "@/components/common/Field";
-import { LoadingState } from "@/components/common/States";
 import { loginWithCode, sendLoginCode } from "@/lib/api/auth";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -136,9 +135,26 @@ function LoginInner() {
   );
 }
 
+/** Grey phone-step form while the session is checked. */
+function LoginSkeleton() {
+  return (
+    <Container className="max-w-md animate-pulse py-4 md:py-20">
+      <div className="hidden h-11 w-40 rounded bg-card md:block" />
+      <div className="space-y-4 md:mt-6">
+        <div className="h-4 w-4/5 rounded bg-card" />
+        <div>
+          <div className="mb-1.5 h-3.5 w-28 rounded bg-card" />
+          <div className="h-12 rounded-xl bg-card" />
+        </div>
+        <div className="h-12 rounded-xl bg-card" />
+      </div>
+    </Container>
+  );
+}
+
 export default function LoginPage() {
   return (
-    <Suspense fallback={<LoadingState className="min-h-[50vh]" />}>
+    <Suspense fallback={<LoginSkeleton />}>
       <LoginInner />
     </Suspense>
   );

@@ -4,7 +4,7 @@ import { carTitle } from "@/components/car/CarCard";
 import CarImage from "@/components/car/CarImage";
 import Container, { AccountTitle } from "@/components/common/Container";
 import ProfileSidebar from "@/components/layout/ProfileSidebar";
-import { EmptyState, ErrorState, LoadingState } from "@/components/common/States";
+import { AccountSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import { getCarsByIds } from "@/lib/api/cars";
 import { ApiError } from "@/lib/api/client";
 import { getMyMessages, markRead, sendMessage, type MyMessage } from "@/lib/api/messages";
@@ -110,7 +110,7 @@ function MessagesInner() {
     if (threads.error instanceof ApiError && threads.error.status === 401) signOut();
   }, [threads.error, signOut]);
 
-  if (!ready || !user) return <LoadingState className="min-h-[50vh]" />;
+  if (!ready || !user) return <AccountSkeleton />;
 
   // Only the content column waits; the title and account menu stay put.
   const loading = threads.loading && !threads.data;
@@ -323,7 +323,7 @@ function ThreadView({ thread, token, onSent, className }: { thread: Thread; toke
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<LoadingState className="min-h-[50vh]" />}>
+    <Suspense fallback={<AccountSkeleton />}>
       <MessagesInner />
     </Suspense>
   );

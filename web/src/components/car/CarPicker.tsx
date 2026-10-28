@@ -1,7 +1,7 @@
 "use client";
 
 import { Select } from "@/components/common/Field";
-import { Spinner } from "@/components/common/States";
+import { RowsSkeleton } from "@/components/common/States";
 import { getBrands, getModels, searchCars } from "@/lib/api/cars";
 import { dealerName, getDealers } from "@/lib/api/dealers";
 import type { Car } from "@/lib/api/types";
