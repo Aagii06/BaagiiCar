@@ -111,9 +111,12 @@
     cursor: pointer;
   }
   /* Phones: app-like touch — no grey flash, pressed state instead of hover, no page bounce. */
+  /* Set on `html`: only the root element's value reaches the viewport scroller,
+     and iOS (home-screen app) otherwise rubber-bands the fixed tab bar with the page. */
   @media (max-width: 767px) {
+    html,
     body {
-      overscroll-behavior-y: none;
+      overscroll-behavior: none;
     }
   }
   @media (hover: none) {

@@ -244,8 +244,9 @@ export default function HomePage() {
       <Container className="mt-6 md:mt-10">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {QUICK.map(({ icon: Icon, tint, title, text, href }) => (
-            <Link key={title} href={href} className="group flex items-center gap-4 rounded-2xl bg-card p-4 transition hover:shadow-xl hover:shadow-black/5 md:p-5">
-              <span className={cn("grid size-12 shrink-0 place-items-center rounded-xl", tint)}>
+            // Below 360px (iPhone SE with Display Zoom) the icon stacks above the title so it doesn't widen the page.
+            <Link key={title} href={href} className="group flex items-center gap-4 rounded-2xl bg-card p-4 transition hover:shadow-xl hover:shadow-black/5 max-[359px]:flex-col max-[359px]:items-start max-[359px]:gap-2.5 md:p-5">
+              <span className={cn("grid size-12 shrink-0 place-items-center rounded-xl max-[359px]:size-10", tint)}>
                 <Icon className="size-5" />
               </span>
               <span className="min-w-0">

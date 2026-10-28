@@ -51,7 +51,8 @@ export function SectionTitle({
 }) {
   return (
     <div className={cn("flex items-end justify-between gap-4", className)}>
-      <div>
+      {/* min-w-0: on narrow phones the title wraps instead of widening the page. */}
+      <div className="min-w-0 break-words">
         {kicker && <p className="kicker">{kicker}</p>}
         <h2 className={cn(kicker && "mt-2", "font-display text-[24px] leading-none md:text-[40px]")}>
           {light && <span className="font-light">{light} </span>}
