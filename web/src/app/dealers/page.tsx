@@ -1,11 +1,12 @@
 "use client";
 
 import CarCard from "@/components/car/CarCard";
-import Container, { PageTitle } from "@/components/common/Container";
+import Container, { PageTitle, SectionTitle, ViewAll } from "@/components/common/Container";
 import DealerAvatar from "@/components/common/DealerAvatar";
 import PageBanner from "@/components/common/PageBanner";
 import Pagination from "@/components/common/Pagination";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
+import { featuredCars } from "@/lib/api/cars";
 import { dealerName, getDealer, getDealerCars, getDealers, type Dealer } from "@/lib/api/dealers";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
@@ -13,9 +14,12 @@ import { cn } from "@/lib/utils";
 import { ArrowLeft, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 
 const PAGE_SIZE = 12;
+/** Dealers shown at first and added by each "Цааш үзэх". */
+const DEALER_STEP = 6;
+const FEATURED_COUNT = 6;
 
 function DealerLogo({ dealer, className }: { dealer: Dealer; className?: string }) {
   return (
@@ -57,10 +61,12 @@ function DealerCard({ dealer }: { dealer: Dealer }) {
   );
 }
 
-/** Registered dealers, most listings first. */
+/** Registered dealers, most listings first, 6 at a time; featured cars below (as on the home page). */
 function DealerList() {
   const { t } = useI18n();
   const dealers = useApi(getDealers);
+  const featured = useApi(() => featuredCars(FEATURED_COUNT));
+  const [shown, setShown] = useState(DEALER_STEP);
   const rows = dealers.data?.rows ?? [];
 
   return (
@@ -76,20 +82,53 @@ function DealerList() {
         <div>
           {dealers.loading && !dealers.data ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }, (_, i) => (
+              {Array.from({ length: DEALER_STEP }, (_, i) => (
                 <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />
               ))}
             </div>
           ) : dealers.error ? (
             <ErrorState message={dealers.error.message} onRetry={dealers.reload} />
           ) : rows.length ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {rows.slice(0, shown).map((dealer) => (
+                  <DealerCard key={dealer.id} dealer={dealer} />
+                ))}
+              </div>
+              {shown < rows.length && (
+                <button
+                  type="button"
+                  onClick={() => setShown((n) => n + DEALER_STEP)}
+                  className="mx-auto mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-card text-sm font-bold hover:bg-border sm:w-64 md:mt-8"
+                >
+                  {t("Цааш үзэх")}
+                  <span className="font-medium text-muted-foreground">
+                    {shown} / {rows.length}
+                  </span>
+                </button>
+              )}
+            </>
+          ) : (
+            <EmptyState title={t("Бүртгэлтэй дилер алга")} />
+          )}
+        </div>
+      </Container>
+
+      <Container className="mt-10 md:mt-20">
+        <SectionTitle light={t("Онцлох")} bold={t("машинууд")} action={<ViewAll href="/cars" />} />
+        <div className="mt-4 md:mt-8">
+          {featured.loading && !featured.data ? (
+            <CardGridSkeleton count={3} />
+          ) : featured.error ? (
+            <ErrorState message={featured.error.message} onRetry={featured.reload} />
+          ) : featured.data?.length ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {rows.map((dealer) => (
-                <DealerCard key={dealer.id} dealer={dealer} />
+              {featured.data.map((car) => (
+                <CarCard key={car.id} car={car} featuredBadge />
               ))}
             </div>
           ) : (
-            <EmptyState title={t("Бүртгэлтэй дилер алга")} />
+            <EmptyState title={t("Одоогоор зар алга")} />
           )}
         </div>
       </Container>
