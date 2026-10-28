@@ -81,6 +81,7 @@ export default function HeroSearch() {
         <Cell label={t("Үйлдвэр")}>
           <Select
             className={cellSelect}
+            title={t("Үйлдвэр")}
             value={brandId}
             onChange={(e) => {
               setBrandId(e.target.value);
@@ -96,7 +97,7 @@ export default function HeroSearch() {
           </Select>
         </Cell>
         <Cell label={t("Загвар")}>
-          <Select className={cellSelect} value={modelId} onChange={(e) => setModelId(e.target.value)} disabled={!brandId}>
+          <Select className={cellSelect} title={t("Загвар")} value={modelId} onChange={(e) => setModelId(e.target.value)} disabled={!brandId}>
             <option value="">{t("Бүгд")}</option>
             {models.data?.map((m) => (
               <option key={m.id} value={m.id}>
@@ -106,7 +107,7 @@ export default function HeroSearch() {
           </Select>
         </Cell>
         <Cell label={t("Он")}>
-          <Select className={cellSelect} value={yearFrom} onChange={(e) => setYearFrom(e.target.value)}>
+          <Select className={cellSelect} title={t("Он")} value={yearFrom} onChange={(e) => setYearFrom(e.target.value)}>
             <option value="">{t("Бүгд")}</option>
             {YEAR_FROM_OPTIONS.map((y) => (
               <option key={y} value={y}>
@@ -116,7 +117,7 @@ export default function HeroSearch() {
           </Select>
         </Cell>
         <Cell label={t("Үнэ")}>
-          <Select className={cellSelect} value={priceMax} onChange={(e) => setPriceMax(e.target.value)}>
+          <Select className={cellSelect} title={t("Үнэ")} value={priceMax} onChange={(e) => setPriceMax(e.target.value)}>
             <option value="">{t("Хязгааргүй")}</option>
             {PRICE_MAX_OPTIONS.map((p) => (
               <option key={p} value={p}>
