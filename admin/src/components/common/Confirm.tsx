@@ -111,7 +111,7 @@ function Sheet({ options, onClose }: { options: NonNullable<Open>; onClose: (val
               onChange={(e) => setText(e.target.value)}
               placeholder={placeholder}
               rows={3}
-              className="w-full resize-none rounded-xl border border-input bg-white px-4 py-3 text-[15px] outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
+              className="w-full resize-none rounded-xl border border-input bg-white px-4 py-3 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10"
             />
           </label>
         )}

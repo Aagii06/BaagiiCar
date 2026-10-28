@@ -74,7 +74,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
           </Select>
         </span>
         <input
-          className="min-w-0 flex-1 bg-transparent px-3 text-[15px] font-semibold uppercase tracking-wide outline-none placeholder:font-normal placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground/70"
+          className="min-w-0 flex-1 bg-transparent px-3 text-base font-semibold uppercase tracking-wide outline-none placeholder:font-normal placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground/70"
           value={value}
           onChange={(e) => {
             setValue(e.target.value);

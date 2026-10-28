@@ -8,7 +8,7 @@ import { createContext, useState } from "react";
 export const FieldLabelContext = createContext<string | null>(null);
 
 export const inputClass =
-  "h-12 w-full rounded-xl border border-input bg-white px-4 text-[15px] outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:bg-muted";
+  "h-12 w-full rounded-xl border border-input bg-white px-4 text-base outline-none transition placeholder:text-muted-foreground/70 focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:bg-muted";
 
 export function Field({
   label,
@@ -78,7 +78,7 @@ export function PhoneInput({
       />
       {focused && (
         // Typed part is invisible so the remaining underscores line up right after the caret.
-        <span aria-hidden className="pointer-events-none absolute inset-y-0 left-[17px] flex items-center whitespace-pre text-[15px] text-muted-foreground/70">
+        <span aria-hidden className="pointer-events-none absolute inset-y-0 left-[17px] flex items-center whitespace-pre text-base text-muted-foreground/70">
           <span className="invisible">{shown}</span>
           {PHONE_MASK.slice(shown.length)}
         </span>
