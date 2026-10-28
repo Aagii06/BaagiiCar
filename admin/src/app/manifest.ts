@@ -6,7 +6,7 @@ export const dynamic = "force-static";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Cardealer Admin",
-    short_name: "CD Admin",
+    short_name: "Cardealer",
     id: "/",
     start_url: "/",
     scope: "/",

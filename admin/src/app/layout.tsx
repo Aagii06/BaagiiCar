@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: { default: "Cardealer Admin", template: "%s · Cardealer Admin" },
   robots: { index: false, follow: false },
   // iOS "Add to Home Screen": open full-screen without Safari's address bar.
-  appleWebApp: { capable: true, title: "CD Admin", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Cardealer", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
