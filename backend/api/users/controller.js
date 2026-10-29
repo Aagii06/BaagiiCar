@@ -7,7 +7,7 @@ const { uploadImage } = require("../../helper/fileHelper");
 const { authLogin } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
 const { roles } = require("../../config/constants");
-const { sendEmailOtp, verifyEmailOtp, releaseEmail } = require("../../helper/otpHelper");
+const { sendEmailOtp, verifyEmailOtp, releaseEmail, sendPhoneVerify, confirmPhoneVerify } = require("../../helper/otpHelper");
 
 module.exports.save = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
@@ -24,6 +24,9 @@ module.exports.save = async (req, res) => {
     delete body.role;
     delete body.status;
   }
+  // Баталгаажуулалтыг зөвхөн /phone-verify-ээр
+  delete body.phone_verified_at;
+  delete body.phone_verify_deadline;
   // Засах үед нууц үгийг /change-password-оор солино
   if (id) {
     delete body.password;
@@ -387,6 +390,30 @@ module.exports.emailChangeVerify = async (req, res) => {
     console.log(error);
     result.message = typeof error === "string" ? error : "Алдаа";
     return res.status(200).json(result);
+  }
+};
+
+// --- Утас баталгаажуулах: бүртгэлтэй дугаар руу код илгээж, кодоор баталгаажуулна ----
+// ADMIN-аас бусад нь баталгаажуулаагүй бол phone_verify_deadline-ийн дараа устна (helper/phoneVerifyHelper.js)
+module.exports.phoneVerifySend = async (req, res) => {
+  try {
+    const result = await sendPhoneVerify(users, "user-phone", req.loggedUser?.id);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Код илгээж чадсангүй" });
+  }
+};
+
+module.exports.phoneVerifyConfirm = async (req, res) => {
+  const { code, at } = req.body;
+  try {
+    const { success, message } = await confirmPhoneVerify(users, "user-phone", req.loggedUser?.id, code, at);
+    const data = success ? (await findUserData(req.loggedUser.id)).user : null;
+    return res.status(200).json({ success, data, message });
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: typeof error === "string" ? error : "Алдаа" });
   }
 };
 

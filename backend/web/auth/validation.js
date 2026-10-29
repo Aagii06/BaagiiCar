@@ -11,16 +11,18 @@ const phonenumberField = () =>
 
 module.exports.otpSendValidation = [phonenumberField(), validation];
 
-module.exports.otpLoginValidation = [
-  phonenumberField(),
+const codeField = () =>
   body("code")
     .trim()
     .notEmpty()
     .withMessage("Баталгаажуулах код оруулна уу")
     .matches(/^\d{4}$/)
-    .withMessage("Код 4 оронтой тоо байна"),
-  validation,
-];
+    .withMessage("Код 4 оронтой тоо байна");
+
+module.exports.otpLoginValidation = [phonenumberField(), codeField(), validation];
+
+// Нэвтэрсэн хэрэглэгч бүртгэлтэй утсаа баталгаажуулах (users, customers хоёулаа)
+module.exports.phoneVerifyValidation = [codeField(), validation];
 
 // Профайл засах: нэр заавал. И-мэйлийг энд зөвхөн устгаж болно - шинэ хаягийг /email-change кодоор баталгаажуулна
 module.exports.updateMeValidation = [

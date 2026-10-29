@@ -67,8 +67,13 @@ module.exports = (sequelize, DataTypes) => {
     if (!data.isNewRecord && data.changed("phonenumber") && !data.changed("phone_verified_at"))
       data.phone_verified_at = null;
     if (data.role === roles.admin || data.phone_verified_at) data.phone_verify_deadline = null;
-    else if (!data.phone_verify_deadline || data.changed("phonenumber"))
+    else if (!data.phone_verify_deadline || data.changed("phonenumber") || data.previous("status") === "deleted")
       data.phone_verify_deadline = phoneVerifyDeadline();
+
+    // Бүртгэлтэй хэрэглэгчийг (DEALER г.м.) шууд ADMIN болгохгүй - устгасны дараа (status = deleted)
+    // ижил дугаараар админаар бүртгэхэд тэр бүртгэл нь сэргэж ADMIN болно (api/users/controller.js)
+    if (!data.isNewRecord && data.changed("role") && data.role === roles.admin && data.previous("status") !== "deleted")
+      throw "Бүртгэлтэй хэрэглэгчийг админ болгох боломжгүй. Устгаад дахин админаар бүртгэнэ үү";
 
     // ADMIN эрхтэй хэрэглэгч maxAdmins-аас хэтрэхгүй
     if (data.role === roles.admin && data.status !== "deleted" && (data.isNewRecord || data.changed("role") || data.changed("status"))) {

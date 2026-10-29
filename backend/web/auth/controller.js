@@ -1,7 +1,15 @@
 const { customers, sequelize, op } = require("../../models");
 const { authLogin } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
-const { sendPhoneOtp, verifyPhoneOtp, sendEmailOtp, verifyEmailOtp, releaseEmail } = require("../../helper/otpHelper");
+const {
+  sendPhoneOtp,
+  verifyPhoneOtp,
+  sendEmailOtp,
+  verifyEmailOtp,
+  releaseEmail,
+  sendPhoneVerify,
+  confirmPhoneVerify,
+} = require("../../helper/otpHelper");
 
 // Вэбийн зочин хэрэглэгч customers хүснэгтэд (users-д зөвхөн ADMIN, DEALER).
 // Токенд customer: true - protectCustomer үүгээр users-ийн токеноос ялгана.
@@ -49,6 +57,8 @@ module.exports.otpLogin = async (req, res) => {
     if (!customer) {
       const created = await customers.create({
         phonenumber,
+        // Кодоор нэвтэрсэн тул утас баталгаажсан
+        phone_verified_at: at,
         firstname: "Зочин",
         status: "active",
         created_at: at,
@@ -63,7 +73,15 @@ module.exports.otpLogin = async (req, res) => {
       });
       customer = { id: created.id };
     }
-    await customers.update({ last_login_at: at }, { where: { id: customer.id } });
+    // Кодоор нэвтэрсэн тул утас баталгаажсан (bulk update - hook ажиллахгүй тул deadline-ийг шууд арилгана)
+    await customers.update(
+      {
+        last_login_at: at,
+        phone_verified_at: sequelize.fn("COALESCE", sequelize.col("phone_verified_at"), at),
+        phone_verify_deadline: null,
+      },
+      { where: { id: customer.id } },
+    );
 
     const { success, user: loggedUser, message } = await findCustomerData(customer.id);
     if (!success) {
@@ -179,5 +197,29 @@ module.exports.emailChangeVerify = async (req, res) => {
     console.log(error);
     result.message = typeof error === "string" ? error : "Алдаа";
     return res.status(200).json(result);
+  }
+};
+
+// --- Утас баталгаажуулах: бүртгэлтэй дугаар руу код илгээж, кодоор баталгаажуулна ----
+// Баталгаажуулаагүй бол phone_verify_deadline-ийн дараа бүртгэл устна (helper/phoneVerifyHelper.js)
+module.exports.phoneVerifySend = async (req, res) => {
+  try {
+    const result = await sendPhoneVerify(customers, "cust-phone", req.loggedUser?.id);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Код илгээж чадсангүй" });
+  }
+};
+
+module.exports.phoneVerifyConfirm = async (req, res) => {
+  const { code, at } = req.body;
+  try {
+    const { success, message } = await confirmPhoneVerify(customers, "cust-phone", req.loggedUser?.id, code, at);
+    const data = success ? (await findCustomerData(req.loggedUser.id)).user : null;
+    return res.status(200).json({ success, data, message });
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Алдаа" });
   }
 };

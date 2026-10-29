@@ -117,7 +117,7 @@ exports.show = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { by, at, ...body } = req.body;
+  const { by, at, phone_verified_at, phone_verify_deadline, ...body } = req.body; // баталгаажуулалт зөвхөн /phone-verify-ээр
   const { target } = req.params;
   const model = config.targets[target] ? config.targets[target].model : null;
 
@@ -168,7 +168,7 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id, target } = req.params;
-  const { by, at, ...body } = req.body;
+  const { by, at, phone_verified_at, phone_verify_deadline, ...body } = req.body; // баталгаажуулалт зөвхөн /phone-verify-ээр
 
   const t = await sequelize.transaction();
   try {

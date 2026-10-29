@@ -30,7 +30,10 @@ const {
   changePassword,
   emailChangeSend,
   emailChangeVerify,
+  phoneVerifySend,
+  phoneVerifyConfirm,
 } = require("./controller");
+const { phoneVerifyValidation } = require("../../web/auth/validation");
 // Утас + кодоор нэвтрэх логик вэбтэй нэг (web/auth)
 const { otpSend, otpLogin } = require("../../web/auth/controller");
 
@@ -54,6 +57,9 @@ router.route("/register").post(registerValidation, byAndAt, register);
 // Нэвтэрсэн хэрэглэгч имэйлээ солих: шинэ хаяг руу код → кодоор баталгаажуулна
 router.route("/email-change/send").post(protect, emailOtpSendValidation, emailChangeSend);
 router.route("/email-change/verify").post(protect, emailOtpLoginValidation, byAndAt, emailChangeVerify);
+// Нэвтэрсэн хэрэглэгч бүртгэлтэй утсаа SMS кодоор баталгаажуулах
+router.route("/phone-verify/send").post(protect, phoneVerifySend);
+router.route("/phone-verify/confirm").post(protect, phoneVerifyValidation, byAndAt, phoneVerifyConfirm);
 router.route("/logout").post(protect, logout);
 router.route("/get-user-data").post(protect, getUserData);
 router

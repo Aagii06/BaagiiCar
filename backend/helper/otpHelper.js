@@ -150,3 +150,31 @@ module.exports.releaseEmail = async (email, { customerId, userId } = {}, transac
   );
   await users.update({ email: null }, { where: { email, ...(userId && { id: { [op.ne]: userId } }) }, transaction });
 };
+
+// --- Нэвтэрсэн хэрэглэгч өөрийн утсаа баталгаажуулах -----------------------
+// model: users | customers. Баталгаажуулаагүй бол phone_verify_deadline-ийн дараа бүртгэл устна
+// (helper/phoneVerifyHelper.js). Код хэрэглэгч бүрт тусдаа (purpose = "<prefix>:<id>").
+const findForVerify = (model, id) =>
+  model.findOne({ where: { id, status: "active" }, attributes: ["id", "phonenumber", "phone_verified_at", "role"].filter((f) => model.rawAttributes[f]) });
+
+module.exports.sendPhoneVerify = async (model, prefix, id) => {
+  const me = await findForVerify(model, id);
+  if (!me) return { success: false, data: null, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
+  if (!/^\d{8}$/.test(me.phonenumber || "")) return { success: false, data: null, message: "Утасны дугаараа эхлээд оруулна уу" };
+  if (me.phone_verified_at) return { success: false, data: null, message: "Утас аль хэдийн баталгаажсан байна" };
+  return module.exports.sendPhoneOtp(me.phonenumber, `${prefix}:${me.id}`);
+};
+
+// Буцаах: { success, message }
+module.exports.confirmPhoneVerify = async (model, prefix, id, code, at) => {
+  const me = await findForVerify(model, id);
+  if (!me) return { success: false, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
+  if (me.phone_verified_at) return { success: true, message: "Утас аль хэдийн баталгаажсан байна" };
+
+  const verified = await module.exports.verifyPhoneOtp(me.phonenumber, `${prefix}:${me.id}`, code);
+  if (!verified.success) return verified;
+
+  // hook phone_verify_deadline-ийг null болгоно
+  await me.update({ phone_verified_at: at, updated_at: at });
+  return { success: true, message: "Утас баталгаажлаа" };
+};
