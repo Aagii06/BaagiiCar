@@ -5,13 +5,14 @@ import ImageInput from "@/components/common/ImageInput";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
 import EmailOtpSheet from "@/components/profile/EmailOtpSheet";
-import { getDealers, sendEmailChangeCode, updateRow } from "@/lib/api/admin";
+import OtpSheet from "@/components/profile/OtpSheet";
+import { getDealers, sendEmailChangeCode, sendPhoneVerifyCode, updateRow, verifyPhone } from "@/lib/api/admin";
 import type { User } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { BadgeCheck, Loader2 } from "lucide-react";
+import { BadgeCheck, Loader2, ShieldAlert, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -38,6 +39,24 @@ function ProfileForm({ me }: { me: User }) {
   const [otp, setOtp] = useState<{ email: string; resendIn: number } | null>(null);
   const newEmail = f.email.trim().toLowerCase();
   const emailChanged = newEmail !== verifiedEmail.toLowerCase();
+  // Phone: the saved number is verified by SMS code; a changed number is verified after saving.
+  const [phoneVerified, setPhoneVerified] = useState(Boolean(me.phone_verified_at));
+  const [phoneOtp, setPhoneOtp] = useState<{ resendIn: number } | null>(null);
+  const [sendingPhone, setSendingPhone] = useState(false);
+  const phoneChanged = f.phonenumber !== (me.phonenumber ?? "");
+
+  const sendPhoneCode = async () => {
+    setSendingPhone(true);
+    setError(null);
+    try {
+      const sent = await sendPhoneVerifyCode();
+      setPhoneOtp({ resendIn: sent?.resend_in ?? 60 });
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSendingPhone(false);
+    }
+  };
 
   const sendCode = async () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) return setError("Имэйл хаяг буруу байна");
@@ -95,8 +114,43 @@ function ProfileForm({ me }: { me: User }) {
               <input className={inputClass} value={f.firstname} onChange={(e) => setF({ ...f, firstname: e.target.value })} />
             </Field>
           </div>
-          <Field label="Утасны дугаар *" hint="Админ самбарт энэ дугаараар нэвтэрнэ">
-            <PhoneInput autoComplete="tel" placeholder="00000000" value={f.phonenumber} onChange={(phonenumber) => setF({ ...f, phonenumber })} required />
+          <Field
+            label="Утасны дугаар *"
+            hint={
+              phoneChanged
+                ? "Хадгалсны дараа шинэ дугаараа SMS кодоор баталгаажуулна"
+                : phoneVerified
+                  ? "Админ самбарт энэ дугаараар нэвтэрнэ"
+                  : me.phone_verify_deadline
+                    ? `Утсаа баталгаажуулна уу. ${me.phone_verify_deadline.slice(0, 16)} хүртэл баталгаажуулаагүй бол бүртгэл устна`
+                    : "Утсаа SMS кодоор баталгаажуулна уу"
+            }
+          >
+            <span className="relative block">
+              <PhoneInput
+                autoComplete="tel"
+                placeholder="00000000"
+                value={f.phonenumber}
+                onChange={(phonenumber) => setF({ ...f, phonenumber })}
+                required
+                className={phoneChanged ? undefined : phoneVerified ? "pr-10" : "pr-14"}
+              />
+              {!phoneChanged &&
+                (phoneVerified ? (
+                  <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={sendPhoneCode}
+                    disabled={sendingPhone}
+                    aria-label="Утас баталгаажуулах"
+                    title="Утас баталгаажуулах"
+                    className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg bg-primary-soft text-primary disabled:opacity-60"
+                  >
+                    {sendingPhone ? <Loader2 className="size-5 animate-spin" /> : <ShieldAlert className="size-5" />}
+                  </button>
+                ))}
+            </span>
           </Field>
           <Field
             label="И-мэйл"
@@ -148,6 +202,24 @@ function ProfileForm({ me }: { me: User }) {
             setF((p) => ({ ...p, email: user?.email ?? otp.email }));
             await refreshUser();
             toast("Имэйл баталгаажиж шинэчлэгдлээ");
+          }}
+        />
+      )}
+      {phoneOtp && (
+        <OtpSheet
+          icon={<Smartphone className="size-7" />}
+          title="Утас баталгаажуулах"
+          target={me.phonenumber ?? ""}
+          length={4}
+          resendIn={phoneOtp.resendIn}
+          resend={sendPhoneVerifyCode}
+          verify={verifyPhone}
+          onClose={() => setPhoneOtp(null)}
+          onVerified={async () => {
+            setPhoneOtp(null);
+            setPhoneVerified(true);
+            await refreshUser();
+            toast("Утас баталгаажлаа");
           }}
         />
       )}

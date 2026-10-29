@@ -1,15 +1,16 @@
 "use client";
 
 import Container, { AccountTitle } from "@/components/common/Container";
+import CodeDialog from "@/components/common/CodeDialog";
 import EmailCodeDialog from "@/components/common/EmailCodeDialog";
 import { Field, inputClass } from "@/components/common/Field";
 import { AccountSkeleton } from "@/components/common/States";
-import { sendEmailCode, updateMe, type WebUser } from "@/lib/api/auth";
+import { sendEmailCode, sendPhoneVerifyCode, updateMe, verifyPhoneCode, type WebUser } from "@/lib/api/auth";
 import ProfileSidebar from "@/components/layout/ProfileSidebar";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Check, LogOut } from "lucide-react";
+import { BadgeCheck, Check, LogOut, ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -60,6 +61,9 @@ function ProfileForm({ user }: { user: WebUser }) {
   const [saved, setSaved] = useState(false);
   // New address waiting for its e-mailed code (the modal is open while set).
   const [verifying, setVerifying] = useState<string | null>(null);
+  // SMS code sent to the account's phone (the modal is open while true).
+  const [verifyingPhone, setVerifyingPhone] = useState(false);
+  const phoneVerified = Boolean(user.phone_verified_at);
   const savedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => () => clearTimeout(savedTimer.current), []);
@@ -110,6 +114,15 @@ function ProfileForm({ user }: { user: WebUser }) {
     });
   };
 
+  // Unverified phone: SMS code to the account's number, then the modal confirms it.
+  const requestPhoneCode = () => {
+    if (busy || !token) return;
+    run(async () => {
+      await sendPhoneVerifyCode(token);
+      setVerifyingPhone(true);
+    });
+  };
+
   return (
     <form onSubmit={submit} className="max-w-2xl space-y-4 rounded-2xl bg-card p-5 md:p-6">
       <div>
@@ -120,8 +133,32 @@ function ProfileForm({ user }: { user: WebUser }) {
       <Field label={t("Нэр")}>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("Нэрээ оруулна уу")} autoComplete="given-name" maxLength={100} className={inputClass} />
       </Field>
-      <Field label={t("Утасны дугаар")} hint={t("Утасны дугаараар нэвтэрдэг тул өөрчлөх боломжгүй.")}>
-        <input value={user.phonenumber ?? ""} disabled readOnly className={inputClass} />
+      <Field
+        label={t("Утасны дугаар")}
+        hint={
+          phoneVerified
+            ? t("Утасны дугаараар нэвтэрдэг тул өөрчлөх боломжгүй.")
+            : user.phone_verify_deadline
+              ? t("Утасны дугаараа баталгаажуулна уу. {date} хүртэл баталгаажуулаагүй бол бүртгэл устна.", { date: user.phone_verify_deadline.slice(0, 16) })
+              : t("Утасны дугаараа баталгаажуулна уу.")
+        }
+      >
+        <span className="relative block">
+          <input value={user.phonenumber ?? ""} disabled readOnly className={cn(inputClass, phoneVerified ? "pr-10" : "pr-36")} />
+          {phoneVerified ? (
+            <BadgeCheck aria-label={t("Баталгаажсан")} className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
+          ) : (
+            <button
+              type="button"
+              onClick={requestPhoneCode}
+              disabled={busy}
+              className="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-bold text-white transition hover:bg-primary-hover disabled:opacity-60"
+            >
+              <ShieldAlert className="size-4" />
+              {t("Баталгаажуулах")}
+            </button>
+          )}
+        </span>
       </Field>
       <Field label={t("И-мэйл")} hint={emailDirty && trimmedEmail ? t("Шинэ хаяг руу баталгаажуулах код илгээнэ.") : undefined}>
         <span className="relative block">
@@ -173,6 +210,21 @@ function ProfileForm({ user }: { user: WebUser }) {
           onClose={() => setVerifying(null)}
           onVerified={(next) => {
             setVerifying(null);
+            setUser(next);
+            showSaved();
+          }}
+        />
+      )}
+      {verifyingPhone && token && (
+        <CodeDialog
+          title={t("Утас баталгаажуулах")}
+          description={t("{phone} дугаар руу илгээсэн 4 оронтой кодыг оруулна уу.", { phone: user.phonenumber ?? "" })}
+          length={4}
+          resend={() => sendPhoneVerifyCode(token)}
+          verify={(code) => verifyPhoneCode(token, code)}
+          onClose={() => setVerifyingPhone(false)}
+          onVerified={(next) => {
+            setVerifyingPhone(false);
             setUser(next);
             showSaved();
           }}

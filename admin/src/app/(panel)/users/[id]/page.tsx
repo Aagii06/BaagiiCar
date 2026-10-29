@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLE_LIST, roleLabel, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
-import { Loader2, Save, Trash2 } from "lucide-react";
+import { BadgeCheck, Loader2, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
@@ -46,6 +46,8 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
   const isMe = user?.id === me?.id;
   // Дилерт зөвхөн админ, дилер эрхтэй хэрэглэгч харьяалагдана
   const canHaveDealer = f.role === ROLES.admin || f.role === ROLES.dealer;
+  // Бүртгэлтэй (админ бус) хэрэглэгчийг шууд админ болгохгүй - устгаад ижил дугаараар админаар бүртгэнэ
+  const lockedOutOfAdmin = Boolean(user) && user?.role !== ROLES.admin;
   const dealers = useApi(getDealers);
 
   const submit = async (e: React.FormEvent) => {
@@ -113,17 +115,36 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
             <input className={inputClass} value={f.firstname} onChange={set("firstname")} />
           </Field>
         </div>
-        <Field label="Утасны дугаар *">
-          <PhoneInput autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(phonenumber) => setF({ ...f, phonenumber })} required />
+        <Field
+          label="Утасны дугаар *"
+          hint={
+            !user || user.role === ROLES.admin || user.phone_verified_at
+              ? undefined
+              : `Утсаа баталгаажуулаагүй${user.phone_verify_deadline ? ` · ${user.phone_verify_deadline.slice(0, 16)}-д бүртгэл устна` : ""}`
+          }
+        >
+          <span className="relative block">
+            <PhoneInput
+              autoComplete="off"
+              placeholder="00000000"
+              value={f.phonenumber}
+              onChange={(phonenumber) => setF({ ...f, phonenumber })}
+              required
+              className={user?.phone_verified_at ? "pr-10" : undefined}
+            />
+            {user?.phone_verified_at && f.phonenumber === user.phonenumber && (
+              <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
+            )}
+          </span>
         </Field>
         <Field label="И-мэйл">
           <input className={inputClass} type="email" value={f.email} onChange={set("email")} />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Эрх">
+          <Field label="Эрх" hint={lockedOutOfAdmin ? "Админ болгохдоо устгаад дахин админаар бүртгэнэ" : undefined}>
             <Select value={f.role} onChange={set("role")} disabled={isMe}>
               {ROLE_LIST.map((r) => (
-                <option key={r} value={r}>
+                <option key={r} value={r} disabled={lockedOutOfAdmin && r === ROLES.admin}>
                   {roleLabel(r)}
                 </option>
               ))}

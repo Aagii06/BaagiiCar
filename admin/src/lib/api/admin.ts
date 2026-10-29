@@ -41,6 +41,18 @@ export async function verifyEmailChange(email: string, code: string) {
   return res.data;
 }
 
+/** Texts a 4-digit code to the signed-in user's own phone number. */
+export async function sendPhoneVerifyCode() {
+  const res = await apiFetch<ApiItemResponse<OtpSent>>("/api/users/phone-verify/send", { method: "POST", body: {} });
+  return res.data;
+}
+
+/** Checks the code and marks the phone as verified; returns the updated user. */
+export async function verifyPhone(code: string) {
+  const res = await apiFetch<ApiItemResponse<User>>("/api/users/phone-verify/confirm", { method: "POST", body: { code } });
+  return res.data;
+}
+
 // --- generic /api/base/:target ---------------------------------------------
 
 export async function countOf(target: string, filter: Condition[]) {

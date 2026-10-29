@@ -104,6 +104,10 @@ export interface CarFile {
 export interface User {
   id: number;
   phonenumber: string | null;
+  /** When the phone was confirmed by SMS code; null = not yet. */
+  phone_verified_at?: string | null;
+  /** Unconfirmed non-admin accounts are deleted after this time ("YYYY-MM-DD HH:mm:ss", Ulaanbaatar). */
+  phone_verify_deadline?: string | null;
   firstname: string | null;
   lastname: string | null;
   email: string | null;
@@ -120,6 +124,8 @@ export interface User {
 export interface Customer {
   id: number;
   phonenumber: string | null;
+  phone_verified_at?: string | null;
+  phone_verify_deadline?: string | null;
   email: string | null;
   firstname: string | null;
   lastname: string | null;

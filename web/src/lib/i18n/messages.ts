@@ -486,6 +486,12 @@ export const MESSAGES = {
     en: "For now, ask our team about an ad.",
   },
   "Зарын тухай асуух": { ru: "Спросить об объявлении", en: "Ask about an ad" },
+  "Утас баталгаажуулах": { ru: "Подтверждение телефона", en: "Verify phone" },
+  "Утасны дугаараа баталгаажуулна уу. {date} хүртэл баталгаажуулаагүй бол бүртгэл устна.": {
+    ru: "Подтвердите номер телефона. Если не подтвердить до {date}, аккаунт будет удалён.",
+    en: "Please verify your phone number. Unverified accounts are deleted after {date}.",
+  },
+  "Утасны дугаараа баталгаажуулна уу.": { ru: "Подтвердите номер телефона.", en: "Please verify your phone number." },
 } satisfies Record<string, { ru: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;
