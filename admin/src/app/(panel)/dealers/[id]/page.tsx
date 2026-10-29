@@ -12,13 +12,16 @@ import { useApi } from "@/lib/useApi";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { useRouteId } from "@/lib/useRouteId";
 import { cn } from "@/lib/utils";
-import { Trash2 } from "lucide-react";
+import { Loader2, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+
+/** Lets the header's save icon submit the form via `form={DEALER_FORM_ID}`. */
+const DEALER_FORM_ID = "dealer-form";
 
 /** `listHref`: the list to return to after save / delete (keeps `?from=`). */
-function DealerForm({ dealer, listHref }: { dealer: Dealer | null; listHref: string }) {
+function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null; listHref: string; onBusyChange: (busy: boolean) => void }) {
   const router = useRouter();
   const toast = useToast();
   const confirm = useConfirm();
@@ -33,6 +36,7 @@ function DealerForm({ dealer, listHref }: { dealer: Dealer | null; listHref: str
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  useEffect(() => onBusyChange(busy), [busy, onBusyChange]);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setF({ ...f, [k]: k === "phonenumber" ? e.target.value.replace(/\D/g, "") : e.target.value });
 
@@ -81,7 +85,7 @@ function DealerForm({ dealer, listHref }: { dealer: Dealer | null; listHref: str
   };
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form id={DEALER_FORM_ID} onSubmit={submit} className="space-y-4">
       <section className="space-y-4 rounded-2xl bg-card p-4">
         <Field label="Нэр *">
           <input className={inputClass} value={f.name} onChange={set("name")} placeholder="Авто Плаза" required />
@@ -113,9 +117,6 @@ function DealerForm({ dealer, listHref }: { dealer: Dealer | null; listHref: str
       </section>
 
       <FormError message={error} />
-      <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
-        {busy ? "Хадгалж байна…" : dealer ? "Хадгалах" : "Бүртгэх"}
-      </button>
       {dealer && (
         <div className="flex gap-2">
           <Link href={`/cars?dealer=${dealer.id}`} className="flex-1 rounded-xl bg-card py-3 text-center text-sm font-bold">
@@ -143,12 +144,32 @@ function DealerDetail() {
   const id = useRouteId();
   const isNew = id === "new";
   const data = useApi(() => (isNew ? Promise.resolve(null) : getDealer(id)), id);
+  const [saving, setSaving] = useState(false);
+  const formShown = isNew || (data.data && data.data.status !== "deleted");
+  const saveLabel = isNew ? "Бүртгэх" : "Хадгалах";
 
   return (
     <>
-      <DetailHeader title={isNew ? "Шинэ дилер" : (data.data?.name ?? "Дилер")} back={listHref} />
+      <DetailHeader
+        title={isNew ? "Шинэ дилер" : (data.data?.name ?? "Дилер")}
+        back={listHref}
+        aside={
+          formShown && (
+            <button
+              type="submit"
+              form={DEALER_FORM_ID}
+              disabled={saving}
+              aria-label={saveLabel}
+              title={saveLabel}
+              className="grid size-10 place-items-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-60"
+            >
+              {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            </button>
+          )
+        }
+      />
       {isNew ? (
-        <DealerForm dealer={null} listHref={listHref} />
+        <DealerForm dealer={null} listHref={listHref} onBusyChange={setSaving} />
       ) : data.loading && !data.data ? (
         <FormSkeleton sections={[7]} />
       ) : data.error ? (
@@ -156,7 +177,7 @@ function DealerDetail() {
       ) : !data.data || data.data.status === "deleted" ? (
         <EmptyState title="Дилер олдсонгүй" />
       ) : (
-        <DealerForm key={data.data.id} dealer={data.data} listHref={listHref} />
+        <DealerForm key={data.data.id} dealer={data.data} listHref={listHref} onBusyChange={setSaving} />
       )}
     </>
   );

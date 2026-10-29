@@ -4,7 +4,7 @@ import { errorMessage, useToast } from "@/components/common/Toast";
 import { uploadCatalogImage, type UploadFolder } from "@/lib/api/admin";
 import { catalogImage } from "@/lib/api/config";
 import { cn } from "@/lib/utils";
-import { ImageUp, Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { ImageUp, Loader2, RefreshCw, Trash2, Undo2 } from "lucide-react";
 import { useState } from "react";
 
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
@@ -37,6 +37,20 @@ export default function ImageInput({
   const [broken, setBroken] = useState<string | null>(null);
   const saved = catalogImage(value, folder);
   const preview = saved && saved !== broken ? saved : null;
+  // The image the form opened with: after a new upload / delete, "Буцаах" brings it back.
+  const [initial] = useState(value);
+  const changed = value !== initial;
+  const revert = (
+    <button
+      type="button"
+      onClick={() => onChange(initial)}
+      disabled={uploading}
+      className="flex h-9 items-center gap-1.5 rounded-lg bg-muted px-3 text-[13px] font-bold disabled:opacity-60"
+    >
+      <Undo2 className="size-3.5" />
+      Буцаах
+    </button>
+  );
 
   const upload = async (file: File | undefined) => {
     if (!file) return;
@@ -79,21 +93,24 @@ export default function ImageInput({
 
   if (!preview)
     return (
-      <label
-        {...dropProps}
-        className={cn(
-          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 py-7 text-center transition hover:border-primary/50 hover:bg-primary-soft/40",
-          dragging && "border-primary bg-primary-soft/60",
-          uploading && "pointer-events-none opacity-60"
-        )}
-      >
-        <span className="grid size-12 place-items-center rounded-full bg-primary-soft text-primary">
-          {uploading ? <Loader2 className="size-5 animate-spin" /> : <ImageUp className="size-5" />}
-        </span>
-        <span className="text-sm font-bold">{uploading ? "Оруулж байна…" : label}</span>
-        <span className="text-xs text-muted-foreground">Дарж сонгох эсвэл энд чирж оруулна · PNG, JPG, WEBP, SVG</span>
-        {fileInput}
-      </label>
+      <div className="space-y-2">
+        <label
+          {...dropProps}
+          className={cn(
+            "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-4 py-7 text-center transition hover:border-primary/50 hover:bg-primary-soft/40",
+            dragging && "border-primary bg-primary-soft/60",
+            uploading && "pointer-events-none opacity-60"
+          )}
+        >
+          <span className="grid size-12 place-items-center rounded-full bg-primary-soft text-primary">
+            {uploading ? <Loader2 className="size-5 animate-spin" /> : <ImageUp className="size-5" />}
+          </span>
+          <span className="text-sm font-bold">{uploading ? "Оруулж байна…" : label}</span>
+          <span className="text-xs text-muted-foreground">Дарж сонгох эсвэл энд чирж оруулна · PNG, JPG, WEBP, SVG</span>
+          {fileInput}
+        </label>
+        {changed && <div className="flex justify-end">{revert}</div>}
+      </div>
     );
 
   return (
@@ -115,15 +132,19 @@ export default function ImageInput({
             Солих
             {fileInput}
           </label>
-          <button
-            type="button"
-            onClick={() => onChange("")}
-            disabled={uploading}
-            className="flex h-9 items-center gap-1.5 rounded-lg bg-destructive-soft px-3 text-[13px] font-bold text-destructive disabled:opacity-60"
-          >
-            <Trash2 className="size-3.5" />
-            Устгах
-          </button>
+          {changed ? (
+            revert
+          ) : (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              disabled={uploading}
+              className="flex h-9 items-center gap-1.5 rounded-lg bg-destructive-soft px-3 text-[13px] font-bold text-destructive disabled:opacity-60"
+            >
+              <Trash2 className="size-3.5" />
+              Устгах
+            </button>
+          )}
         </div>
       </div>
     </div>
