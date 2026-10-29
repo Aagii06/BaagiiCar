@@ -1,5 +1,6 @@
 const { customers, sequelize, op } = require("../../models");
 const { authLogin } = require("../../middleware/auth");
+const { isSmsConfigured } = require("../../helper/smsHelper");
 const { saveLog } = require("../../utils/logHelper");
 const {
   sendPhoneOtp,
@@ -57,8 +58,8 @@ module.exports.otpLogin = async (req, res) => {
     if (!customer) {
       const created = await customers.create({
         phonenumber,
-        // Кодоор нэвтэрсэн тул утас баталгаажсан
-        phone_verified_at: at,
+        // SMS кодоор нэвтэрсэн бол утас баталгаажсан (OTP_DEV_CODE бол үгүй)
+        ...(isSmsConfigured() && { phone_verified_at: at }),
         firstname: "Зочин",
         status: "active",
         created_at: at,
@@ -73,12 +74,14 @@ module.exports.otpLogin = async (req, res) => {
       });
       customer = { id: created.id };
     }
-    // Кодоор нэвтэрсэн тул утас баталгаажсан (bulk update - hook ажиллахгүй тул deadline-ийг шууд арилгана)
+    // SMS кодоор нэвтэрсэн бол утас баталгаажсан (bulk update - hook ажиллахгүй тул deadline-ийг шууд арилгана)
     await customers.update(
       {
         last_login_at: at,
-        phone_verified_at: sequelize.fn("COALESCE", sequelize.col("phone_verified_at"), at),
-        phone_verify_deadline: null,
+        ...(isSmsConfigured() && {
+          phone_verified_at: sequelize.fn("COALESCE", sequelize.col("phone_verified_at"), at),
+          phone_verify_deadline: null,
+        }),
       },
       { where: { id: customer.id } },
     );

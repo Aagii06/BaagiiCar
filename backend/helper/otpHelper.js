@@ -115,8 +115,8 @@ module.exports.verifyEmailOtp = (email, purpose, code) =>
   verifyOtp({ model: emailOtps, where: { email, purpose }, key: emailKey(email, purpose), code });
 
 // --- Утас (SMS) -------------------------------------------------------------
-// SMS холбогдоогүй үед (helper/smsHelper.js) development-д код нь OTP_DEV_CODE байна - бусад
-// дүрэм (хугацаа, дахин авах хугацаа, оролдлогын тоо) адилхан ажиллана. Production-д алдаа.
+// SMS холбогдоогүй үед (helper/smsHelper.js, SMS_GATEWAY_TOKEN хоосон) код нь OTP_DEV_CODE (анхдагч "2222")
+// байна - бусад дүрэм (хугацаа, дахин авах хугацаа, оролдлогын тоо) адилхан ажиллана.
 const phoneKey = (phonenumber, purpose) => `phone:${purpose}:${phonenumber}`;
 
 module.exports.sendPhoneOtp = (phonenumber, purpose) => {
@@ -129,7 +129,6 @@ module.exports.sendPhoneOtp = (phonenumber, purpose) => {
     message: "Код SMS-ээр илгээлээ",
     deliver: async (code) => {
       if (!sms) {
-        if (process.env.NODE_ENV === "production") throw new Error("SMS_GATEWAY_TOKEN тохируулаагүй");
         console.log(`[sms холбогдоогүй] ${phonenumber} (${purpose}) код: ${code}`);
         return;
       }
@@ -162,6 +161,8 @@ module.exports.sendPhoneVerify = async (model, prefix, id) => {
   if (!me) return { success: false, data: null, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
   if (!/^\d{8}$/.test(me.phonenumber || "")) return { success: false, data: null, message: "Утасны дугаараа эхлээд оруулна уу" };
   if (me.phone_verified_at) return { success: false, data: null, message: "Утас аль хэдийн баталгаажсан байна" };
+  // OTP_DEV_CODE-оор "баталгаажуулах" нь утгагүй
+  if (!isSmsConfigured()) return { success: false, data: null, message: "SMS үйлчилгээ одоогоор ажиллахгүй байна" };
   return module.exports.sendPhoneOtp(me.phonenumber, `${prefix}:${me.id}`);
 };
 

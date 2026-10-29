@@ -3,16 +3,27 @@ const moment = require("moment");
 const { users, customers, cars, sequelize, op } = require("../models");
 const { roles } = require("../config/constants");
 const { saveLog } = require("../utils/logHelper");
+const { isSmsConfigured } = require("./smsHelper");
+const { phoneVerifyDeadline } = require("./phoneVerifyDeadline");
 
 // Утсаа phone_verify_deadline-аас өмнө баталгаажуулаагүй users (ADMIN-аас бусад) болон customers-ийг
 // бүр мөсөн устгана. Хэрэглэгчийн зарууд (cars.user_id) устахгүй - эхний идэвхтэй админ руу шилжинэ.
 // Чат, хадгалсан зар зэрэг нь FK-ийн CASCADE-аар хамт устна.
+// SMS холбогдоогүй үед (SMS_GATEWAY_TOKEN хоосон) баталгаажуулах боломжгүй тул устгахгүй, харин
+// хугацааг сунгасаар байна - SMS асаасан өдрөөс хойш phoneVerifyDays хоног өгөгдөнө.
 
 const now = () => moment().utcOffset("+0800").format("YYYY-MM-DD HH:mm:ss");
 const expired = () => ({ phone_verified_at: null, phone_verify_deadline: { [op.ne]: null, [op.lt]: now() } });
 
 module.exports.runPhoneVerifyCleanup = async () => {
   try {
+    if (!isSmsConfigured()) {
+      const deadline = phoneVerifyDeadline();
+      const pending = { phone_verified_at: null, phone_verify_deadline: { [op.ne]: null, [op.lt]: deadline } };
+      await users.update({ phone_verify_deadline: deadline }, { where: pending, hooks: false });
+      await customers.update({ phone_verify_deadline: deadline }, { where: pending, hooks: false });
+      return;
+    }
     const at = now();
     const staleUsers = await users.findAll({
       where: { ...expired(), role: { [op.ne]: roles.admin } },
