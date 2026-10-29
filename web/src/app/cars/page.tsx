@@ -231,19 +231,17 @@ function Filters({
           <Select
             value={locations ? (p.location ?? "") : ""}
             onChange={(e) => set({ location: num(e.target.value) })}
-            disabled={!locations}
-            aria-busy={!locations}
+            loading={!locations}
             aria-label={t("Байршил")}
             searchable={false}
           >
-            <option value="">{locations ? t("Бүх байршил") : t("Ачаалж байна...")}</option>
+            <option value="">{t("Бүх байршил")}</option>
             {locations?.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.name === "Улаанбаатар" ? t("Улаанбаатар") : l.name}
               </option>
             ))}
           </Select>
-          {!locations && <SelectSpinner />}
         </div>
       </Group>
 
@@ -254,20 +252,18 @@ function Filters({
             <Select
               value={dealers ? (p.dealer ?? "") : ""}
               onChange={(e) => set({ dealer: num(e.target.value) })}
-              disabled={!dealers}
-              aria-busy={!dealers}
+              loading={!dealers}
               aria-label={t("Дилер")}
               searchable
               limit={10}
             >
-              <option value="">{dealers ? t("Бүх дилер") : t("Ачаалж байна...")}</option>
+              <option value="">{t("Бүх дилер")}</option>
               {dealers?.map((d) => (
                 <option key={d.id} value={d.id}>
                   {dealerName(d)}
                 </option>
               ))}
             </Select>
-            {!dealers && <SelectSpinner />}
           </div>
         </Group>
       )}
@@ -282,11 +278,10 @@ function Filters({
                 setPending({ brand });
                 set({ brand, model: undefined });
               }}
-              disabled={brandsLoading}
-              aria-busy={brandsLoading}
+              loading={brandsLoading}
               aria-label={t("Үйлдвэр")}
             >
-              <option value="">{brandsLoading ? t("Ачаалж байна...") : t("Бүх үйлдвэр")}</option>
+              <option value="">{t("Бүх үйлдвэр")}</option>
               {!brandsLoading &&
                 brands.data?.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -294,17 +289,16 @@ function Filters({
                   </option>
                 ))}
             </Select>
-            {brandsLoading && <SelectSpinner />}
           </div>
           <div className="relative">
             <Select
               value={modelsLoading ? "" : (p.model ?? "")}
               onChange={(e) => set({ model: num(e.target.value) })}
-              disabled={!p.brand || modelsLoading}
-              aria-busy={modelsLoading}
+              disabled={!p.brand}
+              loading={modelsLoading}
               aria-label={t("Загвар")}
             >
-              <option value="">{modelsLoading ? t("Ачаалж байна...") : t("Бүх загвар")}</option>
+              <option value="">{t("Бүх загвар")}</option>
               {!modelsLoading &&
                 models.data?.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -312,7 +306,6 @@ function Filters({
                   </option>
                 ))}
             </Select>
-            {modelsLoading && <SelectSpinner />}
           </div>
         </div>
       </Group>

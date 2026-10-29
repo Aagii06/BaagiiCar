@@ -57,6 +57,7 @@ export default function HeroSearch() {
         <Select
           className={cellSelect}
           title={t("Үйлдвэр")}
+          loading={brands.loading}
           value={brandId}
           onChange={(e) => {
             setBrandId(e.target.value);
@@ -72,7 +73,7 @@ export default function HeroSearch() {
         </Select>
       </Cell>
       <Cell label={t("Загвар")}>
-        <Select className={cellSelect} title={t("Загвар")} value={modelId} onChange={(e) => setModelId(e.target.value)} disabled={!brandId}>
+        <Select className={cellSelect} title={t("Загвар")} loading={!!brandId && models.loading} value={modelId} onChange={(e) => setModelId(e.target.value)} disabled={!brandId}>
           <option value="">{t("Бүгд")}</option>
           {models.data?.map((m) => (
             <option key={m.id} value={m.id}>

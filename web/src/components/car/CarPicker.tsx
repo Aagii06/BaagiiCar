@@ -142,7 +142,7 @@ export default function CarPicker({
             />
           </label>
           <div className="mt-2 grid grid-cols-2 gap-2">
-            <Select value={f.brand ?? ""} onChange={(e) => filter({ brand: num(e.target.value), model: undefined })} aria-label={t("Үйлдвэр")} className="h-10 px-3 text-sm">
+            <Select value={f.brand ?? ""} onChange={(e) => filter({ brand: num(e.target.value), model: undefined })} aria-label={t("Үйлдвэр")} loading={brands.loading} className="h-10 px-3 text-sm">
               <option value="">{t("Бүх үйлдвэр")}</option>
               {brands.data?.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -154,6 +154,7 @@ export default function CarPicker({
               value={f.model ?? ""}
               onChange={(e) => filter({ model: num(e.target.value) })}
               disabled={!f.brand}
+              loading={!!f.brand && models.loading}
               aria-label={t("Загвар")}
               className="h-10 px-3 text-sm disabled:opacity-60"
             >
@@ -164,7 +165,7 @@ export default function CarPicker({
                 </option>
               ))}
             </Select>
-            <Select value={f.dealer ?? ""} onChange={(e) => filter({ dealer: num(e.target.value) })} aria-label={t("Дилер")} className="h-10 px-3 text-sm">
+            <Select value={f.dealer ?? ""} onChange={(e) => filter({ dealer: num(e.target.value) })} aria-label={t("Дилер")} loading={dealers.loading} className="h-10 px-3 text-sm">
               <option value="">{t("Бүх дилер")}</option>
               {dealers.data?.rows.map((d) => (
                 <option key={d.id} value={d.id}>

@@ -34,6 +34,8 @@ export function Field({
 export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   /** Sheet heading on phones; defaults to `aria-label`. */
   title?: string;
+  /** Options still coming: the field shows a pulsing placeholder instead. */
+  loading?: boolean;
 } & ListOptions;
 
 type ListOptions = {
@@ -48,7 +50,19 @@ type ListOptions = {
  * and picking happens in our own list: a dropdown under the field from `md` up, a bottom sheet (as in the
  * admin) below it, instead of the browser's / phone's picker. `onChange(e)` still gets `e.target.value`.
  */
-export function Select({ className, children, title, searchable, limit, ...props }: SelectProps) {
+export function Select({ loading, ...props }: SelectProps) {
+  const { t } = useI18n();
+  if (!loading) return <SelectBox {...props} />;
+  const label = props.title ?? props["aria-label"];
+  return (
+    <span role="status" aria-busy aria-label={label ? `${label}: ${t("Ачаалж байна...")}` : t("Ачаалж байна...")} className={cn(inputClass, "pointer-events-none flex items-center", props.className)}>
+      <span className="h-3.5 w-2/5 animate-pulse rounded-md bg-muted" />
+      <span className="ml-auto size-4 animate-pulse rounded bg-muted" />
+    </span>
+  );
+}
+
+function SelectBox({ className, children, title, searchable, limit, ...props }: Omit<SelectProps, "loading">) {
   const [open, setOpen] = useState<"sheet" | "menu" | false>(false);
   // The button the desktop dropdown hangs under (state, not a ref: it's read while rendering).
   const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
