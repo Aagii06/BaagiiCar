@@ -37,7 +37,7 @@ export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
 } & ListOptions;
 
 type ListOptions = {
-  /** Search box even with fewer than SEARCH_FROM options. */
+  /** Search box on/off; by default only from SEARCH_FROM options. */
   searchable?: boolean;
   /** Show at most this many rows (the chosen one always stays); the search box reaches the rest. */
   limit?: number;
@@ -149,7 +149,7 @@ export function OptionMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const listId = useId();
-  const searchable = forceSearch || options.length >= SEARCH_FROM;
+  const searchable = forceSearch ?? options.length >= SEARCH_FROM;
   const { rows, hidden } = visibleRows(options, q, value, limit);
   const [rawActive, setActive] = useState(() => Math.max(options.findIndex((o) => o.value === value), 0));
   const active = Math.min(rawActive, rows.length - 1);
@@ -331,7 +331,7 @@ export function OptionSheet({
   const [q, setQ] = useState("");
   const titleId = useId();
   const listRef = useRef<HTMLDivElement>(null);
-  const searchable = forceSearch || options.length >= SEARCH_FROM;
+  const searchable = forceSearch ?? options.length >= SEARCH_FROM;
   const { rows, hidden } = visibleRows(options, q, value, limit);
 
   useEffect(() => {

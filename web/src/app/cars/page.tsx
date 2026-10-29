@@ -235,6 +235,7 @@ function Filters({
             disabled={!locations}
             aria-busy={!locations}
             aria-label={t("Байршил")}
+            searchable={false}
           >
             <option value="">{locations ? t("Бүх байршил") : t("Ачаалж байна...")}</option>
             {locations?.map((l) => (

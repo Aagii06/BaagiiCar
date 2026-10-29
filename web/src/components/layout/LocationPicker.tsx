@@ -69,6 +69,7 @@ export default function LocationPicker() {
           label={t("Байршил")}
           options={options}
           value={current}
+          searchable={false}
           onPick={(id) => {
             setOpen(false);
             trigger.focus();
