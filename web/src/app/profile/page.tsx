@@ -62,7 +62,8 @@ function ProfileForm({ user }: { user: WebUser }) {
   // New address waiting for its e-mailed code (the modal is open while set).
   const [verifying, setVerifying] = useState<string | null>(null);
   // SMS code sent to the account's phone (the modal is open while true).
-  const [verifyingPhone, setVerifyingPhone] = useState(false);
+  // Holds the resend countdown from the send response.
+  const [verifyingPhone, setVerifyingPhone] = useState<number | null>(null);
   const phoneVerified = Boolean(user.phone_verified_at);
   const savedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -118,8 +119,8 @@ function ProfileForm({ user }: { user: WebUser }) {
   const requestPhoneCode = () => {
     if (busy || !token) return;
     run(async () => {
-      await sendPhoneVerifyCode(token);
-      setVerifyingPhone(true);
+      const sent = await sendPhoneVerifyCode(token);
+      setVerifyingPhone(sent.resend_in);
     });
   };
 
@@ -215,16 +216,17 @@ function ProfileForm({ user }: { user: WebUser }) {
           }}
         />
       )}
-      {verifyingPhone && token && (
+      {verifyingPhone !== null && token && (
         <CodeDialog
           title={t("Утас баталгаажуулах")}
           description={t("{phone} дугаар руу илгээсэн 4 оронтой кодыг оруулна уу.", { phone: user.phonenumber ?? "" })}
           length={4}
+          resendIn={verifyingPhone}
           resend={() => sendPhoneVerifyCode(token)}
           verify={(code) => verifyPhoneCode(token, code)}
-          onClose={() => setVerifyingPhone(false)}
+          onClose={() => setVerifyingPhone(null)}
           onVerified={(next) => {
-            setVerifyingPhone(false);
+            setVerifyingPhone(null);
             setUser(next);
             showSaved();
           }}

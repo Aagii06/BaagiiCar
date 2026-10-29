@@ -12,6 +12,7 @@ export default function CodeDialog({
   title,
   description,
   length,
+  resendIn = 60,
   resend,
   verify: check,
   onClose,
@@ -20,6 +21,8 @@ export default function CodeDialog({
   title: string;
   description: string;
   length: number;
+  /** Seconds before another code may be asked for (from the send that opened the dialog). */
+  resendIn?: number;
   resend: () => Promise<unknown>;
   verify: (code: string) => Promise<WebUser>;
   onClose: () => void;
@@ -30,7 +33,7 @@ export default function CodeDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // The code was just sent before the modal opened.
-  const [cooldown, setCooldown] = useState(60);
+  const [cooldown, setCooldown] = useState(resendIn);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();

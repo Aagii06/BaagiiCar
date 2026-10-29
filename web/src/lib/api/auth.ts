@@ -1,4 +1,20 @@
-import { apiFetch, type ApiItemResponse } from "./client";
+import { ApiError, apiFetch, type ApiItemResponse } from "./client";
+
+type CodeSent = { expires_in?: number; resend_in: number };
+
+/**
+ * Asked again before the resend wait is over: the earlier code is still valid, so this counts as sent
+ * and the caller just shows the remaining countdown instead of an error.
+ */
+async function allowCooldown(send: () => Promise<CodeSent>): Promise<CodeSent> {
+  try {
+    return await send();
+  } catch (err) {
+    const wait = err instanceof ApiError ? (err.data as { resend_in?: number } | null)?.resend_in : undefined;
+    if (typeof wait === "number" && wait > 0) return { resend_in: wait };
+    throw err;
+  }
+}
 
 export interface WebUser {
   id: number;
@@ -20,12 +36,11 @@ export interface Session {
 }
 
 /** Step 1: texts a 4-digit code (until SMS is connected the backend accepts a fixed code). */
-export async function sendLoginCode(phonenumber: string) {
-  const res = await apiFetch<ApiItemResponse<{ expires_in: number; resend_in: number }>>("/web/auth/otp-send", {
-    method: "POST",
-    body: { phonenumber },
+export function sendLoginCode(phonenumber: string) {
+  return allowCooldown(async () => {
+    const res = await apiFetch<ApiItemResponse<CodeSent>>("/web/auth/otp-send", { method: "POST", body: { phonenumber } });
+    return res.data;
   });
-  return res.data;
 }
 
 /** Step 2: checks the code; an unknown number is registered on the spot. */
@@ -74,12 +89,14 @@ export async function verifyEmailCode(token: string, email: string, code: string
 }
 
 /** Texts a 4-digit code to the account's own phone number. */
-export async function sendPhoneVerifyCode(token: string) {
-  const res = await apiFetch<ApiItemResponse<{ expires_in: number; resend_in: number }>>("/web/auth/phone-verify/send", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
+export function sendPhoneVerifyCode(token: string) {
+  return allowCooldown(async () => {
+    const res = await apiFetch<ApiItemResponse<CodeSent>>("/web/auth/phone-verify/send", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data;
   });
-  return res.data;
 }
 
 /** Checks the code and marks the phone as verified; returns the updated profile. */
