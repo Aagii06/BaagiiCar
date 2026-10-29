@@ -21,7 +21,6 @@ class DealerLogo extends StatelessWidget {
           uploadUrl(dealer.logo, folder: 'dealers'),
           fit: BoxFit.contain,
           background: Colors.white,
-          fallback: Text(dealer.name.isEmpty ? '?' : dealer.name[0], style: displayStyle(size * 0.4, color: AppPalette.primary)),
         ),
       );
 }

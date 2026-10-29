@@ -194,22 +194,19 @@ class ViewAll extends StatelessWidget {
       );
 }
 
-/// Network photo with a tinted placeholder and a car-icon fallback.
+/// "No image" picture (our logo in gray): no file uploaded, an empty path, or a file that fails to load.
+const noImage = 'assets/no-image.png';
+
+/// Network photo on a tinted background, with the [noImage] picture when there is none.
 class NetImage extends StatelessWidget {
   final String? url;
   final BoxFit fit;
   final Color background;
-  final double iconSize;
-  final Widget? fallback;
-  const NetImage(this.url, {super.key, this.fit = BoxFit.cover, this.background = AppPalette.muted, this.iconSize = 40, this.fallback});
+  const NetImage(this.url, {super.key, this.fit = BoxFit.cover, this.background = AppPalette.muted});
 
   @override
   Widget build(BuildContext context) {
-    final placeholder = Container(
-      color: background,
-      alignment: Alignment.center,
-      child: fallback ?? Icon(Icons.directions_car_rounded, size: iconSize, color: AppPalette.foreground.withValues(alpha: 0.18)),
-    );
+    final placeholder = Container(color: background, child: Image.asset(noImage, fit: fit, width: double.infinity, height: double.infinity));
     if (url == null) return placeholder;
     return Image.network(
       url!,

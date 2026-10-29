@@ -472,7 +472,6 @@ class _BrandGrid extends StatelessWidget {
                               uploadUrl(b.logo, folder: 'brands'),
                               fit: BoxFit.contain,
                               background: AppPalette.card,
-                              fallback: Text(b.name.isEmpty ? '?' : b.name[0], style: displayStyle(22, color: AppPalette.mutedForeground)),
                             ),
                           ),
                         ),
