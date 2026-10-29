@@ -1,8 +1,7 @@
 "use client";
 
+import NoImage from "@/components/common/NoImage";
 import { useState, type ImgHTMLAttributes, type ReactNode } from "react";
-
-export const DEFAULT_CAR_IMAGE = "/no-image.png";
 
 /**
  * An uploaded image that shows `fallback` when there is no src or the file
@@ -19,8 +18,7 @@ export default function Img({
   const [failed, setFailed] = useState<string | null>(null);
 
   if (!src || failed === src) {
-    // eslint-disable-next-line @next/next/no-img-element -- static default picture
-    return fallback ?? <img {...props} src={DEFAULT_CAR_IMAGE} alt={alt} />;
+    return fallback ?? <NoImage {...props} alt={alt} />;
   }
   // eslint-disable-next-line @next/next/no-img-element -- backend-served uploads, any host
   return <img {...props} src={src} alt={alt} onError={() => setFailed(src)} />;

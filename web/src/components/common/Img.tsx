@@ -1,9 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import NoImage from "@/components/common/NoImage";
 import { useEffect, useRef, useState } from "react";
-
-export const NO_IMAGE = "/no-image.png";
 
 /**
  * `<img>` that pulses as a skeleton until it has loaded, then fades in.
@@ -38,10 +37,9 @@ export default function Img({
   }, [src]);
 
   if (missing) {
-    // srcSet would override the default picture.
-    const rest = { ...props, srcSet: undefined, sizes: undefined };
-    // eslint-disable-next-line @next/next/no-img-element -- static default picture
-    return <img src={NO_IMAGE} alt={alt} className={className} {...rest} />;
+    // srcSet / sizes belong to the real picture.
+    const { srcSet: _srcSet, sizes: _sizes, ...rest } = props;
+    return <NoImage alt={alt} className={className} {...rest} />;
   }
 
   return (

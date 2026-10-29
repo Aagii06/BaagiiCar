@@ -1,11 +1,10 @@
 "use client";
 
+import NoImage from "@/components/common/NoImage";
 import { uploadUrl, type ImageSize } from "@/lib/api/config";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
-/** Shown when the ad has no photo, while it loads (however slowly), and if it fails. */
-export const DEFAULT_CAR_IMAGE = "/no-image.png";
 
 /**
  * A car's photo over the default "image coming soon" picture: the photo fades in
@@ -41,8 +40,8 @@ export default function CarImage({
 
   return (
     <div className={cn("relative overflow-hidden rounded-xl bg-white", className)}>
-      {/* eslint-disable-next-line @next/next/no-img-element -- static default picture */}
-      <img src={DEFAULT_CAR_IMAGE} alt="" aria-hidden className="absolute inset-0 size-full object-cover" />
+      {/* "No image" while there is no photo, while it loads (however slowly), and if it fails. */}
+      <NoImage aria-hidden className="absolute inset-0 size-full object-contain" />
       {src && failed !== src && (
         // eslint-disable-next-line @next/next/no-img-element -- backend-served uploads, any host
         <img
