@@ -55,7 +55,7 @@ const FIELDS: Record<Tab, FieldDef[]> = {
   ],
   models: [
     { key: "brand_id", label: "Үйлдвэр", type: "brand", required: true },
-    { key: "name", label: "Нэр", required: true, placeholder: "Land Cruiser" },
+    { key: "name", label: "Нэр", required: true, placeholder: "Загварын нэр" },
   ],
   bodyTypes: [
     { key: "name", label: "Нэр", required: true, placeholder: "Жийп" },
