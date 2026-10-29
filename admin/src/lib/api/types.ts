@@ -143,6 +143,18 @@ export interface Customer {
   last_login_at: string | null;
 }
 
+/** "Бидэнд бичих" form on the web site's help page. */
+export interface Feedback {
+  id: number;
+  customer_id: number | null;
+  name: string | null;
+  phonenumber: string | null;
+  email: string | null;
+  message: string;
+  status: "new" | "seen";
+  created_at: string | null;
+}
+
 /** Dealer (car showroom) registry row; users and ads point at it by `dealer_id`. */
 export interface Dealer {
   id: number;

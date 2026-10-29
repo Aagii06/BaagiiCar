@@ -6,13 +6,12 @@ import { Field, inputClass, PhoneInput } from "@/components/common/Field";
 import { PageSkeleton } from "@/components/common/States";
 import { EmailSignup } from "@/components/layout/NotifySignup";
 import { sendEmailCode } from "@/lib/api/auth";
-import { CONTACT } from "@/lib/api/config";
+import { sendFeedback } from "@/lib/api/feedbacks";
 import { displayName, useAuth } from "@/lib/auth/AuthProvider";
-import { openChat } from "@/lib/chat";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { BadgeCheck, CreditCard, Mail, MessageCircle, Minus, Phone, Plus, Search, ShieldCheck } from "lucide-react";
+import { BadgeCheck, CreditCard, Mail, Minus, Phone, Plus, Search, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
@@ -76,10 +75,24 @@ function HelpInner() {
     }
   };
 
-  // No contact endpoint on the backend yet, so the form opens the user's mail app.
-  const mailto = CONTACT.email
-    ? `mailto:${CONTACT.email}?subject=${encodeURIComponent(`Cardealer — ${t("асуулт")}`)}&body=${encodeURIComponent(`${form.message}\n\n${[form.name, form.phone, form.email].filter(Boolean).join(" · ")}`)}`
-    : null;
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const canSend = !sending && !!form.message.trim() && (!!form.phone || !!trimmedEmail);
+  const send = async () => {
+    if (!canSend) return;
+    setSending(true);
+    setSendError(null);
+    try {
+      await sendFeedback({ name: form.name.trim(), phonenumber: form.phone, email: trimmedEmail, message: form.message.trim() }, token);
+      setSent(true);
+      setForm((f) => ({ ...f, message: "" }));
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <>
@@ -186,33 +199,30 @@ function HelpInner() {
               </span>
             </Field>
             <Field label={t("Асуулт")}>
-              <textarea className={cn(inputClass, "h-auto min-h-28 py-3")} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+              <textarea
+                className={cn(inputClass, "h-auto min-h-28 py-3")}
+                value={form.message}
+                onChange={(e) => {
+                  setForm({ ...form, message: e.target.value });
+                  setSent(false);
+                }}
+              />
             </Field>
-            {mailto ? (
-              <a href={mailto} className="block rounded-xl bg-primary py-3.5 text-center font-bold text-white hover:bg-primary-hover">
-                {t("Илгээх")}
-              </a>
-            ) : (
-              <button type="button" disabled className="block w-full rounded-xl bg-primary py-3.5 text-center font-bold text-white opacity-60">
-                {t("Илгээх")}
-              </button>
+            {sendError && <p className="rounded-xl bg-destructive-soft px-4 py-3 text-sm font-medium text-destructive">{sendError}</p>}
+            {sent && (
+              <p className="flex items-center gap-2 rounded-xl bg-success-soft px-4 py-3 text-sm font-medium text-success">
+                <BadgeCheck className="size-4 shrink-0" />
+                {t("Илгээлээ. Бид удахгүй холбогдоно.")}
+              </p>
             )}
-          </div>
-          <div className="mt-5 grid grid-cols-2 gap-2 border-t border-border pt-5">
-            <button onClick={() => openChat()} className="flex items-center justify-center gap-2 rounded-xl bg-muted py-3 text-sm font-bold hover:bg-border">
-              <MessageCircle className="size-4" />
-              {t("Чат")}
+            <button
+              type="button"
+              onClick={send}
+              disabled={!canSend}
+              className="block w-full rounded-xl bg-primary py-3.5 text-center font-bold text-white hover:bg-primary-hover disabled:opacity-60"
+            >
+              {sending ? t("Илгээж байна…") : t("Илгээх")}
             </button>
-            {CONTACT.phone ? (
-              <a href={`tel:${CONTACT.phone}`} className="flex items-center justify-center gap-2 rounded-xl bg-muted py-3 text-sm font-bold hover:bg-border">
-                <Phone className="size-4" />
-                {CONTACT.phone}
-              </a>
-            ) : (
-              <span className="flex items-center justify-center gap-2 rounded-xl bg-muted py-3 text-sm font-bold text-muted-foreground">
-                <Phone className="size-4" />—
-              </span>
-            )}
           </div>
         </aside>
       </Container>

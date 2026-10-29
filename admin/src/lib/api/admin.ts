@@ -1,6 +1,6 @@
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
 import { ROLES } from "@/lib/constants";
-import type { BodyType, Brand, Car, CarDayStat, CarFile, CarModel, Customer, Dealer, Location, Message, MessageReply, User } from "./types";
+import type { BodyType, Brand, Car, CarDayStat, CarFile, CarModel, Customer, Dealer, Feedback, Location, Message, MessageReply, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
 const NEWEST = [{ selector: "created_at", desc: true }];
@@ -424,6 +424,16 @@ export type CustomerInput = Pick<Customer, "firstname" | "lastname" | "phonenumb
 
 export const updateCustomer = (id: number, body: CustomerInput) => updateRow("customers", id, body);
 export const deleteCustomer = (id: number) => deleteRows("customers", [id]);
+
+// --- feedback ("Бидэнд бичих") ---------------------------------------------
+
+export async function listFeedbacks(status?: Feedback["status"]) {
+  const res = await apiFetch<ApiListResponse<Feedback>>(`/api/base/feedbacks${listQuery({ filter: status ? [["status", "=", status]] : [], sort: NEWEST, take: 200 })}`);
+  return res.data;
+}
+
+export const setFeedbackStatus = (id: number, status: Feedback["status"]) => updateRow("feedbacks", id, { status });
+export const deleteFeedback = (id: number) => deleteRows("feedbacks", [id]);
 
 // --- web chat messages -----------------------------------------------------
 
