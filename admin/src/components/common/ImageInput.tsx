@@ -1,6 +1,5 @@
 "use client";
 
-import Img from "@/components/common/Img";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { uploadCatalogImage, type UploadFolder } from "@/lib/api/admin";
 import { catalogImage } from "@/lib/api/config";
@@ -34,7 +33,10 @@ export default function ImageInput({
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const preview = catalogImage(value, folder);
+  // The saved file can be missing on the server: then it's offered for adding, like an empty one.
+  const [broken, setBroken] = useState<string | null>(null);
+  const saved = catalogImage(value, folder);
+  const preview = saved && saved !== broken ? saved : null;
 
   const upload = async (file: File | undefined) => {
     if (!file) return;
@@ -97,8 +99,8 @@ export default function ImageInput({
   return (
     <div {...dropProps} className={cn("flex items-center gap-4 rounded-2xl border border-border p-3 transition", dragging && "border-primary bg-primary-soft/40")}>
       <span className={cn("relative grid size-20 shrink-0 place-items-center overflow-hidden border border-border bg-white", round ? "rounded-full" : "rounded-xl")}>
-        {/* The "no image" picture when the saved file is missing on the server. */}
-        <Img src={preview} className={cn("size-full", round ? "object-cover" : "object-contain p-1.5")} />
+        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded image */}
+        <img src={preview} alt="" onError={() => setBroken(preview)} className={cn("size-full", round ? "object-cover" : "object-contain p-1.5")} />
         {uploading && (
           <span className="absolute inset-0 grid place-items-center bg-white/70">
             <Loader2 className="size-5 animate-spin text-primary" />
