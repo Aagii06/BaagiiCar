@@ -74,7 +74,7 @@ export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadg
 
         {/* Phones: no "Дэлгэрэнгүй" — the photo and title already open the ad. */}
         <div className="mt-auto flex gap-2 pt-2 sm:pt-4">
-          <Link href={href} className="hidden h-10 flex-1 items-center justify-center rounded-xl bg-primary text-sm font-bold sm:flex text-white hover:bg-primary-hover">
+          <Link href={href} className="hidden h-10 flex-1 items-center justify-center rounded-xl bg-primary text-[13px] font-medium text-white hover:bg-primary-hover sm:flex">
             {t("Дэлгэрэнгүй")}
           </Link>
           {phone && <PhoneButton car={car} phone={phone} variant="icon" className="size-9 sm:size-10" />}

@@ -38,7 +38,7 @@ export default function CarWideCard({ car }: { car: Car }) {
         </div>
         <SpecChips car={car} className="mt-4" />
         <div className="mt-auto flex gap-2 pt-5">
-          <Link href={href} className="flex h-11 flex-1 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white hover:bg-primary-hover">
+          <Link href={href} className="flex h-11 flex-1 items-center justify-center rounded-xl bg-primary text-[13px] font-medium text-white hover:bg-primary-hover">
             {t("Дэлгэрэнгүй")}
           </Link>
           {phone && <PhoneButton car={car} phone={phone} variant="icon" className="size-11" />}
