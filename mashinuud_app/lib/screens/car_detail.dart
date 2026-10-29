@@ -284,7 +284,6 @@ class _Seller extends StatelessWidget {
                 uploadUrl(car.dealerLogo, folder: 'dealers'),
                 fit: BoxFit.contain,
                 background: Colors.white,
-                fallback: Text(car.dealerName![0], style: const TextStyle(fontWeight: FontWeight.w700, color: AppPalette.primary)),
               ),
             )
           : Text(initials(car.sellerName), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppPalette.primary)),
