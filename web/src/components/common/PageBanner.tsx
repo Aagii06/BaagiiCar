@@ -33,10 +33,10 @@ export default function PageBanner({
         />
       </div>
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
-      <Container className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-10 md:py-16">
-        <h1 className="font-display text-3xl font-bold uppercase leading-tight tracking-tight md:text-5xl">{title}</h1>
+      <Container className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-7">
+        <h1 className="font-display text-2xl font-bold uppercase leading-tight tracking-tight lg:text-3xl">{title}</h1>
         {/* Total beside the title; pulses while it is loading. */}
-        <span aria-live="polite" className={cn("text-sm font-medium tabular-nums text-white/75 md:text-base", asideLoading && "animate-pulse")}>
+        <span aria-live="polite" className={cn("text-sm font-medium tabular-nums text-white/75", asideLoading && "animate-pulse")}>
           {aside}
         </span>
       </Container>
