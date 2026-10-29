@@ -34,6 +34,13 @@ export function Field({
 export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   /** Sheet heading on phones; defaults to `aria-label`. */
   title?: string;
+} & ListOptions;
+
+type ListOptions = {
+  /** Search box even with fewer than SEARCH_FROM options. */
+  searchable?: boolean;
+  /** Show at most this many rows (the chosen one always stays); the search box reaches the rest. */
+  limit?: number;
 };
 
 /**
@@ -41,7 +48,7 @@ export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
  * and picking happens in our own list: a dropdown under the field from `md` up, a bottom sheet (as in the
  * admin) below it, instead of the browser's / phone's picker. `onChange(e)` still gets `e.target.value`.
  */
-export function Select({ className, children, title, ...props }: SelectProps) {
+export function Select({ className, children, title, searchable, limit, ...props }: SelectProps) {
   const [open, setOpen] = useState<"sheet" | "menu" | false>(false);
   // The button the desktop dropdown hangs under (state, not a ref: it's read while rendering).
   const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
@@ -94,13 +101,17 @@ export function Select({ className, children, title, ...props }: SelectProps) {
         }}
         className="absolute inset-0 cursor-pointer rounded-xl outline-none disabled:cursor-default"
       />
-      {open === "sheet" && <OptionSheet title={heading} options={readOptions(children)} value={current} onPick={pick} onClose={() => setOpen(false)} />}
+      {open === "sheet" && (
+        <OptionSheet title={heading} options={readOptions(children)} value={current} searchable={searchable} limit={limit} onPick={pick} onClose={() => setOpen(false)} />
+      )}
       {open === "menu" && trigger && (
         <OptionMenu
           anchor={trigger}
           label={heading}
           options={readOptions(children)}
           value={current}
+          searchable={searchable}
+          limit={limit}
           onPick={(v) => {
             pick(v);
             trigger.focus();
@@ -116,11 +127,13 @@ const MENU_MAX_HEIGHT = 320;
 const MENU_GAP = 6;
 
 /** Desktop dropdown under (or, near the bottom of the screen, above) the field; arrow keys + Enter pick. */
-function OptionMenu({
+export function OptionMenu({
   anchor,
   label,
   options,
   value,
+  searchable: forceSearch,
+  limit,
   onPick,
   onClose,
 }: {
@@ -130,15 +143,14 @@ function OptionMenu({
   value: string;
   onPick: (v: string) => void;
   onClose: () => void;
-}) {
+} & ListOptions) {
   const { t } = useI18n();
   const [q, setQ] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const listId = useId();
-  const searchable = options.length >= SEARCH_FROM;
-  const needle = q.trim().toLowerCase();
-  const rows = needle ? options.filter((o) => o.text.toLowerCase().includes(needle)) : options;
+  const searchable = forceSearch || options.length >= SEARCH_FROM;
+  const { rows, hidden } = visibleRows(options, q, value, limit);
   const [rawActive, setActive] = useState(() => Math.max(options.findIndex((o) => o.value === value), 0));
   const active = Math.min(rawActive, rows.length - 1);
 
@@ -174,7 +186,7 @@ function OptionMenu({
     window.addEventListener("resize", onMove);
     listRef.current?.querySelector("[aria-selected='true']")?.scrollIntoView({ block: "center" });
     // Without a search box the list itself takes the arrow keys.
-    if (!options.length || options.length < SEARCH_FROM) listRef.current?.focus({ preventScroll: true });
+    if (!searchable) listRef.current?.focus({ preventScroll: true });
     return () => {
       document.removeEventListener("pointerdown", onDown);
       window.removeEventListener("scroll", onMove, true);
@@ -264,6 +276,7 @@ function OptionMenu({
         ) : (
           <p className="py-8 text-center text-sm text-muted-foreground">{t("Олдсонгүй")}</p>
         )}
+        {hidden > 0 && <p className="px-3 pb-1.5 pt-2 text-xs text-muted-foreground">{t("Өөр {n} байна, хайж олно уу", { n: hidden })}</p>}
       </div>
     </div>,
     document.body
@@ -271,6 +284,22 @@ function OptionMenu({
 }
 
 const SEARCH_FROM = 12;
+
+/**
+ * Options matching the search, cut to `limit` (the "all" row with an empty value isn't counted, and the
+ * chosen one always stays); `hidden` = how many were cut.
+ */
+function visibleRows(options: OptionItem[], q: string, value: string, limit?: number) {
+  const needle = q.trim().toLowerCase();
+  const matches = needle ? options.filter((o) => o.text.toLowerCase().includes(needle)) : options;
+  const all = matches.filter((o) => !o.value);
+  const rest = matches.filter((o) => o.value);
+  if (!limit || rest.length <= limit) return { rows: matches, hidden: 0 };
+  const rows = [...all, ...rest.slice(0, limit)];
+  const chosen = rest.find((o) => o.value === value);
+  if (chosen && !rows.includes(chosen)) rows.push(chosen);
+  return { rows, hidden: matches.length - rows.length };
+}
 
 export type OptionItem = { value: string; label: React.ReactNode; text: string };
 
@@ -289,14 +318,21 @@ function readOptions(children: React.ReactNode): OptionItem[] {
 }
 
 /** Bottom sheet of options, sized to them but never higher than 25% from the top. */
-export function OptionSheet({ title, options, value, onPick, onClose }: { title: string; options: OptionItem[]; value: string; onPick: (v: string) => void; onClose: () => void }) {
+export function OptionSheet({
+  title,
+  options,
+  value,
+  searchable: forceSearch,
+  limit,
+  onPick,
+  onClose,
+}: { title: string; options: OptionItem[]; value: string; onPick: (v: string) => void; onClose: () => void } & ListOptions) {
   const { t } = useI18n();
   const [q, setQ] = useState("");
   const titleId = useId();
   const listRef = useRef<HTMLDivElement>(null);
-  const searchable = options.length >= SEARCH_FROM;
-  const needle = q.trim().toLowerCase();
-  const rows = needle ? options.filter((o) => o.text.toLowerCase().includes(needle)) : options;
+  const searchable = forceSearch || options.length >= SEARCH_FROM;
+  const { rows, hidden } = visibleRows(options, q, value, limit);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -358,6 +394,7 @@ export function OptionSheet({ title, options, value, onPick, onClose }: { title:
           ) : (
             <p className="py-10 text-center text-sm text-muted-foreground">{t("Олдсонгүй")}</p>
           )}
+          {hidden > 0 && <p className="px-5 py-4 text-sm text-muted-foreground">{t("Өөр {n} байна, хайж олно уу", { n: hidden })}</p>}
         </div>
       </div>
     </div>,

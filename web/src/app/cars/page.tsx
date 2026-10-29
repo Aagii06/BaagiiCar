@@ -257,6 +257,8 @@ function Filters({
               disabled={!dealers}
               aria-busy={!dealers}
               aria-label={t("Дилер")}
+              searchable
+              limit={10}
             >
               <option value="">{dealers ? t("Бүх дилер") : t("Ачаалж байна...")}</option>
               {dealers?.map((d) => (

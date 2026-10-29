@@ -2,13 +2,16 @@
 
 import { getLocations } from "@/lib/api/cars";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { OptionMenu, type OptionItem } from "@/components/common/Field";
 import { useApi } from "@/lib/useApi";
+import { cn } from "@/lib/utils";
 import { ChevronDown, MapPin } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 /**
- * Header location menu. Picking one opens /cars filtered to it; on /cars the
- * other filters are kept. Shows the current pick while on /cars.
+ * Header location menu (the same dropdown as the desktop Select). Picking one opens /cars filtered to it;
+ * on /cars the other filters are kept. Shows the current pick while on /cars.
  */
 export default function LocationPicker() {
   const { t } = useI18n();
@@ -18,6 +21,8 @@ export default function LocationPicker() {
   const locations = useApi(getLocations);
   const onCars = pathname === "/cars";
   const current = onCars ? (sp.get("location") ?? "") : "";
+  const [open, setOpen] = useState(false);
+  const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
 
   const pick = (id: string) => {
     const q = new URLSearchParams(onCars ? sp.toString() : "");
@@ -30,25 +35,51 @@ export default function LocationPicker() {
     else router.push(href);
   };
 
+  const options: OptionItem[] = [
+    { value: "", label: t("Бүх байршил"), text: t("Бүх байршил") },
+    ...(locations.data ?? []).map((l) => {
+      const name = l.name === "Улаанбаатар" ? t("Улаанбаатар") : l.name;
+      return { value: String(l.id), label: name, text: name };
+    }),
+  ];
+  // A linked id shows "…" until the list arrives.
+  const currentLabel = options.find((o) => o.value === current)?.text ?? "…";
+
   return (
-    <label className="relative hidden shrink-0 items-center gap-1.5 text-sm font-medium text-foreground/80 hover:text-foreground xl:flex">
-      <MapPin className="size-4" />
-      <select
-        value={current}
-        onChange={(e) => pick(e.target.value)}
+    <>
+      <button
+        ref={setTrigger}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
         aria-label={t("Байршил")}
-        className="cursor-pointer appearance-none bg-transparent pr-5 outline-none"
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          "hidden h-9 shrink-0 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground xl:flex",
+          open && "bg-muted text-foreground"
+        )}
       >
-        <option value="">{t("Бүх байршил")}</option>
-        {locations.data?.map((l) => (
-          <option key={l.id} value={l.id}>
-            {l.name === "Улаанбаатар" ? t("Улаанбаатар") : l.name}
-          </option>
-        ))}
-        {/* Keep a linked id visible before the list arrives. */}
-        {!locations.data && current && <option value={current}>…</option>}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-0 size-3.5" />
-    </label>
+        <MapPin className={cn("size-4", current && "text-primary")} />
+        {currentLabel}
+        <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && trigger && (
+        <OptionMenu
+          anchor={trigger}
+          label={t("Байршил")}
+          options={options}
+          value={current}
+          onPick={(id) => {
+            setOpen(false);
+            trigger.focus();
+            if (id !== current) pick(id);
+          }}
+          onClose={() => {
+            setOpen(false);
+            trigger.focus();
+          }}
+        />
+      )}
+    </>
   );
 }
