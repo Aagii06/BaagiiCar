@@ -460,6 +460,7 @@ export const MESSAGES = {
   "Машин сонголт, ерөнхий асуултад хариулна": { ru: "Поможет с выбором авто и общими вопросами", en: "Helps with choosing a car and general questions" },
   "Профайл": { ru: "Профиль", en: "Profile" },
   "Залгах": { ru: "Позвонить", en: "Call" },
+  "Харах": { ru: "Показать", en: "Show" },
   "Дугаар харах": { ru: "Показать номер", en: "Show number" },
   "Зар үзсэн": { ru: "Просмотры объявления", en: "Ad views" },
   "Дугаар харсан": { ru: "Просмотры номера", en: "Number views" },

@@ -363,16 +363,15 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
       <p className="mt-4 text-[28px] font-bold">{formatPrice(c.price, t)}</p>
 
       {/* Phones: these live in the fixed ActionBar at the bottom. */}
-      <div className="mt-4 hidden gap-2 md:flex">
+      {phone && <PhoneButton car={c} phone={phone} className="mt-4 hidden md:flex" />}
+      <div className="mt-2 hidden gap-2 md:flex">
         <button
           onClick={() => openChat({ carId: c.id, title: `${carTitle(c, t)} ${c.manufactured_year ?? ""}`.trim() })}
-          title={t("Чатлах")}
-          aria-label={t("Чатлах")}
-          className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary text-white hover:bg-primary-hover"
+          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border-[1.5px] border-foreground font-bold hover:bg-muted"
         >
           <MessageCircle className="size-5" />
+          {t("Чатлах")}
         </button>
-        {phone && <PhoneButton car={c} phone={phone} className="h-12 flex-1 rounded-xl border-[1.5px] border-foreground hover:bg-muted" />}
         <FavoriteButton carId={c.id} className="size-12 rounded-xl border border-border shadow-none" />
         <CompareButton carId={c.id} className="size-12" />
       </div>
