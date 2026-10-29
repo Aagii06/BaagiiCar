@@ -2,7 +2,7 @@
 
 import CarImage from "@/components/car/CarImage";
 import { CarLinesSkeleton, ErrorState, StatsSkeleton } from "@/components/common/States";
-import { countOf, featuredCars, recentCars, topCarsToday } from "@/lib/api/admin";
+import { countOf, featuredCars, recentCars, topCars } from "@/lib/api/admin";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
@@ -135,17 +135,17 @@ export default function DashboardPage() {
         </>
       ) : (
         <>
-          <TopToday kind="view" title="Өнөөдөр хамгийн их хандалттай" />
-          <TopToday kind="phone" title="Өнөөдөр хамгийн их дугаар харсан" />
+          <TopCars kind="view" title="Хамгийн их хандалттай" />
+          <TopCars kind="phone" title="Хамгийн их дугаар харсан" />
         </>
       )}
     </div>
   );
 }
 
-/** A dealer's ads with the most views / phone-number reveals today. */
-function TopToday({ kind, title }: { kind: "view" | "phone"; title: string }) {
-  const top = useApi(() => topCarsToday(kind, 5), kind);
+/** A dealer's ads with the most views / phone-number reveals of all time. */
+function TopCars({ kind, title }: { kind: "view" | "phone"; title: string }) {
+  const top = useApi(() => topCars(kind, 5), kind);
   const Icon = kind === "phone" ? Phone : Eye;
   return (
     <>
@@ -157,17 +157,17 @@ function TopToday({ kind, title }: { kind: "view" | "phone"; title: string }) {
           <ErrorState message={top.error.message} onRetry={top.reload} />
         ) : !top.data?.rows.length ? (
           <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">
-            {kind === "phone" ? "Өнөөдөр дугаар хараагүй байна" : "Өнөөдөр зар үзээгүй байна"}
+            {kind === "phone" ? "Дугаар харсан зар алга" : "Үзсэн зар алга"}
           </p>
         ) : (
           top.data.rows.map((row) => (
             <CarLine
               key={row.id}
-              car={{ ...row, id: row.car_id }}
+              car={row}
               count={
                 <span className="flex items-center gap-1 text-sm font-bold">
                   <Icon className="size-3.5 text-muted-foreground" />
-                  {kind === "phone" ? row.day_phone_view_count : row.day_view_count}
+                  {kind === "phone" ? row.phone_view_count ?? 0 : row.view_count ?? 0}
                 </span>
               }
             />

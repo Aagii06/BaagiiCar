@@ -1,6 +1,6 @@
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
 import { ROLES } from "@/lib/constants";
-import type { BodyType, Brand, Car, CarDayStat, CarFile, CarModel, Customer, Dealer, Feedback, Location, Message, MessageReply, User } from "./types";
+import type { BodyType, Brand, Car, CarFile, CarModel, Customer, Dealer, Feedback, Location, Message, MessageReply, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
 const NEWEST = [{ selector: "created_at", desc: true }];
@@ -164,13 +164,13 @@ export async function featuredCars(take = 5) {
 /** "YYYY-MM-DD HH:mm:ss" in Ulaanbaatar time (+08:00), the way the backend stamps `created_at`. */
 const ubTimestamp = (ms: number) => new Date(ms + 8 * 3600_000).toISOString().slice(0, 19).replace("T", " ");
 
-/** Today's ads with the most views (`"view"`) or phone-number reveals (`"phone"`), from vwCarDailyStats. */
-export async function topCarsToday(kind: "view" | "phone", take = 5) {
-  const field = kind === "phone" ? "day_phone_view_count" : "day_view_count";
-  const res = await apiFetch<ApiListResponse<CarDayStat>>(
-    `/api/base/vwCarDailyStats${listQuery({
-      filter: [["date", "=", ubTimestamp(Date.now()).slice(0, 10)], [field, ">", 0], NOT_DELETED],
-      sort: [{ selector: field, desc: true }, { selector: "car_id", desc: true }],
+/** Ads with the most views (`"view"`) or phone-number reveals (`"phone"`) of all time. */
+export async function topCars(kind: "view" | "phone", take = 5) {
+  const field = kind === "phone" ? "phone_view_count" : "view_count";
+  const res = await apiFetch<ApiListResponse<Car>>(
+    `/api/base/vwCars${listQuery({
+      filter: [NOT_DELETED, [field, ">", 0]],
+      sort: [{ selector: field, desc: true }, { selector: "id", desc: true }],
       take,
     })}`
   );
