@@ -6,7 +6,7 @@ import CarWideCard from "@/components/car/CarWideCard";
 import DealerTabs from "@/components/car/DealerTabs";
 import Container from "@/components/common/Container";
 import { Select } from "@/components/common/Field";
-import { CardGridSkeleton, EmptyState, ErrorState, Spinner } from "@/components/common/States";
+import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import Img from "@/components/common/Img";
 import PageBanner from "@/components/common/PageBanner";
 import { CAR_SORTS, getBodyTypes, getBrands, getLocations, getModels, searchCars, type CarSort } from "@/lib/api/cars";
@@ -156,10 +156,6 @@ function RangeSelect({
 }
 
 /** Covers a disabled Select's chevron while its options load. */
-function SelectSpinner() {
-  return <Spinner className="pointer-events-none absolute right-3 top-1/2 size-5 -translate-y-1/2 rounded-full bg-muted" />;
-}
-
 type Loaded<T> = { data: T | undefined; loading: boolean };
 
 // Brands and models come from the page: `Filters` remounts on every filter

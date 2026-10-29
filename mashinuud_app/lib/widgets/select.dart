@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
+import 'package:mashinuud_app/widgets/common.dart';
 
 class Option<T> {
   final T? value;
@@ -10,7 +11,14 @@ class Option<T> {
 /// Bottom-sheet list of [options]; resolves to the picked option, or null when dismissed.
 /// [searchable] adds a search box; [limit] shows at most that many rows (the "all" row with a null value
 /// isn't counted, the selected one always stays) and the search box reaches the rest.
-Future<Option<T>?> pickOption<T>(BuildContext context, {required String title, required List<Option<T>> options, T? selected, bool searchable = false, int? limit}) {
+Future<Option<T>?> pickOption<T>(
+  BuildContext context, {
+  required String title,
+  required List<Option<T>> options,
+  T? selected,
+  bool searchable = false,
+  int? limit,
+}) {
   return showModalBottomSheet<Option<T>>(
     context: context,
     isScrollControlled: true,
@@ -54,48 +62,61 @@ class _OptionSheetState<T> extends State<_OptionSheet<T>> {
       child: Padding(
         // Keep the search box above the keyboard.
         padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-            child: Align(alignment: Alignment.centerLeft, child: Text(widget.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
-          ),
-          if (widget.searchable)
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-              child: TextField(
-                onChanged: (v) => setState(() => _q = v),
-                decoration: const InputDecoration(hintText: 'Хайх', prefixIcon: Icon(Icons.search_rounded, size: 20)),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(widget.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               ),
             ),
-          Flexible(
-            child: ListView(
-              shrinkWrap: true,
-              padding: const EdgeInsets.only(bottom: 16),
-              children: [
-                for (final o in rows)
-                  Builder(builder: (context) {
-                    final on = o.value == widget.selected;
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                      title: Text(o.label, style: TextStyle(fontWeight: on ? FontWeight.w700 : FontWeight.w500, color: on ? AppPalette.primary : null)),
-                      trailing: on ? const Icon(Icons.check_rounded, color: AppPalette.primary) : null,
-                      onTap: () => Navigator.pop(context, o),
-                    );
-                  }),
-                if (rows.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32),
-                    child: Center(child: Text('Олдсонгүй', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))),
-                  ),
-                if (hidden > 0)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                    child: Text('Өөр $hidden байна, хайж олно уу', style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
-                  ),
-              ],
+            if (widget.searchable)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                child: TextField(
+                  onChanged: (v) => setState(() => _q = v),
+                  decoration: const InputDecoration(hintText: 'Хайх', prefixIcon: Icon(Icons.search_rounded, size: 20)),
+                ),
+              ),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.only(bottom: 16),
+                children: [
+                  for (final o in rows)
+                    Builder(
+                      builder: (context) {
+                        final on = o.value == widget.selected;
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                          title: Text(
+                            o.label,
+                            style: TextStyle(fontWeight: on ? FontWeight.w700 : FontWeight.w500, color: on ? AppPalette.primary : null),
+                          ),
+                          trailing: on ? const Icon(Icons.check_rounded, color: AppPalette.primary) : null,
+                          onTap: () => Navigator.pop(context, o),
+                        );
+                      },
+                    ),
+                  if (rows.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                        child: Text('Олдсонгүй', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
+                      ),
+                    ),
+                  if (hidden > 0)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                      child: Text('Өөр $hidden байна, хайж олно уу', style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ),
     );
   }
@@ -134,13 +155,24 @@ class SelectField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final current = options.where((o) => o.value == value && o.value != null).firstOrNull;
-    final text = loading ? 'Ачаалж байна...' : (current?.label ?? placeholder);
+    final text = current?.label ?? placeholder;
     final on = enabled && !loading;
+    // Options still coming: pulsing bars in place of the value and the arrow.
     final trailing = loading
-        ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppPalette.primary))
+        ? const _Pulse(child: SkeletonBox(width: 16, height: 16, radius: 4))
         : const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: AppPalette.mutedForeground);
+    const valueSkeleton = _Pulse(
+      child: FractionallySizedBox(alignment: Alignment.centerLeft, widthFactor: 0.45, child: SkeletonBox(height: 14)),
+    );
     Future<void> open() async {
-      final picked = await pickOption<T>(context, title: label, options: [Option<T>(null, placeholder), ...options], selected: value, searchable: searchable, limit: limit);
+      final picked = await pickOption<T>(
+        context,
+        title: label,
+        options: [Option<T>(null, placeholder), ...options],
+        selected: value,
+        searchable: searchable,
+        limit: limit,
+      );
       if (picked != null) onChanged(picked.value);
     }
 
@@ -148,46 +180,97 @@ class SelectField<T> extends StatelessWidget {
       return InkWell(
         onTap: on ? open : null,
         child: Opacity(
-          opacity: on ? 1 : 0.45,
+          opacity: on || loading ? 1 : 0.45,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-            child: Row(children: [
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(label.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 1.3, color: AppPalette.mutedForeground)),
-                  const SizedBox(height: 4),
-                  Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                ]),
-              ),
-              trailing,
-            ]),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label.toUpperCase(),
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 1.3, color: AppPalette.mutedForeground),
+                      ),
+                      const SizedBox(height: 4),
+                      if (loading)
+                        const SizedBox(
+                          height: 20,
+                          child: Align(alignment: Alignment.centerLeft, child: valueSkeleton),
+                        )
+                      else
+                        Text(
+                          text,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        ),
+                    ],
+                  ),
+                ),
+                trailing,
+              ],
+            ),
           ),
         ),
       );
     }
 
     return Material(
-      color: on ? Colors.white : AppPalette.muted,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md), side: const BorderSide(color: AppPalette.input)),
+      color: on || loading ? Colors.white : AppPalette.muted,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        side: const BorderSide(color: AppPalette.input),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: on ? open : null,
         child: Container(
           height: 44,
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(children: [
-            Expanded(
-              child: Text(
-                text,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 14, color: current == null ? AppPalette.mutedForeground : AppPalette.foreground, fontWeight: FontWeight.w500),
+          child: Row(
+            children: [
+              Expanded(
+                child: loading
+                    ? valueSkeleton
+                    : Text(
+                        text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: current == null ? AppPalette.mutedForeground : AppPalette.foreground,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
               ),
-            ),
-            trailing,
-          ]),
+              trailing,
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// Fades its child in and out while something loads.
+class _Pulse extends StatefulWidget {
+  final Widget child;
+  const _Pulse({required this.child});
+  @override
+  State<_Pulse> createState() => _PulseState();
+}
+
+class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(opacity: Tween(begin: 1.0, end: 0.4).animate(_controller), child: widget.child);
 }
