@@ -15,6 +15,7 @@ import Img from "@/components/common/Img";
 import { getCar, getCarFiles, searchCars } from "@/lib/api/cars";
 import { uploadUrl } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { openChat } from "@/lib/chat";
 import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -249,7 +250,9 @@ function SummarySkeleton({ className }: { className?: string }) {
 export default function CarDetailPage() {
   const id = useRouteId();
   const { t } = useI18n();
-  const car = useApi(() => getCar(id), id);
+  const { token } = useAuth();
+  // token is read when the page loads; signing in later doesn't refetch (key stays the id).
+  const car = useApi(() => getCar(id, token), id);
 
   // Every /cars/<id> is the same exported page ("_"), so the router sees
   // /cars/1 -> /cars/2 (e.g. from "Төстэй машинууд") as no route change and

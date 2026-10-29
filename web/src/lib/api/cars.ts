@@ -99,14 +99,20 @@ export async function featuredCars(take = 6) {
   return (await searchCars({ pageSize: take })).rows;
 }
 
-export async function getCar(id: number | string) {
-  const res = await apiFetch<ApiItemResponse<Car | null>>(`/web/base/vwCars/${id}`);
+/** Signed-in visitors' token lets the backend count their view once across devices and networks. */
+const authHeaders = (token?: string | null) => (token ? { Authorization: `Bearer ${token}` } : undefined);
+
+export async function getCar(id: number | string, token?: string | null) {
+  const res = await apiFetch<ApiItemResponse<Car | null>>(`/web/base/vwCars/${id}`, { headers: authHeaders(token) });
   return res.data;
 }
 
-/** Reveals the ad's phone number and counts the reveal. */
-export async function revealPhone(carId: number) {
-  const res = await apiFetch<ApiItemResponse<{ phone: string | null; phone_view_count: number }>>(`/web/cars/${carId}/phone-view`, { method: "POST" });
+/** Reveals the ad's phone number; the backend counts each visitor once per 6 hours. */
+export async function revealPhone(carId: number, token?: string | null) {
+  const res = await apiFetch<ApiItemResponse<{ phone: string | null; phone_view_count: number }>>(`/web/cars/${carId}/phone-view`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
   return res.data;
 }
 

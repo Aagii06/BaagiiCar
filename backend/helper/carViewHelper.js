@@ -1,0 +1,48 @@
+const moment = require("moment");
+const { carViews, cars, op } = require("../models");
+const { readToken } = require("../middleware/auth");
+
+// Нэг хүн нэг зарыг энэ хугацаанд дахин үзэхэд тоологдохгүй
+const WINDOW_HOURS = 6;
+// Хуучин мөрийг хүсэлт бүрт биш, 10 минутад нэг устгана
+const CLEANUP_MS = 10 * 60 * 1000;
+let lastCleanup = 0;
+
+const format = (m) => m.utcOffset("+0800").format("YYYY-MM-DD HH:mm:ss");
+
+// Proxy (nginx) ард бол X-Forwarded-For-ийн эхний хаяг жинхэнэ хэрэглэгчийнх
+const clientIp = (req) =>
+  (req.headers["x-forwarded-for"]?.split(",")[0] || req.socket?.remoteAddress || "").trim().slice(0, 45) || null;
+
+/**
+ * Зар (type "view") эсвэл утасны дугаар (type "phone") үзсэнийг тоолно.
+ * Нэвтэрсэн бол customer_id, үгүй бол IP-гаар; 6 цагийн дотор аль нэг нь таарвал refresh гэж үзээд тоолохгүй.
+ * Тоолсон бол true.
+ */
+module.exports.countCarView = async (req, carId, type) => {
+  const user = readToken(req);
+  const customerId = user?.customer ? user.id : null;
+  const ip = clientIp(req);
+  const now = moment();
+  const since = format(now.clone().subtract(WINDOW_HOURS, "hours"));
+
+  if (Date.now() - lastCleanup > CLEANUP_MS) {
+    lastCleanup = Date.now();
+    carViews.destroy({ where: { created_at: { [op.lt]: since } } }).catch(console.log);
+  }
+
+  const who = [];
+  if (customerId) who.push({ customer_id: customerId });
+  if (ip) who.push({ ip });
+  if (!who.length) return false;
+
+  const seen = await carViews.findOne({
+    where: { car_id: carId, type, created_at: { [op.gte]: since }, [op.or]: who },
+    attributes: ["id"],
+  });
+  if (seen) return false;
+
+  await carViews.create({ car_id: carId, customer_id: customerId, ip, type, created_at: format(now) });
+  await cars.increment(type === "phone" ? "phone_view_count" : "view_count", { where: { id: carId } });
+  return true;
+};

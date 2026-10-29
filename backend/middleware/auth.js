@@ -22,6 +22,8 @@ const readToken = (req) => {
   }
 };
 
+module.exports.readToken = readToken;
+
 const unauthorized = (res) => res.status(401).json({ success: false, message: "Систем рүү нэвтэрнэ үү" });
 
 // Админ / дилер (users хүснэгт). Вэбийн зочны (customers) токен энд хүчингүй:

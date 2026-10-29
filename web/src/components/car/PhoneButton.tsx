@@ -1,6 +1,7 @@
 "use client";
 
 import { revealPhone } from "@/lib/api/cars";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import type { Car } from "@/lib/api/types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ const masked = (phone: string) => `${phone.replace(/\D/g, "").slice(0, 2)}** ***
 /** Hidden phone number (`compact`: label only, for the phone action bar); tapping counts the reveal and shows the number in a modal. */
 export default function PhoneButton({ car, phone, compact, className }: { car: Car; phone: string; compact?: boolean; className?: string }) {
   const { t } = useI18n();
+  const { token } = useAuth();
   const [open, setOpen] = useState(false);
   // Fetched once per page; reopening the modal doesn't count again.
   const [revealed, setRevealed] = useState<{ phone: string; count: number } | null>(null);
@@ -22,7 +24,7 @@ export default function PhoneButton({ car, phone, compact, className }: { car: C
     if (revealed) return setOpen(true);
     setBusy(true);
     try {
-      const res = await revealPhone(car.id);
+      const res = await revealPhone(car.id, token);
       setRevealed({ phone: res.phone || phone, count: res.phone_view_count });
     } catch {
       // Still show the number if counting failed.

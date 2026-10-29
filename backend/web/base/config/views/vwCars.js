@@ -1,5 +1,6 @@
 const { vwCars, cars, op } = require("../../../../models");
 const { nonPublicCarStatuses } = require("../../../../config/constants");
+const { countCarView } = require("../../../../helper/carViewHelper");
 
 // Олон нийтэд устгагдсан, батлагдаагүй, нуусан зар харагдахгүй
 const hidden = nonPublicCarStatuses;
@@ -21,18 +22,17 @@ const list = (req, res, next) => {
 
 const lookup = list;
 
-// Дэлгэрэнгүй үзэх бүрт үзсэн тоог нэмнэ
+// Дэлгэрэнгүй үзэхэд үзсэн тоог нэмнэ (нэг хүн 6 цагт нэг л удаа, helper/carViewHelper.js)
 const show = async (req, res, next) => {
   publicSelect(req);
   const { id } = req.params;
-  // MySQL дээр [[result, affectedRows]] буцаана
-  const [[, affectedRows]] = await cars.increment("view_count", {
-    where: { id, status: { [op.notIn]: hidden } },
-  });
-  if (!affectedRows)
+  const car = await cars.findOne({ where: { id, status: { [op.notIn]: hidden } }, attributes: ["id"] });
+  if (!car)
     return res
       .status(200)
       .json({ success: false, data: null, message: "Зарын мэдээлэл олдсонгүй" });
+  // Тоолж чадаагүй ч зарыг харуулна
+  await countCarView(req, car.id, "view").catch(console.log);
   next();
 };
 

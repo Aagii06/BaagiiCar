@@ -1,6 +1,7 @@
 const { getVehicleInfo } = require("../../helper/autoboxHelper");
 const { cars, vwCars, op } = require("../../models");
 const { nonPublicCarStatuses } = require("../../config/constants");
+const { countCarView } = require("../../helper/carViewHelper");
 
 // Улсын дугаар: зай авч, том үсэг болгоно ("1698 уао" → "1698УАО")
 const normalizePlate = (plate) =>
@@ -23,16 +24,16 @@ module.exports.vehicleLookup = async (req, res) => {
   }
 };
 
-// "Дугаар харах" дарах бүрт тоолж, утасны дугаар болон харсан тоог буцаана
+// "Дугаар харах" дарахад тоолж (нэг хүн 6 цагт нэг л удаа), утасны дугаар болон харсан тоог буцаана
 module.exports.phoneView = async (req, res) => {
   let result = { success: false, data: null, message: "" };
   try {
     const where = { id: req.params.id, status: { [op.notIn]: nonPublicCarStatuses } };
-    const [[, affectedRows]] = await cars.increment("phone_view_count", { where });
-    if (!affectedRows) {
+    if (!(await cars.findOne({ where, attributes: ["id"] }))) {
       result.message = "Зарын мэдээлэл олдсонгүй";
       return res.status(200).json(result);
     }
+    await countCarView(req, req.params.id, "phone");
     const car = await vwCars.findOne({ where, attributes: ["phonenumber", "seller_phone", "phone_view_count"], raw: true });
     result.success = true;
     result.message = "Амжилттай";
