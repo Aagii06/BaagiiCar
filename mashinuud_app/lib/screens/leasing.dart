@@ -7,7 +7,7 @@ import 'package:mashinuud_app/screens/help.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 
-/// Dark "Зээлийн тооцоолуур" card: 30% down, pick a term, see the monthly payment.
+/// Dark "Зээлийн тооцоолуур" card: adjust the down payment (default 30%), pick a term, see the monthly payment.
 class LeasingCalculator extends StatefulWidget {
   final double price;
   final int? carId;
@@ -17,22 +17,76 @@ class LeasingCalculator extends StatefulWidget {
 }
 
 class _LeasingCalculatorState extends State<LeasingCalculator> {
+  static final _defaultDown = '${(Leasing.downPaymentRate * 100).round()}';
   int _months = 36;
+  // Down payment in percent, as typed.
+  late final _down = TextEditingController(text: _defaultDown);
+
+  @override
+  void dispose() {
+    _down.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final amount = widget.price;
-    final down = amount * Leasing.downPaymentRate;
-    final monthly = Leasing.monthly(amount, _months);
+    final downPct = int.tryParse(_down.text);
+    final valid = downPct != null && downPct <= Leasing.maxDownPercent;
+    final down = valid ? amount * downPct / 100 : 0.0;
+    final monthly = valid ? Leasing.monthly(amount, _months, downRate: downPct / 100) : 0.0;
     return Panel(
       color: AppPalette.dark,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Зээлийн тооцоолуур', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),
         Row(children: [
-          Text('Урьдчилгаа ${(Leasing.downPaymentRate * 100).round()}%', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
-          const Spacer(),
-          Text(amount > 0 ? formatPrice(down) : '—', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Урьдчилгаа', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
+              const SizedBox(height: 2),
+              Text(amount > 0 && valid ? formatPrice(down) : '—', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            ]),
+          ),
+          if (_down.text != _defaultDown)
+            TextButton(
+              onPressed: () => setState(() => _down.text = _defaultDown),
+              style: TextButton.styleFrom(foregroundColor: Colors.white.withValues(alpha: 0.6), textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              child: Text('$_defaultDown% болгох'),
+            ),
+          const SizedBox(width: 4),
+          Container(
+            width: 84,
+            height: 40,
+            padding: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: AppPalette.dark2,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+              border: valid ? null : Border.all(color: AppPalette.destructive, width: 2),
+            ),
+            child: Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: _down,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(2)],
+                  textAlign: TextAlign.right,
+                  onChanged: (_) => setState(() {}),
+                  cursorColor: Colors.white,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  ),
+                ),
+              ),
+              Text('%', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontWeight: FontWeight.w700)),
+            ]),
+          ),
         ]),
         const SizedBox(height: 16),
         Row(children: [
@@ -60,7 +114,7 @@ class _LeasingCalculatorState extends State<LeasingCalculator> {
         const SizedBox(height: 20),
         Row(children: [
           Expanded(child: Text('Сарын төлбөр ($_months сар)', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14))),
-          Text(amount > 0 ? formatPrice(monthly) : '—', style: const TextStyle(color: AppPalette.primary, fontSize: 20, fontWeight: FontWeight.w700)),
+          Text(amount > 0 && valid ? formatPrice(monthly) : '—', style: const TextStyle(color: AppPalette.primary, fontSize: 20, fontWeight: FontWeight.w700)),
         ]),
         const SizedBox(height: 8),
         Text(

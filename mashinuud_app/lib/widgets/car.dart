@@ -8,6 +8,7 @@ import 'package:mashinuud_app/screens/car_chat.dart';
 import 'package:mashinuud_app/screens/car_detail.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/widgets/phone.dart';
 
 void openCar(BuildContext context, Car car) =>
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => CarDetailScreen(carId: car.id, preview: car)));
@@ -187,6 +188,10 @@ class CarCard extends StatelessWidget {
                       ]),
                       const SizedBox(height: 8),
                       Row(children: [
+                        if ((car.contactPhone ?? '').isNotEmpty) ...[
+                          PhoneButton(car: car, phone: car.contactPhone!, style: PhoneButtonStyle.icon, size: 36),
+                          const SizedBox(width: 8),
+                        ],
                         ChatButton(car: car, size: 36),
                         const SizedBox(width: 8),
                         FavoriteButton(carId: car.id, size: 36),
@@ -282,6 +287,10 @@ class CarWideCard extends StatelessWidget {
                   child: PrimaryButton(label: 'Дэлгэрэнгүй', height: 44, onTap: () => openCar(context, car)),
                 ),
                 const SizedBox(width: 8),
+                if ((car.contactPhone ?? '').isNotEmpty) ...[
+                  PhoneButton(car: car, phone: car.contactPhone!, style: PhoneButtonStyle.icon, size: 44),
+                  const SizedBox(width: 8),
+                ],
                 ChatButton(car: car, size: 44),
                 const SizedBox(width: 8),
                 CompareButton(carId: car.id, size: 44),

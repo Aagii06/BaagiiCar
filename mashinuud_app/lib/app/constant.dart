@@ -31,8 +31,11 @@ class Leasing {
   static const double monthlyRate = 0.018;
   static const List<int> terms = [12, 24, 36, 48];
 
-  static double monthly(double price, int months) {
-    final principal = price * (1 - downPaymentRate);
+  /// Highest down payment (%) the calculator accepts.
+  static const int maxDownPercent = 90;
+
+  static double monthly(double price, int months, {double downRate = downPaymentRate}) {
+    final principal = price * (1 - downRate);
     if (principal == 0 || months == 0) return 0;
     var growth = 1.0;
     for (var i = 0; i < months; i++) {

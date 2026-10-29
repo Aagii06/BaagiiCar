@@ -10,7 +10,9 @@ import 'package:mashinuud_app/screens/car_chat.dart';
 import 'package:mashinuud_app/screens/dealers.dart';
 import 'package:mashinuud_app/screens/leasing.dart';
 import 'package:mashinuud_app/widgets/car.dart';
+import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/widgets/phone.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// An ad's page (website `/cars/<id>`): edge-to-edge photos, summary, specs, leasing, similar ads,
@@ -24,8 +26,15 @@ class CarDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Signing in / out (another visitor) reloads the ad, so their view is counted too.
+    return ListenableBuilder(listenable: Stores.auth, builder: (context, _) => _load(context));
+  }
+
+  Widget _load(BuildContext context) {
+    final token = Stores.auth.token;
     return Loader<Car?>(
-      fetch: () => Api.getCar(carId),
+      fetchKey: token,
+      fetch: () => Api.getCar(carId, token: token),
       loading: Scaffold(appBar: AppBar(title: const Text('Дэлгэрэнгүй')), body: const LoadingView()),
       error: (context, e, retry) => Scaffold(
         appBar: AppBar(title: const Text('Дэлгэрэнгүй')),
@@ -242,7 +251,21 @@ class _Seller extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final views = Text('${car.viewCount ?? 0} үзсэн', style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground));
+    Widget stat(IconData icon, String label, int? n) => Tooltip(
+          message: label,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(icon, size: 14, color: AppPalette.mutedForeground),
+              const SizedBox(width: 4),
+              Text('${n ?? 0}', semanticsLabel: '$label ${n ?? 0}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppPalette.mutedForeground)),
+            ]),
+          ),
+        );
+    final views = Row(mainAxisSize: MainAxisSize.min, children: [
+      stat(Icons.visibility_outlined, 'Зар үзсэн', car.viewCount),
+      stat(Icons.phone_outlined, 'Дугаар харсан', car.phoneViewCount),
+    ]);
     final dealer = car.dealerId != null && (car.dealerName ?? '').isNotEmpty;
     final avatar = Container(
       width: 44,
@@ -400,7 +423,7 @@ class _Similar extends StatelessWidget {
       );
 }
 
-/// Phone action bar: ♡ · ⇄ · chat · call (or a wide chat button when there is no number).
+/// Phone action bar: ♡ · ⇄ · chat · "Дугаар харах" (or a wide chat button when there is no number).
 class _ActionBar extends StatelessWidget {
   final Car car;
   const _ActionBar({required this.car});
@@ -422,9 +445,7 @@ class _ActionBar extends StatelessWidget {
             if (phone != null && phone.isNotEmpty) ...[
               ChatButton(car: car, size: 48),
               const SizedBox(width: 8),
-              Expanded(
-                child: PrimaryButton(label: 'Залгах', icon: Icons.phone_rounded, onTap: () => launchUrl(Uri.parse('tel:$phone'))),
-              ),
+              Expanded(child: PhoneButton(car: car, phone: phone)),
             ] else
               Expanded(child: PrimaryButton(label: 'Чатлах', icon: Icons.chat_bubble_outline_rounded, onTap: () => openCarChat(context, car))),
           ]),
