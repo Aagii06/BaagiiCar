@@ -1,8 +1,7 @@
-import 'dart:io';
-
 class AppConstants {
-  /// `flutter run --dart-define=API_URL=https://...` гэж өөрчилж болно.
-  static const String api = String.fromEnvironment('API_URL');
+  /// Бүх платформ үндсэн серверийн API-тай холбогдоно. Локал backend-тэй ажиллах бол:
+  /// `flutter run --dart-define=API_URL=http://10.0.2.2:5011` (Android эмулятор) эсвэл `http://localhost:5011`.
+  static const String api = String.fromEnvironment('API_URL', defaultValue: 'https://cardealer.mn:8898');
 
   /// Public website, for share links (`--dart-define=SITE_URL=...`).
   static const String siteUrl = String.fromEnvironment('SITE_URL', defaultValue: 'https://cardealer.mn');
@@ -15,14 +14,7 @@ class AppConstants {
 
   static const String appName = 'Cardealer';
 
-  /// Android эмулятор дээр хост машины localhost нь 10.0.2.2 байдаг.
-  static String get apiUrl => (api.isNotEmpty
-          ? api
-          : Platform.isAndroid
-              ? 'http://10.0.2.2:5011'
-              : 'https://cardealer.mn:8898/')
-              // : 'http://localhost:5011')
-      .replaceAll(RegExp(r'/$'), '');
+  static String get apiUrl => api.replaceAll(RegExp(r'/$'), '');
 
   static const int pageSize = 12;
   static const int compareMax = 4;

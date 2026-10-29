@@ -1,5 +1,6 @@
 "use client";
 
+import Img from "@/components/common/Img";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { uploadCatalogImage, type UploadFolder } from "@/lib/api/admin";
 import { catalogImage } from "@/lib/api/config";
@@ -96,8 +97,8 @@ export default function ImageInput({
   return (
     <div {...dropProps} className={cn("flex items-center gap-4 rounded-2xl border border-border p-3 transition", dragging && "border-primary bg-primary-soft/40")}>
       <span className={cn("relative grid size-20 shrink-0 place-items-center overflow-hidden border border-border bg-white", round ? "rounded-full" : "rounded-xl")}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded image */}
-        <img src={preview} alt="" className={cn("size-full", round ? "object-cover" : "object-contain p-1.5")} />
+        {/* The "no image" picture when the saved file is missing on the server. */}
+        <Img src={preview} className={cn("size-full", round ? "object-cover" : "object-contain p-1.5")} />
         {uploading && (
           <span className="absolute inset-0 grid place-items-center bg-white/70">
             <Loader2 className="size-5 animate-spin text-primary" />

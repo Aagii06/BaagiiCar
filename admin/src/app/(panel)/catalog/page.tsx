@@ -2,6 +2,7 @@
 
 import ChipTabs from "@/components/common/ChipTabs";
 import { Field, FormError, inputClass, Select } from "@/components/common/Field";
+import Img from "@/components/common/Img";
 import { EmptyState, ErrorState, ListSkeleton, Spinner } from "@/components/common/States";
 import { useConfirm } from "@/components/common/Confirm";
 import LoadMore from "@/components/common/LoadMore";
@@ -115,10 +116,7 @@ function ImageInput({ value, folder, onChange }: { value: string; folder: NonNul
   return (
     <div className="flex items-center gap-2">
       <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted">
-        {preview && (
-          // eslint-disable-next-line @next/next/no-img-element -- uploaded / remote catalog images
-          <img src={preview} alt="" className="size-9 object-contain" />
-        )}
+        {preview && <Img src={preview} className="size-9 object-contain" />}
       </span>
       <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{uploading ? "Оруулж байна…" : value ? "Зураг оруулсан" : "Зураг оруулаагүй"}</p>
       <label className={cn("flex h-12 shrink-0 cursor-pointer items-center gap-1 rounded-xl bg-primary-soft px-3 text-sm font-bold text-primary", uploading && "pointer-events-none opacity-60")}>
@@ -314,12 +312,7 @@ function CatalogInner() {
               <div key={row.id} className="flex items-center gap-3 px-4 py-3">
                 {row.image !== undefined && (
                   <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted text-sm font-bold">
-                    {row.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- remote seeded logos
-                      <img src={row.image} alt="" className="size-7 object-contain" />
-                    ) : (
-                      row.name[0]
-                    )}
+                    {row.image ? <Img src={row.image} className="size-7 object-contain" /> : row.name[0]}
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
