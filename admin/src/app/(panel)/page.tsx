@@ -2,15 +2,16 @@
 
 import CarImage from "@/components/car/CarImage";
 import { CarLinesSkeleton, ErrorState, StatsSkeleton } from "@/components/common/States";
-import { countOf, featuredCars, recentCars } from "@/lib/api/admin";
+import { countOf, featuredCars, recentCars, topCarsToday } from "@/lib/api/admin";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { withFrom } from "@/lib/useBackTo";
 import { carTitle, cn, formatPriceShort } from "@/lib/utils";
-import { ArrowRight, CarFront, Store, Users } from "lucide-react";
+import { ArrowRight, CarFront, Eye, Phone, Store, Users } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 async function loadStats(isAdmin: boolean) {
   const [pending, active, sold, featured, total, dealers, users] = await Promise.all([
@@ -30,7 +31,8 @@ export default function DashboardPage() {
   const isAdmin = useAuth().user?.role === ROLES.admin;
   const stats = useApi(() => loadStats(isAdmin), String(isAdmin));
   const recent = useApi(() => recentCars({ take: 5 }));
-  const featured = useApi(() => featuredCars(5));
+  // Admins see the featured ads; dealers see which of their ads are drawing interest today.
+  const featured = useApi(() => (isAdmin ? featuredCars(5) : Promise.resolve(null)), String(isAdmin));
   const s = stats.data;
 
   // Totals (dealers, active customers, all ads) first, then ads by status (pending first: it needs action).
@@ -107,33 +109,82 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
-        <h2 className="font-bold">
-          Онцлох зарууд
-          {featured.data && <span className="ml-1.5 text-sm font-semibold text-muted-foreground">{featured.data.count}</span>}
-        </h2>
-        <Link href="/cars?status=featured" className="flex items-center gap-1 text-sm font-semibold text-primary">
-          Бүгд
-          <ArrowRight className="size-4" />
-        </Link>
-      </div>
-      <div className="mt-3 space-y-2">
-        {featured.loading && !featured.data ? (
-          <CarLinesSkeleton />
-        ) : featured.error ? (
-          <ErrorState message={featured.error.message} onRetry={featured.reload} />
-        ) : !featured.data?.rows.length ? (
-          <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Онцлох зар алга</p>
-        ) : (
-          featured.data.rows.map((car) => <CarLine key={car.id} car={car} />)
-        )}
-      </div>
+      {isAdmin ? (
+        <>
+          <div className="mt-6 flex items-center justify-between">
+            <h2 className="font-bold">
+              Онцлох зарууд
+              {featured.data && <span className="ml-1.5 text-sm font-semibold text-muted-foreground">{featured.data.count}</span>}
+            </h2>
+            <Link href="/cars?status=featured" className="flex items-center gap-1 text-sm font-semibold text-primary">
+              Бүгд
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          <div className="mt-3 space-y-2">
+            {featured.loading && !featured.data ? (
+              <CarLinesSkeleton />
+            ) : featured.error ? (
+              <ErrorState message={featured.error.message} onRetry={featured.reload} />
+            ) : !featured.data?.rows.length ? (
+              <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Онцлох зар алга</p>
+            ) : (
+              featured.data.rows.map((car) => <CarLine key={car.id} car={car} />)
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          <TopToday kind="view" title="Өнөөдөр хамгийн их хандалттай" />
+          <TopToday kind="phone" title="Өнөөдөр хамгийн их дугаар харсан" />
+        </>
+      )}
     </div>
   );
 }
 
-/** An ad in the Самбар's lists; opens it with the back button leading here. */
-function CarLine({ car }: { car: Car }) {
+/** A dealer's ads with the most views / phone-number reveals today. */
+function TopToday({ kind, title }: { kind: "view" | "phone"; title: string }) {
+  const top = useApi(() => topCarsToday(kind, 5), kind);
+  const Icon = kind === "phone" ? Phone : Eye;
+  return (
+    <>
+      <h2 className="mt-6 font-bold">{title}</h2>
+      <div className="mt-3 space-y-2">
+        {top.loading && !top.data ? (
+          <CarLinesSkeleton />
+        ) : top.error ? (
+          <ErrorState message={top.error.message} onRetry={top.reload} />
+        ) : !top.data?.rows.length ? (
+          <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">
+            {kind === "phone" ? "Өнөөдөр дугаар хараагүй байна" : "Өнөөдөр зар үзээгүй байна"}
+          </p>
+        ) : (
+          top.data.rows.map((row) => (
+            <CarLine
+              key={row.id}
+              car={{ ...row, id: row.car_id }}
+              count={
+                <span className="flex items-center gap-1 text-sm font-bold">
+                  <Icon className="size-3.5 text-muted-foreground" />
+                  {kind === "phone" ? row.day_phone_view_count : row.day_view_count}
+                </span>
+              }
+            />
+          ))
+        )}
+      </div>
+    </>
+  );
+}
+
+type CarLineData = Pick<
+  Car,
+  "id" | "image" | "body_type_name" | "status" | "price" | "dealer_name" | "seller_name" | "phonenumber" | "name" | "brand_name" | "model_name" | "manufactured_year" | "imported_year"
+>;
+
+/** An ad in the Самбар's lists; opens it with the back button leading here. `count` replaces the status badge. */
+function CarLine({ car, count }: { car: CarLineData; count?: ReactNode }) {
   const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
   return (
     <Link href={withFrom(`/cars/${car.id}`, "home")} className="flex items-center gap-3 rounded-2xl bg-card p-2.5">
@@ -144,7 +195,7 @@ function CarLine({ car }: { car: Car }) {
           {formatPriceShort(car.price)} · {car.dealer_name || car.seller_name || car.phonenumber}
         </p>
       </div>
-      <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", st.className)}>{st.label}</span>
+      {count ?? <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", st.className)}>{st.label}</span>}
     </Link>
   );
 }

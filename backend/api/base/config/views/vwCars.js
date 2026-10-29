@@ -27,4 +27,5 @@ const lookup = list;
 module.exports = {
   model: vwCars,
   middleware: { show, list, lookup },
+  ownScope,
 };

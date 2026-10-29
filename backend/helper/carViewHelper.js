@@ -1,5 +1,5 @@
 const moment = require("moment");
-const { carViews, cars, op } = require("../models");
+const { carViews, cars, sequelize, op } = require("../models");
 const { readToken } = require("../middleware/auth");
 
 // Нэг хүн нэг зарыг энэ хугацаанд дахин үзэхэд тоологдохгүй
@@ -42,6 +42,12 @@ module.exports.countCarView = async (req, carId, type) => {
   if (seen) return false;
 
   await carViews.create({ car_id: carId, customer_id: customerId, ip, type, created_at: format(now) });
-  await cars.increment(type === "phone" ? "phone_view_count" : "view_count", { where: { id: carId } });
+  const column = type === "phone" ? "phone_view_count" : "view_count";
+  await cars.increment(column, { where: { id: carId } });
+  // Өдрийн тоо (Самбарын "Өнөөдөр хамгийн их ..."): өдөрт нэг мөр, байвал нэмнэ
+  await sequelize.query(
+    `INSERT INTO carDailyStats (car_id, date, ${column}) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE ${column} = ${column} + 1`,
+    { replacements: [carId, now.clone().utcOffset("+0800").format("YYYY-MM-DD")] },
+  );
   return true;
 };

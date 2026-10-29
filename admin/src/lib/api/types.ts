@@ -62,6 +62,20 @@ export interface Car {
   favorite_count: number | null;
 }
 
+/** A row of vwCarDailyStats: one ad's views on one day, with the ad's list fields. */
+export type CarDayStat = Pick<
+  Car,
+  "code" | "user_id" | "dealer_id" | "status" | "price" | "manufactured_year" | "imported_year" | "phonenumber" | "view_count" | "phone_view_count"
+  | "name" | "brand_name" | "model_name" | "body_type_name" | "seller_name" | "dealer_name" | "image"
+> & {
+  id: number;
+  car_id: number;
+  /** "YYYY-MM-DD", Ulaanbaatar time. */
+  date: string;
+  day_view_count: number;
+  day_phone_view_count: number;
+};
+
 export interface Brand {
   id: number;
   name: string;
