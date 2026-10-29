@@ -135,7 +135,7 @@ function ProfileForm({ user }: { user: WebUser }) {
               e.preventDefault();
               requestCode();
             }}
-            placeholder="name@example.com"
+            placeholder={t("И-мэйл хаяг")}
             autoComplete="email"
             className={cn(inputClass, emailDirty && trimmedEmail && "pr-28")}
           />

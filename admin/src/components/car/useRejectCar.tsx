@@ -20,7 +20,7 @@ export function useRejectCar() {
       message: "Зарын эзэн тайлбарыг хараад засаж, дахин илгээнэ.",
       detail,
       label: "Буцаах шалтгаан",
-      placeholder: "Жишээ: Зураг бүдэг байна, үнэ буруу оруулсан…",
+      placeholder: "Шалтгаанаа бичнэ үү",
       confirmLabel: "Буцаах",
       tone: "danger",
       icon: Undo2,

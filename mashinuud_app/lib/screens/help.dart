@@ -276,7 +276,7 @@ class _ContactFormState extends State<_ContactForm> {
             controller: _email,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
-            decoration: const InputDecoration(hintText: 'name@example.com'),
+            decoration: const InputDecoration(hintText: 'И-мэйл хаяг'),
             onChanged: changed,
           ),
         ),

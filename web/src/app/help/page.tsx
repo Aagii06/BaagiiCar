@@ -170,7 +170,7 @@ function HelpInner() {
                   className={cn(inputClass, trimmedEmail && "pr-28")}
                   type="email"
                   autoComplete="email"
-                  placeholder="name@example.com"
+                  placeholder={t("И-мэйл хаяг")}
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   onKeyDown={(e) => {

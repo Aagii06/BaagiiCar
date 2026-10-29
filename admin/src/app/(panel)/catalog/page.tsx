@@ -48,8 +48,8 @@ type FieldDef = {
 
 const FIELDS: Record<Tab, FieldDef[]> = {
   brands: [
-    { key: "name", label: "Нэр", required: true, placeholder: "Toyota" },
-    { key: "country", label: "Улс", placeholder: "Japan" },
+    { key: "name", label: "Нэр", required: true, placeholder: "Үйлдвэрийн нэр" },
+    { key: "country", label: "Улс", placeholder: "Улсын нэр" },
     { key: "logo", label: "Лого", type: "image", folder: "brands" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
@@ -58,12 +58,12 @@ const FIELDS: Record<Tab, FieldDef[]> = {
     { key: "name", label: "Нэр", required: true, placeholder: "Загварын нэр" },
   ],
   bodyTypes: [
-    { key: "name", label: "Нэр", required: true, placeholder: "Жийп" },
+    { key: "name", label: "Нэр", required: true, placeholder: "Төрлийн нэр" },
     { key: "image", label: "Дүрс", type: "image", folder: "bodyTypes" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
   locations: [
-    { key: "name", label: "Нэр", required: true, placeholder: "Улаанбаатар" },
+    { key: "name", label: "Нэр", required: true, placeholder: "Байршлын нэр" },
     { key: "sort_order", label: "Эрэмбэ", type: "number" },
   ],
 };

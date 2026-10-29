@@ -569,7 +569,7 @@ export default function CarForm({
               </Select>
             </Field>
             <Field label="Гүйлт (км)">
-              <input className={inputClass} {...digits("mileage")} placeholder="120000" />
+              <input className={inputClass} {...digits("mileage")} placeholder="Гүйлт" />
             </Field>
             <Field className="col-span-2" label="Улсын дугаар">
               <Select {...bind("plate_type")}>
@@ -581,8 +581,8 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field className="col-span-2" label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : "Жишээ: 45000000"}>
-              <input className={inputClass} {...digits("price")} placeholder="45000000" required />
+            <Field className="col-span-2" label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : undefined}>
+              <input className={inputClass} {...digits("price")} placeholder="Үнэ" required />
             </Field>
           </div>
         </Section>
@@ -605,7 +605,7 @@ export default function CarForm({
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Хөдөлгүүр (л)">
-                <input className={inputClass} inputMode="decimal" disabled={isLocked("engine_capacity")} value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder="2.5" />
+                <input className={inputClass} inputMode="decimal" disabled={isLocked("engine_capacity")} value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder="Багтаамж" />
               </Field>
             </div>
           </div>

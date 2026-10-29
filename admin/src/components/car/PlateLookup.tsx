@@ -9,9 +9,9 @@ import { useState } from "react";
 type SearchType = "plate" | "vin";
 
 /** УБ / Орон нутаг isn't asked here: the user picks it in the form. */
-const TYPES: Record<SearchType, { label: string; short: string; placeholder: string; check: RegExp; error: string }> = {
-  plate: { label: "Улсын дугаар", short: "Улсын", placeholder: "1234 УБА", check: /^\d{4}[А-ЯЁӨҮ]{3}$/, error: "Улсын дугаарын формат буруу байна (жш: 1234 УБА)" },
-  vin: { label: "Арлын дугаар", short: "Арлын", placeholder: "NHP106487692", check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, error: "Арлын дугаарын формат буруу байна" },
+const TYPES: Record<SearchType, { label: string; short: string; check: RegExp; error: string }> = {
+  plate: { label: "Улсын дугаар", short: "Улсын", check: /^\d{4}[А-ЯЁӨҮ]{3}$/, error: "Улсын дугаарын формат буруу байна (жш: 1234 УБА)" },
+  vin: { label: "Арлын дугаар", short: "Арлын", check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, error: "Арлын дугаарын формат буруу байна" },
 };
 
 /** "1698 уао" → "1698УАО" */
@@ -86,7 +86,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
               search();
             }
           }}
-          placeholder={`${t.label}: ${t.placeholder}`}
+          placeholder={t.label}
           maxLength={20}
           autoComplete="off"
         />

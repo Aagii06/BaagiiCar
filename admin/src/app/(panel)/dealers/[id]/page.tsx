@@ -88,7 +88,7 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
     <form id={DEALER_FORM_ID} onSubmit={submit} className="space-y-4">
       <section className="space-y-4 rounded-2xl bg-card p-4">
         <Field label="Нэр *">
-          <input className={inputClass} value={f.name} onChange={set("name")} placeholder="Авто Плаза" required />
+          <input className={inputClass} value={f.name} onChange={set("name")} placeholder="Дилерийн нэр" required />
         </Field>
         <div>
           <span className="mb-1.5 block text-[13px] font-semibold">Лого</span>
@@ -109,7 +109,7 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
           <input className={inputClass} type="email" value={f.email} onChange={set("email")} />
         </Field>
         <Field label="Хаяг">
-          <input className={inputClass} value={f.address} onChange={set("address")} placeholder="Улаанбаатар, ХУД, …" />
+          <input className={inputClass} value={f.address} onChange={set("address")} placeholder="Хаяг" />
         </Field>
         <Field label="Тайлбар">
           <textarea className={cn(inputClass, "h-auto min-h-24 py-3")} value={f.description} onChange={set("description")} maxLength={2000} />
