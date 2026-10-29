@@ -183,6 +183,17 @@
   animation: sheet-up 0.24s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
+/* Desktop Select dropdown: fades in while dropping a few pixels. */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+@utility animate-pop-in {
+  animation: pop-in 0.14s ease-out;
+}
+
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar {

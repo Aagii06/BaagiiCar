@@ -339,7 +339,7 @@ function ActionBar({ car: c, phone }: { car: Car; phone: string | null }) {
         <MessageCircle className="size-5" />
         {!phone && t("Чатлах")}
       </button>
-      {phone && <PhoneButton car={c} phone={phone} compact className="h-12 flex-1 rounded-xl bg-primary text-white" />}
+      {phone && <PhoneButton car={c} phone={phone} variant="bar" className="h-12 flex-1 rounded-xl bg-primary text-white" />}
     </div>
   );
 }

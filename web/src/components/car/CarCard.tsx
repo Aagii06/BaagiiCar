@@ -11,6 +11,7 @@ import Link from "next/link";
 import CarImage from "./CarImage";
 import CompareButton from "./CompareButton";
 import FavoriteButton from "./FavoriteButton";
+import PhoneButton from "./PhoneButton";
 import SpecChips from "./SpecChips";
 
 export function carTitle(car: Car, t: T) {
@@ -31,6 +32,7 @@ export function FeaturedBadge({ className }: { className?: string }) {
 export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadge?: boolean }) {
   const { t } = useI18n();
   const href = `/cars/${car.id}`;
+  const phone = car.phonenumber || car.seller_phone;
   return (
     <article className="flex gap-3 rounded-2xl bg-card p-2.5 transition-shadow hover:shadow-lg hover:shadow-black/5 sm:flex-col sm:gap-0 sm:p-3">
       <div className="relative w-[42%] max-w-44 shrink-0 self-start sm:w-full sm:max-w-none sm:self-stretch">
@@ -75,6 +77,7 @@ export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadg
           <Link href={href} className="hidden h-10 flex-1 items-center justify-center rounded-xl bg-primary text-sm font-bold sm:flex text-white hover:bg-primary-hover">
             {t("Дэлгэрэнгүй")}
           </Link>
+          {phone && <PhoneButton car={car} phone={phone} variant="icon" className="size-9 sm:size-10" />}
           <button
             type="button"
             onClick={() => openChat({ carId: car.id, title: carTitle(car, t) })}

@@ -9,12 +9,14 @@ import Link from "next/link";
 import { carTitle, FeaturedBadge } from "./CarCard";
 import CarImage from "./CarImage";
 import CompareButton from "./CompareButton";
+import PhoneButton from "./PhoneButton";
 import SpecChips from "./SpecChips";
 
 /** The orange-outlined, full-width featured card in the "Машин авах" grid. */
 export default function CarWideCard({ car }: { car: Car }) {
   const { t } = useI18n();
   const href = `/cars/${car.id}`;
+  const phone = car.phonenumber || car.seller_phone;
   return (
     <article className="grid gap-5 rounded-2xl border-[1.5px] border-primary bg-card p-3 sm:col-span-2 md:grid-cols-[1.1fr_1fr] xl:col-span-3">
       <Link href={href} className="relative">
@@ -39,6 +41,7 @@ export default function CarWideCard({ car }: { car: Car }) {
           <Link href={href} className="flex h-11 flex-1 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white hover:bg-primary-hover">
             {t("Дэлгэрэнгүй")}
           </Link>
+          {phone && <PhoneButton car={car} phone={phone} variant="icon" className="size-11" />}
           <button
             type="button"
             onClick={() => openChat({ carId: car.id, title: carTitle(car, t) })}

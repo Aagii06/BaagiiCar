@@ -13,8 +13,11 @@ const masked = (phone: string) => `${phone.replace(/\D/g, "").slice(0, 2)}••
 /** 8-digit numbers read as "9911 2233". */
 const spaced = (phone: string) => (/^\d{8}$/.test(phone) ? `${phone.slice(0, 4)} ${phone.slice(4)}` : phone);
 
-/** Hidden phone number (`compact`: label only, for the phone action bar); tapping counts the reveal and shows the number in a modal. */
-export default function PhoneButton({ car, phone, compact, className }: { car: Car; phone: string; compact?: boolean; className?: string }) {
+/**
+ * Hidden phone number; tapping counts the reveal and shows the number in a modal.
+ * `card`: masked number + "Харах" (ad page), `bar`: label only (phone action bar), `icon`: phone icon only (car cards).
+ */
+export default function PhoneButton({ car, phone, variant = "card", className }: { car: Car; phone: string; variant?: "card" | "bar" | "icon"; className?: string }) {
   const { t } = useI18n();
   const { token } = useAuth();
   const [open, setOpen] = useState(false);
@@ -40,7 +43,18 @@ export default function PhoneButton({ car, phone, compact, className }: { car: C
 
   return (
     <>
-      {compact ? (
+      {variant === "icon" ? (
+        <button
+          type="button"
+          onClick={show}
+          disabled={busy}
+          aria-label={t("Дугаар харах")}
+          title={t("Дугаар харах")}
+          className={cn("grid shrink-0 place-items-center rounded-xl border-[1.5px] border-primary text-primary hover:bg-primary-soft disabled:opacity-60", className)}
+        >
+          <Phone className="size-4" />
+        </button>
+      ) : variant === "bar" ? (
         <button type="button" onClick={show} disabled={busy} className={cn("flex items-center justify-center gap-2 font-bold disabled:opacity-60", className)}>
           <Phone className="size-4" />
           {t("Дугаар харах")}
