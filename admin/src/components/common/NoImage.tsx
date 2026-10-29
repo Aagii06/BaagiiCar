@@ -18,7 +18,8 @@ const fit = (el: HTMLImageElement | null) => {
 };
 
 /** Shown instead of an image that is not uploaded, has an empty path, or fails to load. */
-export default function NoImage({ alt = "", ...props }: Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "srcSet" | "sizes">) {
+export default function NoImage({ alt = "", ...props }: Omit<ImgHTMLAttributes<HTMLImageElement>, "src">) {
+  // A caller's srcSet / sizes belong to the real picture and would override this one.
   // eslint-disable-next-line @next/next/no-img-element -- static default picture
-  return <img alt={alt} {...props} src={NO_IMAGE} ref={fit} />;
+  return <img alt={alt} {...props} src={NO_IMAGE} srcSet={undefined} sizes={undefined} ref={fit} />;
 }

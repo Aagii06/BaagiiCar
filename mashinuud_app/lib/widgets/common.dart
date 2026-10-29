@@ -194,8 +194,29 @@ class ViewAll extends StatelessWidget {
       );
 }
 
-/// "No image" picture (our logo in gray): no file uploaded, an empty path, or a file that fails to load.
+/// "No image" picture (our logo in gray), cut three ways: no file uploaded, an empty path, or a file that fails to load.
 const noImage = 'assets/no-image.png';
+const noImageSmall = 'assets/no-image-sm.png';
+const noImageWide = 'assets/no-image-wide.png';
+
+/// Small boxes get the tight cut (the logo fills it), wide ones the 4:3 cut, the rest the square one.
+String noImageFor(double width, double height) {
+  if (!width.isFinite || !height.isFinite) return noImage;
+  if (width <= 96 && height <= 96) return noImageSmall;
+  if (height > 0 && width / height >= 1.2) return noImageWide;
+  return noImage;
+}
+
+/// The [noImage] picture in the cut that fits the space it gets.
+class NoImage extends StatelessWidget {
+  final BoxFit fit;
+  const NoImage({super.key, this.fit = BoxFit.contain});
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, box) => Image.asset(noImageFor(box.maxWidth, box.maxHeight), fit: fit, width: double.infinity, height: double.infinity),
+      );
+}
 
 /// Network photo on a tinted background, with the [noImage] picture when there is none.
 class NetImage extends StatelessWidget {
@@ -206,7 +227,7 @@ class NetImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final placeholder = Container(color: background, child: Image.asset(noImage, fit: fit, width: double.infinity, height: double.infinity));
+    final placeholder = Container(color: background, child: const NoImage());
     if (url == null) return placeholder;
     return Image.network(
       url!,

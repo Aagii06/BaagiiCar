@@ -36,11 +36,7 @@ export default function Img({
     if (src && el?.complete && el.naturalWidth) setDoneSrc(src);
   }, [src]);
 
-  if (missing) {
-    // srcSet / sizes belong to the real picture.
-    const { srcSet: _srcSet, sizes: _sizes, ...rest } = props;
-    return <NoImage alt={alt} className={className} {...rest} />;
-  }
+  if (missing) return <NoImage alt={alt} className={className} {...props} />;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element -- backend-served uploads, any host

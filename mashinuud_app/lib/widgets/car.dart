@@ -13,9 +13,6 @@ import 'package:mashinuud_app/widgets/phone.dart';
 void openCar(BuildContext context, Car car) =>
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => CarDetailScreen(carId: car.id, preview: car)));
 
-/// Shown when an ad has no photo, while it loads (however slowly), and if it fails — same as the website.
-const defaultCarImage = 'assets/no-image.png';
-
 /// A car's photo over the default "image coming soon" picture; the photo fades in once loaded.
 class CarImage extends StatelessWidget {
   final Car car;
@@ -26,11 +23,11 @@ class CarImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final url = uploadUrl(car.image, size: size);
-    const fallback = Image(image: AssetImage(defaultCarImage), fit: BoxFit.cover);
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Stack(fit: StackFit.expand, children: [
-        const ColoredBox(color: Colors.white, child: fallback),
+        // "No image" while there is no photo, while it loads (however slowly), and if it fails — same as the website.
+        const ColoredBox(color: Colors.white, child: NoImage()),
         if (url != null)
           Image.network(
             url,
