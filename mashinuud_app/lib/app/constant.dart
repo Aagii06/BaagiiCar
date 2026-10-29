@@ -7,6 +7,9 @@ class AppConstants {
   /// Public website, for share links (`--dart-define=SITE_URL=...`).
   static const String siteUrl = String.fromEnvironment('SITE_URL', defaultValue: 'https://cardealer.mn');
 
+  /// Admin / dealer panel, opened in a WebView for staff (`--dart-define=ADMIN_URL=...`).
+  static const String adminUrl = String.fromEnvironment('ADMIN_URL', defaultValue: 'https://admin.cardealer.mn');
+
   /// Help-desk phone shown under the chat code form (`--dart-define=CONTACT_PHONE=...`).
   static const String contactPhone = String.fromEnvironment('CONTACT_PHONE');
 

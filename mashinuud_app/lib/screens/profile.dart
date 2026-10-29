@@ -20,8 +20,16 @@ class ProfileScreen extends StatelessWidget {
           builder: (context, _) {
             final user = Stores.auth.user;
             if (user == null) {
-              return ListView(padding: const EdgeInsets.all(16), children: const [
-                Panel(child: PhoneCodeForm()),
+              return ListView(padding: const EdgeInsets.all(16), children: [
+                const Panel(child: PhoneCodeForm()),
+                const SizedBox(height: 12),
+                // Admins / dealers sign in on the admin panel itself (phone + password).
+                TextButton.icon(
+                  onPressed: () => Stores.mode.setAdmin(true),
+                  icon: const Icon(Icons.admin_panel_settings_outlined, size: 18),
+                  label: const Text('Админ / Дилераар нэвтрэх'),
+                  style: TextButton.styleFrom(foregroundColor: AppPalette.primary, textStyle: const TextStyle(fontWeight: FontWeight.w600)),
+                ),
               ]);
             }
             return _Account(key: ValueKey(user.id));

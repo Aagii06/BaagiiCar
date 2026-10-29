@@ -1,6 +1,7 @@
 "use client";
 
 import { useConfirm } from "@/components/common/Confirm";
+import { useInApp } from "@/lib/inApp";
 import { isIos, useInstallPrompt } from "@/lib/installPrompt";
 import { Download, Share } from "lucide-react";
 
@@ -8,7 +9,9 @@ import { Download, Share } from "lucide-react";
 export default function InstallAppButton() {
   const { installed, canPrompt, prompt } = useInstallPrompt();
   const confirm = useConfirm();
-  if (installed) return null;
+  // Already inside the mobile app: nothing to install.
+  const inApp = useInApp();
+  if (installed || inApp) return null;
 
   const showSteps = () =>
     confirm({

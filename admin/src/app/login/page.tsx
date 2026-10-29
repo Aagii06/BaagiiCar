@@ -4,6 +4,7 @@ import { Field, FormError, PasswordInput, PhoneInput } from "@/components/common
 import BrandMark from "@/components/layout/BrandMark";
 import SplashScreen from "@/components/layout/SplashScreen";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { APP_CUSTOMER_URL, useInApp } from "@/lib/inApp";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -19,6 +20,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const inApp = useInApp();
 
   useEffect(() => {
     if (status === "authenticated") router.replace(next);
@@ -62,6 +64,11 @@ function LoginForm() {
           {busy ? "Түр хүлээнэ үү…" : "Нэвтрэх"}
         </button>
       </form>
+      {inApp && (
+        <a href={APP_CUSTOMER_URL} className="mt-5 block text-center text-sm font-semibold text-primary">
+          Хэрэглэгчээр үргэлжлүүлэх
+        </a>
+      )}
     </div>
   );
 }

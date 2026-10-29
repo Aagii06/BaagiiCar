@@ -14,12 +14,14 @@ class Stores {
   static final compare = CompareStore();
   static final auth = AuthStore();
   static final shell = ShellController();
+  static final mode = AppModeStore();
 
   static Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     favorites._load(prefs);
     compare._load(prefs);
     auth._load(prefs);
+    mode._load(prefs);
   }
 }
 
@@ -170,5 +172,31 @@ class ShellController extends ChangeNotifier {
   void openCars([CarSearch search = const CarSearch()]) {
     pendingSearch = search;
     go(cars);
+  }
+}
+
+/// Which half of the app is showing: the customer screens, or the admin panel (admins / dealers).
+/// Kept on the device, so a signed-in dealer lands back in the panel on the next start.
+class AppModeStore extends ChangeNotifier {
+  static const _key = 'baagii_car_admin_mode';
+  SharedPreferences? _prefs;
+  bool _admin = false;
+
+  bool get admin => _admin;
+
+  void _load(SharedPreferences prefs) {
+    _prefs = prefs;
+    _admin = prefs.getBool(_key) ?? false;
+  }
+
+  void setAdmin(bool value) {
+    if (_admin == value) return;
+    _admin = value;
+    if (value) {
+      _prefs?.setBool(_key, true);
+    } else {
+      _prefs?.remove(_key);
+    }
+    notifyListeners();
   }
 }
