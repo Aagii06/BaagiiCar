@@ -36,8 +36,9 @@ class Api {
     return (await searchCars(CarSearch(pageSize: take))).rows;
   }
 
-  static Future<Car?> getCar(int id) async {
-    final res = await apiFetch('/web/base/vwCars/$id');
+  /// A signed-in visitor's token lets the backend count their view once (per 6 hours) under their account.
+  static Future<Car?> getCar(int id, {String? token}) async {
+    final res = await apiFetch('/web/base/vwCars/$id', token: token);
     final data = res['data'];
     return data is Map<String, dynamic> ? Car.fromJson(data) : null;
   }
@@ -48,6 +49,13 @@ class Api {
           ['id', 'in', ids],
         ], sort: _newest, take: ids.length)}');
     return _rows(res, Car.fromJson);
+  }
+
+  /// Reveals an ad's phone number; the backend counts each visitor once per 6 hours.
+  static Future<({String? phone, int count})> revealPhone(int carId, {String? token}) async {
+    final res = await apiFetch('/web/cars/$carId/phone-view', method: 'POST', token: token);
+    final data = res['data'] as Map<String, dynamic>?;
+    return (phone: data?['phone']?.toString(), count: (data?['phone_view_count'] as num?)?.toInt() ?? 0);
   }
 
   /// Photo file names of an ad, in their saved order.
@@ -160,6 +168,16 @@ class Api {
   /// Opening a thread reads its answers ([carId] null = general questions).
   static Future<void> markRead(String token, int? carId) async {
     await apiFetch('/web/messages/read', method: 'POST', token: token, body: {'car_id': carId});
+  }
+
+  /// "Бидэнд бичих" form; lands in the admin panel under Профайл → Санал хүсэлт.
+  static Future<void> sendFeedback({required String name, required String phone, required String email, required String message, String? token}) async {
+    await apiFetch('/web/feedbacks', method: 'POST', token: token, body: {
+      'name': name,
+      'phonenumber': phone,
+      'email': email,
+      'message': message,
+    });
   }
 
   /// Question about an ad, stored for the team (name and number come from the token).

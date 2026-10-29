@@ -26,6 +26,9 @@ class Car {
   final String? phonenumber;
   final String? description;
   final int? viewCount;
+
+  /// "Дугаар харах" taps (one per visitor per 6 hours).
+  final int? phoneViewCount;
   final bool isFeatured;
   final String status;
   final String? createdAt;
@@ -61,6 +64,7 @@ class Car {
     this.phonenumber,
     this.description,
     this.viewCount,
+    this.phoneViewCount,
     this.isFeatured = false,
     this.status = 'active',
     this.createdAt,
@@ -97,6 +101,7 @@ class Car {
         phonenumber: _str(j['phonenumber']),
         description: _str(j['description']),
         viewCount: _int(j['view_count']),
+        phoneViewCount: _int(j['phone_view_count']),
         isFeatured: _bool(j['is_featured']),
         status: _str(j['status']) ?? 'active',
         createdAt: _str(j['created_at']),
