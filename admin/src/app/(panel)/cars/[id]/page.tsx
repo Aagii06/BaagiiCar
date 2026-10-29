@@ -13,7 +13,7 @@ import { uploadUrl } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
-import { Check, Clock, Eye, EyeOff } from "lucide-react";
+import { Clock, Eye, EyeOff, Loader2, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
@@ -103,9 +103,8 @@ function CarEditInner() {
             )}
             {/* Same as the save button at the bottom of the form; a new ad uses the wizard's own buttons. */}
             {!isNew && data.data && data.data.car?.status !== "deleted" && (
-              <button type="submit" form={CAR_FORM_ID} disabled={saving} className="flex h-9 items-center gap-1 rounded-xl bg-primary px-3 text-sm font-bold text-white hover:bg-primary-hover disabled:opacity-60">
-                <Check className="size-4" strokeWidth={3} />
-                {saving ? "Хадгалж байна…" : "Хадгалах"}
+              <button type="submit" form={CAR_FORM_ID} disabled={saving} aria-label={saving ? "Хадгалж байна…" : "Хадгалах"} title="Хадгалах" className="grid size-10 place-items-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-60">
+                {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
               </button>
             )}
           </div>

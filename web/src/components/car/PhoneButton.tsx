@@ -50,7 +50,7 @@ export default function PhoneButton({ car, phone, variant = "card", className }:
           disabled={busy}
           aria-label={t("Дугаар харах")}
           title={t("Дугаар харах")}
-          className={cn("grid shrink-0 place-items-center rounded-xl border-[1.5px] border-primary text-primary hover:bg-primary-soft disabled:opacity-60", className)}
+          className={cn("grid shrink-0 place-items-center rounded-xl bg-primary-soft text-primary transition-colors hover:bg-primary hover:text-white disabled:opacity-60", className)}
         >
           <Phone className="size-4" />
         </button>

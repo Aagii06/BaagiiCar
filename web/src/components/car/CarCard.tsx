@@ -82,7 +82,7 @@ export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadg
             type="button"
             onClick={() => openChat({ carId: car.id, title: carTitle(car, t) })}
             aria-label={t("Зарлагчтай холбогдох")}
-            className="grid size-9 shrink-0 place-items-center rounded-xl border-[1.5px] border-primary text-primary hover:bg-primary-soft"
+            className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary transition-colors hover:bg-primary hover:text-white"
           >
             <MessageCircle className="size-3.5" />
           </button>
