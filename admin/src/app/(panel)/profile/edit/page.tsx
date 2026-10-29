@@ -129,7 +129,7 @@ function ProfileForm({ me }: { me: User }) {
               phoneChanged
                 ? "Хадгалсны дараа шинэ дугаараа SMS кодоор баталгаажуулна"
                 : phoneVerified
-                  ? "Админ самбарт энэ дугаараар нэвтэрнэ"
+                  ? undefined
                   : me.phone_verify_deadline
                     ? `Утсаа баталгаажуулна уу. ${me.phone_verify_deadline.slice(0, 16)} хүртэл баталгаажуулаагүй бол бүртгэл устна`
                     : "Утсаа SMS кодоор баталгаажуулна уу"

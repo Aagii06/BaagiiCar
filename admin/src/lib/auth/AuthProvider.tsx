@@ -70,10 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus("authenticated");
   }, []);
 
+  // A full load of /login instead of flipping status: the panel guard would
+  // otherwise send us to /login?next=<current page>, and signing back in would
+  // land on that page (e.g. /profile) instead of the dashboard.
   const logout = useCallback(() => {
     clearSession();
-    setUser(null);
-    setStatus("anonymous");
+    window.location.replace("/login");
   }, []);
 
   const refreshUser = useCallback(async () => {
