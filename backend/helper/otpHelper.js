@@ -75,6 +75,9 @@ const subjects = {
   email: "имэйл баталгаажуулах код",
   // "customer-email:<customerId>" - вэбийн зочин имэйлээ солих
   "customer-email": "имэйл баталгаажуулах код",
+  // "user-phone:<userId>" / "cust-phone:<customerId>" - нэвтэрсэн хэрэглэгч утсаа баталгаажуулах
+  "user-phone": "утас баталгаажуулах код",
+  "cust-phone": "утас баталгаажуулах код",
 };
 const titleFor = (purpose) => `Cardealer ${subjects[purpose.split(":")[0]] || "баталгаажуулах код"}`;
 
@@ -112,8 +115,8 @@ module.exports.verifyEmailOtp = (email, purpose, code) =>
   verifyOtp({ model: emailOtps, where: { email, purpose }, key: emailKey(email, purpose), code });
 
 // --- Утас (SMS) -------------------------------------------------------------
-// SMS холбогдоогүй үед (helper/smsHelper.js) код нь OTP_DEV_CODE байна - бусад
-// дүрэм (хугацаа, дахин авах хугацаа, оролдлогын тоо) адилхан ажиллана.
+// SMS холбогдоогүй үед (helper/smsHelper.js) development-д код нь OTP_DEV_CODE байна - бусад
+// дүрэм (хугацаа, дахин авах хугацаа, оролдлогын тоо) адилхан ажиллана. Production-д алдаа.
 const phoneKey = (phonenumber, purpose) => `phone:${purpose}:${phonenumber}`;
 
 module.exports.sendPhoneOtp = (phonenumber, purpose) => {
@@ -126,6 +129,7 @@ module.exports.sendPhoneOtp = (phonenumber, purpose) => {
     message: "Код SMS-ээр илгээлээ",
     deliver: async (code) => {
       if (!sms) {
+        if (process.env.NODE_ENV === "production") throw new Error("SMS_GATEWAY_TOKEN тохируулаагүй");
         console.log(`[sms холбогдоогүй] ${phonenumber} (${purpose}) код: ${code}`);
         return;
       }

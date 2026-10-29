@@ -15,6 +15,8 @@ module.exports = (sequelize, DataTypes) => {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 
       phonenumber: { type: DataTypes.STRING(20) },
+      // SMS кодоор баталгаажсан огноо (null - баталгаажаагүй)
+      phone_verified_at: { type: DataTypes.STRING },
       email: { type: DataTypes.STRING(254) },
       firstname: { type: DataTypes.STRING },
       lastname: { type: DataTypes.STRING },
@@ -37,6 +39,12 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   customers.softDelete = true;
+
+  // Дугаар солигдвол дахин баталгаажуулна
+  customers.beforeSave((data) => {
+    if (!data.isNewRecord && data.changed("phonenumber") && !data.changed("phone_verified_at"))
+      data.phone_verified_at = null;
+  });
 
   return customers;
 };

@@ -25,6 +25,8 @@ module.exports = (sequelize, DataTypes) => {
       profile: { type: DataTypes.STRING },
       username: { type: DataTypes.STRING },
       phonenumber: { type: DataTypes.STRING },
+      // SMS кодоор баталгаажсан огноо (null - баталгаажаагүй)
+      phone_verified_at: { type: DataTypes.STRING },
       firstname: { type: DataTypes.STRING },
       lastname: { type: DataTypes.STRING },
       email: { type: DataTypes.STRING },
@@ -57,6 +59,9 @@ module.exports = (sequelize, DataTypes) => {
   users.softDelete = true;
 
   users.beforeSave(async (data, options) => {
+    // Дугаар солигдвол дахин баталгаажуулна
+    if (!data.isNewRecord && data.changed("phonenumber") && !data.changed("phone_verified_at"))
+      data.phone_verified_at = null;
     // Зөвхөн нууц үг өөрчлөгдсөн үед hash хийнэ (давхар hash хийхээс сэргийлнэ)
     if (data.password && data.changed("password")) {
       const salt = await bcrypt.genSalt(8);
