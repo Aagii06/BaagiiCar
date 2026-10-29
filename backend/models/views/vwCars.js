@@ -41,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       phonenumber: { type: DataTypes.STRING },
       description: { type: DataTypes.TEXT },
       view_count: { type: DataTypes.INTEGER },
+      phone_view_count: { type: DataTypes.INTEGER },
       is_featured: { type: DataTypes.BOOLEAN },
       sold_at: { type: DataTypes.STRING },
       reject_reason: { type: DataTypes.TEXT },

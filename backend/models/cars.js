@@ -55,6 +55,8 @@ module.exports = (sequelize, DataTypes) => {
       phonenumber: { type: DataTypes.STRING },
       description: { type: DataTypes.TEXT },
       view_count: { type: DataTypes.INTEGER, defaultValue: 0 },
+      // Утасны дугаарыг харсан тоо
+      phone_view_count: { type: DataTypes.INTEGER, defaultValue: 0 },
       is_featured: { type: DataTypes.BOOLEAN, defaultValue: false },
       sold_at: { type: DataTypes.STRING },
       // Админ буцаасан тайлбар (status = "rejected")

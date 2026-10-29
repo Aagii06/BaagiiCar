@@ -106,7 +106,11 @@ function CarViewInner() {
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Eye className="size-3.5" />
-                    {car.view_count ?? 0}
+                    {car.view_count ?? 0} үзсэн
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Phone className="size-3.5" />
+                    {car.phone_view_count ?? 0} дугаар харсан
                   </span>
                   <span className="flex items-center gap-1">
                     <Heart className="size-3.5" />

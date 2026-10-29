@@ -104,6 +104,12 @@ export async function getCar(id: number | string) {
   return res.data;
 }
 
+/** Reveals the ad's phone number and counts the reveal. */
+export async function revealPhone(carId: number) {
+  const res = await apiFetch<ApiItemResponse<{ phone: string | null; phone_view_count: number }>>(`/web/cars/${carId}/phone-view`, { method: "POST" });
+  return res.data;
+}
+
 export async function getCarFiles(carId: number) {
   const res = await apiFetch<ApiListResponse<CarFile>>(
     `/web/base/allFiles${listQuery({ filter: [["data_id", "=", carId]] })}`

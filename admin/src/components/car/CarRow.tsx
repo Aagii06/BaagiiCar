@@ -12,7 +12,7 @@ import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { carTitle, cn, formatPrice, initials } from "@/lib/utils";
-import { BadgeCheck, Check, Eye, EyeOff, Star, Store, Trash2, Undo2 } from "lucide-react";
+import { BadgeCheck, Check, Eye, EyeOff, Phone, Star, Store, Trash2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -100,6 +100,16 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
             <p className="text-sm font-semibold text-primary">{formatPrice(car.price)}</p>
             <p className="truncate text-xs text-muted-foreground">
               #{car.code ?? car.id} · {car.phonenumber || car.seller_phone}
+            </p>
+            <p className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1" title="Зар үзсэн">
+                <Eye className="size-3.5" />
+                {car.view_count ?? 0}
+              </span>
+              <span className="flex items-center gap-1" title="Дугаар харсан">
+                <Phone className="size-3.5" />
+                {car.phone_view_count ?? 0}
+              </span>
             </p>
             {car.status === "rejected" && car.reject_reason && <p className="mt-1 line-clamp-2 text-xs text-destructive">↩ {car.reject_reason}</p>}
           </div>

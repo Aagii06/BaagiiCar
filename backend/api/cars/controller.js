@@ -23,7 +23,7 @@ const wasResubmitted = async (id, transaction) =>
   (await actionLogs.count({ where: { object_name: "cars", object_id: id, log_action: "resubmitted" }, transaction })) > 0;
 
 // Зөвхөн админ өөрчилж болох талбарууд
-const adminOnlyFields = ["user_id", "dealer_id", "is_featured", "view_count", "status", "sold_at", "reject_reason", "rejected_by", "rejected_at"];
+const adminOnlyFields = ["user_id", "dealer_id", "is_featured", "view_count", "phone_view_count", "status", "sold_at", "reject_reason", "rejected_by", "rejected_at"];
 
 // autobox.mn-ээс бөглөгдөж, дараа нь засагдахгүй байж болох талбарууд
 const autoboxFields = ["brand_id", "car_model_id", "manufactured_year", "imported_year", "fuel_type", "transmission", "drive_type", "steering", "vehicle_type", "engine_capacity", "mileage", "color", "vin"];

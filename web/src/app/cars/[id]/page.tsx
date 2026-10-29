@@ -4,6 +4,7 @@ import { carTitle } from "@/components/car/CarCard";
 import CarImage from "@/components/car/CarImage";
 import CompareButton from "@/components/car/CompareButton";
 import FavoriteButton from "@/components/car/FavoriteButton";
+import PhoneButton from "@/components/car/PhoneButton";
 import LeasingCalculator from "@/components/car/LeasingCalculator";
 import Container from "@/components/common/Container";
 import ShareButtons from "@/components/car/ShareButtons";
@@ -19,7 +20,7 @@ import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, initials, timeAgo } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
 import { useWheelScrollX } from "@/lib/useWheelScrollX";
@@ -334,12 +335,7 @@ function ActionBar({ car: c, phone }: { car: Car; phone: string | null }) {
         <MessageCircle className="size-5" />
         {!phone && t("Чатлах")}
       </button>
-      {phone && (
-        <a href={`tel:${phone}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white">
-          <Phone className="size-4" />
-          {t("Залгах")}
-        </a>
-      )}
+      {phone && <PhoneButton car={c} phone={phone} compact className="h-12 flex-1 rounded-xl bg-primary text-white" />}
     </div>
   );
 }
@@ -372,12 +368,7 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
         >
           <MessageCircle className="size-5" />
         </button>
-        {phone && (
-          <a href={`tel:${phone}`} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border-[1.5px] border-foreground font-bold hover:bg-muted">
-            <Phone className="size-4" />
-            {phone}
-          </a>
-        )}
+        {phone && <PhoneButton car={c} phone={phone} className="h-12 flex-1 rounded-xl border-[1.5px] border-foreground hover:bg-muted" />}
         <FavoriteButton carId={c.id} className="size-12 rounded-xl border border-border shadow-none" />
         <CompareButton carId={c.id} className="size-12" />
       </div>

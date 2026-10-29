@@ -25,6 +25,8 @@ export interface Car {
   phonenumber: string | null;
   description: string | null;
   view_count: number | null;
+  /** "Дугаар харах" дарсан тоо. */
+  phone_view_count?: number | null;
   is_featured: boolean | number | null;
   sold_at: string | null;
   status: string;

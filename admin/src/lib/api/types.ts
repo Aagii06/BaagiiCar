@@ -34,6 +34,8 @@ export interface Car {
   phonenumber: string | null;
   description: string | null;
   view_count: number | null;
+  /** Утасны дугаарыг харсан тоо. */
+  phone_view_count?: number | null;
   is_featured: boolean | number | null;
   sold_at: string | null;
   /** Admin's note when the ad was returned (status "rejected"). */
