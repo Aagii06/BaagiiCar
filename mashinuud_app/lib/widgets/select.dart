@@ -8,39 +8,97 @@ class Option<T> {
 }
 
 /// Bottom-sheet list of [options]; resolves to the picked option, or null when dismissed.
-Future<Option<T>?> pickOption<T>(BuildContext context, {required String title, required List<Option<T>> options, T? selected}) {
+/// [searchable] adds a search box; [limit] shows at most that many rows (the "all" row with a null value
+/// isn't counted, the selected one always stays) and the search box reaches the rest.
+Future<Option<T>?> pickOption<T>(BuildContext context, {required String title, required List<Option<T>> options, T? selected, bool searchable = false, int? limit}) {
   return showModalBottomSheet<Option<T>>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.white,
-    builder: (context) => ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.7),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-          child: Align(alignment: Alignment.centerLeft, child: Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
-        ),
-        Flexible(
-          child: ListView.builder(
-            shrinkWrap: true,
-            padding: const EdgeInsets.only(bottom: 16),
-            itemCount: options.length,
-            itemBuilder: (context, i) {
-              final o = options[i];
-              final on = o.value == selected;
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                title: Text(o.label, style: TextStyle(fontWeight: on ? FontWeight.w700 : FontWeight.w500, color: on ? AppPalette.primary : null)),
-                trailing: on ? const Icon(Icons.check_rounded, color: AppPalette.primary) : null,
-                onTap: () => Navigator.pop(context, o),
-              );
-            },
-          ),
-        ),
-      ]),
-    ),
+    builder: (context) => _OptionSheet<T>(title: title, options: options, selected: selected, searchable: searchable, limit: limit),
   );
+}
+
+class _OptionSheet<T> extends StatefulWidget {
+  final String title;
+  final List<Option<T>> options;
+  final T? selected;
+  final bool searchable;
+  final int? limit;
+  const _OptionSheet({required this.title, required this.options, this.selected, this.searchable = false, this.limit});
+  @override
+  State<_OptionSheet<T>> createState() => _OptionSheetState<T>();
+}
+
+class _OptionSheetState<T> extends State<_OptionSheet<T>> {
+  String _q = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final needle = _q.trim().toLowerCase();
+    final matches = needle.isEmpty ? widget.options : widget.options.where((o) => o.label.toLowerCase().contains(needle)).toList();
+    final all = matches.where((o) => o.value == null);
+    final rest = matches.where((o) => o.value != null).toList();
+    final limit = widget.limit;
+    var rows = matches;
+    if (limit != null && rest.length > limit) {
+      rows = [...all, ...rest.take(limit)];
+      final chosen = rest.where((o) => o.value == widget.selected).firstOrNull;
+      if (chosen != null && !rows.contains(chosen)) rows.add(chosen);
+    }
+    final hidden = matches.length - rows.length;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.7),
+      child: Padding(
+        // Keep the search box above the keyboard.
+        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            child: Align(alignment: Alignment.centerLeft, child: Text(widget.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
+          ),
+          if (widget.searchable)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+              child: TextField(
+                onChanged: (v) => setState(() => _q = v),
+                decoration: const InputDecoration(hintText: 'Хайх', prefixIcon: Icon(Icons.search_rounded, size: 20)),
+              ),
+            ),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.only(bottom: 16),
+              children: [
+                for (final o in rows)
+                  Builder(builder: (context) {
+                    final on = o.value == widget.selected;
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      title: Text(o.label, style: TextStyle(fontWeight: on ? FontWeight.w700 : FontWeight.w500, color: on ? AppPalette.primary : null)),
+                      trailing: on ? const Icon(Icons.check_rounded, color: AppPalette.primary) : null,
+                      onTap: () => Navigator.pop(context, o),
+                    );
+                  }),
+                if (rows.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: Text('Олдсонгүй', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))),
+                  ),
+                if (hidden > 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                    child: Text('Өөр $hidden байна, хайж олно уу', style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
+                  ),
+              ],
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
 }
 
 /// Field that looks like the website's select box and opens [pickOption].
@@ -52,6 +110,10 @@ class SelectField<T> extends StatelessWidget {
   final ValueChanged<T?> onChanged;
   final bool enabled;
   final bool loading;
+
+  /// Passed on to [pickOption].
+  final bool searchable;
+  final int? limit;
 
   /// Label above the value (hero search cell) instead of a plain box.
   final bool labelled;
@@ -65,6 +127,8 @@ class SelectField<T> extends StatelessWidget {
     this.enabled = true,
     this.loading = false,
     this.labelled = false,
+    this.searchable = false,
+    this.limit,
   });
 
   @override
@@ -76,7 +140,7 @@ class SelectField<T> extends StatelessWidget {
         ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppPalette.primary))
         : const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: AppPalette.mutedForeground);
     Future<void> open() async {
-      final picked = await pickOption<T>(context, title: label, options: [Option<T>(null, placeholder), ...options], selected: value);
+      final picked = await pickOption<T>(context, title: label, options: [Option<T>(null, placeholder), ...options], selected: value, searchable: searchable, limit: limit);
       if (picked != null) onChanged(picked.value);
     }
 

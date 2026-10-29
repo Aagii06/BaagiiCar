@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mashinuud_app/app/constant.dart';
+import 'package:flutter/services.dart';
+import 'package:mashinuud_app/api/api.dart';
 import 'package:mashinuud_app/app/theme.dart';
-import 'package:mashinuud_app/screens/car_chat.dart';
 import 'package:mashinuud_app/screens/leasing.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 const _faq = [
   ('sell', 'Машинаа зарах боломжтой юу?', 'Зарыг манай админ оруулдаг. Машинаа зарах бол утсаар эсвэл чатаар бидэнтэй холбогдоно уу.'),
@@ -182,37 +181,130 @@ class _HelpScreenState extends State<HelpScreen> {
             ),
           ),
         if (faq.isEmpty)
-          const Panel(child: Text('Тохирох асуулт олдсонгүй. Доорх товчоор бидэнд бичээрэй.', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))),
+          const Panel(child: Text('Тохирох асуулт олдсонгүй. Доорх маягтаар бидэнд бичээрэй.', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))),
         const SizedBox(height: 20),
-        Panel(
-          key: _contactKey,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Бидэнд бичих', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            const Text('Хариулт олдсонгүй бол бичээрэй. Ажлын цагаар хариулна.', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
-            const SizedBox(height: 16),
-            PrimaryButton(label: 'Чат', icon: Icons.chat_bubble_outline_rounded, onTap: () => openCarChat(context, null)),
-            if (AppConstants.contactPhone.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: FilledButton.icon(
-                  onPressed: () => launchUrl(Uri.parse('tel:${AppConstants.contactPhone}')),
-                  icon: const Icon(Icons.phone_rounded, size: 18),
-                  label: const Text(AppConstants.contactPhone),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppPalette.muted,
-                    foregroundColor: AppPalette.foreground,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
-                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
-          ]),
-        ),
+        _ContactForm(key: _contactKey, leasingCarId: widget.leasingCarId),
       ]),
     );
   }
+}
+
+/// "Бидэнд бичих": stored for the team (admin panel → Санал хүсэлт); a phone or an e-mail is required.
+class _ContactForm extends StatefulWidget {
+  final int? leasingCarId;
+  const _ContactForm({super.key, this.leasingCarId});
+  @override
+  State<_ContactForm> createState() => _ContactFormState();
+}
+
+class _ContactFormState extends State<_ContactForm> {
+  late final _name = TextEditingController(text: Stores.auth.user?.firstname ?? '');
+  late final _phone = TextEditingController(text: Stores.auth.user?.phonenumber ?? '');
+  final _email = TextEditingController();
+  late final _message = TextEditingController(
+    text: widget.leasingCarId == null ? '' : 'Лизингийн хүсэлт${widget.leasingCarId! > 0 ? ' — зар #${widget.leasingCarId}' : ''}\n',
+  );
+  bool _sending = false;
+  bool _sent = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    for (final c in [_name, _phone, _email, _message]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  bool get _canSend => !_sending && _message.text.trim().isNotEmpty && (_phone.text.isNotEmpty || _email.text.trim().isNotEmpty);
+
+  Future<void> _send() async {
+    setState(() {
+      _sending = true;
+      _error = null;
+    });
+    try {
+      await Api.sendFeedback(
+        name: _name.text.trim(),
+        phone: _phone.text,
+        email: _email.text.trim().toLowerCase(),
+        message: _message.text.trim(),
+        token: Stores.auth.token,
+      );
+      if (!mounted) return;
+      setState(() => _sent = true);
+      _message.clear();
+    } catch (e) {
+      if (mounted) setState(() => _error = '$e');
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  Widget _field(String label, Widget input) => Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
+          input,
+        ]),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    void changed(String _) => setState(() => _sent = false);
+    return Panel(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('Бидэнд бичих', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 6),
+        const Text('Тусламж хэрэгтэй бол бидэнд хандана уу.', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
+        const SizedBox(height: 18),
+        _field('Нэр', TextField(controller: _name, textCapitalization: TextCapitalization.words, onChanged: changed)),
+        _field(
+          'Утас',
+          TextField(
+            controller: _phone,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
+            decoration: const InputDecoration(hintText: 'Утасны дугаар'),
+            onChanged: changed,
+          ),
+        ),
+        _field(
+          'И-мэйл',
+          TextField(
+            controller: _email,
+            keyboardType: TextInputType.emailAddress,
+            autocorrect: false,
+            decoration: const InputDecoration(hintText: 'name@example.com'),
+            onChanged: changed,
+          ),
+        ),
+        _field('Асуулт', TextField(controller: _message, minLines: 4, maxLines: 8, maxLength: 2000, decoration: const InputDecoration(counterText: ''), onChanged: changed)),
+        if (_error != null) _Notice(_error!, color: AppPalette.destructive, background: AppPalette.destructiveSoft),
+        if (_sent) const _Notice('Илгээлээ. Бид удахгүй холбогдоно.', color: AppPalette.success, background: AppPalette.successSoft, icon: Icons.verified_rounded),
+        PrimaryButton(label: 'Илгээх', busy: _sending, onTap: _canSend ? _send : null),
+      ]),
+    );
+  }
+}
+
+class _Notice extends StatelessWidget {
+  final String text;
+  final Color color;
+  final Color background;
+  final IconData? icon;
+  const _Notice(this.text, {required this.color, required this.background, this.icon});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(AppRadius.md)),
+        child: Row(children: [
+          if (icon != null) ...[Icon(icon, size: 16, color: color), const SizedBox(width: 8)],
+          Expanded(child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: color))),
+        ]),
+      );
 }

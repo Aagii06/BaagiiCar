@@ -466,6 +466,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
                     value: _d.dealerId,
                     loading: _dealers == null,
                     options: [for (final d in _dealers ?? <Dealer>[]) Option(d.id, d.name)],
+                    searchable: true,
+                    limit: 10,
                     onChanged: (v) => setState(() => _d = _copy(_d, dealerId: v)),
                   ),
                   first: true,

@@ -56,7 +56,7 @@ class _PhoneButtonState extends State<PhoneButton> {
     }
     final car = widget.car;
     final seller = (car.dealerName ?? '').isNotEmpty ? car.dealerName : car.sellerName;
-    await showPhoneSheet(context, phone: revealed!.phone, count: revealed.count, seller: seller);
+    await showPhoneSheet(context, phone: revealed.phone, count: revealed.count, seller: seller);
   }
 
   @override
@@ -96,7 +96,7 @@ class _PhoneSheetState extends State<_PhoneSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final call = () => launchUrl(Uri.parse('tel:${widget.phone}'));
+    void call() => launchUrl(Uri.parse('tel:${widget.phone}'));
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
