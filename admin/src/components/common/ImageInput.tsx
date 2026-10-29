@@ -4,7 +4,7 @@ import { errorMessage, useToast } from "@/components/common/Toast";
 import { uploadCatalogImage, type UploadFolder } from "@/lib/api/admin";
 import { catalogImage } from "@/lib/api/config";
 import { cn } from "@/lib/utils";
-import { ImageUp, Loader2, RefreshCw, Trash2, Undo2 } from "lucide-react";
+import { CircleX, CloudUpload, ImageUp, Loader2, RefreshCw, Trash2, Undo2 } from "lucide-react";
 import { useState } from "react";
 
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
@@ -27,7 +27,7 @@ export default function ImageInput({
   /** "Лого оруулах" */
   label: string;
   hint?: string;
-  /** Round preview, cropped to fill (profile photos). */
+  /** Round avatar picker, cropped to fill (profile photos). */
   round?: boolean;
 }) {
   const toast = useToast();
@@ -90,6 +90,50 @@ export default function ImageInput({
       upload(e.dataTransfer.files?.[0]);
     },
   };
+
+  // Profile photo: a round avatar, clicked (or dropped on) to pick a file; × clears it.
+  if (round)
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <div className="relative size-32">
+          <label
+            {...dropProps}
+            aria-label={label}
+            title={label}
+            className={cn(
+              "relative block size-full cursor-pointer overflow-hidden rounded-full bg-[#dedede] transition",
+              dragging && "ring-4 ring-primary/30",
+              uploading && "pointer-events-none"
+            )}
+          >
+            {preview ? (
+              // eslint-disable-next-line @next/next/no-img-element -- uploaded image
+              <img src={preview} alt="" onError={() => setBroken(preview)} className="size-full object-cover" />
+            ) : (
+              <span className="absolute left-1/2 top-[25%] size-[45%] -translate-x-1/2 rounded-full bg-white" />
+            )}
+            <span className={cn("absolute inset-x-0 bottom-0 grid h-[31%] place-items-center text-white", preview ? "bg-dark/60" : "bg-[#9a9ca3]/90")}>
+              {uploading ? <Loader2 className="size-6 animate-spin" /> : <CloudUpload className="size-7" />}
+            </span>
+            {fileInput}
+          </label>
+          {preview && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              disabled={uploading}
+              aria-label="Зураг устгах"
+              title="Зураг устгах"
+              className="absolute right-0 top-2 grid size-8 place-items-center rounded-full bg-white text-muted-foreground shadow-md hover:text-destructive disabled:opacity-60"
+            >
+              <CircleX className="size-6" strokeWidth={1.75} />
+            </button>
+          )}
+        </div>
+        {hint && <p className="text-center text-xs text-muted-foreground">{hint}</p>}
+        {changed && revert}
+      </div>
+    );
 
   if (!preview)
     return (
