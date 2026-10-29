@@ -19,6 +19,70 @@ const STATUS_TABS: { value: "" | Feedback["status"]; label: string }[] = [
   { value: "seen", label: "Уншсан" },
 ];
 
+/** One line per feedback, like the Мессеж list; tap to read the whole message (a new one is then marked read). */
+function FeedbackRow({ feedback: f, onToggleSeen, onRemove }: { feedback: Feedback; onToggleSeen: () => void; onRemove: () => void }) {
+  const [open, setOpen] = useState(false);
+  const isNew = f.status === "new";
+  return (
+    <article className="px-4 py-3">
+      <button
+        type="button"
+        onClick={() => {
+          setOpen((o) => !o);
+          if (!open && isNew) onToggleSeen();
+        }}
+        aria-expanded={open}
+        className="block w-full text-left"
+      >
+        <div className="flex items-center gap-2">
+          <p className="min-w-0 flex-1 truncate font-bold">{f.name || f.phonenumber || "Нэргүй"}</p>
+          {f.created_at && <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(f.created_at)}</span>}
+        </div>
+        <p className={cn("mt-0.5 break-words text-sm leading-5", open ? "whitespace-pre-line" : "line-clamp-2", isNew ? "font-semibold text-foreground" : "text-muted-foreground")}>
+          {f.message}
+        </p>
+      </button>
+      <div className="mt-1.5 flex items-center gap-2">
+        <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold", isNew ? "bg-primary text-white" : "bg-muted text-muted-foreground")}>
+          {isNew ? "Шинэ" : "Уншсан"}
+        </span>
+        {f.phonenumber && (
+          <a href={`tel:${f.phonenumber}`} className="flex shrink-0 items-center gap-1 text-xs font-semibold hover:text-primary">
+            <Phone className="size-3.5" />
+            {f.phonenumber}
+          </a>
+        )}
+        {f.email && (
+          <a href={`mailto:${f.email}`} className="flex min-w-0 items-center gap-1 text-xs font-semibold hover:text-primary">
+            <Mail className="size-3.5 shrink-0" />
+            <span className="truncate">{f.email}</span>
+          </a>
+        )}
+        <span className="ml-auto flex shrink-0 items-center">
+          <button
+            type="button"
+            onClick={onToggleSeen}
+            aria-label={isNew ? "Уншсан болгох" : "Шинэ болгох"}
+            title={isNew ? "Уншсан болгох" : "Шинэ болгох"}
+            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            {isNew ? <Check className="size-4" /> : <Undo2 className="size-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            aria-label="Устгах"
+            title="Устгах"
+            className="grid size-7 place-items-center rounded-md text-destructive hover:bg-destructive-soft"
+          >
+            <Trash2 className="size-4" />
+          </button>
+        </span>
+      </div>
+    </article>
+  );
+}
+
 /** Messages sent from the web site's "Бидэнд бичих" form. */
 export default function FeedbacksPage() {
   return (
@@ -75,59 +139,12 @@ function FeedbacksList() {
       ) : !feedbacks.data?.rows.length ? (
         <EmptyState title="Санал хүсэлт алга" />
       ) : (
-        <>
-          <p className="mb-2 text-xs font-semibold text-muted-foreground">{feedbacks.data.count} санал хүсэлт</p>
-          <div className="space-y-2">
-            {feedbacks.data.rows.map((f) => (
-              <article key={f.id} className={cn("rounded-2xl bg-card p-4", f.status === "new" && "ring-2 ring-primary/30")}>
-                <div className="flex items-start gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-2 truncate font-semibold">
-                      {f.name || "Нэргүй"}
-                      {f.status === "new" && <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">Шинэ</span>}
-                    </p>
-                    {f.created_at && <p className="text-xs text-muted-foreground">{timeAgo(f.created_at)}</p>}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => toggleSeen(f)}
-                    aria-label={f.status === "new" ? "Уншсан болгох" : "Шинэ болгох"}
-                    title={f.status === "new" ? "Уншсан болгох" : "Шинэ болгох"}
-                    className="grid size-9 shrink-0 place-items-center rounded-lg hover:bg-muted"
-                  >
-                    {f.status === "new" ? <Check className="size-4" /> : <Undo2 className="size-4" />}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => remove(f)}
-                    aria-label="Устгах"
-                    title="Устгах"
-                    className="grid size-9 shrink-0 place-items-center rounded-lg text-destructive hover:bg-destructive-soft"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
-                <p className="mt-3 whitespace-pre-line break-words text-sm leading-6">{f.message}</p>
-                {(f.phonenumber || f.email) && (
-                  <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold">
-                    {f.phonenumber && (
-                      <a href={`tel:${f.phonenumber}`} className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 hover:bg-border">
-                        <Phone className="size-4" />
-                        {f.phonenumber}
-                      </a>
-                    )}
-                    {f.email && (
-                      <a href={`mailto:${f.email}`} className="flex min-w-0 items-center gap-1.5 rounded-lg bg-muted px-3 py-2 hover:bg-border">
-                        <Mail className="size-4 shrink-0" />
-                        <span className="truncate">{f.email}</span>
-                      </a>
-                    )}
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
-        </>
+        // Edge to edge, right under the header, like the Мессеж list (cancels main's px-4 and the header's mb-4).
+        <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
+          {feedbacks.data.rows.map((f) => (
+            <FeedbackRow key={f.id} feedback={f} onToggleSeen={() => toggleSeen(f)} onRemove={() => remove(f)} />
+          ))}
+        </div>
       )}
     </>
   );
