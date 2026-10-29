@@ -1,6 +1,8 @@
 const Sequelize = require("sequelize");
 const { Op } = Sequelize;
 const bcrypt = require("bcrypt");
+const { roles, maxAdmins } = require("../config/constants");
+const { phoneVerifyDeadline } = require("../helper/phoneVerifyDeadline");
 
 module.exports = (sequelize, DataTypes) => {
   class users extends Sequelize.Model {
@@ -27,6 +29,8 @@ module.exports = (sequelize, DataTypes) => {
       phonenumber: { type: DataTypes.STRING },
       // SMS кодоор баталгаажсан огноо (null - баталгаажаагүй)
       phone_verified_at: { type: DataTypes.STRING },
+      // Энэ хугацаанд баталгаажуулаагүй бол устна (ADMIN-д null)
+      phone_verify_deadline: { type: DataTypes.STRING },
       firstname: { type: DataTypes.STRING },
       lastname: { type: DataTypes.STRING },
       email: { type: DataTypes.STRING },
@@ -59,9 +63,21 @@ module.exports = (sequelize, DataTypes) => {
   users.softDelete = true;
 
   users.beforeSave(async (data, options) => {
-    // Дугаар солигдвол дахин баталгаажуулна
+    // Дугаар солигдвол дахин баталгаажуулна. ADMIN-аас бусад нь хугацаандаа баталгаажуулаагүй бол устна.
     if (!data.isNewRecord && data.changed("phonenumber") && !data.changed("phone_verified_at"))
       data.phone_verified_at = null;
+    if (data.role === roles.admin || data.phone_verified_at) data.phone_verify_deadline = null;
+    else if (!data.phone_verify_deadline || data.changed("phonenumber"))
+      data.phone_verify_deadline = phoneVerifyDeadline();
+
+    // ADMIN эрхтэй хэрэглэгч maxAdmins-аас хэтрэхгүй
+    if (data.role === roles.admin && data.status !== "deleted" && (data.isNewRecord || data.changed("role") || data.changed("status"))) {
+      const admins = await users.count({
+        where: { role: roles.admin, status: { [Op.ne]: "deleted" }, ...(data.id && { id: { [Op.ne]: data.id } }) },
+        transaction: options.transaction,
+      });
+      if (admins >= maxAdmins) throw `Админ эрхтэй хэрэглэгч ${maxAdmins}-аас олон байж болохгүй`;
+    }
     // Зөвхөн нууц үг өөрчлөгдсөн үед hash хийнэ (давхар hash хийхээс сэргийлнэ)
     if (data.password && data.changed("password")) {
       const salt = await bcrypt.genSalt(8);

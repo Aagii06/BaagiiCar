@@ -5,6 +5,11 @@ const constant = {
     dealer: "DEALER",
     customer: "CUSTOMER",
   },
+  // ADMIN эрхтэй хэрэглэгчийн дээд тоо (models/users.js)
+  maxAdmins: 3,
+  // Утсаа энэ хугацаанд баталгаажуулаагүй users (ADMIN-аас бусад) / customers бүр мөсөн устна
+  // (helper/phoneVerifyHelper.js)
+  phoneVerifyDays: 7,
 
   // Машины зарын төлөв
   carStatuses: {

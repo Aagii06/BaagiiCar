@@ -1,4 +1,5 @@
 const Sequelize = require("sequelize");
+const { phoneVerifyDeadline } = require("../helper/phoneVerifyDeadline");
 
 // Вэбийн зочин хэрэглэгч: утас (эсвэл имэйл) + нэг удаагийн кодоор нэвтэрнэ, нууц үггүй.
 // Зар оруулахгүй — зөвхөн зар үзэж, хадгалж, дилер/админтай чатлана.
@@ -17,6 +18,8 @@ module.exports = (sequelize, DataTypes) => {
       phonenumber: { type: DataTypes.STRING(20) },
       // SMS кодоор баталгаажсан огноо (null - баталгаажаагүй)
       phone_verified_at: { type: DataTypes.STRING },
+      // Энэ хугацаанд баталгаажуулаагүй бол устна (helper/phoneVerifyHelper.js)
+      phone_verify_deadline: { type: DataTypes.STRING },
       email: { type: DataTypes.STRING(254) },
       firstname: { type: DataTypes.STRING },
       lastname: { type: DataTypes.STRING },
@@ -40,10 +43,13 @@ module.exports = (sequelize, DataTypes) => {
 
   customers.softDelete = true;
 
-  // Дугаар солигдвол дахин баталгаажуулна
+  // Дугаар солигдвол дахин баталгаажуулна; хугацаандаа баталгаажуулаагүй бол устна
   customers.beforeSave((data) => {
     if (!data.isNewRecord && data.changed("phonenumber") && !data.changed("phone_verified_at"))
       data.phone_verified_at = null;
+    if (data.phone_verified_at) data.phone_verify_deadline = null;
+    else if (!data.phone_verify_deadline || data.changed("phonenumber"))
+      data.phone_verify_deadline = phoneVerifyDeadline();
   });
 
   return customers;
