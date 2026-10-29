@@ -74,20 +74,20 @@ export default function CarCard({ car, featuredBadge }: { car: Car; featuredBadg
 
         {/* Phones: no "Дэлгэрэнгүй" — the photo and title already open the ad. */}
         <div className="mt-auto flex gap-2 pt-2 sm:pt-4">
-          <Link href={href} className="hidden h-10 flex-1 items-center justify-center rounded-xl bg-primary text-[13px] font-medium text-white hover:bg-primary-hover sm:flex">
+          <Link href={href} className="hidden h-9 flex-1 items-center justify-center rounded-xl bg-primary text-[13px] font-medium text-white hover:bg-primary-hover sm:flex">
             {t("Дэлгэрэнгүй")}
           </Link>
-          {phone && <PhoneButton car={car} phone={phone} variant="icon" className="size-9 sm:size-10" />}
+          {phone && <PhoneButton car={car} phone={phone} variant="icon" className="size-9 [&_svg]:size-3.5" />}
           <button
             type="button"
             onClick={() => openChat({ carId: car.id, title: carTitle(car, t) })}
             aria-label={t("Зарлагчтай холбогдох")}
-            className="grid size-9 shrink-0 place-items-center rounded-xl border-[1.5px] border-primary text-primary hover:bg-primary-soft sm:size-10"
+            className="grid size-9 shrink-0 place-items-center rounded-xl border-[1.5px] border-primary text-primary hover:bg-primary-soft"
           >
-            <MessageCircle className="size-4" />
+            <MessageCircle className="size-3.5" />
           </button>
-          <FavoriteButton carId={car.id} className="size-9 rounded-xl border-[1.5px] border-border bg-transparent shadow-none sm:hidden" />
-          <CompareButton carId={car.id} className="size-9 sm:size-10" />
+          <FavoriteButton carId={car.id} className="size-9 rounded-xl border-[1.5px] border-border bg-transparent shadow-none sm:hidden [&_svg]:size-3.5" />
+          <CompareButton carId={car.id} className="size-9 [&_svg]:size-3.5" />
         </div>
       </div>
     </article>

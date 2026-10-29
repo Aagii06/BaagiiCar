@@ -38,19 +38,19 @@ export default function CarWideCard({ car }: { car: Car }) {
         </div>
         <SpecChips car={car} className="mt-4" />
         <div className="mt-auto flex gap-2 pt-5">
-          <Link href={href} className="flex h-11 flex-1 items-center justify-center rounded-xl bg-primary text-[13px] font-medium text-white hover:bg-primary-hover">
+          <Link href={href} className="flex h-10 flex-1 items-center justify-center rounded-xl bg-primary text-[13px] font-medium text-white hover:bg-primary-hover">
             {t("Дэлгэрэнгүй")}
           </Link>
-          {phone && <PhoneButton car={car} phone={phone} variant="icon" className="size-11" />}
+          {phone && <PhoneButton car={car} phone={phone} variant="icon" className="size-10 [&_svg]:size-3.5" />}
           <button
             type="button"
             onClick={() => openChat({ carId: car.id, title: carTitle(car, t) })}
             aria-label={t("Зарлагчтай холбогдох")}
-            className="grid size-11 place-items-center rounded-xl border-[1.5px] border-primary text-primary hover:bg-primary-soft"
+            className="grid size-10 place-items-center rounded-xl border-[1.5px] border-primary text-primary hover:bg-primary-soft"
           >
-            <MessageCircle className="size-4" />
+            <MessageCircle className="size-3.5" />
           </button>
-          <CompareButton carId={car.id} className="size-11" />
+          <CompareButton carId={car.id} className="size-10 [&_svg]:size-3.5" />
         </div>
       </div>
     </article>
