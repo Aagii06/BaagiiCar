@@ -7,6 +7,7 @@ Router.use("/users", require("./users/router"));
 Router.use("/cars", require("./cars/router"));
 Router.use("/messages", require("./messages/router"));
 Router.use("/upload", require("./upload/router"));
+Router.use("/sms-gateway", require("./smsGateway/router"));
 
 // test controller
 Router.use("/test", require("./test/router"));

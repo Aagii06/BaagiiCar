@@ -11,7 +11,7 @@ const findCustomerData = async (id) => {
   return { success: true, user: customer, message: "" };
 };
 
-// Утас руу нэвтрэх код илгээнэ (SMS холбогдох хүртэл OTP_DEV_CODE - helper/otpHelper.js)
+// Утас руу нэвтрэх код илгээнэ (SMS_GATEWAY_TOKEN тохируулаагүй бол OTP_DEV_CODE - helper/otpHelper.js)
 module.exports.otpSend = async (req, res) => {
   const { phonenumber } = req.body;
   try {
