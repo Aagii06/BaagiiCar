@@ -8,8 +8,10 @@ import { useState } from "react";
 
 // Highest monthly rate (%) the field accepts.
 const MAX_RATE = 10;
+// Highest down payment (%) the field accepts.
+const MAX_DOWN = 90;
 
-/** Dark "Зээлийн тооцоолуур" card: 30% down, pick a term, adjust the monthly rate (default LEASING.monthlyRate), see the monthly. */
+/** Dark "Зээлийн тооцоолуур" card: adjust the down payment (default LEASING.downPaymentRate) and monthly rate (default LEASING.monthlyRate), pick a term, see the monthly. */
 export default function LeasingCalculator({ price, carId, className }: { price: number | string | null; carId?: number; className?: string }) {
   const { t } = useI18n();
   const [months, setMonths] = useState(36);
@@ -18,17 +20,43 @@ export default function LeasingCalculator({ price, carId, className }: { price: 
   const [rateText, setRateText] = useState(defaultRate);
   const rate = Number(rateText.replace(",", "."));
   const rateValid = rateText.trim() !== "" && Number.isFinite(rate) && rate >= 0 && rate <= MAX_RATE;
+  // Down payment in percent, as typed, like the rate.
+  const defaultDown = String(Math.round(LEASING.downPaymentRate * 100));
+  const [downText, setDownText] = useState(defaultDown);
+  const downPct = Number(downText);
+  const downValid = downText.trim() !== "" && Number.isFinite(downPct) && downPct >= 0 && downPct <= MAX_DOWN;
+  const valid = rateValid && downValid;
   const amount = toNumber(price);
-  const down = amount * LEASING.downPaymentRate;
-  const monthly = rateValid ? monthlyPayment(amount, months, LEASING.downPaymentRate, rate / 100) : 0;
+  const down = amount * (downPct / 100);
+  const monthly = valid ? monthlyPayment(amount, months, downPct / 100, rate / 100) : 0;
   const href = `/help?topic=leasing${carId ? `&car=${carId}` : ""}#contact`;
 
   return (
     <section className={cn("rounded-2xl bg-dark p-5 text-white md:p-6", className)}>
       <h2 className="font-bold">{t("Зээлийн тооцоолуур")}</h2>
-      <div className="mt-3 flex items-center justify-between text-sm">
-        <span className="text-white/80">{t("Урьдчилгаа {n}%", { n: Math.round(LEASING.downPaymentRate * 100) })}</span>
-        <span className="font-semibold">{amount ? formatPrice(down, t) : "—"}</span>
+      <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+        <label htmlFor="leasing-down" className="min-w-0">
+          <span className="block text-white/80">{t("Урьдчилгаа")}</span>
+          <span className="block font-semibold">{amount && downValid ? formatPrice(down, t) : "—"}</span>
+        </label>
+        <span className="flex items-center gap-2">
+          {downText !== defaultDown && (
+            <button type="button" onClick={() => setDownText(defaultDown)} className="text-xs font-semibold text-white/60 hover:text-white">
+              {t("{n}% болгох", { n: defaultDown })}
+            </button>
+          )}
+          <span className={cn("flex h-10 w-24 items-center rounded-lg bg-dark-2 pr-3 focus-within:ring-2", downValid ? "focus-within:ring-white/30" : "ring-2 ring-destructive")}>
+            <input
+              id="leasing-down"
+              value={downText}
+              onChange={(e) => setDownText(e.target.value.replace(/\D/g, "").slice(0, 2))}
+              inputMode="numeric"
+              aria-invalid={!downValid}
+              className="min-w-0 flex-1 bg-transparent px-3 text-right font-bold outline-none"
+            />
+            <span className="font-bold text-white/60">%</span>
+          </span>
+        </span>
       </div>
       <div className="mt-4 grid grid-cols-4 gap-1.5">
         {LEASING.terms.map((m) => (
@@ -67,7 +95,7 @@ export default function LeasingCalculator({ price, carId, className }: { price: 
       </div>
       <div className="mt-5 flex items-center justify-between gap-3">
         <span className="text-sm text-white/80">{t("Сарын төлбөр ({n} сар)", { n: months })}</span>
-        <span className="text-xl font-bold text-primary">{amount && rateValid ? formatPrice(monthly, t) : "—"}</span>
+        <span className="text-xl font-bold text-primary">{amount && valid ? formatPrice(monthly, t) : "—"}</span>
       </div>
       <p className="mt-2 text-[11px] leading-4 text-white/50">
         {t("Жишиг тооцоо: сарын {rate}% хүүтэй. Бодит нөхцөл банк, лизингийн компаниас хамаарна.", { rate: rateValid ? String(rate) : defaultRate })}
