@@ -104,13 +104,13 @@ function CarViewInner() {
                 <p className="mt-1 text-sm text-muted-foreground">{[car.manufactured_year, car.location_name].filter(Boolean).join(" · ")}</p>
                 <p className="mt-3 font-display text-2xl font-bold text-primary md:text-3xl">{formatPrice(car.price)}</p>
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground">
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1" title="Зар үзсэн">
                     <Eye className="size-3.5" />
-                    {car.view_count ?? 0} үзсэн
+                    {car.view_count ?? 0}
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1" title="Дугаар харсан">
                     <Phone className="size-3.5" />
-                    {car.phone_view_count ?? 0} дугаар харсан
+                    {car.phone_view_count ?? 0}
                   </span>
                   <span className="flex items-center gap-1">
                     <Heart className="size-3.5" />

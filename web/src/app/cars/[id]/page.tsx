@@ -20,7 +20,7 @@ import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, formatEngine, formatNumber, formatPrice, initials, timeAgo } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, MapPin, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
 import { useWheelScrollX } from "@/lib/useWheelScrollX";
@@ -397,7 +397,18 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
             </div>
           </>
         )}
-        <span className="text-xs text-muted-foreground">{t("{n} үзсэн", { n: c.view_count ?? 0 })}</span>
+        <span className="flex shrink-0 items-center gap-3 text-xs font-medium text-muted-foreground">
+          <span className="flex items-center gap-1" title={t("Зар үзсэн")}>
+            <Eye className="size-3.5" aria-hidden />
+            <span className="sr-only">{t("Зар үзсэн")}</span>
+            {c.view_count ?? 0}
+          </span>
+          <span className="flex items-center gap-1" title={t("Дугаар харсан")}>
+            <Phone className="size-3.5" aria-hidden />
+            <span className="sr-only">{t("Дугаар харсан")}</span>
+            {c.phone_view_count ?? 0}
+          </span>
+        </span>
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-5">

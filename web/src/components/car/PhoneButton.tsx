@@ -94,9 +94,10 @@ function PhoneDialog({ phone, count, onClose }: { phone: string; count: number; 
         </div>
         <div className="text-center">
           <p className="font-display text-[32px] font-bold tracking-wide">{phone}</p>
-          <p className="mt-1 flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
-            <Eye className="size-4" />
-            {t("{n} хүн дугаарыг харсан", { n: count })}
+          <p className="mt-1 flex items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground" title={t("Дугаар харсан")}>
+            <Eye className="size-4" aria-hidden />
+            <span className="sr-only">{t("Дугаар харсан")}</span>
+            {count}
           </p>
         </div>
         <div className="flex gap-2">
