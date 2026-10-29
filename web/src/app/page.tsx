@@ -1,6 +1,6 @@
 "use client";
 
-import CarArt, { shapeFor } from "@/components/car/CarArt";
+import CarArt from "@/components/car/CarArt";
 import CarCard from "@/components/car/CarCard";
 import Container, { SectionTitle, ViewAll } from "@/components/common/Container";
 import { CardGridSkeleton, EmptyState, ErrorState } from "@/components/common/States";
@@ -87,10 +87,8 @@ function DealerGrid() {
               <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted md:size-14">
                 <DealerAvatar
                   logo={dealer.logo}
-                  name={name}
                   loading="lazy"
-                  imgClassName="size-full object-contain"
-                  letterClassName="font-display text-xl font-bold text-foreground/60"
+                  className="size-full object-contain"
                 />
               </span>
               <span className="min-w-0">
@@ -138,16 +136,12 @@ function BrandGrid() {
               )}
             >
               <span className="grid size-10 place-items-center">
-                {logo ? (
-                  <Img
-                    src={logo}
-                    loading="lazy"
-                    placeholderClassName="size-8 rounded-md"
-                    className="max-h-8 max-w-8 object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
-                  />
-                ) : (
-                  <span className="font-display text-2xl font-bold text-foreground/70">{catalogName(b.name, t)[0]}</span>
-                )}
+                <Img
+                  src={logo}
+                  loading="lazy"
+                  placeholderClassName="size-8 rounded-md"
+                  className="max-h-8 max-w-8 object-contain opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
+                />
               </span>
             </Link>
           );
@@ -180,16 +174,12 @@ function BodyTypes({ items, loading }: { items: BodyType[]; loading: boolean }) 
                 <span className="block truncate font-display text-xl font-semibold md:text-2xl">{bodyTypeLabel(b.name, t)}</span>
                 <span className="mt-1 block text-sm text-foreground/60">{t("{n} машин", { n: b.car_count ?? 0 })}</span>
               </span>
-              {image ? (
-                <Img
-                  src={image}
-                  loading="lazy"
-                  placeholderClassName="h-12 w-20 rounded-md"
-                  className="h-12 w-20 shrink-0 object-contain transition-transform group-hover:scale-105 md:h-14 md:w-24"
-                />
-              ) : (
-                <CarArt shape={shapeFor(b.name)} className="w-16 shrink-0 text-foreground/70 md:w-20" strokeWidth={2.2} />
-              )}
+              <Img
+                src={image}
+                loading="lazy"
+                placeholderClassName="h-12 w-20 rounded-md"
+                className="h-12 w-20 shrink-0 object-contain transition-transform group-hover:scale-105 md:h-14 md:w-24"
+              />
             </Link>
           );
         })}

@@ -11,7 +11,7 @@ import { catalogImage } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
-import { carTitle, cn, formatPrice, initials } from "@/lib/utils";
+import { carTitle, cn, formatPrice } from "@/lib/utils";
 import { BadgeCheck, Check, Eye, EyeOff, Phone, Star, Store, Trash2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -78,13 +78,8 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
           <Img
             src={dealerLogo}
             className="size-5 shrink-0 rounded-md bg-white object-contain"
-            fallback={
-              car.dealer_name ? (
-                <span className="grid size-5 shrink-0 place-items-center rounded-md bg-amber text-[9px] font-bold text-foreground">{initials(car.dealer_name)}</span>
-              ) : (
-                <Store className="size-4 shrink-0 text-white/70" />
-              )
-            }
+            // No dealer at all: a shop icon; a dealer without a (working) logo: the "no image" picture.
+            fallback={car.dealer_name ? undefined : <Store className="size-4 shrink-0 text-white/70" />}
           />
           <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-white/70")}>{car.dealer_name || "Дилергүй"}</span>
         </div>

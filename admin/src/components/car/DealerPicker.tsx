@@ -7,7 +7,6 @@ import { catalogImage } from "@/lib/api/config";
 import type { Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useApi } from "@/lib/useApi";
-import { initials } from "@/lib/utils";
 import { getDealers } from "@/lib/api/cars";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
@@ -15,11 +14,7 @@ import { useState } from "react";
 export function DealerAvatar({ dealer, className = "size-11" }: { dealer: Pick<Dealer, "name" | "logo">; className?: string }) {
   const logo = catalogImage(dealer.logo, "dealers");
   return (
-    <Img
-      src={logo}
-      className={`${className} shrink-0 rounded-xl border border-border bg-white object-contain p-1`}
-      fallback={<span className={`${className} grid shrink-0 place-items-center rounded-xl bg-amber text-sm font-bold`}>{initials(dealer.name)}</span>}
-    />
+    <Img src={logo} className={`${className} shrink-0 rounded-xl border border-border bg-white object-contain p-1`} />
   );
 }
 

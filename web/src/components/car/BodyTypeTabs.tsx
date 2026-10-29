@@ -7,7 +7,6 @@ import { bodyTypeLabel } from "@/lib/constants";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useWheelScrollX } from "@/lib/useWheelScrollX";
 import { cn } from "@/lib/utils";
-import CarArt, { shapeFor } from "./CarArt";
 
 /** Row of body-type tiles; the selected one gets the heavy black outline. */
 export default function BodyTypeTabs({
@@ -40,11 +39,7 @@ export default function BodyTypeTabs({
               active ? "border-foreground" : "border-transparent hover:border-border"
             )}
           >
-            {image ? (
-              <Img src={image} className="h-7 w-11 rounded-md object-contain" loading="lazy" />
-            ) : (
-              <CarArt shape={shapeFor(b.name)} className="w-9" strokeWidth={2.6} />
-            )}
+            <Img src={image} className="h-7 w-11 rounded-md object-contain" loading="lazy" />
             {bodyTypeLabel(b.name, t)}
           </button>
         );

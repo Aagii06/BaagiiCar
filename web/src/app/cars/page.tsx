@@ -1,7 +1,6 @@
 "use client";
 
 import BrandTabs from "@/components/car/BrandTabs";
-import CarArt, { shapeFor } from "@/components/car/CarArt";
 import CarCard from "@/components/car/CarCard";
 import CarWideCard from "@/components/car/CarWideCard";
 import DealerTabs from "@/components/car/DealerTabs";
@@ -341,11 +340,7 @@ function Filters({
                       <Check className="size-3" strokeWidth={3.2} />
                     </span>
                   )}
-                  {image ? (
-                    <Img src={image} loading="lazy" className="h-8 w-full rounded-md object-contain" />
-                  ) : (
-                    <CarArt shape={shapeFor(b.name)} className="h-8 w-auto" strokeWidth={2.6} />
-                  )}
+                  <Img src={image} loading="lazy" className="h-8 w-full rounded-md object-contain" />
                   <span className="w-full truncate text-center">{bodyTypeLabel(b.name, t)}</span>
                 </button>
               );

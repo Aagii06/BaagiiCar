@@ -26,9 +26,7 @@ function DealerLogo({ dealer, className }: { dealer: Dealer; className?: string 
     <div className={cn("grid shrink-0 place-items-center overflow-hidden rounded-xl bg-muted", className)}>
       <DealerAvatar
         logo={dealer.logo}
-        name={dealerName(dealer)}
-        imgClassName="size-full object-contain"
-        letterClassName="font-display text-2xl font-bold text-foreground/60"
+        className="size-full object-contain"
       />
     </div>
   );

@@ -116,7 +116,7 @@ function ImageInput({ value, folder, onChange }: { value: string; folder: NonNul
   return (
     <div className="flex items-center gap-2">
       <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted">
-        {preview && <Img src={preview} className="size-9 object-contain" />}
+        <Img src={preview} className="size-9 object-contain" />
       </span>
       <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{uploading ? "Оруулж байна…" : value ? "Зураг оруулсан" : "Зураг оруулаагүй"}</p>
       <label className={cn("flex h-12 shrink-0 cursor-pointer items-center gap-1 rounded-xl bg-primary-soft px-3 text-sm font-bold text-primary", uploading && "pointer-events-none opacity-60")}>
@@ -312,7 +312,7 @@ function CatalogInner() {
               <div key={row.id} className="flex items-center gap-3 px-4 py-3">
                 {row.image !== undefined && (
                   <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted text-sm font-bold">
-                    {row.image ? <Img src={row.image} className="size-7 object-contain" /> : row.name[0]}
+                    <Img src={row.image} className="size-7 object-contain" />
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
