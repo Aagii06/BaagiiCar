@@ -8,11 +8,15 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 export default function EmailCodeDialog({
   email,
   token,
+  resendIn,
+  onResent,
   onClose,
   onVerified,
 }: {
   email: string;
   token: string;
+  resendIn?: number;
+  onResent?: (seconds: number) => void;
   onClose: () => void;
   onVerified: (user: WebUser) => void;
 }) {
@@ -22,6 +26,8 @@ export default function EmailCodeDialog({
       title={t("И-мэйл баталгаажуулах")}
       description={t("{email} хаяг руу илгээсэн 6 оронтой кодыг оруулна уу.", { email })}
       length={6}
+      resendIn={resendIn}
+      onResent={onResent}
       resend={() => sendEmailCode(token, email)}
       verify={(code) => verifyEmailCode(token, email, code)}
       onClose={onClose}

@@ -14,6 +14,7 @@ export default function CodeDialog({
   length,
   resendIn = 60,
   resend,
+  onResent,
   verify: check,
   onClose,
   onVerified,
@@ -24,6 +25,8 @@ export default function CodeDialog({
   /** Seconds before another code may be asked for (from the send that opened the dialog). */
   resendIn?: number;
   resend: () => Promise<unknown>;
+  /** Told about each resend's new wait, so the page behind can show the same countdown. */
+  onResent?: (seconds: number) => void;
   verify: (code: string) => Promise<WebUser>;
   onClose: () => void;
   onVerified: (user: WebUser) => void;
@@ -123,6 +126,7 @@ export default function CodeDialog({
                 await resend();
                 setCode("");
                 setCooldown(60);
+                onResent?.(60);
               })
             }
             disabled={busy || cooldown > 0}

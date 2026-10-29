@@ -16,6 +16,7 @@ export default function OtpSheet({
   length: CODE_LENGTH,
   resendIn: initialResendIn,
   resend: sendAgain,
+  onResent,
   verify: check,
   onVerified,
   onClose,
@@ -28,6 +29,8 @@ export default function OtpSheet({
   /** Seconds until another code may be requested (from the send response). */
   resendIn: number;
   resend: () => Promise<{ resend_in: number } | undefined>;
+  /** Told about each resend's new wait, so the page behind can show the same countdown. */
+  onResent?: (seconds: number) => void;
   verify: (code: string) => Promise<User>;
   onVerified: (user: User) => void;
   onClose: () => void;
@@ -70,6 +73,7 @@ export default function OtpSheet({
     try {
       const sent = await sendAgain();
       setResendIn(sent?.resend_in ?? 60);
+      onResent?.(sent?.resend_in ?? 60);
       setCode("");
       inputRef.current?.focus();
     } catch (err) {

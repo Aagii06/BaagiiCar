@@ -1,4 +1,4 @@
-import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
+import { ApiError, apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
 import { ROLES } from "@/lib/constants";
 import type { BodyType, Brand, Car, CarFile, CarModel, Customer, Dealer, Feedback, Location, Message, MessageReply, User } from "./types";
 
@@ -27,12 +27,28 @@ export async function changePassword(id: number, password: string, password_conf
   await apiFetch("/api/users/change-password", { method: "POST", body: { id, password, password_confirm, old_password } });
 }
 
-type OtpSent = { expires_in: number; resend_in: number };
+type OtpSent = { expires_in?: number; resend_in: number };
+
+/**
+ * Asked again before the resend wait is over: the earlier code is still valid, so this counts as sent
+ * and the caller just shows the remaining countdown instead of an error.
+ */
+async function allowCooldown(send: () => Promise<OtpSent>): Promise<OtpSent> {
+  try {
+    return await send();
+  } catch (err) {
+    const wait = err instanceof ApiError ? (err.data as { resend_in?: number } | null)?.resend_in : undefined;
+    if (typeof wait === "number" && wait > 0) return { resend_in: wait };
+    throw err;
+  }
+}
 
 /** Sends a 6-digit code to the new address; the email changes only after `verifyEmailChange`. */
-export async function sendEmailChangeCode(email: string) {
-  const res = await apiFetch<ApiItemResponse<OtpSent>>("/api/users/email-change/send", { method: "POST", body: { email } });
-  return res.data;
+export function sendEmailChangeCode(email: string) {
+  return allowCooldown(async () => {
+    const res = await apiFetch<ApiItemResponse<OtpSent>>("/api/users/email-change/send", { method: "POST", body: { email } });
+    return res.data;
+  });
 }
 
 /** Checks the code and saves the email; returns the updated user. */
@@ -42,9 +58,11 @@ export async function verifyEmailChange(email: string, code: string) {
 }
 
 /** Texts a 4-digit code to the signed-in user's own phone number. */
-export async function sendPhoneVerifyCode() {
-  const res = await apiFetch<ApiItemResponse<OtpSent>>("/api/users/phone-verify/send", { method: "POST", body: {} });
-  return res.data;
+export function sendPhoneVerifyCode() {
+  return allowCooldown(async () => {
+    const res = await apiFetch<ApiItemResponse<OtpSent>>("/api/users/phone-verify/send", { method: "POST", body: {} });
+    return res.data;
+  });
 }
 
 /** Checks the code and marks the phone as verified; returns the updated user. */

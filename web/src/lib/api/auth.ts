@@ -69,13 +69,15 @@ export async function updateMe(token: string, body: { firstname: string; email?:
 }
 
 /** E-mails a 6-digit code to the new address before it replaces the current one. */
-export async function sendEmailCode(token: string, email: string) {
-  const res = await apiFetch<ApiItemResponse<{ expires_in: number; resend_in: number }>>("/web/auth/email-change/send", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-    body: { email },
+export function sendEmailCode(token: string, email: string) {
+  return allowCooldown(async () => {
+    const res = await apiFetch<ApiItemResponse<CodeSent>>("/web/auth/email-change/send", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: { email },
+    });
+    return res.data;
   });
-  return res.data;
 }
 
 /** Checks the code and saves the new e-mail; returns the updated profile. */

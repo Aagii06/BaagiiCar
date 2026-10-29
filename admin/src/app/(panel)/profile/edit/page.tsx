@@ -14,7 +14,7 @@ import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { BadgeCheck, Loader2, ShieldAlert, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /** The signed-in user's own details, photo and dealer. Role and status stay as they are. */
 function ProfileForm({ me }: { me: User }) {
@@ -39,6 +39,14 @@ function ProfileForm({ me }: { me: User }) {
   const [otp, setOtp] = useState<{ email: string; resendIn: number } | null>(null);
   const newEmail = f.email.trim().toLowerCase();
   const emailChanged = newEmail !== verifiedEmail.toLowerCase();
+  // Resend wait for the last address a code went to; counts down under the field too.
+  const [emailWait, setEmailWait] = useState<{ email: string; left: number } | null>(null);
+  const emailCooldown = emailWait?.email === newEmail ? emailWait.left : 0;
+  useEffect(() => {
+    if (!emailWait || emailWait.left <= 0) return;
+    const timer = window.setTimeout(() => setEmailWait((w) => w && { ...w, left: w.left - 1 }), 1000);
+    return () => window.clearTimeout(timer);
+  }, [emailWait]);
   // Phone: the saved number is verified by SMS code; a changed number is verified after saving.
   const [phoneVerified, setPhoneVerified] = useState(Boolean(me.phone_verified_at));
   const [phoneOtp, setPhoneOtp] = useState<{ resendIn: number } | null>(null);
@@ -64,7 +72,8 @@ function ProfileForm({ me }: { me: User }) {
     setError(null);
     try {
       const sent = await sendEmailChangeCode(newEmail);
-      setOtp({ email: newEmail, resendIn: sent?.resend_in ?? 60 });
+      setEmailWait({ email: newEmail, left: sent.resend_in });
+      setOtp({ email: newEmail, resendIn: sent.resend_in });
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -154,7 +163,15 @@ function ProfileForm({ me }: { me: User }) {
           </Field>
           <Field
             label="И-мэйл"
-            hint={emailChanged ? "Шинэ хаяг руу баталгаажуулах код илгээгдэнэ" : verifiedEmail ? undefined : "Имэйл нэмэхэд баталгаажуулах код илгээгдэнэ"}
+            hint={
+              emailChanged && emailCooldown > 0
+                ? `Код дахин авах: ${emailCooldown} сек`
+                : emailChanged
+                  ? "Шинэ хаяг руу баталгаажуулах код илгээгдэнэ"
+                  : verifiedEmail
+                    ? undefined
+                    : "Имэйл нэмэхэд баталгаажуулах код илгээгдэнэ"
+            }
           >
             <span className="flex gap-2">
               <span className="relative min-w-0 flex-1">
@@ -162,7 +179,7 @@ function ProfileForm({ me }: { me: User }) {
                 {!emailChanged && verifiedEmail && <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />}
               </span>
               {emailChanged && newEmail && (
-                <button type="button" onClick={sendCode} disabled={sending} className="flex h-12 shrink-0 items-center gap-1.5 rounded-xl bg-primary-soft px-4 text-sm font-bold text-primary disabled:opacity-60">
+                <button type="button" onClick={sendCode} disabled={sending || emailCooldown > 0} className="flex h-12 shrink-0 items-center gap-1.5 rounded-xl bg-primary-soft px-4 text-sm font-bold text-primary disabled:opacity-60">
                   {sending && <Loader2 className="size-4 animate-spin" />}
                   Код авах
                 </button>
@@ -194,7 +211,8 @@ function ProfileForm({ me }: { me: User }) {
       {otp && (
         <EmailOtpSheet
           email={otp.email}
-          resendIn={otp.resendIn}
+          resendIn={emailWait?.email === otp.email ? emailWait.left : otp.resendIn}
+          onResent={(left) => setEmailWait({ email: otp.email, left })}
           onClose={() => setOtp(null)}
           onVerified={async (user) => {
             setOtp(null);

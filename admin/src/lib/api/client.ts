@@ -6,10 +6,13 @@ export const UNAUTHORIZED_EVENT = "admin-unauthorized";
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  /** The response's `data`, e.g. `{ resend_in }` when a code was asked for too soon. */
+  data: unknown;
+  constructor(status: number, message: string, data?: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.data = data;
   }
 }
 
@@ -76,7 +79,7 @@ export async function apiFetch<T>(
     }
     // express-validator failures come as `{ type: "validation", errors: [{ field, message }] }`.
     const firstError = Array.isArray(data?.errors) ? data.errors[0]?.message : undefined;
-    throw new ApiError(response.status, data?.message || firstError || statusMessage(response.status));
+    throw new ApiError(response.status, data?.message || firstError || statusMessage(response.status), data?.data);
   }
 
   return data as T;

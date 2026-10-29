@@ -61,6 +61,8 @@ function ProfileForm({ user }: { user: WebUser }) {
   const [saved, setSaved] = useState(false);
   // New address waiting for its e-mailed code (the modal is open while set).
   const [verifying, setVerifying] = useState<string | null>(null);
+  // Resend wait for the last address a code went to; counts down under the field too.
+  const [emailWait, setEmailWait] = useState<{ email: string; left: number } | null>(null);
   // SMS code sent to the account's phone (the modal is open while true).
   // Holds the resend countdown from the send response.
   const [verifyingPhone, setVerifyingPhone] = useState<number | null>(null);
@@ -69,6 +71,12 @@ function ProfileForm({ user }: { user: WebUser }) {
 
   useEffect(() => () => clearTimeout(savedTimer.current), []);
 
+  useEffect(() => {
+    if (!emailWait || emailWait.left <= 0) return;
+    const timer = window.setTimeout(() => setEmailWait((w) => w && { ...w, left: w.left - 1 }), 1000);
+    return () => window.clearTimeout(timer);
+  }, [emailWait]);
+
   const trimmedName = name.trim();
   const trimmedEmail = email.trim().toLowerCase();
   const nameDirty = trimmedName !== (user.firstname ?? "");
@@ -76,7 +84,8 @@ function ProfileForm({ user }: { user: WebUser }) {
   const emailRemoved = emailDirty && !trimmedEmail;
   // A new address is saved through its code (the "Код авах" button), not this button.
   const canSave = !busy && (nameDirty || emailRemoved) && trimmedName.length > 0;
-  const canRequestCode = !busy && emailDirty && /^\S+@\S+\.\S+$/.test(trimmedEmail);
+  const emailCooldown = emailWait?.email === trimmedEmail ? emailWait.left : 0;
+  const canRequestCode = !busy && emailDirty && emailCooldown <= 0 && /^\S+@\S+\.\S+$/.test(trimmedEmail);
 
   const showSaved = () => {
     setSaved(true);
@@ -110,7 +119,8 @@ function ProfileForm({ user }: { user: WebUser }) {
   const requestCode = () => {
     if (!canRequestCode || !token) return;
     run(async () => {
-      await sendEmailCode(token, trimmedEmail);
+      const sent = await sendEmailCode(token, trimmedEmail);
+      setEmailWait({ email: trimmedEmail, left: sent.resend_in });
       setVerifying(trimmedEmail);
     });
   };
@@ -161,7 +171,16 @@ function ProfileForm({ user }: { user: WebUser }) {
           )}
         </span>
       </Field>
-      <Field label={t("И-мэйл")} hint={emailDirty && trimmedEmail ? t("Шинэ хаяг руу баталгаажуулах код илгээнэ.") : undefined}>
+      <Field
+        label={t("И-мэйл")}
+        hint={
+          emailDirty && emailCooldown > 0
+            ? t("Код дахин авах ({n})", { n: emailCooldown })
+            : emailDirty && trimmedEmail
+              ? t("Шинэ хаяг руу баталгаажуулах код илгээнэ.")
+              : undefined
+        }
+      >
         <span className="relative block">
           <input
             type="email"
@@ -208,6 +227,8 @@ function ProfileForm({ user }: { user: WebUser }) {
         <EmailCodeDialog
           email={verifying}
           token={token}
+          resendIn={emailWait?.email === verifying ? emailWait.left : undefined}
+          onResent={(left) => setEmailWait({ email: verifying, left })}
           onClose={() => setVerifying(null)}
           onVerified={(next) => {
             setVerifying(null);

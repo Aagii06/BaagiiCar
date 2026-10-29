@@ -12,12 +12,14 @@ import { MailCheck } from "lucide-react";
 export default function EmailOtpSheet({
   email,
   resendIn,
+  onResent,
   onVerified,
   onClose,
 }: {
   email: string;
   /** Seconds until another code may be requested (from the send response). */
   resendIn: number;
+  onResent?: (seconds: number) => void;
   onVerified: (user: User) => void;
   onClose: () => void;
 }) {
@@ -28,6 +30,7 @@ export default function EmailOtpSheet({
       target={email}
       length={6}
       resendIn={resendIn}
+      onResent={onResent}
       resend={() => sendEmailChangeCode(email)}
       verify={(code) => verifyEmailChange(email, code)}
       onVerified={onVerified}
