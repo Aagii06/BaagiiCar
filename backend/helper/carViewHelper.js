@@ -16,7 +16,7 @@ const clientIp = (req) =>
 
 /**
  * Зар (type "view") эсвэл утасны дугаар (type "phone") үзсэнийг тоолно.
- * Нэвтэрсэн бол customer_id, үгүй бол IP-гаар; 6 цагийн дотор аль нэг нь таарвал refresh гэж үзээд тоолохгүй.
+ * Нэвтэрсэн бол customer_id-аар, нэвтрээгүй бол IP-гаар; 6 цагийн дотор өмнө нь тоологдсон бол refresh гэж үзээд тоолохгүй.
  * Тоолсон бол true.
  */
 module.exports.countCarView = async (req, carId, type) => {
@@ -31,13 +31,12 @@ module.exports.countCarView = async (req, carId, type) => {
     carViews.destroy({ where: { created_at: { [op.lt]: since } } }).catch(console.log);
   }
 
-  const who = [];
-  if (customerId) who.push({ customer_id: customerId });
-  if (ip) who.push({ ip });
-  if (!who.length) return false;
+  // Нэвтэрсэн бол зөвхөн өөрийнх нь бүртгэл: нэг IP-аас өөр customer орвол тоологдоно
+  const who = customerId ? { customer_id: customerId } : ip ? { customer_id: null, ip } : null;
+  if (!who) return false;
 
   const seen = await carViews.findOne({
-    where: { car_id: carId, type, created_at: { [op.gte]: since }, [op.or]: who },
+    where: { car_id: carId, type, created_at: { [op.gte]: since }, ...who },
     attributes: ["id"],
   });
   if (seen) return false;

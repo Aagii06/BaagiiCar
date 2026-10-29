@@ -16,8 +16,9 @@ export default function PhoneButton({ car, phone, compact, className }: { car: C
   const { t } = useI18n();
   const { token } = useAuth();
   const [open, setOpen] = useState(false);
-  // Fetched once per page; reopening the modal doesn't count again.
-  const [revealed, setRevealed] = useState<{ phone: string; count: number } | null>(null);
+  // Fetched once per visitor; reopening the modal doesn't count again, signing out / in as someone else does.
+  const [reveal, setRevealed] = useState<{ token: string | null; phone: string; count: number } | null>(null);
+  const revealed = reveal?.token === token ? reveal : null;
   const [busy, setBusy] = useState(false);
 
   const show = async () => {
@@ -25,10 +26,10 @@ export default function PhoneButton({ car, phone, compact, className }: { car: C
     setBusy(true);
     try {
       const res = await revealPhone(car.id, token);
-      setRevealed({ phone: res.phone || phone, count: res.phone_view_count });
+      setRevealed({ token, phone: res.phone || phone, count: res.phone_view_count });
     } catch {
       // Still show the number if counting failed.
-      setRevealed({ phone, count: car.phone_view_count ?? 0 });
+      setRevealed({ token, phone, count: car.phone_view_count ?? 0 });
     } finally {
       setBusy(false);
       setOpen(true);
