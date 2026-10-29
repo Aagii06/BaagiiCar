@@ -8,6 +8,10 @@ export interface WebUser {
   email: string | null;
   profile: string | null;
   role: string;
+  /** When the phone was confirmed by SMS code; null = not yet. */
+  phone_verified_at?: string | null;
+  /** Unconfirmed accounts are deleted after this time ("YYYY-MM-DD HH:mm:ss", Ulaanbaatar). */
+  phone_verify_deadline?: string | null;
 }
 
 export interface Session {
@@ -65,6 +69,25 @@ export async function verifyEmailCode(token: string, email: string, code: string
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: { email, code },
+  });
+  return res.data;
+}
+
+/** Texts a 4-digit code to the account's own phone number. */
+export async function sendPhoneVerifyCode(token: string) {
+  const res = await apiFetch<ApiItemResponse<{ expires_in: number; resend_in: number }>>("/web/auth/phone-verify/send", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+}
+
+/** Checks the code and marks the phone as verified; returns the updated profile. */
+export async function verifyPhoneCode(token: string, code: string) {
+  const res = await apiFetch<ApiItemResponse<WebUser>>("/web/auth/phone-verify/confirm", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: { code },
   });
   return res.data;
 }
