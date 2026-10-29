@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
 /** Shown when the ad has no photo, while it loads (however slowly), and if it fails. */
-export const DEFAULT_CAR_IMAGE = "/no-car.png";
+export const DEFAULT_CAR_IMAGE = "/no-image.png";
 
 /**
  * A car's photo over the default "image coming soon" picture: the photo fades in

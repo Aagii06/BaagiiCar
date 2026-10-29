@@ -2,12 +2,12 @@
 
 import { useState, type ImgHTMLAttributes, type ReactNode } from "react";
 
-export const DEFAULT_CAR_IMAGE = "/no-car.png";
+export const DEFAULT_CAR_IMAGE = "/no-image.png";
 
 /**
  * An uploaded image that shows `fallback` when there is no src or the file
  * fails to load (deleted / missing on the server), instead of a broken icon.
- * `fallback` defaults to the "no car" picture with the same classes.
+ * `fallback` defaults to the "no image" picture (our logo in gray) with the same classes.
  */
 export default function Img({
   src,

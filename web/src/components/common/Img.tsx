@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
-export const NO_IMAGE = "/no-car.png";
+export const NO_IMAGE = "/no-image.png";
 
 /**
  * `<img>` that pulses as a skeleton until it has loaded, then fades in.
