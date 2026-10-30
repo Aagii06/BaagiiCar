@@ -159,9 +159,9 @@ class SelectField<T> extends StatelessWidget {
     final on = enabled && !loading;
     // Options still coming: pulsing bars in place of the value and the arrow.
     final trailing = loading
-        ? const _Pulse(child: SkeletonBox(width: 16, height: 16, radius: 4))
+        ? const Pulse(child: SkeletonBox(width: 16, height: 16, radius: 4))
         : const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: AppPalette.mutedForeground);
-    const valueSkeleton = _Pulse(
+    const valueSkeleton = Pulse(
       child: FractionallySizedBox(alignment: Alignment.centerLeft, widthFactor: 0.45, child: SkeletonBox(height: 14)),
     );
     Future<void> open() async {
@@ -252,25 +252,4 @@ class SelectField<T> extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Fades its child in and out while something loads.
-class _Pulse extends StatefulWidget {
-  final Widget child;
-  const _Pulse({required this.child});
-  @override
-  State<_Pulse> createState() => _PulseState();
-}
-
-class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => FadeTransition(opacity: Tween(begin: 1.0, end: 0.4).animate(_controller), child: widget.child);
 }

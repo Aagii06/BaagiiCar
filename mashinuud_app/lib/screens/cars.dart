@@ -333,7 +333,7 @@ class _TileRow extends StatelessWidget {
           clipBehavior: Clip.none,
           itemCount: loading ? 6 : children.length,
           separatorBuilder: (_, _) => const SizedBox(width: 8),
-          itemBuilder: (_, i) => loading ? const SkeletonBox(width: 64, height: 64, radius: AppRadius.md) : children[i],
+          itemBuilder: (_, i) => loading ? const Pulse(child: SkeletonBox(width: 64, height: 64, radius: AppRadius.md, color: AppPalette.card)) : children[i],
         ),
       );
 }

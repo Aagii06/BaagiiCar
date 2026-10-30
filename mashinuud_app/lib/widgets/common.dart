@@ -62,18 +62,110 @@ class LoaderState<T> extends State<Loader<T>> {
     if (_error != null) {
       return widget.error?.call(context, _error!, reload) ?? ErrorView(message: '$_error', onRetry: reload);
     }
-    if (!_hasData) return widget.loading ?? const LoadingView();
+    if (!_hasData) return widget.loading ?? const PageSkeleton();
     return widget.builder(context, _data as T, _loading);
   }
 }
 
-class LoadingView extends StatelessWidget {
-  final double padding;
-  const LoadingView({super.key, this.padding = 48});
+/// Fades its child in and out while something loads (web `animate-pulse`).
+class Pulse extends StatefulWidget {
+  final Widget child;
+  const Pulse({super.key, required this.child});
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: EdgeInsets.symmetric(vertical: padding),
-        child: const Center(child: SizedBox.square(dimension: 26, child: CircularProgressIndicator(strokeWidth: 2.6, color: AppPalette.primary))),
+  State<Pulse> createState() => _PulseState();
+}
+
+class _PulseState extends State<Pulse> with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(opacity: Tween(begin: 1.0, end: 0.4).animate(_controller), child: widget.child);
+}
+
+/// Left-aligned bar taking [widthFactor] of the row (a line of text in a skeleton).
+class SkeletonLine extends StatelessWidget {
+  final double widthFactor;
+  final double height;
+  const SkeletonLine({super.key, this.widthFactor = 1, this.height = 13});
+  @override
+  Widget build(BuildContext context) =>
+      FractionallySizedBox(alignment: Alignment.centerLeft, widthFactor: widthFactor, child: SkeletonBox(height: height));
+}
+
+/// Panels of text lines, for a page whose shape isn't known yet (web `PageSkeleton`).
+class PageSkeleton extends StatelessWidget {
+  final int count;
+  final EdgeInsetsGeometry padding;
+  const PageSkeleton({super.key, this.count = 3, this.padding = const EdgeInsets.all(16)});
+  @override
+  Widget build(BuildContext context) => Pulse(
+        child: Padding(
+          padding: padding,
+          child: Column(children: [
+            for (var i = 0; i < count; i++)
+              Padding(
+                padding: EdgeInsets.only(bottom: i < count - 1 ? 12 : 0),
+                child: const Panel(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    SkeletonLine(widthFactor: 0.35, height: 18),
+                    SizedBox(height: 14),
+                    SkeletonLine(),
+                    SizedBox(height: 10),
+                    SkeletonLine(widthFactor: 0.8),
+                  ]),
+                ),
+              ),
+          ]),
+        ),
+      );
+}
+
+/// List rows: a car thumb (or round avatar) and two lines (web `RowsSkeleton`).
+class RowsSkeleton extends StatelessWidget {
+  final int count;
+  final bool avatar;
+  final double thumbWidth;
+  final double thumbHeight;
+  final EdgeInsetsGeometry rowPadding;
+  final bool dividers;
+  const RowsSkeleton({
+    super.key,
+    this.count = 5,
+    this.avatar = false,
+    this.thumbWidth = 64,
+    this.thumbHeight = 48,
+    this.rowPadding = const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    this.dividers = false,
+  });
+  @override
+  Widget build(BuildContext context) => Pulse(
+        child: Column(children: [
+          for (var i = 0; i < count; i++) ...[
+            if (dividers && i > 0) const Divider(height: 1),
+            Padding(
+              padding: rowPadding,
+              child: Row(children: [
+                avatar
+                    ? Container(width: thumbHeight, height: thumbHeight, decoration: const BoxDecoration(color: AppPalette.muted, shape: BoxShape.circle))
+                    : SkeletonBox(width: thumbWidth, height: thumbHeight, radius: AppRadius.sm),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    SkeletonLine(widthFactor: const [0.6, 0.5, 0.7][i % 3], height: 14),
+                    const SizedBox(height: 8),
+                    const SkeletonLine(widthFactor: 0.35, height: 12),
+                  ]),
+                ),
+              ]),
+            ),
+          ],
+        ]),
       );
 }
 
@@ -349,17 +441,18 @@ class Pill extends StatelessWidget {
       );
 }
 
-/// Grey shimmer-less block for skeletons.
+/// Grey block for skeletons; wrap a group of them in [Pulse]. Use [AppPalette.card] on the page background.
 class SkeletonBox extends StatelessWidget {
   final double? width;
   final double height;
   final double radius;
-  const SkeletonBox({super.key, this.width, required this.height, this.radius = 6});
+  final Color color;
+  const SkeletonBox({super.key, this.width, required this.height, this.radius = 6, this.color = AppPalette.muted});
   @override
   Widget build(BuildContext context) => Container(
         width: width,
         height: height,
-        decoration: BoxDecoration(color: AppPalette.muted, borderRadius: BorderRadius.circular(radius)),
+        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(radius)),
       );
 }
 

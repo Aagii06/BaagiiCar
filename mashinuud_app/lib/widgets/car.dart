@@ -304,31 +304,33 @@ class CarCardSkeleton extends StatelessWidget {
   const CarCardSkeleton({super.key, this.count = 4});
 
   @override
-  Widget build(BuildContext context) => Column(
-        children: List.generate(
-          count,
-          (_) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Panel(
-              padding: const EdgeInsets.all(10),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const SizedBox(width: 150, child: AspectRatio(aspectRatio: 4 / 3, child: SkeletonBox(height: double.infinity, radius: AppRadius.md))),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SizedBox(
-                    height: 112.5,
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const FractionallySizedBox(widthFactor: 0.8, child: SkeletonBox(height: 14)),
-                      const SizedBox(height: 8),
-                      const FractionallySizedBox(widthFactor: 0.4, child: SkeletonBox(height: 12)),
-                      const SizedBox(height: 8),
-                      const FractionallySizedBox(widthFactor: 0.6, child: SkeletonBox(height: 10)),
-                      const Spacer(),
-                      Row(children: List.generate(3, (_) => const Padding(padding: EdgeInsets.only(right: 8), child: SkeletonBox(width: 36, height: 36, radius: AppRadius.md)))),
-                    ]),
+  Widget build(BuildContext context) => Pulse(
+        child: Column(
+          children: List.generate(
+            count,
+            (_) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Panel(
+                padding: const EdgeInsets.all(10),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const SizedBox(width: 150, child: AspectRatio(aspectRatio: 4 / 3, child: SkeletonBox(height: double.infinity, radius: AppRadius.md))),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 112.5,
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const SkeletonLine(widthFactor: 0.8, height: 14),
+                        const SizedBox(height: 8),
+                        const SkeletonLine(widthFactor: 0.4, height: 12),
+                        const SizedBox(height: 8),
+                        const SkeletonLine(widthFactor: 0.6, height: 10),
+                        const Spacer(),
+                        Row(children: List.generate(3, (_) => const Padding(padding: EdgeInsets.only(right: 8), child: SkeletonBox(width: 36, height: 36, radius: AppRadius.md)))),
+                      ]),
+                    ),
                   ),
-                ),
-              ]),
+                ]),
+              ),
             ),
           ),
         ),

@@ -170,7 +170,7 @@ class _CompareScreenState extends State<CompareScreen> {
               ),
             ),
           if (_error != null) ErrorView(message: '$_error', onRetry: _sync),
-          if (_loading && cars.length < ids.length) const LoadingView(padding: 24),
+          if (_loading && cars.length < ids.length) const PageSkeleton(count: 1, padding: EdgeInsets.only(bottom: 12)),
           Panel(
             padding: EdgeInsets.zero,
             child: LayoutBuilder(
@@ -522,6 +522,7 @@ class _ComparePickerState extends State<_ComparePicker> {
           child: Loader<ListPage<Car>>(
             fetchKey: '$_text|$_brand|$_model|$_dealer|$_band|$_take',
             fetch: () => Api.searchCars(search),
+            loading: const RowsSkeleton(count: 6, thumbWidth: 80, thumbHeight: 56, rowPadding: EdgeInsets.fromLTRB(16, 16, 16, 0)),
             builder: (context, page, refreshing) {
               if (page.rows.isEmpty) {
                 return const Center(

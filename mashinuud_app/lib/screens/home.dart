@@ -440,7 +440,24 @@ class _BrandGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Loader<List<Brand>>(
         fetch: Api.getBrands,
-        loading: const SizedBox(height: 180),
+        loading: Padding(
+          padding: _gutter,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SectionTitle(kicker: 'Бүх үйлдвэр', light: 'Машины', bold: 'үйлдвэр', action: ViewAll(onTap: () => Stores.shell.openCars())),
+            const SizedBox(height: 16),
+            Pulse(
+              child: GridView.count(
+                crossAxisCount: 4,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 1.25,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: List.generate(8, (_) => const SkeletonBox(height: double.infinity, radius: AppRadius.md, color: AppPalette.card)),
+              ),
+            ),
+          ]),
+        ),
         error: (_, _, _) => const SizedBox.shrink(),
         builder: (context, brands, _) {
           if (brands.isEmpty) return const SizedBox.shrink();
@@ -543,7 +560,17 @@ class _Budgets extends StatelessWidget {
               for (final (min, max, _) in _bands)
                 Api.searchCars(CarSearch(priceMin: min > 0 ? min * _mln : null, priceMax: max > 0 ? max * _mln : null, pageSize: 1)).then((p) => p.count),
             ]),
-            loading: const SizedBox(height: 200),
+            loading: Pulse(
+              child: GridView.count(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 1.9,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: List.generate(_bands.length, (_) => const SkeletonBox(height: double.infinity, radius: AppRadius.xl, color: AppPalette.card)),
+              ),
+            ),
             error: (_, _, _) => const SizedBox.shrink(),
             builder: (context, counts, _) => GridView.count(
               crossAxisCount: 2,

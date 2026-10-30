@@ -64,6 +64,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
         body: Loader<List<Thread>>(
           key: _loader,
           fetch: _loadThreads,
+          loading: const Padding(
+            padding: EdgeInsets.all(16),
+            child: Panel(padding: EdgeInsets.zero, child: RowsSkeleton(dividers: true)),
+          ),
           error: (context, e, retry) {
             if (e is ApiError && e.status == 401) Stores.auth.signOut();
             return Padding(padding: const EdgeInsets.all(16), child: ErrorView(message: '$e', onRetry: retry));
@@ -255,7 +259,7 @@ class _ThreadScreenState extends State<ThreadScreen> {
       body: _error != null
           ? Padding(padding: const EdgeInsets.all(16), child: ErrorView(message: '$_error', onRetry: _load))
           : t == null
-              ? const LoadingView()
+              ? const _ThreadSkeleton()
               : Column(children: [
                   if (t.car != null)
                     Padding(
@@ -309,4 +313,24 @@ class _ThreadScreenState extends State<ThreadScreen> {
                 ]),
     );
   }
+}
+
+/// Placeholder chat: our questions on the right, replies on the left.
+class _ThreadSkeleton extends StatelessWidget {
+  const _ThreadSkeleton();
+  @override
+  Widget build(BuildContext context) => Pulse(
+        child: ListView(padding: const EdgeInsets.all(16), physics: const NeverScrollableScrollPhysics(), children: [
+          const SkeletonBox(height: 68, radius: AppRadius.xl, color: AppPalette.card),
+          const SizedBox(height: 16),
+          for (final (mine, width) in const [(true, 220.0), (false, 180.0), (true, 160.0), (false, 240.0)])
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Align(
+                alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+                child: SkeletonBox(width: width, height: 48, radius: 16, color: mine ? AppPalette.muted : AppPalette.card),
+              ),
+            ),
+        ]),
+      );
 }

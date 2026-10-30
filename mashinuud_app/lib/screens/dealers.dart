@@ -34,6 +34,28 @@ class DealersScreen extends StatelessWidget {
         appBar: AppBar(title: const Text('Дилерүүд')),
         body: Loader<List<Dealer>>(
           fetch: Api.getDealers,
+          loading: Pulse(
+            child: ListView(padding: const EdgeInsets.all(16), physics: const NeverScrollableScrollPhysics(), children: [
+              for (var i = 0; i < 5; i++)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: Panel(
+                    padding: EdgeInsets.all(14),
+                    child: Row(children: [
+                      SkeletonBox(width: 56, height: 56, radius: AppRadius.md),
+                      SizedBox(width: 14),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          SkeletonLine(widthFactor: 0.55, height: 14),
+                          SizedBox(height: 8),
+                          SkeletonLine(widthFactor: 0.25, height: 12),
+                        ]),
+                      ),
+                    ]),
+                  ),
+                ),
+            ]),
+          ),
           builder: (context, dealers, _) => ListView(padding: const EdgeInsets.all(16), children: [
             if (dealers.isEmpty) const EmptyView(title: 'Бүртгэлтэй дилер алга'),
             for (final d in dealers)
@@ -86,7 +108,25 @@ class _DealerScreenState extends State<DealerScreen> {
         body: ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 32), children: [
           Loader<Dealer>(
             fetch: () => Api.getDealer(widget.dealerId),
-            loading: widget.preview != null ? _header(widget.preview!) : const SizedBox(height: 64),
+            loading: widget.preview != null
+                ? _header(widget.preview!)
+                : const Pulse(
+                    child: Row(children: [
+                      SkeletonBox(width: 80, height: 80, radius: AppRadius.md, color: AppPalette.card),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: 0.6,
+                            child: SkeletonBox(height: 24, color: AppPalette.card),
+                          ),
+                          SizedBox(height: 12),
+                          SkeletonBox(width: 140, height: 36, radius: AppRadius.md, color: AppPalette.card),
+                        ]),
+                      ),
+                    ]),
+                  ),
             builder: (context, d, _) => _header(d),
           ),
           const SizedBox(height: 24),

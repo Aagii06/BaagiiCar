@@ -35,7 +35,7 @@ class CarDetailScreen extends StatelessWidget {
     return Loader<Car?>(
       fetchKey: token,
       fetch: () => Api.getCar(carId, token: token),
-      loading: Scaffold(appBar: AppBar(title: const Text('Дэлгэрэнгүй')), body: const LoadingView()),
+      loading: Scaffold(appBar: AppBar(title: const Text('Дэлгэрэнгүй')), body: const _DetailSkeleton()),
       error: (context, e, retry) => Scaffold(
         appBar: AppBar(title: const Text('Дэлгэрэнгүй')),
         body: Padding(padding: const EdgeInsets.all(16), child: ErrorView(message: '$e', onRetry: retry)),
@@ -84,6 +84,44 @@ class CarDetailScreen extends StatelessWidget {
       },
     );
   }
+}
+
+/// Placeholder ad page: photo, summary and specs (web `DetailSkeleton`).
+class _DetailSkeleton extends StatelessWidget {
+  const _DetailSkeleton();
+  @override
+  Widget build(BuildContext context) => Pulse(
+        child: ListView(physics: const NeverScrollableScrollPhysics(), children: [
+          const AspectRatio(aspectRatio: 4 / 3, child: SkeletonBox(height: double.infinity, radius: 0, color: AppPalette.card)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Column(children: [
+              const Panel(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  SkeletonLine(widthFactor: 0.7, height: 20),
+                  SizedBox(height: 10),
+                  SkeletonLine(widthFactor: 0.4, height: 14),
+                  SizedBox(height: 18),
+                  SkeletonLine(widthFactor: 0.5, height: 26),
+                ]),
+              ),
+              const SizedBox(height: 12),
+              Panel(
+                child: Column(children: [
+                  for (var i = 0; i < 6; i++)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Row(children: [
+                        Expanded(child: SkeletonLine(widthFactor: 0.5)),
+                        Expanded(child: SkeletonLine(widthFactor: 0.7)),
+                      ]),
+                    ),
+                ]),
+              ),
+            ]),
+          ),
+        ]),
+      );
 }
 
 // --- photos -------------------------------------------------------------------
