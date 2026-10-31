@@ -5,7 +5,7 @@ import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, CircleHelp, Heart, LayoutDashboard } from "lucide-react";
+import { ArrowLeft, Heart, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense } from "react";
@@ -141,11 +141,11 @@ export default function Header() {
             title={t("Тусламж")}
             aria-current={isActive(pathname, "/help") ? "page" : undefined}
             className={cn(
-              "grid size-11 place-items-center rounded-xl",
+              "grid size-11 place-items-center rounded-xl text-lg font-bold leading-none",
               isActive(pathname, "/help") ? "bg-primary-soft text-primary" : "bg-muted hover:bg-border"
             )}
           >
-            <CircleHelp className="size-[18px]" />
+            ?
           </Link>
         </div>
       </div>
