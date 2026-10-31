@@ -1,10 +1,11 @@
 "use client";
 
+import { ADMIN_URL } from "@/lib/api/config";
 import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft, Heart, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense } from "react";
@@ -74,6 +75,15 @@ function MobileAppBar({ pathname }: { pathname: string }) {
       <Link href="/saved" aria-label={t("Хадгалсан")} className="ml-auto grid size-11 shrink-0 place-items-center rounded-full active:bg-muted">
         <Heart className="size-[22px]" />
       </Link>
+      <a
+        href={ADMIN_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={t("Админ самбар")}
+        className="grid size-11 shrink-0 place-items-center rounded-full active:bg-muted"
+      >
+        <LayoutDashboard className="size-[22px]" />
+      </a>
     </div>
   );
 }
@@ -117,6 +127,15 @@ export default function Header() {
             <Heart className="size-[18px]" />
           </Link>
           <AccountMenu />
+          <a
+            href={ADMIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-11 items-center gap-2 rounded-xl bg-muted px-3 text-sm font-semibold hover:bg-border sm:px-4"
+          >
+            <LayoutDashboard className="size-[18px]" />
+            <span className="hidden sm:inline">{t("Админ")}</span>
+          </a>
         </div>
       </div>
     </header>
