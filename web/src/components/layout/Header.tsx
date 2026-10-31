@@ -141,7 +141,7 @@ export default function Header() {
             title={t("Тусламж")}
             aria-current={isActive(pathname, "/help") ? "page" : undefined}
             className={cn(
-              "grid size-11 place-items-center rounded-xl text-lg font-bold leading-none",
+              "grid size-11 place-items-center rounded-xl text-lg leading-none",
               isActive(pathname, "/help") ? "bg-primary-soft text-primary" : "bg-muted hover:bg-border"
             )}
           >
