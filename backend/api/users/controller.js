@@ -153,6 +153,9 @@ module.exports.create = async (req, res) => {
     password,
   };
 
+  // Дилер эрхтэй хэрэглэгч заавал дилерт харьяалагдана
+  if (role === roles.dealer && !body.dealer_id)
+    return res.status(200).json({ ...result, message: "Дилер эрхтэй хэрэглэгчид дилер сонгоно уу" });
   if (body.dealer_id) {
     const found = await dealers.count({ where: { id: body.dealer_id, status: ["active", "inactive"] } });
     if (!found) return res.status(200).json({ ...result, message: "Сонгосон дилер олдсонгүй" });

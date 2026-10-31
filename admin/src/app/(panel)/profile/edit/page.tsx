@@ -16,13 +16,13 @@ import { BadgeCheck, Loader2, ShieldAlert, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-/** The signed-in user's own details, photo and dealer. Role and status stay as they are. */
+/** The signed-in user's own details and photo; dealers also see their dealer. Role and status stay as they are. */
 function ProfileForm({ me }: { me: User }) {
   const router = useRouter();
   const toast = useToast();
   const { refreshUser } = useAuth();
   const isAdmin = me.role === ROLES.admin;
-  const dealers = useApi(getDealers);
+  const dealers = useApi(() => (isAdmin ? Promise.resolve([]) : getDealers()));
   const [f, setF] = useState({
     lastname: me.lastname ?? "",
     firstname: me.firstname ?? "",
@@ -118,8 +118,6 @@ function ProfileForm({ me }: { me: User }) {
         // Validated by the endpoint but ignored for your own account: a new number goes through /phone-change.
         phonenumber: verifiedPhone,
         profile: f.profile || null,
-        // Only admins pick their dealer; the backend ignores it for everyone else.
-        ...(isAdmin && { dealer_id: f.dealer_id ? Number(f.dealer_id) : null }),
         // The update endpoint validates the role; send the current one unchanged.
         role: me.role,
       });
@@ -231,18 +229,21 @@ function ProfileForm({ me }: { me: User }) {
               )}
             </span>
           </Field>
-          <Field label="Дилер" hint={isAdmin ? "Шинэ зар нэмэхэд энэ дилер санал болгогдоно" : "Таны зарууд энэ дилерт харьяалагдана. Солихыг админаас хүснэ үү"}>
-            {/* Placeholder grey goes on the select: browsers ignore colour on <option>. */}
-            <Select value={f.dealer_id} onChange={(e) => setF({ ...f, dealer_id: e.target.value })} disabled={!isAdmin} className={f.dealer_id ? undefined : "text-muted-foreground"}>
-              <option value="">-- Сонгох --</option>
-              {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}
-              {dealers.data?.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
+          {/* Admins don't need a dealer here; a dealer sees theirs read-only (an admin changes it). */}
+          {!isAdmin && (
+            <Field label="Дилер" hint="Таны зарууд энэ дилерт харьяалагдана. Солихыг админаас хүснэ үү">
+              {/* Placeholder grey goes on the select: browsers ignore colour on <option>. */}
+              <Select value={f.dealer_id} disabled className={f.dealer_id ? undefined : "text-muted-foreground"}>
+                <option value="">-- Сонгох --</option>
+                {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}
+                {dealers.data?.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
           <p className="text-xs text-muted-foreground">Эрх: {roleLabel(me.role)}</p>
         </section>
 

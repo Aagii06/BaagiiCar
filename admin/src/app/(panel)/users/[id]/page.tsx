@@ -54,6 +54,7 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
     e.preventDefault();
     if (f.password !== f.password_confirm) return setError("Нууц үгийн давталт таарахгүй байна");
     if (!user && f.password.length < 6) return setError("Нууц үг хамгийн багадаа 6 тэмдэгт байна");
+    if (f.role === ROLES.dealer && !f.dealer_id) return setError("Дилер эрхтэй хэрэглэгчид дилер сонгоно уу");
     setBusy(true);
     setError(null);
     const profile = {
@@ -160,8 +161,8 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
           </Field>
         </div>
         {canHaveDealer && (
-          <Field label="Дилер" hint={f.role === ROLES.dealer ? "Энэ хэрэглэгчийн оруулсан зар уг дилерт харьяалагдана" : "Админ аль дилерийнх болох"}>
-            <Select value={f.dealer_id} onChange={set("dealer_id")}>
+          <Field label={f.role === ROLES.dealer ? "Дилер *" : "Дилер"} hint={f.role === ROLES.dealer ? "Энэ хэрэглэгчийн оруулсан зар уг дилерт харьяалагдана" : "Админ аль дилерийнх болох"}>
+            <Select value={f.dealer_id} onChange={set("dealer_id")} required={f.role === ROLES.dealer}>
               <option value="">-- Сонгох --</option>
               {/* A dealer that's since been deactivated stays selectable for users already in it. */}
               {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}

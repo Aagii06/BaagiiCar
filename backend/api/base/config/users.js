@@ -19,6 +19,9 @@ const lookup = (req, res, next) => {
 // Дилерт зөвхөн ADMIN / DEALER эрхтэй хэрэглэгч харьяалагдана; дилер нь устгагдаагүй байх ёстой
 const checkDealer = async (req, res, next) => {
   const { role } = req.body;
+  // Дилер эрхтэй хэрэглэгч заавал дилерт харьяалагдана
+  if (role === roles.dealer && !req.body.dealer_id)
+    return res.status(200).json({ success: false, message: "Дилер эрхтэй хэрэглэгчид дилер сонгоно уу" });
   if (role && ![roles.admin, roles.dealer].includes(role)) req.body.dealer_id = null;
   else if (req.body.dealer_id) {
     const found = await dealers.count({ where: { id: req.body.dealer_id, status: ["active", "inactive"] } });
