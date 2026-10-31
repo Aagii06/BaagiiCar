@@ -6,7 +6,7 @@ const Sequelize = require("sequelize");
 const { Op } = Sequelize;
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "development";
-const config = require(__dirname + "/../config/config.json")[env];
+const config = require(__dirname + "/../config/config.js")[env];
 
 const db = {};
 const notUseDir = [
@@ -20,6 +20,7 @@ const sequelize = new Sequelize(
   config.password,
   {
     host: config.host,
+    port: config.port,
     dialect: config.dialect,
     dialectOptions: {
       requestTimeout: 15000,
