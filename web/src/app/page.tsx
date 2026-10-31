@@ -10,7 +10,7 @@ import Img from "@/components/common/Img";
 import DealerAvatar from "@/components/common/DealerAvatar";
 import { featuredCars, getBodyTypes, getBrands, searchCars } from "@/lib/api/cars";
 import { dealerName, getDealers } from "@/lib/api/dealers";
-import { catalogImage } from "@/lib/api/config";
+import { ADMIN_URL, catalogImage } from "@/lib/api/config";
 import type { BodyType } from "@/lib/api/types";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -18,7 +18,7 @@ import type { T } from "@/lib/i18n/translate";
 import { bodyTypeLabel, catalogName } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { ArrowRight, CreditCard, Heart, LifeBuoy, Search } from "lucide-react";
+import { ArrowRight, ChevronRight, CreditCard, Heart, LayoutDashboard, LifeBuoy, Search } from "lucide-react";
 import Link from "next/link";
 
 const MLN = 1_000_000;
@@ -58,6 +58,39 @@ function Hero({ bodyTypes }: { bodyTypes: BodyType[] }) {
         <HeroSearch />
       </Container>
     </section>
+  );
+}
+
+/** Link to the admin panel: a plain list row on phones, a card on desktop. */
+function AdminLink() {
+  const { t } = useI18n();
+  return (
+    <Container className="mt-6 md:mt-10">
+      <a
+        href={ADMIN_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-between border-b border-border py-4 text-base font-medium md:hidden"
+      >
+        {t("Админ самбар")}
+        <ChevronRight className="size-5 text-primary" />
+      </a>
+      <a
+        href={ADMIN_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group hidden items-center gap-4 rounded-2xl bg-card p-5 transition hover:shadow-xl hover:shadow-black/5 md:flex"
+      >
+        <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-tint-mint text-foreground">
+          <LayoutDashboard className="size-5" />
+        </span>
+        <span className="min-w-0">
+          <span className="block font-display text-lg font-semibold">{t("Админ самбар")}</span>
+          <span className="block text-xs text-muted-foreground">{t("Зар нэмэх, засах, удирдах")}</span>
+        </span>
+        <ArrowRight className="ml-auto size-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+      </a>
+    </Container>
   );
 }
 
@@ -228,6 +261,8 @@ export default function HomePage() {
 
       {/* Space for the overlapping search card (taller when it stacks). */}
       <div className="hidden h-[80px] lg:block" />
+
+      <AdminLink />
 
       <DealerGrid />
 

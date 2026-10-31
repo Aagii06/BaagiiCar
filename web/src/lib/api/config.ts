@@ -1,5 +1,10 @@
 export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5011").replace(/\/$/, "");
 
+/** Admin panel: `next dev` → local admin, builds → production; override with NEXT_PUBLIC_ADMIN_URL. */
+export const ADMIN_URL =
+  process.env.NEXT_PUBLIC_ADMIN_URL ||
+  (process.env.NODE_ENV === "production" ? "https://admin.cardealer.mn/" : "http://localhost:3881/");
+
 /** Car photos live under `<backend>/uploads/cars`, in four widths. */
 export type ImageSize = "icon" | "thumb" | "grid" | "full";
 
