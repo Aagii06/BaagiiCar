@@ -5,7 +5,7 @@ import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Heart, LayoutDashboard } from "lucide-react";
+import { ArrowLeft, CircleHelp, Heart, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense } from "react";
@@ -18,7 +18,6 @@ import Logo from "./Logo";
 export const NAV: { href: string; label: MessageKey }[] = [
   { href: "/cars", label: "Машин авах" },
   { href: "/compare", label: "Харьцуулалт" },
-  { href: "/help", label: "Тусламж" },
   { href: "/dealers", label: "Дилерүүд" },
 ];
 
@@ -136,6 +135,18 @@ export default function Header() {
             <LayoutDashboard className="size-[18px]" />
             <span className="hidden sm:inline">{t("Админ")}</span>
           </a>
+          <Link
+            href="/help"
+            aria-label={t("Тусламж")}
+            title={t("Тусламж")}
+            aria-current={isActive(pathname, "/help") ? "page" : undefined}
+            className={cn(
+              "grid size-11 place-items-center rounded-xl",
+              isActive(pathname, "/help") ? "bg-primary-soft text-primary" : "bg-muted hover:bg-border"
+            )}
+          >
+            <CircleHelp className="size-[18px]" />
+          </Link>
         </div>
       </div>
     </header>
