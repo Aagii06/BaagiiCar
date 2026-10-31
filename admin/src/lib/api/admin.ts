@@ -71,6 +71,20 @@ export async function verifyPhone(code: string) {
   return res.data;
 }
 
+/** Texts a 4-digit code to the new number; the number changes only after `verifyPhoneChange`. */
+export function sendPhoneChangeCode(phonenumber: string) {
+  return allowCooldown(async () => {
+    const res = await apiFetch<ApiItemResponse<OtpSent>>("/api/users/phone-change/send", { method: "POST", body: { phonenumber } });
+    return res.data;
+  });
+}
+
+/** Checks the code and saves the new number; returns the updated user. */
+export async function verifyPhoneChange(phonenumber: string, code: string) {
+  const res = await apiFetch<ApiItemResponse<User>>("/api/users/phone-change/verify", { method: "POST", body: { phonenumber, code } });
+  return res.data;
+}
+
 // --- generic /api/base/:target ---------------------------------------------
 
 export async function countOf(target: string, filter: Condition[]) {

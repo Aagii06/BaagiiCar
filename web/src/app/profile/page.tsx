@@ -3,9 +3,17 @@
 import Container, { AccountTitle } from "@/components/common/Container";
 import CodeDialog from "@/components/common/CodeDialog";
 import EmailCodeDialog from "@/components/common/EmailCodeDialog";
-import { Field, inputClass } from "@/components/common/Field";
+import { Field, inputClass, PhoneInput } from "@/components/common/Field";
 import { AccountSkeleton } from "@/components/common/States";
-import { sendEmailCode, sendPhoneVerifyCode, updateMe, verifyPhoneCode, type WebUser } from "@/lib/api/auth";
+import {
+  sendEmailCode,
+  sendPhoneChangeCode,
+  sendPhoneVerifyCode,
+  updateMe,
+  verifyPhoneChangeCode,
+  verifyPhoneCode,
+  type WebUser,
+} from "@/lib/api/auth";
 import ProfileSidebar from "@/components/layout/ProfileSidebar";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -67,6 +75,10 @@ function ProfileForm({ user }: { user: WebUser }) {
   // Holds the resend countdown from the send response.
   const [verifyingPhone, setVerifyingPhone] = useState<number | null>(null);
   const phoneVerified = Boolean(user.phone_verified_at);
+  // New number: changes only through the SMS code sent to it (the modal is open while set).
+  const [phone, setPhone] = useState(user.phonenumber ?? "");
+  const [changingPhone, setChangingPhone] = useState<string | null>(null);
+  const [phoneWait, setPhoneWait] = useState<{ phone: string; left: number } | null>(null);
   const savedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => () => clearTimeout(savedTimer.current), []);
@@ -77,6 +89,12 @@ function ProfileForm({ user }: { user: WebUser }) {
     return () => window.clearTimeout(timer);
   }, [emailWait]);
 
+  useEffect(() => {
+    if (!phoneWait || phoneWait.left <= 0) return;
+    const timer = window.setTimeout(() => setPhoneWait((w) => w && { ...w, left: w.left - 1 }), 1000);
+    return () => window.clearTimeout(timer);
+  }, [phoneWait]);
+
   const trimmedName = name.trim();
   const trimmedEmail = email.trim().toLowerCase();
   const nameDirty = trimmedName !== (user.firstname ?? "");
@@ -86,6 +104,9 @@ function ProfileForm({ user }: { user: WebUser }) {
   const canSave = !busy && (nameDirty || emailRemoved) && trimmedName.length > 0;
   const emailCooldown = emailWait?.email === trimmedEmail ? emailWait.left : 0;
   const canRequestCode = !busy && emailDirty && emailCooldown <= 0 && /^\S+@\S+\.\S+$/.test(trimmedEmail);
+  const phoneDirty = phone !== (user.phonenumber ?? "");
+  const phoneCooldown = phoneWait?.phone === phone ? phoneWait.left : 0;
+  const canRequestPhoneChange = !busy && phoneDirty && phoneCooldown <= 0 && phone.length === 8;
 
   const showSaved = () => {
     setSaved(true);
@@ -125,6 +146,16 @@ function ProfileForm({ user }: { user: WebUser }) {
     });
   };
 
+  // New number: SMS code to that number, then the modal saves it once the code is filled in.
+  const requestPhoneChange = () => {
+    if (!canRequestPhoneChange || !token) return;
+    run(async () => {
+      const sent = await sendPhoneChangeCode(token, phone);
+      setPhoneWait({ phone, left: sent.resend_in });
+      setChangingPhone(phone);
+    });
+  };
+
   // Unverified phone: SMS code to the account's number, then the modal confirms it.
   const requestPhoneCode = () => {
     if (busy || !token) return;
@@ -138,7 +169,7 @@ function ProfileForm({ user }: { user: WebUser }) {
     <form onSubmit={submit} className="max-w-2xl space-y-4 rounded-2xl bg-card p-5 md:p-6">
       <div>
         <h2 className="text-lg font-bold">{t("Хувийн мэдээлэл")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("Нэр, и-мэйлээ шинэчлэх")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("Нэр, утас, и-мэйлээ шинэчлэх")}</p>
       </div>
 
       <Field label={t("Нэр")}>
@@ -147,16 +178,41 @@ function ProfileForm({ user }: { user: WebUser }) {
       <Field
         label={t("Утасны дугаар")}
         hint={
-          phoneVerified
-            ? t("Утасны дугаараар нэвтэрдэг тул өөрчлөх боломжгүй.")
-            : user.phone_verify_deadline
-              ? t("Утасны дугаараа баталгаажуулна уу. {date} хүртэл баталгаажуулаагүй бол бүртгэл устна.", { date: user.phone_verify_deadline.slice(0, 16) })
-              : t("Утасны дугаараа баталгаажуулна уу.")
+          phoneDirty && phoneCooldown > 0
+            ? t("Код дахин авах ({n})", { n: phoneCooldown })
+            : phoneDirty
+              ? t("Шинэ дугаар руу SMS код илгээнэ.")
+              : phoneVerified
+                ? undefined
+                : user.phone_verify_deadline
+                  ? t("Утасны дугаараа баталгаажуулна уу. {date} хүртэл баталгаажуулаагүй бол бүртгэл устна.", { date: user.phone_verify_deadline.slice(0, 16) })
+                  : t("Утасны дугаараа баталгаажуулна уу.")
         }
       >
         <span className="relative block">
-          <input value={user.phonenumber ?? ""} disabled readOnly className={cn(inputClass, phoneVerified ? "pr-10" : "pr-36")} />
-          {phoneVerified ? (
+          <PhoneInput
+            value={phone}
+            onChange={setPhone}
+            onKeyDown={(e) => {
+              // Enter on a new number asks for its code instead of submitting the form.
+              if (e.key !== "Enter" || !phoneDirty) return;
+              e.preventDefault();
+              requestPhoneChange();
+            }}
+            placeholder="00000000"
+            autoComplete="tel"
+            className={phoneDirty ? "pr-28" : phoneVerified ? "pr-10" : "pr-36"}
+          />
+          {phoneDirty ? (
+            <button
+              type="button"
+              onClick={requestPhoneChange}
+              disabled={!canRequestPhoneChange}
+              className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-lg bg-primary px-3 text-sm font-bold text-white transition hover:bg-primary-hover disabled:opacity-60"
+            >
+              {t("Код авах")}
+            </button>
+          ) : phoneVerified ? (
             <BadgeCheck aria-label={t("Баталгаажсан")} className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
           ) : (
             <button
@@ -232,6 +288,24 @@ function ProfileForm({ user }: { user: WebUser }) {
           onClose={() => setVerifying(null)}
           onVerified={(next) => {
             setVerifying(null);
+            setUser(next);
+            showSaved();
+          }}
+        />
+      )}
+      {changingPhone && token && (
+        <CodeDialog
+          title={t("Утасны дугаар солих")}
+          description={t("{phone} дугаар руу илгээсэн 4 оронтой кодыг оруулна уу.", { phone: changingPhone })}
+          length={4}
+          resendIn={phoneWait?.phone === changingPhone ? phoneWait.left : undefined}
+          onResent={(left) => setPhoneWait({ phone: changingPhone, left })}
+          resend={() => sendPhoneChangeCode(token, changingPhone)}
+          verify={(code) => verifyPhoneChangeCode(token, changingPhone, code)}
+          onClose={() => setChangingPhone(null)}
+          onVerified={(next) => {
+            setChangingPhone(null);
+            setPhone(next.phonenumber ?? changingPhone);
             setUser(next);
             showSaved();
           }}

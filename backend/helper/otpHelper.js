@@ -3,6 +3,7 @@ const moment = require("moment");
 const { emailOtps, phoneOtps, customers, users, op } = require("../models");
 const { sendMail } = require("./mailHelper");
 const { isSmsConfigured, sendSms } = require("./smsHelper");
+const { saveLog } = require("../utils/logHelper");
 
 // Имэйл / утсаар (SMS) нэг удаагийн код илгээж, шалгах үйлчилгээ.
 // purpose: кодыг юунд ашиглахыг ялгана ("login" гэх мэт) - нэг зорилгын код нөгөөд хүчингүй.
@@ -78,6 +79,9 @@ const subjects = {
   // "user-phone:<userId>" / "cust-phone:<customerId>" - нэвтэрсэн хэрэглэгч утсаа баталгаажуулах
   "user-phone": "утас баталгаажуулах код",
   "cust-phone": "утас баталгаажуулах код",
+  // "user-phone-new:<userId>" / "cust-phone-new:<customerId>" - нэвтэрсэн хэрэглэгч дугаараа солих
+  "user-phone-new": "утасны дугаар солих код",
+  "cust-phone-new": "утасны дугаар солих код",
 };
 const titleFor = (purpose) => `Cardealer ${subjects[purpose.split(":")[0]] || "баталгаажуулах код"}`;
 
@@ -178,4 +182,78 @@ module.exports.confirmPhoneVerify = async (model, prefix, id, code, at) => {
   // hook phone_verify_deadline-ийг null болгоно
   await me.update({ phone_verified_at: at, updated_at: at });
   return { success: true, message: "Утас баталгаажлаа" };
+};
+
+// --- Нэвтэрсэн хэрэглэгч утасны дугаараа солих ------------------------------
+// Шинэ дугаар руу код илгээж, кодоор баталгаажсаны дараа л солино. prefix: "user-phone-new" | "cust-phone-new".
+// Кодоор нотлогдсон тул тухайн хүснэгтэд уг дугаарыг ашиглаж байсан бусад бүртгэлийг шууд блоклоно:
+// төлөв "blocked" (нэвтэрч чадахгүй), дугаар нь null (давхардахгүй). Блоклогдсоныг автоматаар устгахгүй - админ шийднэ.
+const blockPhoneOwners = async (model, phonenumber, exceptId, by, at, transaction) => {
+  const others = await model.findAll({
+    where: { phonenumber, status: { [op.ne]: "deleted" }, id: { [op.ne]: exceptId } },
+    attributes: ["id", "status"],
+    raw: true,
+    transaction,
+  });
+  if (!others.length) return;
+  await model.update(
+    { phonenumber: null, status: "blocked", phone_verified_at: null, phone_verify_deadline: null, updated_by: by, updated_at: at },
+    { where: { id: others.map((o) => o.id) }, transaction, hooks: false },
+  );
+  for (const other of others)
+    await saveLog(
+      {
+        object_name: model.name,
+        object_id: other.id,
+        log_action: "blocked",
+        log_action_mn: "Утасны дугаараа өөр бүртгэлд баталгаажуулсан тул блоклогдсон",
+        modify_data: JSON.stringify({ phonenumber, status: other.status }),
+        created_by: by,
+        created_at: at,
+      },
+      transaction,
+    );
+};
+
+module.exports.sendPhoneChange = async (model, prefix, id, phonenumber) => {
+  const me = await findForVerify(model, id);
+  if (!me) return { success: false, data: null, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
+  if (me.phonenumber === phonenumber) return { success: false, data: null, message: "Одоогийн дугаартай ижил байна" };
+  return module.exports.sendPhoneOtp(phonenumber, `${prefix}:${me.id}`);
+};
+
+// Буцаах: { success, message }
+module.exports.confirmPhoneChange = async (model, prefix, id, phonenumber, code, at) => {
+  const me = await findForVerify(model, id);
+  if (!me) return { success: false, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
+
+  const verified = await module.exports.verifyPhoneOtp(phonenumber, `${prefix}:${me.id}`, code);
+  if (!verified.success) return verified;
+
+  const t = await model.sequelize.transaction();
+  try {
+    await blockPhoneOwners(model, phonenumber, me.id, id, at, t);
+    // SMS кодоор солисон бол шинэ дугаар баталгаажсан (OTP_DEV_CODE бол үгүй - hook дахин баталгаажуулах хугацаа өгнө)
+    await me.update(
+      { phonenumber, phone_verified_at: isSmsConfigured() ? at : null, updated_by: id, updated_at: at },
+      { transaction: t },
+    );
+    await saveLog(
+      {
+        object_name: model.name,
+        object_id: me.id,
+        log_action: "phone_changed",
+        log_action_mn: "Утасны дугаар солисон",
+        modify_data: JSON.stringify({ phonenumber }),
+        created_by: id,
+        created_at: at,
+      },
+      t,
+    );
+    await t.commit();
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+  return { success: true, message: "Утасны дугаар солигдлоо" };
 };

@@ -10,6 +10,8 @@ const {
   releaseEmail,
   sendPhoneVerify,
   confirmPhoneVerify,
+  sendPhoneChange,
+  confirmPhoneChange,
 } = require("../../helper/otpHelper");
 
 // Вэбийн зочин хэрэглэгч customers хүснэгтэд (users-д зөвхөн ADMIN, DEALER).
@@ -219,6 +221,29 @@ module.exports.phoneVerifyConfirm = async (req, res) => {
   const { code, at } = req.body;
   try {
     const { success, message } = await confirmPhoneVerify(customers, "cust-phone", req.loggedUser?.id, code, at);
+    const data = success ? (await findCustomerData(req.loggedUser.id)).user : null;
+    return res.status(200).json({ success, data, message });
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Алдаа" });
+  }
+};
+
+// --- Утасны дугаар солих: шинэ дугаар руу SMS код илгээж, баталгаажуулсны дараа л солино ----
+module.exports.phoneChangeSend = async (req, res) => {
+  try {
+    const result = await sendPhoneChange(customers, "cust-phone-new", req.loggedUser?.id, req.body.phonenumber);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Код илгээж чадсангүй" });
+  }
+};
+
+module.exports.phoneChangeVerify = async (req, res) => {
+  const { phonenumber, code, at } = req.body;
+  try {
+    const { success, message } = await confirmPhoneChange(customers, "cust-phone-new", req.loggedUser?.id, phonenumber, code, at);
     const data = success ? (await findCustomerData(req.loggedUser.id)).user : null;
     return res.status(200).json({ success, data, message });
   } catch (error) {

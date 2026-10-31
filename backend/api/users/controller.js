@@ -7,7 +7,15 @@ const { uploadImage } = require("../../helper/fileHelper");
 const { authLogin } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
 const { roles } = require("../../config/constants");
-const { sendEmailOtp, verifyEmailOtp, releaseEmail, sendPhoneVerify, confirmPhoneVerify } = require("../../helper/otpHelper");
+const {
+  sendEmailOtp,
+  verifyEmailOtp,
+  releaseEmail,
+  sendPhoneVerify,
+  confirmPhoneVerify,
+  sendPhoneChange,
+  confirmPhoneChange,
+} = require("../../helper/otpHelper");
 
 module.exports.save = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
@@ -409,6 +417,29 @@ module.exports.phoneVerifyConfirm = async (req, res) => {
   const { code, at } = req.body;
   try {
     const { success, message } = await confirmPhoneVerify(users, "user-phone", req.loggedUser?.id, code, at);
+    const data = success ? (await findUserData(req.loggedUser.id)).user : null;
+    return res.status(200).json({ success, data, message });
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: typeof error === "string" ? error : "Алдаа" });
+  }
+};
+
+// --- Утасны дугаар солих: шинэ дугаар руу SMS код илгээж, баталгаажуулсны дараа л солино ----
+module.exports.phoneChangeSend = async (req, res) => {
+  try {
+    const result = await sendPhoneChange(users, "user-phone-new", req.loggedUser?.id, req.body.phonenumber);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Код илгээж чадсангүй" });
+  }
+};
+
+module.exports.phoneChangeVerify = async (req, res) => {
+  const { phonenumber, code, at } = req.body;
+  try {
+    const { success, message } = await confirmPhoneChange(users, "user-phone-new", req.loggedUser?.id, phonenumber, code, at);
     const data = success ? (await findUserData(req.loggedUser.id)).user : null;
     return res.status(200).json({ success, data, message });
   } catch (error) {

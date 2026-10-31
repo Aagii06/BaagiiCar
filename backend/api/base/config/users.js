@@ -38,6 +38,8 @@ const update = async (req, res, next) => {
   const isSelf = req.params.id + "" === req.loggedUser?.id + "";
   // Өөрийн имэйлийг зөвхөн кодоор баталгаажуулж солино (/api/users/email-change)
   if (isSelf) delete req.body.email;
+  // Өөрийн утасны дугаарыг мөн кодоор баталгаажуулж солино (/api/users/phone-change)
+  if (isSelf) delete req.body.phonenumber;
   // Админ бус хэрэглэгч зөвхөн өөрийн нэр, утас, зургаа засна; эрх, төлөв, дилерээ өөрчлөхгүй
   if (isSelf && req.loggedUser?.role !== roles.admin) {
     ["role", "status", "dealer_id", "password"].forEach((field) => delete req.body[field]);

@@ -98,6 +98,7 @@ module.exports = (sequelize, DataTypes) => {
             status: { [Op.ne]: "deleted" },
             id: { [Op.ne]: data.id },
           },
+          transaction: options.transaction,
         })
         .then((count) => count <= 0);
 
@@ -113,6 +114,7 @@ module.exports = (sequelize, DataTypes) => {
             status: { [Op.ne]: "deleted" },
             id: { [Op.ne]: data.id },
           },
+          transaction: options.transaction,
         })
         .then((count) => count <= 0);
       if (!isEmail) {

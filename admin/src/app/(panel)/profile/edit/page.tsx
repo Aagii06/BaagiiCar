@@ -6,7 +6,7 @@ import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
 import EmailOtpSheet from "@/components/profile/EmailOtpSheet";
 import OtpSheet from "@/components/profile/OtpSheet";
-import { getDealers, sendEmailChangeCode, sendPhoneVerifyCode, updateRow, verifyPhone } from "@/lib/api/admin";
+import { getDealers, sendEmailChangeCode, sendPhoneChangeCode, sendPhoneVerifyCode, updateRow, verifyPhone, verifyPhoneChange } from "@/lib/api/admin";
 import type { User } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
@@ -47,11 +47,35 @@ function ProfileForm({ me }: { me: User }) {
     const timer = window.setTimeout(() => setEmailWait((w) => w && { ...w, left: w.left - 1 }), 1000);
     return () => window.clearTimeout(timer);
   }, [emailWait]);
-  // Phone: the saved number is verified by SMS code; a changed number is verified after saving.
+  // Phone: the saved number is verified by SMS code; a new number changes only through a code sent to it.
+  const [verifiedPhone, setVerifiedPhone] = useState(me.phonenumber ?? "");
   const [phoneVerified, setPhoneVerified] = useState(Boolean(me.phone_verified_at));
   const [phoneOtp, setPhoneOtp] = useState<{ resendIn: number } | null>(null);
   const [sendingPhone, setSendingPhone] = useState(false);
-  const phoneChanged = f.phonenumber !== (me.phonenumber ?? "");
+  const [phoneChange, setPhoneChange] = useState<{ phone: string; resendIn: number } | null>(null);
+  const phoneChanged = f.phonenumber !== verifiedPhone;
+  const [phoneWait, setPhoneWait] = useState<{ phone: string; left: number } | null>(null);
+  const phoneCooldown = phoneWait?.phone === f.phonenumber ? phoneWait.left : 0;
+  useEffect(() => {
+    if (!phoneWait || phoneWait.left <= 0) return;
+    const timer = window.setTimeout(() => setPhoneWait((w) => w && { ...w, left: w.left - 1 }), 1000);
+    return () => window.clearTimeout(timer);
+  }, [phoneWait]);
+
+  const sendPhoneChange = async () => {
+    if (f.phonenumber.length !== 8) return setError("Утасны дугаар 8 оронтой байна");
+    setSendingPhone(true);
+    setError(null);
+    try {
+      const sent = await sendPhoneChangeCode(f.phonenumber);
+      setPhoneWait({ phone: f.phonenumber, left: sent.resend_in });
+      setPhoneChange({ phone: f.phonenumber, resendIn: sent.resend_in });
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSendingPhone(false);
+    }
+  };
 
   const sendPhoneCode = async () => {
     setSendingPhone(true);
@@ -83,7 +107,7 @@ function ProfileForm({ me }: { me: User }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (f.phonenumber.length !== 8) return setError("Утасны дугаар 8 оронтой байна");
+    if (phoneChanged) return setError("Шинэ дугаараа кодоор баталгаажуулна уу");
     if (emailChanged) return setError(newEmail ? "Шинэ имэйлээ кодоор баталгаажуулна уу" : "Имэйлийг хоосон болгох боломжгүй");
     setBusy(true);
     setError(null);
@@ -91,7 +115,8 @@ function ProfileForm({ me }: { me: User }) {
       await updateRow("users", me.id, {
         lastname: f.lastname.trim() || null,
         firstname: f.firstname.trim() || null,
-        phonenumber: f.phonenumber,
+        // Validated by the endpoint but ignored for your own account: a new number goes through /phone-change.
+        phonenumber: verifiedPhone,
         profile: f.profile || null,
         // Only admins pick their dealer; the backend ignores it for everyone else.
         ...(isAdmin && { dealer_id: f.dealer_id ? Number(f.dealer_id) : null }),
@@ -126,39 +151,54 @@ function ProfileForm({ me }: { me: User }) {
           <Field
             label="Утасны дугаар *"
             hint={
-              phoneChanged
-                ? "Хадгалсны дараа шинэ дугаараа SMS кодоор баталгаажуулна"
-                : phoneVerified
-                  ? undefined
-                  : me.phone_verify_deadline
-                    ? `Утсаа баталгаажуулна уу. ${me.phone_verify_deadline.slice(0, 16)} хүртэл баталгаажуулаагүй бол бүртгэл устна`
-                    : "Утсаа SMS кодоор баталгаажуулна уу"
+              phoneChanged && phoneCooldown > 0
+                ? `Код дахин авах: ${phoneCooldown} сек`
+                : phoneChanged
+                  ? "Шинэ дугаар руу SMS код илгээгдэнэ"
+                  : phoneVerified
+                    ? undefined
+                    : me.phone_verify_deadline
+                      ? `Утсаа баталгаажуулна уу. ${me.phone_verify_deadline.slice(0, 16)} хүртэл баталгаажуулаагүй бол бүртгэл устна`
+                      : "Утсаа SMS кодоор баталгаажуулна уу"
             }
           >
-            <span className="relative block">
-              <PhoneInput
-                autoComplete="tel"
-                placeholder="00000000"
-                value={f.phonenumber}
-                onChange={(phonenumber) => setF({ ...f, phonenumber })}
-                required
-                className={phoneChanged ? undefined : phoneVerified ? "pr-10" : "pr-14"}
-              />
-              {!phoneChanged &&
-                (phoneVerified ? (
-                  <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={sendPhoneCode}
-                    disabled={sendingPhone}
-                    aria-label="Утас баталгаажуулах"
-                    title="Утас баталгаажуулах"
-                    className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg bg-primary-soft text-primary disabled:opacity-60"
-                  >
-                    {sendingPhone ? <Loader2 className="size-5 animate-spin" /> : <ShieldAlert className="size-5" />}
-                  </button>
-                ))}
+            <span className="flex gap-2">
+              <span className="relative min-w-0 flex-1">
+                <PhoneInput
+                  autoComplete="tel"
+                  placeholder="00000000"
+                  value={f.phonenumber}
+                  onChange={(phonenumber) => setF({ ...f, phonenumber })}
+                  required
+                  className={phoneChanged ? undefined : phoneVerified ? "pr-10" : "pr-14"}
+                />
+                {!phoneChanged &&
+                  (phoneVerified ? (
+                    <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={sendPhoneCode}
+                      disabled={sendingPhone}
+                      aria-label="Утас баталгаажуулах"
+                      title="Утас баталгаажуулах"
+                      className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg bg-primary-soft text-primary disabled:opacity-60"
+                    >
+                      {sendingPhone ? <Loader2 className="size-5 animate-spin" /> : <ShieldAlert className="size-5" />}
+                    </button>
+                  ))}
+              </span>
+              {phoneChanged && f.phonenumber && (
+                <button
+                  type="button"
+                  onClick={sendPhoneChange}
+                  disabled={sendingPhone || phoneCooldown > 0 || f.phonenumber.length !== 8}
+                  className="flex h-12 shrink-0 items-center gap-1.5 rounded-xl bg-primary-soft px-4 text-sm font-bold text-primary disabled:opacity-60"
+                >
+                  {sendingPhone && <Loader2 className="size-4 animate-spin" />}
+                  Код авах
+                </button>
+              )}
             </span>
           </Field>
           <Field
@@ -227,7 +267,7 @@ function ProfileForm({ me }: { me: User }) {
         <OtpSheet
           icon={<Smartphone className="size-7" />}
           title="Утас баталгаажуулах"
-          target={me.phonenumber ?? ""}
+          target={verifiedPhone}
           length={4}
           resendIn={phoneOtp.resendIn}
           resend={sendPhoneVerifyCode}
@@ -238,6 +278,27 @@ function ProfileForm({ me }: { me: User }) {
             setPhoneVerified(true);
             await refreshUser();
             toast("Утас баталгаажлаа");
+          }}
+        />
+      )}
+      {phoneChange && (
+        <OtpSheet
+          icon={<Smartphone className="size-7" />}
+          title="Утасны дугаар солих"
+          target={phoneChange.phone}
+          length={4}
+          resendIn={phoneWait?.phone === phoneChange.phone ? phoneWait.left : phoneChange.resendIn}
+          resend={() => sendPhoneChangeCode(phoneChange.phone)}
+          onResent={(left) => setPhoneWait({ phone: phoneChange.phone, left })}
+          verify={(code) => verifyPhoneChange(phoneChange.phone, code)}
+          onClose={() => setPhoneChange(null)}
+          onVerified={async (user) => {
+            setPhoneChange(null);
+            setVerifiedPhone(user?.phonenumber ?? phoneChange.phone);
+            setPhoneVerified(Boolean(user?.phone_verified_at));
+            setF((p) => ({ ...p, phonenumber: user?.phonenumber ?? phoneChange.phone }));
+            await refreshUser();
+            toast("Утасны дугаар солигдлоо");
           }}
         />
       )}

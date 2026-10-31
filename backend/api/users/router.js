@@ -32,6 +32,8 @@ const {
   emailChangeVerify,
   phoneVerifySend,
   phoneVerifyConfirm,
+  phoneChangeSend,
+  phoneChangeVerify,
 } = require("./controller");
 const { phoneVerifyValidation } = require("../../web/auth/validation");
 // Утас + кодоор нэвтрэх логик вэбтэй нэг (web/auth)
@@ -60,6 +62,9 @@ router.route("/email-change/verify").post(protect, emailOtpLoginValidation, byAn
 // Нэвтэрсэн хэрэглэгч бүртгэлтэй утсаа SMS кодоор баталгаажуулах
 router.route("/phone-verify/send").post(protect, phoneVerifySend);
 router.route("/phone-verify/confirm").post(protect, phoneVerifyValidation, byAndAt, phoneVerifyConfirm);
+// Нэвтэрсэн хэрэглэгч дугаараа солих: шинэ дугаар руу SMS код → кодоор баталгаажсаны дараа л солигдоно
+router.route("/phone-change/send").post(protect, otpSendValidation, phoneChangeSend);
+router.route("/phone-change/verify").post(protect, otpLoginValidation, byAndAt, phoneChangeVerify);
 router.route("/logout").post(protect, logout);
 router.route("/get-user-data").post(protect, getUserData);
 router

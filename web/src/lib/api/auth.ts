@@ -110,3 +110,25 @@ export async function verifyPhoneCode(token: string, code: string) {
   });
   return res.data;
 }
+
+/** Texts a 4-digit code to the new number before it replaces the current one. */
+export function sendPhoneChangeCode(token: string, phonenumber: string) {
+  return allowCooldown(async () => {
+    const res = await apiFetch<ApiItemResponse<CodeSent>>("/web/auth/phone-change/send", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: { phonenumber },
+    });
+    return res.data;
+  });
+}
+
+/** Checks the code and saves the new number; returns the updated profile. */
+export async function verifyPhoneChangeCode(token: string, phonenumber: string, code: string) {
+  const res = await apiFetch<ApiItemResponse<WebUser>>("/web/auth/phone-change/verify", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: { phonenumber, code },
+  });
+  return res.data;
+}

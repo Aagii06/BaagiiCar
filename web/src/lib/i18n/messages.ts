@@ -390,11 +390,12 @@ export const MESSAGES = {
   "Гарах": { ru: "Выйти", en: "Sign out" },
   "Миний бүртгэл": { ru: "Мой аккаунт", en: "My account" },
   "Хувийн мэдээлэл": { ru: "Личные данные", en: "Personal details" },
-  "Нэр, и-мэйлээ шинэчлэх": { ru: "Обновите имя и e-mail", en: "Update your name and email" },
-  "Утасны дугаараар нэвтэрдэг тул өөрчлөх боломжгүй.": {
-    ru: "Номер используется для входа, его нельзя изменить.",
-    en: "You sign in with this number, so it can't be changed.",
+  "Нэр, утас, и-мэйлээ шинэчлэх": { ru: "Обновите имя, телефон и e-mail", en: "Update your name, phone and email" },
+  "Шинэ дугаар руу SMS код илгээнэ.": {
+    ru: "На новый номер будет отправлен SMS-код.",
+    en: "We'll text a code to the new number.",
   },
+  "Утасны дугаар солих": { ru: "Смена номера телефона", en: "Change phone number" },
   "Хадгалагдлаа": { ru: "Сохранено", en: "Saved" },
   "Шалгаж байна…": { ru: "Проверяем…", en: "Checking…" },
   "Баталгаажсан": {

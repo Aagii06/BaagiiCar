@@ -13,6 +13,8 @@ const {
   emailChangeVerify,
   phoneVerifySend,
   phoneVerifyConfirm,
+  phoneChangeSend,
+  phoneChangeVerify,
 } = require("./controller");
 const { emailOtpSendValidation, emailOtpLoginValidation } = require("../../api/users/validation");
 
@@ -27,5 +29,8 @@ router.route("/email-change/verify").post(protectCustomer, emailOtpLoginValidati
 // Утас баталгаажуулах: бүртгэлтэй дугаар руу SMS код → кодоор баталгаажуулна
 router.route("/phone-verify/send").post(protectCustomer, phoneVerifySend);
 router.route("/phone-verify/confirm").post(protectCustomer, phoneVerifyValidation, byAndAt, phoneVerifyConfirm);
+// Утасны дугаар солих: шинэ дугаар руу SMS код → кодоор баталгаажсаны дараа л солигдоно
+router.route("/phone-change/send").post(protectCustomer, otpSendValidation, phoneChangeSend);
+router.route("/phone-change/verify").post(protectCustomer, otpLoginValidation, byAndAt, phoneChangeVerify);
 
 module.exports = router;
