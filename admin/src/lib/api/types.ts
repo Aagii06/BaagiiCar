@@ -130,7 +130,8 @@ export interface Customer {
   firstname: string | null;
   lastname: string | null;
   profile: string | null;
-  status: "active" | "inactive" | "deleted";
+  /** "blocked": its number was verified by code on another account (backend helper/otpHelper.js). */
+  status: "active" | "inactive" | "blocked" | "deleted";
   created_at: string | null;
   last_login_at: string | null;
 }

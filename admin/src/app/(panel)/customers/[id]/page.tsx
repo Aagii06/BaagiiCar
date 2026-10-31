@@ -26,7 +26,7 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
     firstname: customer.firstname ?? "",
     phonenumber: customer.phonenumber ?? "",
     email: customer.email ?? "",
-    status: customer.status === "inactive" ? "inactive" : "active",
+    status: customer.status === "inactive" || customer.status === "blocked" ? customer.status : "active",
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -102,6 +102,8 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
           <Select value={f.status} onChange={set("status")}>
             <option value="active">Идэвхтэй</option>
             <option value="inactive">Идэвхгүй</option>
+            {/* Set by the backend when another account verified this customer's number by code. */}
+            {customer.status === "blocked" && <option value="blocked">Блоклогдсон</option>}
           </Select>
         </Field>
       </section>

@@ -69,7 +69,7 @@ export default function UsersPage() {
               </div>
               <div className="flex flex-col items-end gap-1">
                 <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", ROLE_TONE[u.role ?? ""] ?? "bg-muted")}>{roleLabel(u.role)}</span>
-                {u.status !== "active" && <span className="text-[10px] font-semibold text-destructive">Идэвхгүй</span>}
+                {u.status !== "active" && <span className="text-[10px] font-semibold text-destructive">{u.status === "blocked" ? "Блоклогдсон" : "Идэвхгүй"}</span>}
               </div>
             </Link>
           ))}

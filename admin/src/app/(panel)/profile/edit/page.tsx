@@ -162,41 +162,37 @@ function ProfileForm({ me }: { me: User }) {
                       : "Утсаа SMS кодоор баталгаажуулна уу"
             }
           >
-            <span className="flex gap-2">
-              <span className="relative min-w-0 flex-1">
-                <PhoneInput
-                  autoComplete="tel"
-                  placeholder="00000000"
-                  value={f.phonenumber}
-                  onChange={(phonenumber) => setF({ ...f, phonenumber })}
-                  required
-                  className={phoneChanged ? undefined : phoneVerified ? "pr-10" : "pr-14"}
-                />
-                {!phoneChanged &&
-                  (phoneVerified ? (
-                    <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={sendPhoneCode}
-                      disabled={sendingPhone}
-                      aria-label="Утас баталгаажуулах"
-                      title="Утас баталгаажуулах"
-                      className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg bg-primary-soft text-primary disabled:opacity-60"
-                    >
-                      {sendingPhone ? <Loader2 className="size-5 animate-spin" /> : <ShieldAlert className="size-5" />}
-                    </button>
-                  ))}
-              </span>
-              {phoneChanged && f.phonenumber && (
+            <span className="relative block">
+              <PhoneInput
+                autoComplete="tel"
+                placeholder="00000000"
+                value={f.phonenumber}
+                onChange={(phonenumber) => setF({ ...f, phonenumber })}
+                required
+                className={phoneChanged ? "pr-28" : phoneVerified ? "pr-10" : "pr-14"}
+              />
+              {phoneChanged ? (
                 <button
                   type="button"
                   onClick={sendPhoneChange}
                   disabled={sendingPhone || phoneCooldown > 0 || f.phonenumber.length !== 8}
-                  className="flex h-12 shrink-0 items-center gap-1.5 rounded-xl bg-primary-soft px-4 text-sm font-bold text-primary disabled:opacity-60"
+                  className="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1.5 rounded-lg bg-primary-soft px-3 text-sm font-bold text-primary disabled:opacity-60"
                 >
                   {sendingPhone && <Loader2 className="size-4 animate-spin" />}
                   Код авах
+                </button>
+              ) : phoneVerified ? (
+                <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
+              ) : (
+                <button
+                  type="button"
+                  onClick={sendPhoneCode}
+                  disabled={sendingPhone}
+                  aria-label="Утас баталгаажуулах"
+                  title="Утас баталгаажуулах"
+                  className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg bg-primary-soft text-primary disabled:opacity-60"
+                >
+                  {sendingPhone ? <Loader2 className="size-5 animate-spin" /> : <ShieldAlert className="size-5" />}
                 </button>
               )}
             </span>
@@ -213,16 +209,25 @@ function ProfileForm({ me }: { me: User }) {
                     : "Имэйл нэмэхэд баталгаажуулах код илгээгдэнэ"
             }
           >
-            <span className="flex gap-2">
-              <span className="relative min-w-0 flex-1">
-                <input className={cn(inputClass, !emailChanged && verifiedEmail && "pr-10")} type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
-                {!emailChanged && verifiedEmail && <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />}
-              </span>
-              {emailChanged && newEmail && (
-                <button type="button" onClick={sendCode} disabled={sending || emailCooldown > 0} className="flex h-12 shrink-0 items-center gap-1.5 rounded-xl bg-primary-soft px-4 text-sm font-bold text-primary disabled:opacity-60">
+            <span className="relative block">
+              <input
+                className={cn(inputClass, emailChanged && newEmail ? "pr-28" : verifiedEmail && "pr-10")}
+                type="email"
+                value={f.email}
+                onChange={(e) => setF({ ...f, email: e.target.value })}
+              />
+              {emailChanged && newEmail ? (
+                <button
+                  type="button"
+                  onClick={sendCode}
+                  disabled={sending || emailCooldown > 0}
+                  className="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1.5 rounded-lg bg-primary-soft px-3 text-sm font-bold text-primary disabled:opacity-60"
+                >
                   {sending && <Loader2 className="size-4 animate-spin" />}
                   Код авах
                 </button>
+              ) : (
+                !emailChanged && verifiedEmail && <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
               )}
             </span>
           </Field>

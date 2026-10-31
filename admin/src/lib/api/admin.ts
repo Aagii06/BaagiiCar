@@ -464,7 +464,7 @@ export async function getCustomer(id: number | string) {
   return res.data;
 }
 
-export type CustomerInput = Pick<Customer, "firstname" | "lastname" | "phonenumber" | "email"> & { status: "active" | "inactive" };
+export type CustomerInput = Pick<Customer, "firstname" | "lastname" | "phonenumber" | "email"> & { status: "active" | "inactive" | "blocked" };
 
 export const updateCustomer = (id: number, body: CustomerInput) => updateRow("customers", id, body);
 export const deleteCustomer = (id: number) => deleteRows("customers", [id]);

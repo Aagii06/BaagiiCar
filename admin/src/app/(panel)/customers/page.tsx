@@ -20,6 +20,7 @@ const STATUS_TABS: { value: "" | Customer["status"]; label: string }[] = [
   { value: "", label: "Бүгд" },
   { value: "active", label: "Идэвхтэй" },
   { value: "inactive", label: "Идэвхгүй" },
+  { value: "blocked", label: "Блоклогдсон" },
 ];
 
 /** Web visitors (`customers` table): they sign up themselves with a one-time code. */
@@ -95,7 +96,7 @@ function CustomersList() {
                   </div>
                   <div className="flex flex-col items-end gap-1 text-[10px]">
                     {c.last_login_at && <span className="text-muted-foreground">{timeAgo(c.last_login_at)}</span>}
-                    {c.status !== "active" && <span className="font-semibold text-destructive">Идэвхгүй</span>}
+                    {c.status !== "active" && <span className="font-semibold text-destructive">{c.status === "blocked" ? "Блоклогдсон" : "Идэвхгүй"}</span>}
                   </div>
                 </Link>
                 <button

@@ -154,6 +154,8 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
             <Select value={f.status} onChange={set("status")} disabled={isMe}>
               <option value="active">Идэвхтэй</option>
               <option value="inactive">Идэвхгүй</option>
+              {/* Set by the backend when another account verified this user's number by code. */}
+              {user?.status === "blocked" && <option value="blocked">Блоклогдсон</option>}
             </Select>
           </Field>
         </div>
