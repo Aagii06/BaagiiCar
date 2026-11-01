@@ -7,7 +7,7 @@ import Link from "next/link";
 import Logo, { BRAND } from "./Logo";
 import NotifySignup from "./NotifySignup";
 
-const COLUMNS: { title: MessageKey; links: { href: string; label: MessageKey }[] }[] = [
+const COLUMNS: { title: MessageKey; href?: string; links: { href: string; label: MessageKey }[] }[] = [
   {
     title: "Машин",
     links: [
@@ -17,6 +17,7 @@ const COLUMNS: { title: MessageKey; links: { href: string; label: MessageKey }[]
   },
   {
     title: "Тусламж",
+    href: "/help",
     links: [
       { href: "/help#faq", label: "Түгээмэл асуулт" },
       { href: "/help#safety", label: "Аюулгүй худалдаа" },
@@ -50,7 +51,15 @@ export default function Footer() {
           </div>
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <p className="eyebrow text-primary">{t(col.title)}</p>
+              <p className="eyebrow text-primary">
+                {col.href ? (
+                  <Link href={col.href} className="hover:underline">
+                    {t(col.title)}
+                  </Link>
+                ) : (
+                  t(col.title)
+                )}
+              </p>
               <ul className="mt-3 space-y-2.5 text-sm font-medium">
                 {col.links.map((l) => (
                   <li key={l.label}>

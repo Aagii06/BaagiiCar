@@ -16,9 +16,9 @@ import LocationPicker from "./LocationPicker";
 import Logo from "./Logo";
 
 export const NAV: { href: string; label: MessageKey }[] = [
+  { href: "/dealers", label: "Дилерүүд" },
   { href: "/cars", label: "Машин авах" },
   { href: "/compare", label: "Харьцуулалт" },
-  { href: "/dealers", label: "Дилерүүд" },
 ];
 
 export function isActive(pathname: string, href: string) {
@@ -135,18 +135,6 @@ export default function Header() {
             <LayoutDashboard className="size-[18px]" />
             <span className="hidden sm:inline">{t("Админ")}</span>
           </a>
-          <Link
-            href="/help"
-            aria-label={t("Тусламж")}
-            title={t("Тусламж")}
-            aria-current={isActive(pathname, "/help") ? "page" : undefined}
-            className={cn(
-              "grid size-11 place-items-center rounded-xl text-lg leading-none",
-              isActive(pathname, "/help") ? "bg-primary-soft text-primary" : "bg-muted hover:bg-border"
-            )}
-          >
-            ?
-          </Link>
         </div>
       </div>
     </header>
