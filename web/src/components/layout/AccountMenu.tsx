@@ -34,9 +34,13 @@ export default function AccountMenu() {
   if (!user) {
     const href = pathname === "/login" ? "/login" : `/login?next=${encodeURIComponent(pathname)}`;
     return (
-      <Link href={href} className="flex h-11 items-center gap-2 rounded-xl bg-muted px-3 text-sm font-semibold hover:bg-border sm:px-4">
+      <Link
+        href={href}
+        aria-label={t("Нэвтрэх")}
+        title={t("Нэвтрэх")}
+        className="grid size-11 place-items-center rounded-xl bg-muted hover:bg-border"
+      >
         <User className="size-[18px]" />
-        <span className="hidden sm:inline">{t("Нэвтрэх")}</span>
       </Link>
     );
   }
