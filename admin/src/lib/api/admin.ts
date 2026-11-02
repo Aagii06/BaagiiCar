@@ -443,25 +443,35 @@ export async function getDealer(id: number | string) {
   return res.data;
 }
 
-export type DealerInput = Pick<Dealer, "name" | "logo" | "email" | "address" | "description"> & {
-  /** Up to `MAX_DEALER_PHONES`; the first becomes `phonenumber`. */
+/** Each list's first item is also saved as the dealer's single `phonenumber` / `email` / `address`. */
+export type DealerInput = Pick<Dealer, "name" | "logo" | "description"> & {
   phonenumbers: string[];
+  emails: string[];
+  addresses: string[];
   status: "active" | "inactive";
 };
 
-export const MAX_DEALER_PHONES = 5;
+/** Phone numbers and emails per dealer; addresses (branches) have no limit. */
+export const MAX_DEALER_CONTACTS = 5;
 
-/** A dealer's numbers in the order they were added; older dealers only have `phonenumber`. */
-export function dealerPhones(dealer: Pick<Dealer, "phonenumber" | "phonenumbers"> | null | undefined): string[] {
+/** Dealer list column → the single column holding its first item (all an older dealer has). */
+const DEALER_LIST_SINGLE = { phonenumbers: "phonenumber", emails: "email", addresses: "address" } as const;
+export type DealerListField = keyof typeof DEALER_LIST_SINGLE;
+
+/** A dealer's numbers / emails / addresses in their saved order. */
+export function dealerList(dealer: Partial<Dealer> | null | undefined, field: DealerListField): string[] {
   if (!dealer) return [];
   try {
-    const list: unknown = JSON.parse(dealer.phonenumbers || "[]");
+    const list: unknown = JSON.parse(dealer[field] || "[]");
     if (Array.isArray(list) && list.length) return list.map(String);
   } catch {
-    // Fall back to the single number below.
+    // Fall back to the single value below.
   }
-  return dealer.phonenumber ? [dealer.phonenumber] : [];
+  const single = dealer[DEALER_LIST_SINGLE[field]];
+  return single ? [single] : [];
 }
+
+export const dealerPhones = (dealer: Partial<Dealer> | null | undefined) => dealerList(dealer, "phonenumbers");
 
 export const createDealer = (body: DealerInput) => createRow("dealers", body);
 export const updateDealer = (id: number, body: DealerInput) => updateRow("dealers", id, body);

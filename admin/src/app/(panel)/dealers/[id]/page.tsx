@@ -6,7 +6,7 @@ import { EmptyState, ErrorState, FormSkeleton } from "@/components/common/States
 import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
-import { createDealer, dealerPhones, deleteDealer, getDealer, MAX_DEALER_PHONES, updateDealer, type DealerInput } from "@/lib/api/admin";
+import { createDealer, dealerList, deleteDealer, getDealer, MAX_DEALER_CONTACTS, updateDealer, type DealerInput, type DealerListField } from "@/lib/api/admin";
 import type { Dealer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
@@ -20,6 +20,81 @@ import { Suspense, useEffect, useState } from "react";
 /** Lets the header's save icon submit the form via `form={DEALER_FORM_ID}`. */
 const DEALER_FORM_ID = "dealer-form";
 
+/**
+ * Values added one at a time (phones, emails, addresses), reordered with the arrows; the first is the main one.
+ * `renderInput` draws one row's input; `max` hides the add button once reached (none = no limit).
+ */
+function OrderedList({
+  title,
+  hint,
+  addLabel,
+  items,
+  onChange,
+  max,
+  renderInput,
+}: {
+  title: string;
+  hint: string;
+  addLabel: string;
+  items: string[];
+  onChange: (items: string[]) => void;
+  max?: number;
+  renderInput: (value: string, onValue: (v: string) => void, i: number) => React.ReactNode;
+}) {
+  /** Swaps item `i` with its neighbour `i + dir`. */
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...items];
+    [next[i], next[i + dir]] = [next[i + dir], next[i]];
+    onChange(next);
+  };
+  const arrowClass = "grid h-5 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30";
+
+  return (
+    <section className="space-y-3 rounded-2xl bg-card p-4">
+      <div>
+        <h2 className="text-lg font-bold">{title}</h2>
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      </div>
+      {items.map((value, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">{renderInput(value, (v) => onChange(items.map((p, j) => (j === i ? v : p))), i)}</div>
+          {i === 0 && <span className="shrink-0 rounded-md bg-primary-soft px-2 py-1 text-[11px] font-bold text-primary">Үндсэн</span>}
+          <div className="flex shrink-0 flex-col">
+            <button type="button" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Дээш зөөх" className={arrowClass}>
+              <ChevronUp className="size-4" />
+            </button>
+            <button type="button" disabled={i === items.length - 1} onClick={() => move(i, 1)} aria-label="Доош зөөх" className={arrowClass}>
+              <ChevronDown className="size-4" />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange(items.filter((_, j) => j !== i))}
+            aria-label="Хасах"
+            className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground hover:bg-border"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      ))}
+      {(max === undefined || items.length < max) && (
+        <button
+          type="button"
+          onClick={() => onChange([...items, ""])}
+          className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-3 text-sm font-bold text-primary hover:bg-muted/60"
+        >
+          <Plus className="size-4" strokeWidth={2.6} />
+          {addLabel}
+        </button>
+      )}
+    </section>
+  );
+}
+
+/** Filled, trimmed values; `lower` compares emails case-insensitively. */
+const filledOf = (items: string[], lower = false) => items.map((v) => (lower ? v.trim().toLowerCase() : v.trim())).filter(Boolean);
+const hasDuplicates = (items: string[]) => new Set(items).size !== items.length;
+
 /** `listHref`: the list to return to after save / delete (keeps `?from=`). */
 function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null; listHref: string; onBusyChange: (busy: boolean) => void }) {
   const router = useRouter();
@@ -28,20 +103,16 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
   const [f, setF] = useState({
     name: dealer?.name ?? "",
     logo: dealer?.logo ?? "",
-    email: dealer?.email ?? "",
-    address: dealer?.address ?? "",
     description: dealer?.description ?? "",
     status: dealer?.status === "inactive" ? "inactive" : "active",
   });
-  // Numbers are added one at a time below the form; the first one is the dealer's main number.
-  const [phones, setPhones] = useState<string[]>(() => dealerPhones(dealer));
-  /** Swaps number `i` with its neighbour `i + dir` (the order is kept as saved). */
-  const movePhone = (i: number, dir: -1 | 1) =>
-    setPhones((prev) => {
-      const next = [...prev];
-      [next[i], next[i + dir]] = [next[i + dir], next[i]];
-      return next;
-    });
+  // Phones, emails and addresses are added one at a time below the form; the first of each is the main one.
+  const [lists, setLists] = useState<Record<DealerListField, string[]>>(() => ({
+    phonenumbers: dealerList(dealer, "phonenumbers"),
+    emails: dealerList(dealer, "emails"),
+    addresses: dealerList(dealer, "addresses"),
+  }));
+  const setList = (k: DealerListField) => (items: string[]) => setLists((prev) => ({ ...prev, [k]: items }));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => onBusyChange(busy), [busy, onBusyChange]);
@@ -51,17 +122,22 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!f.name.trim()) return setError("Дилерийн нэр оруулна уу");
-    const filled = phones.filter(Boolean);
-    if (filled.some((p) => p.length !== 8)) return setError("Утасны дугаар 8 оронтой тоо байна");
-    if (new Set(filled).size !== filled.length) return setError("Ижил дугаар давхардсан байна");
+    const phonenumbers = filledOf(lists.phonenumbers);
+    const emails = filledOf(lists.emails, true);
+    const addresses = filledOf(lists.addresses);
+    if (phonenumbers.some((p) => p.length !== 8)) return setError("Утасны дугаар 8 оронтой тоо байна");
+    if (hasDuplicates(phonenumbers)) return setError("Ижил дугаар давхардсан байна");
+    if (emails.some((m) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m))) return setError("И-мэйл формат буруу байна");
+    if (hasDuplicates(emails)) return setError("Ижил и-мэйл давхардсан байна");
+    if (hasDuplicates(addresses)) return setError("Ижил хаяг давхардсан байна");
     setBusy(true);
     setError(null);
     const body: DealerInput = {
       name: f.name.trim(),
       logo: f.logo || null,
-      phonenumbers: filled,
-      email: f.email.trim() || null,
-      address: f.address.trim() || null,
+      phonenumbers,
+      emails,
+      addresses,
       description: f.description.trim() || null,
       status: f.status as DealerInput["status"],
     };
@@ -111,74 +187,43 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
             <option value="inactive">Идэвхгүй</option>
           </Select>
         </Field>
-        <Field label="И-мэйл">
-          <input className={inputClass} type="email" value={f.email} onChange={set("email")} />
-        </Field>
-        <Field label="Хаяг">
-          <input className={inputClass} value={f.address} onChange={set("address")} placeholder="Хаяг" />
-        </Field>
         <Field label="Тайлбар">
           <textarea className={cn(inputClass, "h-auto min-h-24 py-3")} value={f.description} onChange={set("description")} maxLength={2000} />
         </Field>
       </section>
 
-      <section className="space-y-3 rounded-2xl bg-card p-4">
-        <div>
-          <h2 className="text-lg font-bold">Утасны дугаар</h2>
-          <p className="text-xs text-muted-foreground">Зар оруулахдаа эдгээрээс нэгийг сонгоно ({MAX_DEALER_PHONES} хүртэл). Сумаар эрэмбэлнэ, эхнийх нь үндсэн</p>
-        </div>
-        {phones.map((phone, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <PhoneInput
-              autoComplete="off"
-              placeholder="00000000"
-              aria-label={`Утас ${i + 1}`}
-              value={phone}
-              autoFocus={!phone && i === phones.length - 1}
-              onChange={(v) => setPhones(phones.map((p, j) => (j === i ? v : p)))}
-            />
-            {i === 0 && <span className="shrink-0 rounded-md bg-primary-soft px-2 py-1 text-[11px] font-bold text-primary">Үндсэн</span>}
-            <div className="flex shrink-0 flex-col">
-              <button
-                type="button"
-                disabled={i === 0}
-                onClick={() => movePhone(i, -1)}
-                aria-label="Дээш зөөх"
-                className="grid h-5 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30"
-              >
-                <ChevronUp className="size-4" />
-              </button>
-              <button
-                type="button"
-                disabled={i === phones.length - 1}
-                onClick={() => movePhone(i, 1)}
-                aria-label="Доош зөөх"
-                className="grid h-5 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30"
-              >
-                <ChevronDown className="size-4" />
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => setPhones(phones.filter((_, j) => j !== i))}
-              aria-label="Дугаар хасах"
-              className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground hover:bg-border"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
-        ))}
-        {phones.length < MAX_DEALER_PHONES && (
-          <button
-            type="button"
-            onClick={() => setPhones([...phones, ""])}
-            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-3 text-sm font-bold text-primary hover:bg-muted/60"
-          >
-            <Plus className="size-4" strokeWidth={2.6} />
-            Дугаар нэмэх
-          </button>
+      <OrderedList
+        title="Утасны дугаар"
+        hint={`Зар оруулахдаа эдгээрээс нэгийг сонгоно (${MAX_DEALER_CONTACTS} хүртэл). Сумаар эрэмбэлнэ, эхнийх нь үндсэн`}
+        addLabel="Дугаар нэмэх"
+        items={lists.phonenumbers}
+        onChange={setList("phonenumbers")}
+        max={MAX_DEALER_CONTACTS}
+        renderInput={(value, onValue, i) => (
+          <PhoneInput autoComplete="off" placeholder="00000000" aria-label={`Утас ${i + 1}`} value={value} autoFocus={!value} onChange={onValue} />
         )}
-      </section>
+      />
+      <OrderedList
+        title="И-мэйл"
+        hint={`${MAX_DEALER_CONTACTS} хүртэл. Сумаар эрэмбэлнэ, эхнийх нь үндсэн`}
+        addLabel="И-мэйл нэмэх"
+        items={lists.emails}
+        onChange={setList("emails")}
+        max={MAX_DEALER_CONTACTS}
+        renderInput={(value, onValue, i) => (
+          <input className={inputClass} type="email" aria-label={`И-мэйл ${i + 1}`} value={value} autoFocus={!value} onChange={(e) => onValue(e.target.value)} placeholder="name@example.com" />
+        )}
+      />
+      <OrderedList
+        title="Хаяг, салбар"
+        hint="Салбар бүрийн хаягийг нэмнэ. Сумаар эрэмбэлнэ, эхнийх нь үндсэн"
+        addLabel="Хаяг нэмэх"
+        items={lists.addresses}
+        onChange={setList("addresses")}
+        renderInput={(value, onValue, i) => (
+          <input className={inputClass} aria-label={`Хаяг ${i + 1}`} value={value} autoFocus={!value} onChange={(e) => onValue(e.target.value)} maxLength={255} placeholder="Хаяг" />
+        )}
+      />
 
       <FormError message={error} />
       {dealer && (

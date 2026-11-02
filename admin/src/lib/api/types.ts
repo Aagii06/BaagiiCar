@@ -158,8 +158,14 @@ export interface Dealer {
   phonenumber: string | null;
   /** JSON array of up to 5 numbers an ad's contact phone is picked from; read it with `dealerPhones`. */
   phonenumbers?: string | null;
+  /** First (main) email; kept in sync with `emails[0]`. */
   email: string | null;
+  /** JSON array of up to 5 emails; read it with `dealerList`. */
+  emails?: string | null;
+  /** First (main) address; kept in sync with `addresses[0]`. */
   address: string | null;
+  /** JSON array of branch addresses (no limit); read it with `dealerList`. */
+  addresses?: string | null;
   description: string | null;
   status: "active" | "inactive" | "deleted";
   created_at?: string | null;
