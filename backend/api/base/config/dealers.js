@@ -15,22 +15,28 @@ const lookup = (req, res, next) => {
   next();
 };
 
-// phonenumbers массивыг давхардалгүй JSON болгож, эхнийхийг phonenumber-т хадгална
-const normalizePhones = (body) => {
-  if (body.phonenumbers === undefined) return;
-  const list = [...new Set((body.phonenumbers || []).map((p) => String(p).trim()).filter(Boolean))];
-  body.phonenumbers = list.length ? JSON.stringify(list) : null;
-  body.phonenumber = list[0] || null;
+// Массивыг давхардалгүй JSON болгож, эхнийхийг ганц утгын баганад хадгална
+const normalizeList = (body, listField, singleField, clean = (v) => v) => {
+  if (body[listField] === undefined) return;
+  const list = [...new Set((body[listField] || []).map((v) => clean(String(v).trim())).filter(Boolean))];
+  body[listField] = list.length ? JSON.stringify(list) : null;
+  body[singleField] = list[0] || null;
+};
+
+const normalizeContacts = (body) => {
+  normalizeList(body, "phonenumbers", "phonenumber");
+  normalizeList(body, "emails", "email", (v) => v.toLowerCase());
+  normalizeList(body, "addresses", "address");
 };
 
 const create = (req, res, next) => {
   req.body.status = req.body.status || "active";
-  normalizePhones(req.body);
+  normalizeContacts(req.body);
   isAdmin(req, res, next);
 };
 
 const update = (req, res, next) => {
-  normalizePhones(req.body);
+  normalizeContacts(req.body);
   isAdmin(req, res, next);
 };
 
@@ -47,15 +53,27 @@ const customValidation = [
     .withMessage("Дилерийн нэр 255-с илүү урттай байж болохгүй"),
   body("phonenumbers")
     .optional({ nullable: true })
-    .isArray({ max: dealers.maxPhones })
-    .withMessage(`Утасны дугаар ${dealers.maxPhones}-аас ихгүй байна`),
+    .isArray({ max: dealers.maxContacts })
+    .withMessage(`Утасны дугаар ${dealers.maxContacts}-аас ихгүй байна`),
   body("phonenumbers.*")
     .matches(/^\d{8}$/)
     .withMessage("Утасны дугаар 8 оронтой тоо байна"),
-  body("email")
-    .optional({ nullable: true, checkFalsy: true })
+  body("emails")
+    .optional({ nullable: true })
+    .isArray({ max: dealers.maxContacts })
+    .withMessage(`И-мэйл ${dealers.maxContacts}-аас ихгүй байна`),
+  body("emails.*")
+    .trim()
     .isEmail()
     .withMessage("И-мэйл формат буруу байна"),
+  body("addresses")
+    .optional({ nullable: true })
+    .isArray({ max: dealers.maxContacts })
+    .withMessage(`Хаяг ${dealers.maxContacts}-аас ихгүй байна`),
+  body("addresses.*")
+    .trim()
+    .isLength({ max: 255 })
+    .withMessage("Хаяг 255-с илүү урттай байж болохгүй"),
   body("status")
     .optional({ nullable: true, checkFalsy: true })
     .isIn(["active", "inactive"])

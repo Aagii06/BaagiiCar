@@ -24,8 +24,14 @@ module.exports = (sequelize, DataTypes) => {
       phonenumber: { type: DataTypes.STRING },
       // Бүх дугаар (JSON массив, 5 хүртэл): зар оруулахдаа эндээс сонгоно
       phonenumbers: { type: DataTypes.TEXT },
+      // Эхний (үндсэн) и-мэйл; emails-аас бөглөгдөнө
       email: { type: DataTypes.STRING },
+      // Бүх и-мэйл (JSON массив, 5 хүртэл)
+      emails: { type: DataTypes.TEXT },
+      // Эхний (үндсэн) хаяг; addresses-аас бөглөгдөнө
       address: { type: DataTypes.STRING },
+      // Бүх хаяг (JSON массив, 5 хүртэл)
+      addresses: { type: DataTypes.TEXT },
       description: { type: DataTypes.TEXT },
 
       status: { type: DataTypes.STRING },
@@ -46,20 +52,25 @@ module.exports = (sequelize, DataTypes) => {
 
   dealers.softDelete = true;
 
-  dealers.maxPhones = 5;
+  // Утас, и-мэйл, хаяг тус бүр 5 хүртэл
+  dealers.maxContacts = 5;
 
-  // Дилерийн бүх дугаар (raw мөрөөс): phonenumbers хоосон бол хуучин ганц phonenumber
-  dealers.phonesOf = (row) => {
+  // JSON массив баганыг (raw мөрөөс) уншина: хоосон бол хуучин ганц утгыг авна
+  const listOf = (row, listField, singleField) => {
     let list = [];
     try {
-      list = JSON.parse(row?.phonenumbers || "[]");
+      list = JSON.parse(row?.[listField] || "[]");
     } catch {
       list = [];
     }
     if (!Array.isArray(list)) list = [];
-    if (!list.length && row?.phonenumber) list = [row.phonenumber];
+    if (!list.length && row?.[singleField]) list = [row[singleField]];
     return list.map(String);
   };
+
+  dealers.phonesOf = (row) => listOf(row, "phonenumbers", "phonenumber");
+  dealers.emailsOf = (row) => listOf(row, "emails", "email");
+  dealers.addressesOf = (row) => listOf(row, "addresses", "address");
 
   return dealers;
 };
