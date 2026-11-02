@@ -1,11 +1,12 @@
 "use client";
 
-import { Field, FormError, inputClass, PhoneInput, Select } from "@/components/common/Field";
+import { Field, FormError, inputClass, Select } from "@/components/common/Field";
 import Img from "@/components/common/Img";
 import PhotoViewer from "@/components/common/PhotoViewer";
 import Stepper from "@/components/common/Stepper";
 import { RejectNote } from "./useRejectCar";
 import { DealerAvatar } from "./DealerPicker";
+import DealerPhonePicker from "./DealerPhonePicker";
 import PlateLookup from "./PlateLookup";
 import PublishChoiceSheet from "./PublishChoiceSheet";
 import { dealerPhones, getBodyTypes, getBrands, getDealers, getLocations, getModels, parseAutobox, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
@@ -14,7 +15,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, PLATE_TYPES, ROLES, STEERINGS, TRANSMISSIONS, VEHICLE_TYPES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
-import { Check, ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const MAX_PHOTOS = 12;
@@ -382,10 +383,8 @@ export default function CarForm({
     setF((p) => ({ ...p, dealer_id: String(dealerId), phonenumber: dealerDefaultPhone(dealer, defaultPhone) }));
   }, [wizard, dealer, dealerId, defaultPhone]);
 
-  // The ad's number is picked from its dealer's numbers; an edited ad's own number stays offered too.
+  // The ad's dealer, whose numbers the contact phone is picked from.
   const adDealer = dealers.data?.find((d) => String(d.id) === f.dealer_id) ?? (dealer && String(dealer.id) === f.dealer_id ? dealer : null);
-  const phoneOptions = dealerPhones(adDealer);
-  if (car?.phonenumber && phoneOptions.length && !phoneOptions.includes(car.phonenumber)) phoneOptions.push(car.phonenumber);
 
   const errorRef = useRef<HTMLDivElement>(null);
   useEffect(() => onBusyChange?.(busy), [busy, onBusyChange]);
@@ -675,37 +674,7 @@ export default function CarForm({
             <Field label="Тайлбар">
               <textarea className={cn(inputClass, "h-auto min-h-32 py-3")} {...bind("description")} maxLength={5000} placeholder="Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…" />
             </Field>
-            {phoneOptions.length ? (
-              <div>
-                <span className="mb-1.5 block text-[13px] font-semibold">Холбогдох утас</span>
-                <div role="radiogroup" aria-label="Холбогдох утас" className="divide-y divide-border overflow-hidden rounded-xl border border-input sm:max-w-xs">
-                  {phoneOptions.map((phone) => {
-                    const checked = f.phonenumber === phone;
-                    return (
-                      <label key={phone} className="flex cursor-pointer items-center gap-3 bg-white px-4 py-3 hover:bg-muted/60">
-                        <input type="radio" name="phonenumber" className="peer sr-only" checked={checked} onChange={() => set("phonenumber", phone)} />
-                        <span
-                          className={cn(
-                            "grid size-5 shrink-0 place-items-center rounded-md border-2 peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40",
-                            checked ? "border-primary bg-primary text-white" : "border-input",
-                          )}
-                        >
-                          {checked && <Check className="size-3.5" strokeWidth={3} />}
-                        </span>
-                        <span className="flex-1 text-base font-semibold tabular-nums">{phone}</span>
-                        {phone === car?.phonenumber && !dealerPhones(adDealer).includes(phone) && <span className="text-xs text-muted-foreground">одоогийн</span>}
-                      </label>
-                    );
-                  })}
-                </div>
-                <span className="mt-1 block text-xs text-muted-foreground">Дилерийн бүртгэлтэй дугааруудаас сонгоно. Худалдан авагч энэ дугаар руу залгана</span>
-              </div>
-            ) : (
-              // Дугааргүй (хуучин) дилер: гараар оруулна
-              <Field label="Холбогдох утас" hint="Худалдан авагч энэ дугаар руу залгана">
-                <PhoneInput className="sm:max-w-xs" autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(v) => set("phonenumber", v)} />
-              </Field>
-            )}
+            <DealerPhonePicker dealer={adDealer} current={car?.phonenumber} value={f.phonenumber} onChange={(v) => set("phonenumber", v)} />
           </div>
         </Section>
       )}
