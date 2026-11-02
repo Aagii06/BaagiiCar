@@ -6,13 +6,13 @@ import { EmptyState, ErrorState, FormSkeleton } from "@/components/common/States
 import { useConfirm } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
-import { createDealer, deleteDealer, getDealer, updateDealer, type DealerInput } from "@/lib/api/admin";
+import { createDealer, dealerPhones, deleteDealer, getDealer, MAX_DEALER_PHONES, updateDealer, type DealerInput } from "@/lib/api/admin";
 import type { Dealer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { useRouteId } from "@/lib/useRouteId";
 import { cn } from "@/lib/utils";
-import { Loader2, Save, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -28,27 +28,38 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
   const [f, setF] = useState({
     name: dealer?.name ?? "",
     logo: dealer?.logo ?? "",
-    phonenumber: dealer?.phonenumber ?? "",
     email: dealer?.email ?? "",
     address: dealer?.address ?? "",
     description: dealer?.description ?? "",
     status: dealer?.status === "inactive" ? "inactive" : "active",
   });
+  // Numbers are added one at a time below the form; the first one is the dealer's main number.
+  const [phones, setPhones] = useState<string[]>(() => dealerPhones(dealer));
+  /** Swaps number `i` with its neighbour `i + dir` (the order is kept as saved). */
+  const movePhone = (i: number, dir: -1 | 1) =>
+    setPhones((prev) => {
+      const next = [...prev];
+      [next[i], next[i + dir]] = [next[i + dir], next[i]];
+      return next;
+    });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => onBusyChange(busy), [busy, onBusyChange]);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-    setF({ ...f, [k]: k === "phonenumber" ? e.target.value.replace(/\D/g, "") : e.target.value });
+    setF({ ...f, [k]: e.target.value });
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!f.name.trim()) return setError("Дилерийн нэр оруулна уу");
+    const filled = phones.filter(Boolean);
+    if (filled.some((p) => p.length !== 8)) return setError("Утасны дугаар 8 оронтой тоо байна");
+    if (new Set(filled).size !== filled.length) return setError("Ижил дугаар давхардсан байна");
     setBusy(true);
     setError(null);
     const body: DealerInput = {
       name: f.name.trim(),
       logo: f.logo || null,
-      phonenumber: f.phonenumber || null,
+      phonenumbers: filled,
       email: f.email.trim() || null,
       address: f.address.trim() || null,
       description: f.description.trim() || null,
@@ -94,17 +105,12 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
           <span className="mb-1.5 block text-[13px] font-semibold">Лого</span>
           <ImageInput value={f.logo} onChange={(logo) => setF({ ...f, logo })} folder="dealers" label="Лого оруулах" hint="Дөрвөлжин, тунгалаг дэвсгэртэй зураг хамгийн сайн харагдана" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Утас" hint="Зарын холбогдох утас хоосон бол үүнийг ашиглана">
-            <PhoneInput autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(phonenumber) => setF({ ...f, phonenumber })} />
-          </Field>
-          <Field label="Төлөв">
-            <Select value={f.status} onChange={set("status")}>
-              <option value="active">Идэвхтэй</option>
-              <option value="inactive">Идэвхгүй</option>
-            </Select>
-          </Field>
-        </div>
+        <Field label="Төлөв">
+          <Select value={f.status} onChange={set("status")}>
+            <option value="active">Идэвхтэй</option>
+            <option value="inactive">Идэвхгүй</option>
+          </Select>
+        </Field>
         <Field label="И-мэйл">
           <input className={inputClass} type="email" value={f.email} onChange={set("email")} />
         </Field>
@@ -114,6 +120,64 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
         <Field label="Тайлбар">
           <textarea className={cn(inputClass, "h-auto min-h-24 py-3")} value={f.description} onChange={set("description")} maxLength={2000} />
         </Field>
+      </section>
+
+      <section className="space-y-3 rounded-2xl bg-card p-4">
+        <div>
+          <h2 className="text-lg font-bold">Утасны дугаар</h2>
+          <p className="text-xs text-muted-foreground">Зар оруулахдаа эдгээрээс нэгийг сонгоно ({MAX_DEALER_PHONES} хүртэл). Сумаар эрэмбэлнэ, эхнийх нь үндсэн</p>
+        </div>
+        {phones.map((phone, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <PhoneInput
+              autoComplete="off"
+              placeholder="00000000"
+              aria-label={`Утас ${i + 1}`}
+              value={phone}
+              autoFocus={!phone && i === phones.length - 1}
+              onChange={(v) => setPhones(phones.map((p, j) => (j === i ? v : p)))}
+            />
+            {i === 0 && <span className="shrink-0 rounded-md bg-primary-soft px-2 py-1 text-[11px] font-bold text-primary">Үндсэн</span>}
+            <div className="flex shrink-0 flex-col">
+              <button
+                type="button"
+                disabled={i === 0}
+                onClick={() => movePhone(i, -1)}
+                aria-label="Дээш зөөх"
+                className="grid h-5 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30"
+              >
+                <ChevronUp className="size-4" />
+              </button>
+              <button
+                type="button"
+                disabled={i === phones.length - 1}
+                onClick={() => movePhone(i, 1)}
+                aria-label="Доош зөөх"
+                className="grid h-5 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30"
+              >
+                <ChevronDown className="size-4" />
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPhones(phones.filter((_, j) => j !== i))}
+              aria-label="Дугаар хасах"
+              className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground hover:bg-border"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        ))}
+        {phones.length < MAX_DEALER_PHONES && (
+          <button
+            type="button"
+            onClick={() => setPhones([...phones, ""])}
+            className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-3 text-sm font-bold text-primary hover:bg-muted/60"
+          >
+            <Plus className="size-4" strokeWidth={2.6} />
+            Дугаар нэмэх
+          </button>
+        )}
       </section>
 
       <FormError message={error} />

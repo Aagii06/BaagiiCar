@@ -154,7 +154,10 @@ export interface Dealer {
   name: string;
   /** File name in uploads/dealers. */
   logo: string | null;
+  /** First (originally registered) number; kept in sync with `phonenumbers[0]`. */
   phonenumber: string | null;
+  /** JSON array of up to 5 numbers an ad's contact phone is picked from; read it with `dealerPhones`. */
+  phonenumbers?: string | null;
   email: string | null;
   address: string | null;
   description: string | null;

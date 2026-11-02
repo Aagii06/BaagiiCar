@@ -20,7 +20,10 @@ module.exports = (sequelize, DataTypes) => {
       name: { type: DataTypes.STRING },
       // public/uploads/dealers доторх файлын нэр
       logo: { type: DataTypes.STRING },
+      // Эхний (анх бүртгэсэн) дугаар; phonenumbers-аас api/base/config/dealers.js бөглөнө
       phonenumber: { type: DataTypes.STRING },
+      // Бүх дугаар (JSON массив, 5 хүртэл): зар оруулахдаа эндээс сонгоно
+      phonenumbers: { type: DataTypes.TEXT },
       email: { type: DataTypes.STRING },
       address: { type: DataTypes.STRING },
       description: { type: DataTypes.TEXT },
@@ -42,6 +45,21 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   dealers.softDelete = true;
+
+  dealers.maxPhones = 5;
+
+  // Дилерийн бүх дугаар (raw мөрөөс): phonenumbers хоосон бол хуучин ганц phonenumber
+  dealers.phonesOf = (row) => {
+    let list = [];
+    try {
+      list = JSON.parse(row?.phonenumbers || "[]");
+    } catch {
+      list = [];
+    }
+    if (!Array.isArray(list)) list = [];
+    if (!list.length && row?.phonenumber) list = [row.phonenumber];
+    return list.map(String);
+  };
 
   return dealers;
 };

@@ -86,11 +86,25 @@ const resolveDealer = async (dealerId) => {
   if (!dealerId) return { error: "Дилер сонгоно уу" };
   const dealer = await dealers.findOne({
     where: { id: dealerId, status: "active" },
-    attributes: ["id", "phonenumber"],
+    attributes: ["id", "phonenumber", "phonenumbers"],
     raw: true,
   });
   if (!dealer) return { error: "Сонгосон дилер олдсонгүй эсвэл идэвхгүй байна" };
   return { dealer };
+};
+
+// Зарын утас дилерийн бүртгэлтэй дугааруудын нэг байна (засахад хуучин дугаар хэвээр үлдэж болно).
+// Сонгоогүй бол оруулсан хэрэглэгчийн дугаар дилерийнхтэй таарвал түүнийг, үгүй бол эхний дугаарыг авна.
+const pickDealerPhone = async (dealerId, requested, loggedUser, prevPhone) => {
+  const dealer = dealerId ? await dealers.findByPk(dealerId, { attributes: ["phonenumber", "phonenumbers"], raw: true }) : null;
+  const phones = dealers.phonesOf(dealer);
+  if (!phones.length) return { phone: requested || loggedUser?.phonenumber || prevPhone || null };
+  if (requested) {
+    if (phones.includes(requested) || requested === prevPhone) return { phone: requested };
+    return { error: "Утасны дугаарыг дилерийн бүртгэлтэй дугааруудаас сонгоно уу" };
+  }
+  if (prevPhone) return { phone: prevPhone };
+  return { phone: phones.includes(loggedUser?.phonenumber) ? loggedUser.phonenumber : phones[0] };
 };
 
 // Шинэ зар нэмэх / засах (зурагтай хамт multipart-аар)
@@ -141,6 +155,13 @@ module.exports.save = async (req, res) => {
       return res.status(200).json({ ...result, message: "Таны бүртгэл дилерт харьяалагдаагүй байна. Админд хандана уу" });
   }
 
+  // Утас: засахад ирээгүй бөгөөд дилер солигдоогүй бол өөрчлөхгүй
+  if (!id || body.phonenumber !== undefined || (body.dealer_id && body.dealer_id !== prevCar.dealer_id)) {
+    const picked = await pickDealerPhone(body.dealer_id || prevCar?.dealer_id, body.phonenumber, loggedUser, prevCar?.phonenumber);
+    if (picked.error) return res.status(200).json({ ...result, message: picked.error });
+    body.phonenumber = picked.phone;
+  }
+
   const t = await sequelize.transaction();
   try {
     const action = id ? "updated" : "created";
@@ -177,8 +198,6 @@ module.exports.save = async (req, res) => {
         {
           ...body,
           user_id: loggedUser.id,
-          // Утас оруулаагүй бол дилерийн, эсвэл оруулсан хэрэглэгчийн дугаар
-          phonenumber: body.phonenumber || dealer?.phonenumber || loggedUser.phonenumber,
           // Админ шууд нийтэлнэ, бусдынх админ батлахыг хүлээнэ
           status: isAdmin ? carStatuses.active : carStatuses.pending,
           created_by: by,

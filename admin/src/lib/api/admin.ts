@@ -443,7 +443,25 @@ export async function getDealer(id: number | string) {
   return res.data;
 }
 
-export type DealerInput = Pick<Dealer, "name" | "logo" | "phonenumber" | "email" | "address" | "description"> & { status: "active" | "inactive" };
+export type DealerInput = Pick<Dealer, "name" | "logo" | "email" | "address" | "description"> & {
+  /** Up to `MAX_DEALER_PHONES`; the first becomes `phonenumber`. */
+  phonenumbers: string[];
+  status: "active" | "inactive";
+};
+
+export const MAX_DEALER_PHONES = 5;
+
+/** A dealer's numbers in the order they were added; older dealers only have `phonenumber`. */
+export function dealerPhones(dealer: Pick<Dealer, "phonenumber" | "phonenumbers"> | null | undefined): string[] {
+  if (!dealer) return [];
+  try {
+    const list: unknown = JSON.parse(dealer.phonenumbers || "[]");
+    if (Array.isArray(list) && list.length) return list.map(String);
+  } catch {
+    // Fall back to the single number below.
+  }
+  return dealer.phonenumber ? [dealer.phonenumber] : [];
+}
 
 export const createDealer = (body: DealerInput) => createRow("dealers", body);
 export const updateDealer = (id: number, body: DealerInput) => updateRow("dealers", id, body);

@@ -2,7 +2,7 @@
 import * as admin from "./admin";
 
 export type { AutoboxData, CarInput, PhotoItem, VehicleInfo } from "./admin";
-export const { getBrands, getBodyTypes, getLocations, getDealers, parseAutobox, saveCar, vehicleLookup } = admin;
+export const { getBrands, getBodyTypes, getLocations, getDealers, dealerPhones, parseAutobox, saveCar, vehicleLookup } = admin;
 
 export async function getModels(brandId?: number) {
   const rows = await admin.getModels();
