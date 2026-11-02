@@ -66,10 +66,11 @@ const customValidation = [
     .trim()
     .isEmail()
     .withMessage("И-мэйл формат буруу байна"),
+  // Дилер хэдэн ч салбартай байж болох тул хаягийн тоо хязгааргүй
   body("addresses")
     .optional({ nullable: true })
-    .isArray({ max: dealers.maxContacts })
-    .withMessage(`Хаяг ${dealers.maxContacts}-аас ихгүй байна`),
+    .isArray()
+    .withMessage("Хаяг буруу байна"),
   body("addresses.*")
     .trim()
     .isLength({ max: 255 })

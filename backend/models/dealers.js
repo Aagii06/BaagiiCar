@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       emails: { type: DataTypes.TEXT },
       // Эхний (үндсэн) хаяг; addresses-аас бөглөгдөнө
       address: { type: DataTypes.STRING },
-      // Бүх хаяг (JSON массив, 5 хүртэл)
+      // Бүх хаяг буюу салбарууд (JSON массив, тоо хязгааргүй)
       addresses: { type: DataTypes.TEXT },
       description: { type: DataTypes.TEXT },
 
@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
 
   dealers.softDelete = true;
 
-  // Утас, и-мэйл, хаяг тус бүр 5 хүртэл
+  // Утас, и-мэйл тус бүр 5 хүртэл (хаяг буюу салбар хязгааргүй)
   dealers.maxContacts = 5;
 
   // JSON массив баганыг (raw мөрөөс) уншина: хоосон бол хуучин ганц утгыг авна
