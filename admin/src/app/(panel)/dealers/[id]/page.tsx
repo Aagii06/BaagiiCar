@@ -12,88 +12,224 @@ import { useApi } from "@/lib/useApi";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { useRouteId } from "@/lib/useRouteId";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp, Loader2, Plus, Save, Trash2, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 /** Lets the header's save icon submit the form via `form={DEALER_FORM_ID}`. */
 const DEALER_FORM_ID = "dealer-form";
 
-/**
- * Values added one at a time (phones, emails, addresses), reordered with the arrows; the first is the main one.
- * `renderInput` draws one row's input; `max` hides the add button once reached (none = no limit).
- */
-function OrderedList({
-  title,
-  hint,
-  addLabel,
-  items,
-  onChange,
-  max,
-  renderInput,
-}: {
-  title: string;
-  hint: string;
-  addLabel: string;
-  items: string[];
-  onChange: (items: string[]) => void;
-  max?: number;
-  renderInput: (value: string, onValue: (v: string) => void, i: number) => React.ReactNode;
-}) {
-  /** Swaps item `i` with its neighbour `i + dir`. */
-  const move = (i: number, dir: -1 | 1) => {
-    const next = [...items];
-    [next[i], next[i + dir]] = [next[i + dir], next[i]];
-    onChange(next);
-  };
-  const arrowClass = "grid h-5 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30";
+/** Filled, trimmed values; `lower` compares emails case-insensitively. */
+const filledOf = (items: string[], lower = false) => items.map((v) => (lower ? v.trim().toLowerCase() : v.trim())).filter(Boolean);
+const hasDuplicates = (items: string[]) => new Set(items).size !== items.length;
 
+/** How each of the dealer's lists is titled, limited, typed in and checked. */
+const LISTS: Record<
+  DealerListField,
+  {
+    title: string;
+    hint: string;
+    addLabel: string;
+    empty: string;
+    max?: number;
+    lower?: boolean;
+    /** First problem with the cleaned values, or null. */
+    check: (items: string[]) => string | null;
+    input: (value: string, onValue: (v: string) => void, i: number) => React.ReactNode;
+  }
+> = {
+  phonenumbers: {
+    title: "Утасны дугаар",
+    hint: `Зар оруулахдаа эдгээрээс нэгийг сонгоно (${MAX_DEALER_CONTACTS} хүртэл)`,
+    addLabel: "Дугаар нэмэх",
+    empty: "Дугаар нэмээгүй байна",
+    max: MAX_DEALER_CONTACTS,
+    check: (items) =>
+      items.some((p) => p.length !== 8) ? "Утасны дугаар 8 оронтой тоо байна" : hasDuplicates(items) ? "Ижил дугаар давхардсан байна" : null,
+    input: (value, onValue, i) => <PhoneInput autoComplete="off" placeholder="00000000" aria-label={`Утас ${i + 1}`} value={value} autoFocus={!value} onChange={onValue} />,
+  },
+  emails: {
+    title: "И-мэйл",
+    hint: `${MAX_DEALER_CONTACTS} хүртэл`,
+    addLabel: "И-мэйл нэмэх",
+    empty: "И-мэйл нэмээгүй байна",
+    max: MAX_DEALER_CONTACTS,
+    lower: true,
+    check: (items) =>
+      items.some((m) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m)) ? "И-мэйл формат буруу байна" : hasDuplicates(items) ? "Ижил и-мэйл давхардсан байна" : null,
+    input: (value, onValue, i) => (
+      <input className={inputClass} type="email" aria-label={`И-мэйл ${i + 1}`} value={value} autoFocus={!value} onChange={(e) => onValue(e.target.value)} placeholder="name@example.com" />
+    ),
+  },
+  addresses: {
+    title: "Хаяг, салбар",
+    hint: "Салбар бүрийн хаягийг нэмнэ",
+    addLabel: "Хаяг нэмэх",
+    empty: "Хаяг нэмээгүй байна",
+    check: (items) => (hasDuplicates(items) ? "Ижил хаяг давхардсан байна" : null),
+    input: (value, onValue, i) => (
+      <input className={inputClass} aria-label={`Хаяг ${i + 1}`} value={value} autoFocus={!value} onChange={(e) => onValue(e.target.value)} maxLength={255} placeholder="Хаяг" />
+    ),
+  },
+};
+
+const mainBadge = <span className="shrink-0 rounded-md bg-primary-soft px-2 py-1 text-[11px] font-bold text-primary">Үндсэн</span>;
+
+/** One of the dealer's lists on the page: read-only rows, edited in `ListSheet`. */
+function ListSection({ field, items, onEdit }: { field: DealerListField; items: string[]; onEdit: () => void }) {
+  const cfg = LISTS[field];
   return (
-    <section className="space-y-3 rounded-2xl bg-card p-4">
-      <div>
-        <h2 className="text-lg font-bold">{title}</h2>
-        <p className="text-xs text-muted-foreground">{hint}</p>
-      </div>
-      {items.map((value, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <div className="min-w-0 flex-1">{renderInput(value, (v) => onChange(items.map((p, j) => (j === i ? v : p))), i)}</div>
-          {i === 0 && <span className="shrink-0 rounded-md bg-primary-soft px-2 py-1 text-[11px] font-bold text-primary">Үндсэн</span>}
-          <div className="flex shrink-0 flex-col">
-            <button type="button" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Дээш зөөх" className={arrowClass}>
-              <ChevronUp className="size-4" />
-            </button>
-            <button type="button" disabled={i === items.length - 1} onClick={() => move(i, 1)} aria-label="Доош зөөх" className={arrowClass}>
-              <ChevronDown className="size-4" />
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={() => onChange(items.filter((_, j) => j !== i))}
-            aria-label="Хасах"
-            className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground hover:bg-border"
-          >
-            <X className="size-4" />
-          </button>
+    <section className="rounded-2xl bg-card p-4">
+      <div className="mb-3 flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg font-bold">{cfg.title}</h2>
+          <p className="text-xs text-muted-foreground">{cfg.hint}</p>
         </div>
-      ))}
-      {(max === undefined || items.length < max) && (
-        <button
-          type="button"
-          onClick={() => onChange([...items, ""])}
-          className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-3 text-sm font-bold text-primary hover:bg-muted/60"
-        >
-          <Plus className="size-4" strokeWidth={2.6} />
-          {addLabel}
+        <button type="button" onClick={onEdit} className="flex shrink-0 items-center gap-1 rounded-xl bg-primary-soft px-3 py-2 text-sm font-bold text-primary hover:bg-primary/15">
+          {items.length ? <Pencil className="size-3.5" /> : <Plus className="size-4" strokeWidth={2.6} />}
+          {items.length ? "Засах" : "Нэмэх"}
         </button>
+      </div>
+      {items.length ? (
+        <ul className="divide-y divide-border">
+          {items.map((v, i) => (
+            <li key={v} className="flex items-center gap-2 py-2.5">
+              <span className="min-w-0 flex-1 break-words font-semibold">{v}</span>
+              {i === 0 && mainBadge}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-foreground">{cfg.empty}</p>
       )}
     </section>
   );
 }
 
-/** Filled, trimmed values; `lower` compares emails case-insensitively. */
-const filledOf = (items: string[], lower = false) => items.map((v) => (lower ? v.trim().toLowerCase() : v.trim())).filter(Boolean);
-const hasDuplicates = (items: string[]) => new Set(items).size !== items.length;
+/**
+ * Modal for one list: add as many rows as needed, reorder with the arrows (the first is the main one), remove,
+ * then one "Хадгалах" checks and saves them all and closes. Backdrop / Escape / "Болих" drops the changes.
+ */
+function ListSheet({
+  field,
+  items,
+  onSave,
+  onClose,
+}: {
+  field: DealerListField;
+  items: string[];
+  /** Resolves once saved; a thrown error stays in the sheet. */
+  onSave: (items: string[]) => Promise<void>;
+  onClose: () => void;
+}) {
+  const cfg = LISTS[field];
+  // An empty list opens with one row ready to type in.
+  const [draft, setDraft] = useState(() => (items.length ? items : [""]));
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [busy, onClose]);
+
+  /** Swaps row `i` with its neighbour `i + dir`. */
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...draft];
+    [next[i], next[i + dir]] = [next[i + dir], next[i]];
+    setDraft(next);
+  };
+  const arrowClass = "grid h-5 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30";
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // React bubbles the portal's submit up to the dealer form; keep it here.
+    e.stopPropagation();
+    const clean = filledOf(draft, cfg.lower);
+    const problem = cfg.check(clean);
+    if (problem) return setError(problem);
+    setBusy(true);
+    setError(null);
+    try {
+      await onSave(clean);
+    } catch (err) {
+      setError(errorMessage(err));
+      setBusy(false);
+    }
+  };
+
+  // Portaled out of the dealer form so Enter here saves this list, not the dealer.
+  return createPortal(
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 animate-fade-in bg-dark/50 backdrop-blur-[2px]" onClick={() => !busy && onClose()} />
+      <form
+        onSubmit={save}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dealer-list-title"
+        className="absolute inset-x-0 bottom-0 mx-auto flex max-h-[90dvh] max-w-md animate-sheet-up flex-col rounded-t-3xl bg-white pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl"
+      >
+        <div className="mx-auto mb-4 h-1 w-10 shrink-0 rounded-full bg-border" />
+        <div className="px-5">
+          <h2 id="dealer-list-title" className="text-lg font-bold">
+            {cfg.title}
+          </h2>
+          <p className="text-xs text-muted-foreground">{cfg.hint}. Сумаар эрэмбэлнэ, эхнийх нь үндсэн</p>
+        </div>
+        <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto px-5 pb-1">
+          {draft.map((value, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">{cfg.input(value, (v) => setDraft(draft.map((p, j) => (j === i ? v : p))), i)}</div>
+              {i === 0 && mainBadge}
+              <div className="flex shrink-0 flex-col">
+                <button type="button" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Дээш зөөх" className={arrowClass}>
+                  <ChevronUp className="size-4" />
+                </button>
+                <button type="button" disabled={i === draft.length - 1} onClick={() => move(i, 1)} aria-label="Доош зөөх" className={arrowClass}>
+                  <ChevronDown className="size-4" />
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDraft(draft.filter((_, j) => j !== i))}
+                aria-label="Хасах"
+                className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground hover:bg-border"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          ))}
+          {(cfg.max === undefined || draft.length < cfg.max) && (
+            <button
+              type="button"
+              onClick={() => setDraft([...draft, ""])}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-3 text-sm font-bold text-primary hover:bg-muted/60"
+            >
+              <Plus className="size-4" strokeWidth={2.6} />
+              {cfg.addLabel}
+            </button>
+          )}
+        </div>
+        <div className="shrink-0 px-5 pt-3">
+          <FormError message={error} />
+          <div className="mt-2 flex gap-2">
+            <button type="button" onClick={onClose} disabled={busy} className="h-12 flex-1 rounded-xl bg-muted font-bold hover:bg-border disabled:opacity-60">
+              Болих
+            </button>
+            <button type="submit" disabled={busy} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+              {busy && <Loader2 className="size-4 animate-spin" />}
+              Хадгалах
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>,
+    document.body,
+  );
+}
 
 /** `listHref`: the list to return to after save / delete (keeps `?from=`). */
 function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null; listHref: string; onBusyChange: (busy: boolean) => void }) {
@@ -106,41 +242,45 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
     description: dealer?.description ?? "",
     status: dealer?.status === "inactive" ? "inactive" : "active",
   });
-  // Phones, emails and addresses are added one at a time below the form; the first of each is the main one.
+  // Phones, emails and addresses are edited in a modal (ListSheet); the first of each is the main one.
   const [lists, setLists] = useState<Record<DealerListField, string[]>>(() => ({
     phonenumbers: dealerList(dealer, "phonenumbers"),
     emails: dealerList(dealer, "emails"),
     addresses: dealerList(dealer, "addresses"),
   }));
-  const setList = (k: DealerListField) => (items: string[]) => setLists((prev) => ({ ...prev, [k]: items }));
+  const [editing, setEditing] = useState<DealerListField | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => onBusyChange(busy), [busy, onBusyChange]);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setF({ ...f, [k]: e.target.value });
 
+  const bodyOf = (l: typeof lists): DealerInput => ({
+    name: f.name.trim(),
+    logo: f.logo || null,
+    ...l,
+    description: f.description.trim() || null,
+    status: f.status as DealerInput["status"],
+  });
+
+  /** The modal's save: an existing dealer is saved right away, a new one keeps it until "Бүртгэх". */
+  const saveList = async (field: DealerListField, items: string[]) => {
+    const next = { ...lists, [field]: items };
+    if (dealer) {
+      if (!f.name.trim()) throw new Error("Дилерийн нэр оруулна уу");
+      await updateDealer(dealer.id, bodyOf(next));
+      toast("Хадгаллаа");
+    }
+    setLists(next);
+    setEditing(null);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!f.name.trim()) return setError("Дилерийн нэр оруулна уу");
-    const phonenumbers = filledOf(lists.phonenumbers);
-    const emails = filledOf(lists.emails, true);
-    const addresses = filledOf(lists.addresses);
-    if (phonenumbers.some((p) => p.length !== 8)) return setError("Утасны дугаар 8 оронтой тоо байна");
-    if (hasDuplicates(phonenumbers)) return setError("Ижил дугаар давхардсан байна");
-    if (emails.some((m) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m))) return setError("И-мэйл формат буруу байна");
-    if (hasDuplicates(emails)) return setError("Ижил и-мэйл давхардсан байна");
-    if (hasDuplicates(addresses)) return setError("Ижил хаяг давхардсан байна");
     setBusy(true);
     setError(null);
-    const body: DealerInput = {
-      name: f.name.trim(),
-      logo: f.logo || null,
-      phonenumbers,
-      emails,
-      addresses,
-      description: f.description.trim() || null,
-      status: f.status as DealerInput["status"],
-    };
+    const body = bodyOf(lists);
     try {
       if (dealer) await updateDealer(dealer.id, body);
       else await createDealer(body);
@@ -192,38 +332,10 @@ function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null;
         </Field>
       </section>
 
-      <OrderedList
-        title="Утасны дугаар"
-        hint={`Зар оруулахдаа эдгээрээс нэгийг сонгоно (${MAX_DEALER_CONTACTS} хүртэл). Сумаар эрэмбэлнэ, эхнийх нь үндсэн`}
-        addLabel="Дугаар нэмэх"
-        items={lists.phonenumbers}
-        onChange={setList("phonenumbers")}
-        max={MAX_DEALER_CONTACTS}
-        renderInput={(value, onValue, i) => (
-          <PhoneInput autoComplete="off" placeholder="00000000" aria-label={`Утас ${i + 1}`} value={value} autoFocus={!value} onChange={onValue} />
-        )}
-      />
-      <OrderedList
-        title="И-мэйл"
-        hint={`${MAX_DEALER_CONTACTS} хүртэл. Сумаар эрэмбэлнэ, эхнийх нь үндсэн`}
-        addLabel="И-мэйл нэмэх"
-        items={lists.emails}
-        onChange={setList("emails")}
-        max={MAX_DEALER_CONTACTS}
-        renderInput={(value, onValue, i) => (
-          <input className={inputClass} type="email" aria-label={`И-мэйл ${i + 1}`} value={value} autoFocus={!value} onChange={(e) => onValue(e.target.value)} placeholder="name@example.com" />
-        )}
-      />
-      <OrderedList
-        title="Хаяг, салбар"
-        hint="Салбар бүрийн хаягийг нэмнэ. Сумаар эрэмбэлнэ, эхнийх нь үндсэн"
-        addLabel="Хаяг нэмэх"
-        items={lists.addresses}
-        onChange={setList("addresses")}
-        renderInput={(value, onValue, i) => (
-          <input className={inputClass} aria-label={`Хаяг ${i + 1}`} value={value} autoFocus={!value} onChange={(e) => onValue(e.target.value)} maxLength={255} placeholder="Хаяг" />
-        )}
-      />
+      {(Object.keys(LISTS) as DealerListField[]).map((field) => (
+        <ListSection key={field} field={field} items={lists[field]} onEdit={() => setEditing(field)} />
+      ))}
+      {editing && <ListSheet field={editing} items={lists[editing]} onSave={(items) => saveList(editing, items)} onClose={() => setEditing(null)} />}
 
       <FormError message={error} />
       {dealer && (
