@@ -4,12 +4,13 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/screens/ai_chat.dart';
 import 'package:mashinuud_app/screens/cars.dart';
 import 'package:mashinuud_app/screens/compare.dart';
+import 'package:mashinuud_app/screens/dealers.dart';
 import 'package:mashinuud_app/screens/home.dart';
 import 'package:mashinuud_app/screens/profile.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 
-/// Bottom navigation (Нүүр · Хайх · Харьцуулалт · Профайл) with the AI button and the compare bar on top.
+/// Bottom navigation (Нүүр · Дилерүүд · Хайх · Харьцуулалт · Профайл) with the AI button and the compare bar on top.
 class Shell extends StatelessWidget {
   const Shell({super.key});
 
@@ -26,7 +27,7 @@ class Shell extends StatelessWidget {
         body: Stack(children: [
           IndexedStack(
             index: shell.tab,
-            children: const [HomeScreen(), CarsScreen(), CompareScreen(), ProfileScreen()],
+            children: const [HomeScreen(), DealersScreen(), CarsScreen(), CompareScreen(), ProfileScreen()],
           ),
           if (shell.tab != ShellController.compare) const Positioned(left: 16, right: 88, bottom: 16, child: CompareBar()),
         ]),
@@ -45,6 +46,7 @@ class Shell extends StatelessWidget {
             onDestinationSelected: shell.go,
             destinations: const [
               NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Нүүр'),
+              NavigationDestination(icon: Icon(Icons.storefront_outlined), selectedIcon: Icon(Icons.storefront_rounded), label: 'Дилерүүд'),
               NavigationDestination(icon: Icon(Icons.search_rounded), label: 'Хайх'),
               NavigationDestination(icon: Icon(Icons.compare_arrows_rounded), label: 'Харьцуулалт'),
               NavigationDestination(icon: Icon(Icons.person_outline_rounded), selectedIcon: Icon(Icons.person_rounded), label: 'Профайл'),

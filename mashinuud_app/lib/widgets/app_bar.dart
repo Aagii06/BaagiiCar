@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/screens/saved.dart';
+import 'package:mashinuud_app/state/stores.dart';
 
 /// Orange mark + "CARDEALER" wordmark.
 class Logo extends StatelessWidget {
@@ -25,7 +26,7 @@ class LogoMark extends StatelessWidget {
       );
 }
 
-/// Phone app bar (web `MobileAppBar`): logo on home, title on the other tabs, ♡ on the right.
+/// Phone app bar (web `MobileAppBar`): logo on home, title on the other tabs, ♡ and the admin panel on the right.
 /// Pushed pages use a plain [AppBar] with the back arrow and a title.
 class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -37,7 +38,7 @@ class TabAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) => AppBar(
         title: title == null ? const Logo() : Text(title!),
-        actions: const [SavedAction(), SizedBox(width: 6)],
+        actions: const [SavedAction(), AdminAction(), SizedBox(width: 6)],
       );
 }
 
@@ -49,5 +50,16 @@ class SavedAction extends StatelessWidget {
         tooltip: 'Хадгалсан',
         icon: const Icon(Icons.favorite_border_rounded),
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SavedScreen())),
+      );
+}
+
+/// Admin panel (web header's "Админ самбар"): switches to the app's admin half.
+class AdminAction extends StatelessWidget {
+  const AdminAction({super.key});
+  @override
+  Widget build(BuildContext context) => IconButton(
+        tooltip: 'Админ самбар',
+        icon: const Icon(Icons.dashboard_outlined),
+        onPressed: () => Stores.mode.setAdmin(true),
       );
 }

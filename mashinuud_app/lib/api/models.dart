@@ -1,6 +1,8 @@
 /// Backend rows — same shapes as web/src/lib/api/types.ts.
 library;
 
+import 'dart:convert';
+
 int? _int(Object? v) => v == null ? null : (v is int ? v : int.tryParse('$v'));
 String? _str(Object? v) => v?.toString();
 bool _bool(Object? v) => v == true || v == 1 || v == '1';
@@ -170,7 +172,20 @@ class Dealer {
   final String? logo;
   final String? address;
   final int carCount;
-  const Dealer({required this.id, required this.name, this.phonenumber, this.logo, this.address, this.carCount = 0});
+
+  /// Every number / address (branch); the first is [phonenumber] / [address].
+  final List<String> phones;
+  final List<String> addresses;
+  const Dealer({
+    required this.id,
+    required this.name,
+    this.phonenumber,
+    this.logo,
+    this.address,
+    this.carCount = 0,
+    this.phones = const [],
+    this.addresses = const [],
+  });
   factory Dealer.fromJson(Map<String, dynamic> j) => Dealer(
         id: _int(j['id'])!,
         name: _str(j['name']) ?? '',
@@ -178,7 +193,23 @@ class Dealer {
         logo: _str(j['logo']),
         address: _str(j['address']),
         carCount: _int(j['car_count']) ?? 0,
+        phones: _list(j['phonenumbers'], _str(j['phonenumber'])),
+        addresses: _list(j['addresses'], _str(j['address'])),
       );
+
+  /// JSON array column (backend models/dealers.js `listOf`): empty → the single legacy value.
+  static List<String> _list(Object? raw, String? single) {
+    Object? list = raw;
+    if (raw is String) {
+      try {
+        list = jsonDecode(raw);
+      } catch (_) {
+        list = null;
+      }
+    }
+    final out = list is List ? list.map((v) => '$v'.trim()).where((v) => v.isNotEmpty).toList() : <String>[];
+    return out.isEmpty && single != null && single.isNotEmpty ? [single] : out;
+  }
 }
 
 class WebUser {

@@ -6,8 +6,10 @@ const publicAttributes = [
   "id",
   "name",
   "phonenumber",
+  "phonenumbers",
   "logo",
   "address",
+  "addresses",
   [
     sequelize.literal(`(SELECT COUNT(*) FROM cars WHERE cars.dealer_id = dealers.id AND cars.status = ${sequelize.escape(carStatuses.active)})`),
     "car_count",

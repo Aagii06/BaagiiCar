@@ -156,9 +156,9 @@ class AuthStore extends ChangeNotifier {
   }
 }
 
-/// Bottom-bar tabs, and filters handed to the "Хайх" tab from elsewhere (hero search, brand tiles…).
+/// Bottom-bar tabs (Дилерүүд first after Нүүр, as on the website's menu), and filters handed to the "Хайх" tab from elsewhere (hero search, brand tiles…).
 class ShellController extends ChangeNotifier {
-  static const home = 0, cars = 1, compare = 2, profile = 3;
+  static const home = 0, dealers = 1, cars = 2, compare = 3, profile = 4;
   int tab = home;
 
   /// Set before switching to [cars]; the list picks it up once.
