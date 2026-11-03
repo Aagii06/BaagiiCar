@@ -110,30 +110,28 @@ export default function AddressPicker({ value, onChange, index }: { value: strin
           </option>
         ))}
       </Select>
-      <div className="grid grid-cols-2 gap-2">
-        <Select title="Сум / Дүүрэг" value={soumId ?? ""} disabled={!aimagId} onChange={(e) => pickSoum(idOf(e.target.value))} valueLabel={soum ?? "Сум / Дүүрэг"}>
-          <option value="">Сум / Дүүрэг</option>
-          {soums.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </Select>
-        <Select
-          title="Баг / Хороо"
-          value={bagId ?? ""}
-          disabled={!soumId || bags.length === 0}
-          onChange={(e) => setPicked((p) => ({ ...p, bagId: idOf(e.target.value) }))}
-          valueLabel={bag ?? "Баг / Хороо"}
-        >
-          <option value="">Баг / Хороо</option>
-          {bags.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </Select>
-      </div>
+      <Select title="Сум / Дүүрэг" value={soumId ?? ""} disabled={!aimagId} onChange={(e) => pickSoum(idOf(e.target.value))} valueLabel={soum ?? "Сум / Дүүрэг"}>
+        <option value="">Сум / Дүүрэг</option>
+        {soums.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.name}
+          </option>
+        ))}
+      </Select>
+      <Select
+        title="Баг / Хороо"
+        value={bagId ?? ""}
+        disabled={!soumId || bags.length === 0}
+        onChange={(e) => setPicked((p) => ({ ...p, bagId: idOf(e.target.value) }))}
+        valueLabel={bag ?? "Баг / Хороо"}
+      >
+        <option value="">Баг / Хороо</option>
+        {bags.map((b) => (
+          <option key={b.id} value={b.id}>
+            {b.name}
+          </option>
+        ))}
+      </Select>
       <input
         className={inputClass}
         aria-label={`Дэлгэрэнгүй хаяг ${index + 1}`}
