@@ -3,6 +3,7 @@
 import { inputClass } from "@/components/common/Field";
 import Select from "@/components/common/Select";
 import { getAreas } from "@/lib/api/admin";
+import { cn } from "@/lib/utils";
 import type { Location } from "@/lib/api/types";
 import { useEffect, useRef, useState } from "react";
 
@@ -132,8 +133,9 @@ export default function AddressPicker({ value, onChange, index }: { value: strin
           </option>
         ))}
       </Select>
-      <input
-        className={inputClass}
+      <textarea
+        rows={3}
+        className={cn(inputClass, "h-auto resize-none py-3")}
         aria-label={`Дэлгэрэнгүй хаяг ${index + 1}`}
         value={detail}
         onChange={(e) => setPicked((p) => ({ ...p, detail: e.target.value }))}
