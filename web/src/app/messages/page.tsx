@@ -146,7 +146,7 @@ function MessagesInner() {
             </>
           ) : !list.length ? (
             <EmptyState
-              title={t("Мессеж алга")}
+              title={t("Мессеж олдсонгүй")}
               description={t("Зар дээрх чат товчоор асуултаа илгээгээрэй.")}
               action={<Link href="/cars" className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">{t("Машин хайх")}</Link>}
             />

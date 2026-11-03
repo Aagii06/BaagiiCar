@@ -76,7 +76,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             if (threads.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.all(16),
-                child: EmptyView(title: 'Мессеж алга', description: 'Зар дээрх чат товчоор асуултаа илгээгээрэй.', icon: Icons.chat_bubble_outline_rounded),
+                child: EmptyView(title: 'Мессеж олдсонгүй', description: 'Зар дээрх чат товчоор асуултаа илгээгээрэй.', icon: Icons.chat_bubble_outline_rounded),
               );
             }
             return RefreshIndicator(

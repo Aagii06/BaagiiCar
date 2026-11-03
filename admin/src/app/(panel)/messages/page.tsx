@@ -64,7 +64,7 @@ export default function MessagesPage() {
       ) : !threads ? (
         <ThreadListSkeleton />
       ) : !threads.length ? (
-        <EmptyState title={tab === "all" ? "Мессеж алга" : `${TABS.find((t) => t.value === tab)?.label} мессеж алга`} />
+        <EmptyState title={tab === "all" ? "Мессеж олдсонгүй" : `${TABS.find((t) => t.value === tab)?.label} мессеж олдсонгүй`} />
       ) : (
         // Edge to edge, right under the header, like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
