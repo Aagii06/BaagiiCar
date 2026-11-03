@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import Link from "next/link";
 import Logo, { BRAND } from "./Logo";
 import NotifySignup from "./NotifySignup";
+import PriceOffer from "./PriceOffer";
 
 const COLUMNS: { title: MessageKey; href?: string; links: { href: string; label: MessageKey }[] }[] = [
   {
@@ -68,6 +69,11 @@ export default function Footer() {
                     </Link>
                   </li>
                 ))}
+                {col.title === "Тусламж" && (
+                  <li>
+                    <PriceOffer className="hover:text-primary" />
+                  </li>
+                )}
               </ul>
             </div>
           ))}
