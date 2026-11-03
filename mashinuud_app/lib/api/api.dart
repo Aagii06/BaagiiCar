@@ -147,6 +147,18 @@ class Api {
     return Session(data['token'] as String, WebUser.fromJson(data['loggedUser'] as Map<String, dynamic>));
   }
 
+  /// Texts a 4-digit code to the new number before it replaces the current one; returns the resend wait.
+  static Future<int> sendPhoneChangeCode(String token, String phone) async {
+    final res = await apiFetch('/web/auth/phone-change/send', method: 'POST', token: token, body: {'phonenumber': phone});
+    return (res['data']?['resend_in'] as num?)?.toInt() ?? 60;
+  }
+
+  /// Checks the code and saves the new number; returns the updated profile.
+  static Future<WebUser> verifyPhoneChangeCode(String token, String phone, String code) async {
+    final res = await apiFetch('/web/auth/phone-change/verify', method: 'POST', token: token, body: {'phonenumber': phone, 'code': code});
+    return WebUser.fromJson(res['data'] as Map<String, dynamic>);
+  }
+
   /// Fresh profile; throws ApiError(401) once the token is no longer valid.
   static Future<WebUser> getMe(String token) async {
     final res = await apiFetch('/web/auth/me', token: token);

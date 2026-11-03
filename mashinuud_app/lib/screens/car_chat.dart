@@ -242,7 +242,13 @@ class Composer extends StatelessWidget {
 class PhoneCodeForm extends StatefulWidget {
   /// Focus the phone field at once (the chat sheet); off on the profile tab, which is built while hidden.
   final bool autofocus;
-  const PhoneCodeForm({super.key, this.autofocus = false});
+
+  /// Signed in: the code goes to a new number and replaces the account's one (Профайл → Утасны дугаар солих).
+  final bool change;
+
+  /// Called once the code checks out.
+  final VoidCallback? onDone;
+  const PhoneCodeForm({super.key, this.autofocus = false, this.change = false, this.onDone});
   @override
   State<PhoneCodeForm> createState() => _PhoneCodeFormState();
 }
@@ -280,7 +286,9 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
 
   void _requestCode() => _run(() async {
         if (!RegExp(r'^\d{8}$').hasMatch(_phone.text)) throw const ApiError(0, '8 оронтой утасны дугаар оруулна уу');
-        final wait = await Api.sendLoginCode(_phone.text);
+        final token = Stores.auth.token;
+        if (widget.change && _phone.text == Stores.auth.user?.phonenumber) throw const ApiError(0, 'Одоогийн дугаараас өөр дугаар оруулна уу');
+        final wait = widget.change && token != null ? await Api.sendPhoneChangeCode(token, _phone.text) : await Api.sendLoginCode(_phone.text);
         _code.clear();
         setState(() {
           _codeStep = true;
@@ -297,7 +305,15 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
         });
       });
 
-  void _verify() => _run(() async => Stores.auth.signIn(await Api.loginWithCode(_phone.text, _code.text)));
+  void _verify() => _run(() async {
+        final token = Stores.auth.token;
+        if (widget.change && token != null) {
+          Stores.auth.signIn(Session(token, await Api.verifyPhoneChangeCode(token, _phone.text, _code.text)));
+        } else {
+          Stores.auth.signIn(await Api.loginWithCode(_phone.text, _code.text));
+        }
+        widget.onDone?.call();
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -309,22 +325,25 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
           );
     if (!_codeStep) {
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const Text('Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
+        Text(widget.change ? 'Шинэ дугаараа оруулна уу. Шинэ дугаар руу SMS код илгээнэ.' : 'Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.',
+            style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
         const SizedBox(height: 12),
         TextField(
           controller: _phone,
           autofocus: widget.autofocus,
           keyboardType: TextInputType.phone,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
-          decoration: const InputDecoration(hintText: 'Утасны дугаар', prefixIcon: Icon(Icons.phone_iphone_rounded, size: 20)),
+          decoration: InputDecoration(hintText: widget.change ? 'Шинэ дугаар' : 'Утасны дугаар', prefixIcon: const Icon(Icons.phone_iphone_rounded, size: 20)),
           onChanged: (_) => setState(() {}),
           onSubmitted: (_) => _requestCode(),
         ),
         ?error,
         const SizedBox(height: 12),
         PrimaryButton(label: 'Код авах', busy: _busy, onTap: _phone.text.length == 8 ? _requestCode : null),
-        const SizedBox(height: 10),
-        const Text('Бүртгэлгүй дугаар бол автоматаар бүртгэгдэнэ.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+        if (!widget.change) ...[
+          const SizedBox(height: 10),
+          const Text('Бүртгэлгүй дугаар бол автоматаар бүртгэгдэнэ.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+        ],
         if (AppConstants.contactPhone.isNotEmpty)
           TextButton.icon(
             onPressed: () => launchUrl(Uri.parse('tel:${AppConstants.contactPhone}')),

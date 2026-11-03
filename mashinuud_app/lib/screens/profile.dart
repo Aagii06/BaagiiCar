@@ -106,6 +106,16 @@ class _AccountState extends State<_Account> {
           ),
         ),
         const SizedBox(height: 12),
+        Panel(
+          padding: EdgeInsets.zero,
+          child: Column(children: [
+            _Link(icon: Icons.phone_iphone_rounded, label: 'Утасны дугаар солих', onTap: () => _changePhone(context)),
+            const Divider(height: 1),
+            // Same as the website's "Админ" link: the admin panel, in the app's admin half.
+            _Link(icon: Icons.dashboard_outlined, label: 'Админ самбар', onTap: () => Stores.mode.setAdmin(true)),
+          ]),
+        ),
+        const SizedBox(height: 12),
         Material(
           color: AppPalette.card,
           borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -126,6 +136,23 @@ class _AccountState extends State<_Account> {
     );
   }
 }
+
+/// New number: SMS code to it, saved once the code checks out (like the website's profile page).
+Future<void> _changePhone(BuildContext context) => showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: AppPalette.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl))),
+      builder: (sheet) => Padding(
+        padding: EdgeInsets.fromLTRB(16, 20, 16, 16 + MediaQuery.viewInsetsOf(sheet).bottom),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          const Text('Утасны дугаар солих', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 12),
+          PhoneCodeForm(autofocus: true, change: true, onDone: () => Navigator.of(sheet).pop()),
+        ]),
+      ),
+    );
 
 class _Link extends StatelessWidget {
   final IconData icon;
