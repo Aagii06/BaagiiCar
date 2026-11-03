@@ -110,9 +110,6 @@ class _AccountState extends State<_Account> {
           padding: EdgeInsets.zero,
           child: Column(children: [
             _Link(icon: Icons.phone_iphone_rounded, label: 'Утасны дугаар солих', onTap: () => _changePhone(context)),
-            const Divider(height: 1),
-            // Same as the website's "Админ" link: the admin panel, in the app's admin half.
-            _Link(icon: Icons.dashboard_outlined, label: 'Админ самбар', onTap: () => Stores.mode.setAdmin(true)),
           ]),
         ),
         const SizedBox(height: 12),
