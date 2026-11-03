@@ -91,6 +91,10 @@ export interface Location {
   id: number;
   name: string;
   sort_order?: number | null;
+  /** aimag → soum → bag; `parent_id` points one level up. */
+  parent_id?: number | null;
+  level?: "aimag" | "soum" | "bag" | null;
+  code?: string | null;
 }
 
 export interface CarFile {

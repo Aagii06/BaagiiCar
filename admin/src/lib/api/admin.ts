@@ -157,6 +157,20 @@ export async function listModelsPage({ search, brandIds = [], take }: { search?:
 export const getBodyTypes = () => listAll<BodyType>("vwBodyTypes", [["status", "=", "active"]]).then(bySort);
 export const getLocations = () => listAll<Location>("locations").then(bySort);
 
+// The aimag → soum → bag tree doesn't change while the admin is open: each level is fetched once.
+const areaCache = new Map<number | null, Promise<Location[]>>();
+
+/** Aimags (and the capital) for `null`, otherwise the soums / bags under `parentId`. */
+export function getAreas(parentId: number | null) {
+  let rows = areaCache.get(parentId);
+  if (!rows) {
+    rows = listAll<Location>("locations", [NOT_DELETED, parentId == null ? ["level", "=", "aimag"] : ["parent_id", "=", parentId]]).then(bySort);
+    rows.catch(() => areaCache.delete(parentId));
+    areaCache.set(parentId, rows);
+  }
+  return rows;
+}
+
 // --- cars ------------------------------------------------------------------
 
 export type CarStatusFilter = "pending" | "rejected" | "active" | "hidden" | "sold" | "deleted" | "featured";
