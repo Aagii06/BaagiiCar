@@ -4,6 +4,8 @@ module.exports = (sequelize, DataTypes) => {
   class locations extends Sequelize.Model {
     static associate({ cars, users }) {
       this.hasMany(cars, { as: "cars", foreignKey: "location_id" });
+      this.belongsTo(locations, { as: "parent", foreignKey: "parent_id" });
+      this.hasMany(locations, { as: "children", foreignKey: "parent_id" });
       this.belongsTo(users, { as: "createdBy", foreignKey: "created_by" });
       this.belongsTo(users, { as: "updatedBy", foreignKey: "updated_by" });
       this.belongsTo(users, { as: "deletedBy", foreignKey: "deleted_by" });
@@ -13,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
   locations.init(
     {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+      // aimag → soum → bag (ҮСХ-ны засаг захиргааны нэгж)
+      parent_id: { type: DataTypes.INTEGER },
+      level: { type: DataTypes.STRING },
+      code: { type: DataTypes.STRING },
 
       name: { type: DataTypes.STRING },
       sort_order: { type: DataTypes.INTEGER },

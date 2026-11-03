@@ -2,7 +2,9 @@ const { locations } = require("../../../models");
 const { body } = require("express-validator");
 const { isAdmin } = require("../../../middleware/auth");
 
+// parent_id-аар шүүгээгүй бол зөвхөн аймаг/нийслэлийг буцаана (сум, баг нь parent_id-аар)
 const list = (req, res, next) => {
+  if (!req.query.filter?.includes("parent_id")) req.where.push({ parent_id: null });
   next();
 };
 
@@ -10,9 +12,7 @@ const show = (req, res, next) => {
   next();
 };
 
-const lookup = (req, res, next) => {
-  next();
-};
+const lookup = list;
 
 const create = (req, res, next) => {
   req.body.status = "active";
