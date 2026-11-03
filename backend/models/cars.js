@@ -107,5 +107,17 @@ module.exports = (sequelize, DataTypes) => {
     if (errorMessage !== "") throw errorMessage;
   });
 
+  // Зар устахад (status = "deleted") түүнд ирсэн мессежүүд дагаж устана
+  cars.afterUpdate(async (data, options) => {
+    if (!data.changed("status") || data.status !== "deleted") return;
+    await sequelize.models.messages.update(
+      { status: "deleted", deleted_by: data.deleted_by, deleted_at: data.deleted_at },
+      {
+        where: { car_id: data.id, status: { [Sequelize.Op.ne]: "deleted" } },
+        transaction: options.transaction,
+      },
+    );
+  });
+
   return cars;
 };
