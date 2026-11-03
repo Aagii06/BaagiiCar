@@ -1,5 +1,6 @@
 import { inputClass, PhoneInput } from "@/components/common/Field";
 import { MAX_DEALER_CONTACTS, type DealerListField } from "@/lib/api/admin";
+import AddressPicker from "./AddressPicker";
 
 /** Filled, trimmed values; `lower` compares emails case-insensitively. */
 export const filledOf = (items: string[], lower = false) => items.map((v) => (lower ? v.trim().toLowerCase() : v.trim())).filter(Boolean);
@@ -46,13 +47,11 @@ export const DEALER_LISTS: Record<DealerListField, DealerListConfig> = {
   },
   addresses: {
     title: "Хаяг, салбар",
-    hint: "Салбар бүрийн хаягийг нэмнэ",
+    hint: "Салбар бүрийн хаягийг аймаг, сум, багаас сонгож нэмнэ",
     addLabel: "Хаяг нэмэх",
     empty: "Хаяг нэмээгүй байна",
     check: (items) => (hasDuplicates(items) ? "Ижил хаяг давхардсан байна" : null),
-    input: (value, onValue, i) => (
-      <input className={inputClass} aria-label={`Хаяг ${i + 1}`} value={value} autoFocus={!value} onChange={(e) => onValue(e.target.value)} maxLength={255} placeholder="Хаяг" />
-    ),
+    input: (value, onValue, i) => <AddressPicker value={value} onChange={onValue} index={i} />,
   },
 };
 
