@@ -270,6 +270,16 @@ export async function setHidden(id: number, hidden: boolean) {
   await apiFetch("/api/cars/set-hidden", { method: "POST", body: { id, hidden } });
 }
 
+/** Move an active ad back to the top of the list; free once every CAR_RENEW_DAYS days. */
+export async function renewCar(id: number) {
+  await apiFetch("/api/cars/renew", { method: "POST", body: { id } });
+}
+
+/** Bring a deleted ad back (to its status before deletion) within CAR_RESTORE_DAYS days. */
+export async function restoreCar(id: number) {
+  await apiFetch("/api/cars/restore", { method: "POST", body: { id } });
+}
+
 export async function markSold(id: number) {
   await apiFetch("/api/cars/mark-sold", { method: "POST", body: { id } });
 }

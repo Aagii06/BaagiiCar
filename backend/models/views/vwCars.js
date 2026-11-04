@@ -54,6 +54,9 @@ module.exports = (sequelize, DataTypes) => {
       created_at: { type: DataTypes.STRING },
       updated_at: { type: DataTypes.STRING },
       deleted_at: { type: DataTypes.STRING },
+      renewed_at: { type: DataTypes.STRING },
+      // Жагсаалтад гарсан огноо: renewed_at эсвэл created_at ("Шинэ нь эхэндээ" эрэмбэ)
+      listed_at: { type: DataTypes.STRING },
 
       name: { type: DataTypes.STRING },
       brand_name: { type: DataTypes.STRING },

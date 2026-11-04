@@ -31,6 +31,8 @@ export interface Car {
   sold_at: string | null;
   status: string;
   created_at: string | null;
+  /** Renewal date, else created_at: when the ad was (re)listed. */
+  listed_at?: string | null;
   updated_at: string | null;
 
   name: string | null;

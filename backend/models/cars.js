@@ -63,6 +63,10 @@ module.exports = (sequelize, DataTypes) => {
       reject_reason: { type: DataTypes.TEXT },
       rejected_by: { type: DataTypes.INTEGER },
       rejected_at: { type: DataTypes.STRING },
+      // Сүүлд шинэчилсэн (жагсаалтын эхэнд гаргасан) огноо - carRenewDays тутам үнэгүй
+      renewed_at: { type: DataTypes.STRING },
+      // Устгахаас өмнөх төлөв - сэргээхэд буцаана (afterUpdate)
+      restore_status: { type: DataTypes.STRING },
 
       status: { type: DataTypes.STRING },
       created_by: { type: DataTypes.INTEGER },
@@ -107,9 +111,13 @@ module.exports = (sequelize, DataTypes) => {
     if (errorMessage !== "") throw errorMessage;
   });
 
-  // Зар устахад (status = "deleted") түүнд ирсэн мессежүүд дагаж устана
+  // Зар устахад (status = "deleted") өмнөх төлөвийг сэргээхэд зориулж хадгалж, түүнд ирсэн мессежүүд дагаж устана
   cars.afterUpdate(async (data, options) => {
     if (!data.changed("status") || data.status !== "deleted") return;
+    await cars.update(
+      { restore_status: data.previous("status") },
+      { where: { id: data.id }, transaction: options.transaction, hooks: false },
+    );
     await sequelize.models.messages.update(
       { status: "deleted", deleted_by: data.deleted_by, deleted_at: data.deleted_at },
       {

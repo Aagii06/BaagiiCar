@@ -15,6 +15,8 @@ const {
 const {
   save,
   markSold,
+  renew,
+  restore,
   approve,
   setHidden,
   reject,
@@ -28,6 +30,8 @@ router
 router.route("/approve").post(protect, idValidation, byAndAt, approve);
 router.route("/reject").post(protect, idValidation, byAndAt, reject);
 router.route("/set-hidden").post(protect, idValidation, byAndAt, setHidden);
+router.route("/renew").post(protect, idValidation, byAndAt, renew);
+router.route("/restore").post(protect, idValidation, byAndAt, restore);
 router.route("/mark-sold").post(protect, idValidation, byAndAt, markSold);
 router
   .route("/favorite")

@@ -6,13 +6,13 @@ import Img from "@/components/common/Img";
 import type { ChipTab } from "@/components/common/ChipTabs";
 import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { errorMessage, useToast } from "@/components/common/Toast";
-import { approveCar, deleteCar, markSold, setFeatured, setHidden, type CarStatusFilter } from "@/lib/api/admin";
+import { approveCar, deleteCar, markSold, renewCar, restoreCar, setFeatured, setHidden, type CarStatusFilter } from "@/lib/api/admin";
 import { catalogImage } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { CAR_STATUS, ROLES } from "@/lib/constants";
-import { carTitle, cn, formatPrice } from "@/lib/utils";
-import { BadgeCheck, Check, Eye, EyeOff, Phone, Star, Store, Trash2, Undo2 } from "lucide-react";
+import { CAR_RENEW_DAYS, CAR_RESTORE_DAYS, CAR_STATUS, ROLES } from "@/lib/constants";
+import { carTitle, cn, daysUntil, formatPrice } from "@/lib/utils";
+import { ArchiveRestore, BadgeCheck, Check, Clock, Eye, EyeOff, Phone, RefreshCw, Star, Store, Trash2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -39,6 +39,9 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
   const [busy, setBusy] = useState(false);
   const st = CAR_STATUS[car.status] ?? CAR_STATUS.active;
   const featured = Boolean(Number(car.is_featured));
+  // Days until the ad can be renewed for free again / until a deleted ad is gone for good.
+  const renewIn = daysUntil(car.listed_at ?? car.renewed_at ?? car.created_at, CAR_RENEW_DAYS);
+  const purgeIn = daysUntil(car.deleted_at, CAR_RESTORE_DAYS);
 
   // The ad being changed, shown inside the confirm sheet.
   const detail = (
@@ -107,8 +110,39 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
               </span>
             </p>
             {car.status === "rejected" && car.reject_reason && <p className="mt-1 line-clamp-2 text-xs text-destructive">↩ {car.reject_reason}</p>}
+            {car.status === "active" && (
+              <p className={cn("mt-1 flex items-center gap-1 text-xs font-semibold", renewIn ? "text-muted-foreground" : "text-success")}>
+                <RefreshCw className="size-3.5" />
+                {renewIn ? `${renewIn} хоногийн дараа үнэгүй шинэчлэх боломжтой` : "Үнэгүй шинэчлэх боломжтой"}
+              </p>
+            )}
+            {car.status === "deleted" && (
+              <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-destructive">
+                <Clock className="size-3.5" />
+                {purgeIn ? `${purgeIn} хоногийн дараа бүр мөсөн устна` : "Удахгүй бүр мөсөн устна"}
+              </p>
+            )}
           </div>
         </Link>
+        {car.status === "deleted" && purgeIn > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+            <button
+              onClick={() =>
+                run(() => restoreCar(car.id), "Зарыг сэргээлээ", {
+                  title: "Зарыг сэргээх үү?",
+                  message: "Зар устгахаас өмнөх төлөвтөө буцна.",
+                  confirmLabel: "Сэргээх",
+                  tone: "success",
+                  icon: ArchiveRestore,
+                })
+              }
+              className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white"
+            >
+              <ArchiveRestore className="size-3.5" />
+              Сэргээх
+            </button>
+          </div>
+        )}
         {car.status !== "deleted" && (
           <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
             {car.status === "pending" && isAdmin && (
@@ -152,6 +186,23 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
                 Зарагдсан
               </button>
             )}
+            {car.status === "active" && !renewIn && (
+              <button
+                onClick={() =>
+                  run(() => renewCar(car.id), "Шинэчиллээ, жагсаалтын эхэнд гарлаа", {
+                    title: "Зарыг шинэчлэх үү?",
+                    message: `Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл ${CAR_RENEW_DAYS} хоногийн дараа.`,
+                    confirmLabel: "Шинэчлэх",
+                    tone: "success",
+                    icon: RefreshCw,
+                  })
+                }
+                className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white"
+              >
+                <RefreshCw className="size-3.5" />
+                Шинэчлэх
+              </button>
+            )}
             {car.status === "active" && (
               <button
                 onClick={() =>
@@ -188,7 +239,7 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
             )}
             {/* Dealers can't delete live or sold ads, only hide / edit them. */}
             {(isAdmin || (car.status !== "active" && car.status !== "sold")) && (
-              <button onClick={() => run(() => deleteCar(car.id), "Устгалаа", { title: "Зарыг устгах уу?", message: "Устгасан зар вэб дээр харагдахгүй болно.", confirmLabel: "Устгах", tone: "danger", icon: Trash2 })} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">
+              <button onClick={() => run(() => deleteCar(car.id), "Устгалаа", { title: "Зарыг устгах уу?", message: `Устгасан зар вэб дээр харагдахгүй болно. ${CAR_RESTORE_DAYS} хоногийн дотор сэргээх боломжтой, дараа нь бүр мөсөн устна.`, confirmLabel: "Устгах", tone: "danger", icon: Trash2 })} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">
               Устгах
             </button>
             )}

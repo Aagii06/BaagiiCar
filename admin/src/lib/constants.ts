@@ -25,6 +25,12 @@ export function roleLabel(role: string | null | undefined) {
   return ROLE_MN[role] ?? role;
 }
 
+// Must match backend/config/constants.js (carRenewDays, carRestoreDays).
+/** An active ad can be renewed (moved back to the top of the list) for free this many days after it was listed / last renewed. */
+export const CAR_RENEW_DAYS = 7;
+/** A deleted ad can be restored for this many days, then it is removed from the database for good. */
+export const CAR_RESTORE_DAYS = 7;
+
 export const CAR_STATUS: Record<string, { label: string; className: string }> = {
   // Dealer ads wait here until an admin approves them; hidden from the web.
   pending: { label: "Хүлээгдэж буй", className: "bg-amber-soft text-amber-ink" },

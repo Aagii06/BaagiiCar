@@ -10,6 +10,10 @@ const constant = {
   // Утсаа энэ хугацаанд баталгаажуулаагүй users (ADMIN-аас бусад) / customers бүр мөсөн устна
   // (helper/phoneVerifyHelper.js)
   phoneVerifyDays: 7,
+  // Зарыг үнэгүй шинэчлэх (жагсаалтын эхэнд гаргах) хоорондын хугацаа: сүүлд нийтэлсэн / шинэчилснээс хойш
+  carRenewDays: 7,
+  // Устгасан зар энэ хугацаанд сэргээх боломжтой, дараа нь баазаас бүр мөсөн устна (helper/carPurgeHelper.js)
+  carRestoreDays: 7,
 
   // Машины зарын төлөв
   carStatuses: {

@@ -13,7 +13,9 @@ const {
 const { uploadFiles } = require("../../helper/fileHelper");
 const { notifyNewCar } = require("../../helper/notifyHelper");
 const { saveLog } = require("../../utils/logHelper");
-const { roles, carStatuses, nonPublicCarStatuses } = require("../../config/constants");
+const { purgeDeadline } = require("../../helper/carPurgeHelper");
+const moment = require("moment");
+const { roles, carStatuses, nonPublicCarStatuses, carRenewDays, carRestoreDays } = require("../../config/constants");
 
 // Дилер засахад дахин батлуулах ("pending") төлөвүүд
 const resubmitStatuses = [carStatuses.active, carStatuses.hidden, carStatuses.rejected];
@@ -438,6 +440,96 @@ module.exports.markSold = async (req, res) => {
   } catch (error) {
     console.log(error);
     result.message = typeof error === "string" ? error : "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
+// Идэвхтэй зарыг шинэчилж жагсаалтын эхэнд гаргах: сүүлд нийтэлсэн / шинэчилснээс хойш carRenewDays хоногийн дараа үнэгүй.
+// Админ бүх зарыг, дилер өөрийн дилерийн зарыг.
+module.exports.renew = async (req, res) => {
+  let result = { success: false, data: null, message: "Амжилттай" };
+  const { id, by, at } = req.body;
+  try {
+    const { car, error } = await findOwnCar(id, req.loggedUser);
+    if (error) return res.status(200).json({ ...result, message: error });
+    if (car.status !== carStatuses.active)
+      return res.status(200).json({ ...result, message: "Зөвхөн идэвхтэй зарыг шинэчлэх боломжтой" });
+
+    const renewableAt = moment(car.renewed_at || car.created_at, "YYYY-MM-DD HH:mm:ss").add(carRenewDays, "days");
+    const now = moment(at, "YYYY-MM-DD HH:mm:ss");
+    if (now.isBefore(renewableAt)) {
+      const days = Math.ceil(renewableAt.diff(now, "hours", true) / 24);
+      return res
+        .status(200)
+        .json({ ...result, message: `${days} хоногийн дараа үнэгүй шинэчлэх боломжтой`, data: { renewable_at: renewableAt.format("YYYY-MM-DD HH:mm:ss") } });
+    }
+
+    await cars.update({ renewed_at: at, updated_by: by, updated_at: at }, { where: { id } });
+    await saveLog({
+      object_name: "cars",
+      object_id: id,
+      log_action: "renewed",
+      log_action_mn: "Шинэчилсэн (эхэнд гаргасан)",
+      created_by: by,
+      created_at: at,
+    });
+
+    result.success = true;
+    result.data = { id, renewed_at: at };
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    result.message = "Алдаа";
+    return res.status(200).json(result);
+  }
+};
+
+// Устгасан зарыг устгахаас өмнөх төлөвт нь сэргээх: устгаснаас хойш carRestoreDays хоногийн дотор.
+// Админ бүх зарыг, дилер өөрийн дилерийн зарыг (дилерийнх идэвхтэй / зарагдсан руу биш, батлуулахаар сэргээнэ).
+module.exports.restore = async (req, res) => {
+  let result = { success: false, data: null, message: "Амжилттай" };
+  const { id, by, at } = req.body;
+  const { loggedUser } = req;
+  const isAdmin = loggedUser?.role === roles.admin;
+  try {
+    const car = await cars.findOne({ where: { id, status: carStatuses.deleted }, raw: true });
+    if (!car) return res.status(200).json({ ...result, message: "Устгасан зар олдсонгүй" });
+    if (!isAdmin && car.user_id !== loggedUser?.id) {
+      const dealerId = car.dealer_id ? await dealerIdOf(loggedUser) : null;
+      if (!dealerId || dealerId !== car.dealer_id)
+        return res.status(200).json({ ...result, message: "Зөвхөн өөрийн зарыг сэргээх боломжтой" });
+    }
+    if (!car.deleted_at || car.deleted_at < purgeDeadline())
+      return res
+        .status(200)
+        .json({ ...result, message: `Устгаснаас хойш ${carRestoreDays} хоног өнгөрсөн тул сэргээх боломжгүй` });
+
+    let status = Object.values(carStatuses).includes(car.restore_status) && car.restore_status !== carStatuses.deleted
+      ? car.restore_status
+      : null;
+    if (!isAdmin && (!status || status === carStatuses.active || status === carStatuses.sold)) status = carStatuses.pending;
+    if (!status) status = carStatuses.hidden;
+
+    await cars.update(
+      { status, restore_status: null, deleted_by: null, deleted_at: null, updated_by: by, updated_at: at },
+      { where: { id, status: carStatuses.deleted } },
+    );
+    await saveLog({
+      object_name: "cars",
+      object_id: id,
+      log_action: "restored",
+      log_action_mn: "Сэргээсэн",
+      modify_data: JSON.stringify({ status }),
+      created_by: by,
+      created_at: at,
+    });
+
+    result.success = true;
+    result.data = { id, status };
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    result.message = "Алдаа";
     return res.status(200).json(result);
   }
 };

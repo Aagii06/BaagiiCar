@@ -48,6 +48,15 @@ export function timeAgo(value: string | null | undefined) {
   return value.slice(0, 10);
 }
 
+/** Whole days (rounded up) from now until `days` days after a backend "YYYY-MM-DD HH:mm:ss" (+08:00); 0 once passed. */
+export function daysUntil(value: string | null | undefined, days: number) {
+  if (!value) return 0;
+  const date = new Date(value.replace(" ", "T") + "+08:00");
+  if (Number.isNaN(date.getTime())) return 0;
+  const left = date.getTime() + days * 86_400_000 - Date.now();
+  return left > 0 ? Math.ceil(left / 86_400_000) : 0;
+}
+
 export function initials(name: string | null | undefined) {
   const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return "?";

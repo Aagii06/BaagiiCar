@@ -358,7 +358,7 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
       </h1>
       <p className="mt-2 flex items-center gap-1.5 text-[13px] font-semibold text-primary">
         <MapPin className="size-3.5" />
-        {[c.location_name, timeAgo(c.created_at, t)].filter(Boolean).join(" · ")}
+        {[c.location_name, timeAgo(c.listed_at ?? c.created_at, t)].filter(Boolean).join(" · ")}
       </p>
       <p className="mt-4 text-[28px] font-bold">{formatPrice(c.price, t)}</p>
 

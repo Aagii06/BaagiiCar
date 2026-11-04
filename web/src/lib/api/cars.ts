@@ -2,7 +2,7 @@ import type { MessageKey } from "../i18n/messages";
 import { apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition, type ConditionGroup } from "./client";
 import type { BodyType, Brand, Car, CarFile, CarModel, Location } from "./types";
 
-const NEWEST = [{ selector: "created_at", desc: true }];
+const NEWEST = [{ selector: "listed_at", desc: true }];
 
 export interface CarSearch {
   brandIds?: number[];
@@ -70,8 +70,9 @@ export const CAR_SORTS: { value: CarSort; label: MessageKey }[] = [
 
 // `id` breaks ties so paging stays stable when values repeat.
 const SORTS: Record<CarSort, { selector: string; desc: boolean }[]> = {
-  new: [{ selector: "created_at", desc: true }, { selector: "id", desc: true }],
-  old: [{ selector: "created_at", desc: false }, { selector: "id", desc: false }],
+  // listed_at: a renewed ad counts as new again.
+  new: [{ selector: "listed_at", desc: true }, { selector: "id", desc: true }],
+  old: [{ selector: "listed_at", desc: false }, { selector: "id", desc: false }],
   priceAsc: [{ selector: "price", desc: false }, { selector: "id", desc: true }],
   priceDesc: [{ selector: "price", desc: true }, { selector: "id", desc: true }],
   views: [{ selector: "view_count", desc: true }, { selector: "id", desc: true }],
