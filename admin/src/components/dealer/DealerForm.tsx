@@ -10,7 +10,7 @@ import DealerActions from "./DealerActions";
 import DealerInfoSection, { type DealerInfo } from "./DealerInfoSection";
 import DealerListSection from "./DealerListSection";
 import DealerListSheet from "./DealerListSheet";
-import { DEALER_LIST_FIELDS } from "./dealerLists";
+import { DEALER_LIST_FIELDS, DEALER_LISTS } from "./dealerLists";
 
 /** Lets the header's save icon submit the form via `form={DEALER_FORM_ID}`. */
 export const DEALER_FORM_ID = "dealer-form";
@@ -72,6 +72,10 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!info.name.trim()) return setError("Дилерийн нэр оруулна уу");
+    for (const field of DEALER_LIST_FIELDS) {
+      const problem = DEALER_LISTS[field].check(lists[field]);
+      if (problem) return setError(problem);
+    }
     setBusy(true);
     setError(null);
     try {

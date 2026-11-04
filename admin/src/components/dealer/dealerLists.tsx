@@ -7,6 +7,11 @@ export const filledOf = (items: string[], lower = false) => items.map((v) => (lo
 
 const hasDuplicates = (items: string[]) => new Set(items).size !== items.length;
 
+/** 8 digits starting with 5–9, as Mongolian mobile and landline numbers do. */
+const PHONE_RE = /^[5-9]\d{7}$/;
+/** name@domain.tld: no spaces, no ".." or a dot at either end of the domain, a TLD of 2+ letters. */
+const EMAIL_RE = /^[^\s@]+@(?!.*\.\.)[^\s@.][^\s@]*\.[a-z]{2,}$/i;
+
 export interface DealerListConfig {
   title: string;
   hint: string;
@@ -14,6 +19,8 @@ export interface DealerListConfig {
   empty: string;
   /** Rows allowed; none = no limit. */
   max?: number;
+  /** At least one row is needed to save the dealer. */
+  required?: boolean;
   lower?: boolean;
   /** First problem with the cleaned values, or null. */
   check: (items: string[]) => string | null;
@@ -28,8 +35,15 @@ export const DEALER_LISTS: Record<DealerListField, DealerListConfig> = {
     addLabel: "Дугаар нэмэх",
     empty: "Дугаар нэмээгүй байна",
     max: MAX_DEALER_CONTACTS,
+    required: true,
     check: (items) =>
-      items.some((p) => p.length !== 8) ? "Утасны дугаар 8 оронтой тоо байна" : hasDuplicates(items) ? "Ижил дугаар давхардсан байна" : null,
+      !items.length
+        ? "Утасны дугаар заавал оруулна уу"
+        : items.some((p) => !PHONE_RE.test(p))
+          ? "Утасны дугаар 5–9-өөр эхэлсэн 8 оронтой тоо байна"
+          : hasDuplicates(items)
+            ? "Ижил дугаар давхардсан байна"
+            : null,
     input: (value, onValue, i) => <PhoneInput autoComplete="off" placeholder="00000000" aria-label={`Утас ${i + 1}`} value={value} autoFocus={!value} onChange={onValue} />,
   },
   emails: {
@@ -39,8 +53,15 @@ export const DEALER_LISTS: Record<DealerListField, DealerListConfig> = {
     empty: "И-мэйл нэмээгүй байна",
     max: MAX_DEALER_CONTACTS,
     lower: true,
+    required: true,
     check: (items) =>
-      items.some((m) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m)) ? "И-мэйл формат буруу байна" : hasDuplicates(items) ? "Ижил и-мэйл давхардсан байна" : null,
+      !items.length
+        ? "И-мэйл заавал оруулна уу"
+        : items.some((m) => !EMAIL_RE.test(m))
+          ? "И-мэйл формат буруу байна"
+          : hasDuplicates(items)
+            ? "Ижил и-мэйл давхардсан байна"
+            : null,
     input: (value, onValue, i) => (
       <input className={inputClass} type="email" aria-label={`И-мэйл ${i + 1}`} value={value} autoFocus={!value} onChange={(e) => onValue(e.target.value)} placeholder="name@example.com" />
     ),
