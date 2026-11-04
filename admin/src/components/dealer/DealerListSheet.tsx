@@ -84,7 +84,10 @@ export default function DealerListSheet({
               {cfg.input(value, (v) => setDraft(draft.map((p, j) => (j === i ? v : p))), i)}
             </OrderedRow>
           ))}
-          {(cfg.max === undefined || draft.length < cfg.max) && <AddRowButton label={cfg.addLabel} onClick={() => setDraft([...draft, ""])} />}
+          {(cfg.max === undefined || draft.length < cfg.max) && (
+            // One empty row at a time: fill it in before adding another.
+            <AddRowButton label={cfg.addLabel} disabled={draft.some((v) => !v.trim())} onClick={() => setDraft([...draft, ""])} />
+          )}
         </div>
         <div className="shrink-0 px-5 pt-3">
           <FormError message={error} />
