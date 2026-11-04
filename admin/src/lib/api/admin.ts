@@ -4,6 +4,8 @@ import type { BodyType, Brand, Car, CarFile, CarModel, Customer, Dealer, Feedbac
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
 const NEWEST = [{ selector: "created_at", desc: true }];
+/** Ads: the latest added or renewed first (listed_at = renewed_at, else created_at); `id` keeps paging stable. */
+const NEWEST_LISTED = [{ selector: "listed_at", desc: true }, { selector: "id", desc: true }];
 
 // --- auth ------------------------------------------------------------------
 
@@ -206,7 +208,7 @@ export async function listCars({ statuses = [], createdBy, dealerId, search, pag
     else filter.push(["name", "contains", q]);
   }
   const res = await apiFetch<ApiListResponse<Car>>(
-    `/api/base/vwCars${listQuery({ filter, sort: NEWEST, take: pageSize, skip: (page - 1) * pageSize })}`
+    `/api/base/vwCars${listQuery({ filter, sort: NEWEST_LISTED, take: pageSize, skip: (page - 1) * pageSize })}`
   );
   return res.data;
 }
