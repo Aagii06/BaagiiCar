@@ -11,8 +11,7 @@ import { DEALER_LISTS, filledOf } from "./dealerLists";
 import OrderedRow from "./OrderedRow";
 
 /**
- * Modal for one of the dealer's lists: add as many rows as needed, reorder with the arrows (the first is the main
- * one), remove, then one "Хадгалах" checks and saves them all and closes. Backdrop / Escape / "Болих" drops the changes.
+ * Modal for one of the dealer's lists: add as many rows as needed, reorder with the arrows, remove, then one "Хадгалах" checks and saves them all and closes. Backdrop / Escape / "Болих" drops the changes.
  */
 export default function DealerListSheet({
   field,
@@ -77,11 +76,11 @@ export default function DealerListSheet({
           <h2 id="dealer-list-title" className="text-lg font-bold">
             {cfg.title}
           </h2>
-          <p className="text-xs text-muted-foreground">{cfg.hint}. Сумаар эрэмбэлнэ, эхнийх нь үндсэн</p>
+          <p className="text-xs text-muted-foreground">{cfg.hint}. Сумаар эрэмбэлнэ</p>
         </div>
         <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto px-5 pb-1">
           {draft.map((value, i) => (
-            <OrderedRow key={i} index={i} count={draft.length} onMove={(dir) => move(i, dir)} onRemove={() => setDraft(draft.filter((_, j) => j !== i))}>
+            <OrderedRow key={i} index={i} count={draft.length} onMove={(dir) => move(i, dir)} onRemove={value.trim() ? () => setDraft(draft.filter((_, j) => j !== i)) : undefined}>
               {cfg.input(value, (v) => setDraft(draft.map((p, j) => (j === i ? v : p))), i)}
             </OrderedRow>
           ))}

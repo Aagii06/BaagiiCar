@@ -27,7 +27,8 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
     description: dealer?.description ?? "",
     status: dealer?.status === "inactive" ? "inactive" : "active",
   });
-  // Phones, emails and addresses are edited in a modal (DealerListSheet); the first of each is the main one.
+  // Phones, emails and addresses are edited in a modal (DealerListSheet); the first of each is the main one
+  // (the first added, until another is picked on the form).
   const [lists, setLists] = useState<DealerLists>(() => ({
     phonenumbers: dealerList(dealer, "phonenumbers"),
     emails: dealerList(dealer, "emails"),
@@ -58,6 +59,16 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
     setEditing(null);
   };
 
+  /** Picks a row as the main one by moving it to the top; the rest keep their order. */
+  const makeMain = async (field: DealerListField, index: number) => {
+    const items = lists[field];
+    try {
+      await saveList(field, [items[index], ...items.filter((_, i) => i !== index)]);
+    } catch (err) {
+      toast(errorMessage(err), "error");
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!info.name.trim()) return setError("Дилерийн нэр оруулна уу");
@@ -78,7 +89,7 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
     <form id={DEALER_FORM_ID} onSubmit={submit} className="space-y-4">
       <DealerInfoSection value={info} onChange={setInfo} />
       {DEALER_LIST_FIELDS.map((field) => (
-        <DealerListSection key={field} field={field} items={lists[field]} onEdit={() => setEditing(field)} />
+        <DealerListSection key={field} field={field} items={lists[field]} onEdit={() => setEditing(field)} onMakeMain={(i) => makeMain(field, i)} />
       ))}
       {editing && <DealerListSheet field={editing} items={lists[editing]} onSave={(items) => saveList(editing, items)} onClose={() => setEditing(null)} />}
 
