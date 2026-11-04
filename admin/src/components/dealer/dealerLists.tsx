@@ -20,6 +20,8 @@ export interface DealerListConfig {
   /** Rows allowed; none = no limit. */
   max?: number;
   lower?: boolean;
+  /** What's wrong with one filled row, or null; shown under it once the row loses focus. */
+  rowError?: (value: string) => string | null;
   /** First problem with the cleaned values, or null. */
   check: (items: string[]) => string | null;
   input: (value: string, onValue: (v: string) => void, i: number) => React.ReactNode;
@@ -33,6 +35,7 @@ export const DEALER_LISTS: Record<DealerListField, DealerListConfig> = {
     addLabel: "Дугаар нэмэх",
     empty: "Дугаар нэмээгүй байна",
     max: MAX_DEALER_CONTACTS,
+    rowError: (v) => (PHONE_RE.test(v.trim()) ? null : "Утасны дугаар 5–9-өөр эхэлсэн 8 оронтой тоо байна"),
     check: (items) =>
       items.some((p) => !PHONE_RE.test(p))
         ? "Утасны дугаар 5–9-өөр эхэлсэн 8 оронтой тоо байна"
@@ -48,6 +51,7 @@ export const DEALER_LISTS: Record<DealerListField, DealerListConfig> = {
     empty: "И-мэйл нэмээгүй байна",
     max: MAX_DEALER_CONTACTS,
     lower: true,
+    rowError: (v) => (EMAIL_RE.test(v.trim()) ? null : "И-мэйл формат буруу байна"),
     check: (items) =>
       items.some((m) => !EMAIL_RE.test(m)) ? "И-мэйл формат буруу байна" : hasDuplicates(items) ? "Ижил и-мэйл давхардсан байна" : null,
     input: (value, onValue, i) => (

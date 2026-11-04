@@ -30,6 +30,9 @@ export default function DealerListSheet({
   const [draft, setDraft] = useState(() => (items.length ? items : [""]));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // The row being typed in: its format error waits until the user leaves it.
+  const [focused, setFocused] = useState<number | null>(null);
+  const rowError = (value: string, i: number) => (value.trim() && i !== focused ? (cfg.rowError?.(value) ?? null) : null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onClose();
@@ -79,14 +82,20 @@ export default function DealerListSheet({
           <p className="text-xs text-muted-foreground">{cfg.hint}. Сумаар эрэмбэлнэ</p>
         </div>
         <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto px-5 pb-1">
-          {draft.map((value, i) => (
-            <OrderedRow key={i} index={i} count={draft.length} onMove={(dir) => move(i, dir)} onRemove={value.trim() ? () => setDraft(draft.filter((_, j) => j !== i)) : undefined}>
-              {cfg.input(value, (v) => setDraft(draft.map((p, j) => (j === i ? v : p))), i)}
-            </OrderedRow>
-          ))}
+          {draft.map((value, i) => {
+            const rowProblem = rowError(value, i);
+            return (
+              <div key={i} onFocus={() => setFocused(i)} onBlur={() => setFocused(null)}>
+                <OrderedRow index={i} count={draft.length} onMove={(dir) => move(i, dir)} onRemove={value.trim() ? () => setDraft(draft.filter((_, j) => j !== i)) : undefined}>
+                  {cfg.input(value, (v) => setDraft(draft.map((p, j) => (j === i ? v : p))), i)}
+                </OrderedRow>
+                {rowProblem && <p className="mt-1 px-1 text-xs font-medium text-destructive">{rowProblem}</p>}
+              </div>
+            );
+          })}
           {(cfg.max === undefined || draft.length < cfg.max) && (
-            // One empty row at a time: fill it in before adding another.
-            <AddRowButton label={cfg.addLabel} disabled={draft.some((v) => !v.trim())} onClick={() => setDraft([...draft, ""])} />
+            // One row at a time: fill it in correctly before adding another.
+            <AddRowButton label={cfg.addLabel} disabled={draft.some((v) => !v.trim() || cfg.rowError?.(v))} onClick={() => setDraft([...draft, ""])} />
           )}
         </div>
         <div className="shrink-0 px-5 pt-3">
