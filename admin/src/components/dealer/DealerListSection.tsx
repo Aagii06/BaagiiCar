@@ -26,10 +26,7 @@ export default function DealerListSection({
     <section className="rounded-2xl bg-card p-4">
       <div className="mb-3 flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg font-bold">
-            {cfg.title}
-            {cfg.required && " *"}
-          </h2>
+          <h2 className="text-lg font-bold">{cfg.title}</h2>
           <p className="text-xs text-muted-foreground">{cfg.hint}</p>
         </div>
         <button type="button" onClick={onEdit} className="flex shrink-0 items-center gap-1 rounded-xl bg-primary-soft px-3 py-2 text-sm font-bold text-primary hover:bg-primary/15">

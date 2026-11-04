@@ -19,8 +19,6 @@ export interface DealerListConfig {
   empty: string;
   /** Rows allowed; none = no limit. */
   max?: number;
-  /** At least one row is needed to save the dealer. */
-  required?: boolean;
   lower?: boolean;
   /** First problem with the cleaned values, or null. */
   check: (items: string[]) => string | null;
@@ -35,15 +33,12 @@ export const DEALER_LISTS: Record<DealerListField, DealerListConfig> = {
     addLabel: "Дугаар нэмэх",
     empty: "Дугаар нэмээгүй байна",
     max: MAX_DEALER_CONTACTS,
-    required: true,
     check: (items) =>
-      !items.length
-        ? "Утасны дугаар заавал оруулна уу"
-        : items.some((p) => !PHONE_RE.test(p))
-          ? "Утасны дугаар 5–9-өөр эхэлсэн 8 оронтой тоо байна"
-          : hasDuplicates(items)
-            ? "Ижил дугаар давхардсан байна"
-            : null,
+      items.some((p) => !PHONE_RE.test(p))
+        ? "Утасны дугаар 5–9-өөр эхэлсэн 8 оронтой тоо байна"
+        : hasDuplicates(items)
+          ? "Ижил дугаар давхардсан байна"
+          : null,
     input: (value, onValue, i) => <PhoneInput autoComplete="off" placeholder="00000000" aria-label={`Утас ${i + 1}`} value={value} autoFocus={!value} onChange={onValue} />,
   },
   emails: {
@@ -53,15 +48,8 @@ export const DEALER_LISTS: Record<DealerListField, DealerListConfig> = {
     empty: "И-мэйл нэмээгүй байна",
     max: MAX_DEALER_CONTACTS,
     lower: true,
-    required: true,
     check: (items) =>
-      !items.length
-        ? "И-мэйл заавал оруулна уу"
-        : items.some((m) => !EMAIL_RE.test(m))
-          ? "И-мэйл формат буруу байна"
-          : hasDuplicates(items)
-            ? "Ижил и-мэйл давхардсан байна"
-            : null,
+      items.some((m) => !EMAIL_RE.test(m)) ? "И-мэйл формат буруу байна" : hasDuplicates(items) ? "Ижил и-мэйл давхардсан байна" : null,
     input: (value, onValue, i) => (
       <input className={inputClass} type="email" aria-label={`И-мэйл ${i + 1}`} value={value} autoFocus={!value} onChange={(e) => onValue(e.target.value)} placeholder="name@example.com" />
     ),
