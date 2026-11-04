@@ -38,7 +38,7 @@ const nameOf = (list: Location[], id: number | null) => list.find((a) => a.id ==
 
 /**
  * An address picked from the locations tree — Аймаг/Нийслэл → Сум/Дүүрэг → Баг/Хороо — with the rest typed in
- * under it. `value` is the address as one line; `onChange` gets `""` until every part is filled.
+ * under it. `value` is the address as one line; `onChange` gets `""` until the aimag and soum are picked (bag and detail are optional).
  */
 export default function AddressPicker({ value, onChange, index }: { value: string; onChange: (value: string) => void; index: number }) {
   const [aimags, setAimags] = useState<Location[]>([]);
@@ -55,8 +55,7 @@ export default function AddressPicker({ value, onChange, index }: { value: strin
   const aimag = nameOf(aimags, aimagId);
   const soum = nameOf(soums, soumId);
   const bag = nameOf(bags, bagId);
-  // A soum without bags is complete without one.
-  const complete = Boolean(aimag && soum && (bag || bags.length === 0) && detail.trim());
+  const complete = Boolean(aimag && soum);
   const line = complete ? [aimag, soum, bag, detail.trim()].filter(Boolean).join(SEP) : "";
   const partial = !complete && Boolean(aimagId || detail.trim());
 
@@ -143,7 +142,7 @@ export default function AddressPicker({ value, onChange, index }: { value: strin
         placeholder="Дэлгэрэнгүй хаяг (байр, орц, тоот…)"
       />
       {/* Until it's complete the row saves as empty, i.e. is dropped. */}
-      {partial && <p className="px-1 text-xs text-muted-foreground">Аймаг, сум/дүүрэг, баг/хороо сонгож, дэлгэрэнгүй хаягаа бичнэ үү</p>}
+      {partial && <p className="px-1 text-xs text-muted-foreground">Аймаг/нийслэл, сум/дүүргээ заавал сонгоно уу</p>}
     </div>
   );
 }
