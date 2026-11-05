@@ -1,5 +1,6 @@
 import { ApiError, apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
 import { ROLES } from "@/lib/constants";
+import { setSession } from "./token";
 import type { BodyType, Brand, Car, CarFile, CarModel, Customer, Dealer, Feedback, Location, Message, MessageReply, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
@@ -20,8 +21,12 @@ export async function login(phonenumber: string, password: string) {
   return res.data;
 }
 
+/** Also returns a fresh 7-day token, so every visit slides the session forward. */
 export async function getUserData() {
-  const res = await apiFetch<{ success: boolean; loggedUser: User | null }>("/api/users/get-user-data", { method: "POST" });
+  const res = await apiFetch<{ success: boolean; loggedUser: User | null; token?: string }>("/api/users/get-user-data", {
+    method: "POST",
+  });
+  if (res.loggedUser && res.token) setSession(res.token, res.loggedUser);
   return res.loggedUser;
 }
 

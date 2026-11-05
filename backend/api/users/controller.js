@@ -505,7 +505,12 @@ module.exports.getUserData = async (req, res) => {
       result.success = success;
       result.loggedUser = user;
       result.message = message;
-      return res.status(200).json(result);
+      if (!success || !user) return res.status(200).json(result);
+      // Хандах бүрт шинэ 7 хоногийн токен өгнө: идэвхтэй хэрэглэгчийн нэвтрэлт сунгагдана
+      authLogin(user, (token) => {
+        result.token = token;
+        return res.status(200).json(result);
+      });
     } else {
       result.success = false;
       result.message = "Нэвтэрсэн хэрэглэгчийн мэдээлэл олдсонгүй";
