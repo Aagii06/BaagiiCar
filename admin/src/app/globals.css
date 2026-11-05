@@ -171,6 +171,37 @@
   animation: sheet-up 0.24s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
+/* SplashScreen: orange arc orbits the logo, a faint arc counter-rotates, the logo gently breathes. */
+@keyframes splash-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes splash-breathe {
+  50% {
+    transform: scale(0.94);
+    opacity: 0.85;
+  }
+}
+@utility animate-splash-spin {
+  animation: splash-spin 1s linear infinite;
+}
+@utility animate-splash-spin-reverse {
+  animation: splash-spin 1.8s linear infinite reverse;
+}
+@utility animate-splash-breathe {
+  animation: splash-breathe 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-splash-breathe {
+    animation: none;
+  }
+  .animate-splash-spin,
+  .animate-splash-spin-reverse {
+    animation-duration: 3s;
+  }
+}
+
 /* Empty required field after a submit attempt (RequiredFieldMarker): red border only, no tooltip. */
 :is(input, select, textarea)[data-invalid] {
   border-color: var(--destructive);
