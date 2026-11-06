@@ -34,7 +34,7 @@ export async function changePassword(id: number, password: string, password_conf
   await apiFetch("/api/users/change-password", { method: "POST", body: { id, password, password_confirm, old_password } });
 }
 
-type OtpSent = { expires_in?: number; resend_in: number };
+type OtpSent = { expires_in?: number; resend_in: number; email?: string };
 
 export type PasswordChange = { old_password: string; password: string; password_confirm: string };
 
@@ -67,8 +67,8 @@ export async function verifyEmailChange(email: string, code: string) {
 }
 
 /**
- * Checks the old password and emails a 6-digit code to the signed-in user's own address;
- * the password changes only after `verifyPasswordChange`.
+ * Checks the old password and emails a 6-digit code to the signed-in user's own address
+ * (`email` comes back masked, e.g. "b***a@gmail.com"); the password changes only after `verifyPasswordChange`.
  */
 export function sendPasswordChangeCode(body: PasswordChange) {
   return allowCooldown(async () => {
