@@ -5,13 +5,14 @@ import { vehicleLookup, type VehicleInfo } from "@/lib/api/cars";
 import { cn } from "@/lib/utils";
 import { Loader2, Search } from "lucide-react";
 import { useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 type SearchType = "plate" | "vin";
 
 /** УБ / Орон нутаг isn't asked here: the user picks it in the form. */
 const TYPES: Record<SearchType, { label: string; short: string; check: RegExp; error: string }> = {
-  plate: { label: "Улсын дугаар", short: "Улсын", check: /^\d{4}[А-ЯЁӨҮ]{3}$/, error: "Улсын дугаарын формат буруу байна (жш: 1234 УБА)" },
-  vin: { label: "Арлын дугаар", short: "Арлын", check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, error: "Арлын дугаарын формат буруу байна" },
+  plate: { get label() { return tr("Улсын дугаар"); }, get short() { return tr("Улсын"); }, check: /^\d{4}[А-ЯЁӨҮ]{3}$/, get error() { return tr("Улсын дугаарын формат буруу байна (жш: 1234 УБА)"); } },
+  vin: { get label() { return tr("Арлын дугаар"); }, get short() { return tr("Арлын"); }, check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, get error() { return tr("Арлын дугаарын формат буруу байна"); } },
 };
 
 /** "1698 уао" → "1698УАО" */
@@ -37,9 +38,9 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
     setNote(null);
     try {
       const info = await vehicleLookup({ [type]: q });
-      setNote({ tone: "ok", text: onFound(info) ?? "Мэдээлэл бөглөгдлөө" });
+      setNote({ tone: "ok", text: onFound(info) ?? tr("Мэдээлэл бөглөгдлөө") });
     } catch (err) {
-      setNote({ tone: "error", text: err instanceof Error ? err.message : "Машины мэдээлэл олдсонгүй" });
+      setNote({ tone: "error", text: err instanceof Error ? err.message : tr("Машины мэдээлэл олдсонгүй") });
     } finally {
       setBusy(false);
     }
@@ -47,14 +48,14 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
 
   return (
     <section className="rounded-2xl bg-card p-4">
-      <h2 className="text-lg font-bold">Машины мэдээлэл хайх</h2>
-      <p className="mb-3 text-xs text-muted-foreground">Бүртгэлээс үйлдвэр, загвар, он, хөдөлгүүр, гүйлт зэргийг автоматаар бөглөнө</p>
+      <h2 className="text-lg font-bold">{tr("Машины мэдээлэл хайх")}</h2>
+      <p className="mb-3 text-xs text-muted-foreground">{tr("Бүртгэлээс үйлдвэр, загвар, он, хөдөлгүүр, гүйлт зэргийг автоматаар бөглөнө")}</p>
       {/* Not a <form>: this sits inside the car form, Enter must search instead of submitting it. */}
       <div className="flex h-12 overflow-hidden rounded-xl border border-input bg-white transition focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10">
         <span className="relative shrink-0 border-r border-input bg-primary-soft">
           <Select
             bare
-            title="Хайх төрөл"
+            title={tr("Хайх төрөл")}
             value={type}
             // Short on the field, full name in the sheet.
             valueLabel={t.short}
@@ -62,7 +63,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
               setType(e.target.value as SearchType);
               setNote(null);
             }}
-            aria-label="Хайх төрөл"
+            aria-label={tr("Хайх төрөл")}
             className="cursor-pointer bg-transparent pl-3 pr-7 text-[13px] font-semibold text-primary"
             chevronClassName="right-2 size-3.5 text-primary"
           >
@@ -94,7 +95,7 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
           type="button"
           onClick={search}
           disabled={busy || !valid}
-          aria-label="Хайх"
+          aria-label={tr("Хайх")}
           className="grid w-14 shrink-0 place-items-center bg-primary text-white hover:bg-primary-hover disabled:opacity-60"
         >
           {busy ? <Loader2 className="size-5 animate-spin" /> : <Search className="size-5" />}

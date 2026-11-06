@@ -12,6 +12,7 @@ import { carTitle, cn, formatPriceShort } from "@/lib/utils";
 import { ArrowRight, CarFront, Eye, Phone, Store, Users } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 async function loadStats(isAdmin: boolean) {
   const [pending, active, sold, featured, total, dealers, users] = await Promise.all([
@@ -38,23 +39,23 @@ export default function DashboardPage() {
   // Totals (dealers, active customers, all ads) first, then ads by status (pending first: it needs action).
   const carTiles = s && [
     {
-      label: "Хүлээгдэж буй",
+      label: tr("Хүлээгдэж буй"),
       value: s.pending,
       href: "/cars?status=pending",
       className: s.pending > 0 ? "bg-amber-soft text-amber-ink ring-2 ring-amber" : "bg-white",
     },
-    { label: "Идэвхтэй", value: s.active, href: "/cars?status=active", className: "bg-primary text-white" },
-    { label: "Онцлох", value: s.featured, href: "/cars?status=featured", className: "bg-amber" },
-    { label: "Зарагдсан", value: s.sold, href: "/cars?status=sold", className: "bg-dark text-white" },
+    { label: tr("Идэвхтэй"), value: s.active, href: "/cars?status=active", className: "bg-primary text-white" },
+    { label: tr("Онцлох"), value: s.featured, href: "/cars?status=featured", className: "bg-amber" },
+    { label: tr("Зарагдсан"), value: s.sold, href: "/cars?status=sold", className: "bg-dark text-white" },
   ];
   const tiles = s && [
     ...(isAdmin
       ? [
-          { label: "Нийт дилер", value: s.dealers, href: withFrom("/dealers", "home"), icon: Store, className: "bg-tint-blue", iconClassName: "bg-[#2f80ed] text-white" },
-          { label: "Идэвхтэй хэрэглэгч", value: s.users, href: withFrom("/customers", "home"), icon: Users, className: "bg-tint-mint", iconClassName: "bg-success text-white" },
+          { label: tr("Нийт дилер"), value: s.dealers, href: withFrom("/dealers", "home"), icon: Store, className: "bg-tint-blue", iconClassName: "bg-[#2f80ed] text-white" },
+          { label: tr("Идэвхтэй хэрэглэгч"), value: s.users, href: withFrom("/customers", "home"), icon: Users, className: "bg-tint-mint", iconClassName: "bg-success text-white" },
         ]
       : []),
-    { label: "Нийт зар", value: s.total, href: "/cars", icon: CarFront, className: "bg-tint-lavender", iconClassName: "bg-[#7b61ff] text-white" },
+    { label: tr("Нийт зар"), value: s.total, href: "/cars", icon: CarFront, className: "bg-tint-lavender", iconClassName: "bg-[#7b61ff] text-white" },
   ];
 
   return (
@@ -89,11 +90,11 @@ export default function DashboardPage() {
 
       <div className="mt-6 flex items-center justify-between">
         <h2 className="font-bold">
-          Сүүлийн 3 хоногт нэмэгдсэн
+          {tr("Сүүлийн 3 хоногт нэмэгдсэн")}
           {recent.data && <span className="ml-1.5 text-sm font-semibold text-muted-foreground">{recent.data.count}</span>}
         </h2>
         <Link href="/cars" className="flex items-center gap-1 text-sm font-semibold text-primary">
-          Бүгд
+          {tr("Бүгд")}
           <ArrowRight className="size-4" />
         </Link>
       </div>
@@ -103,7 +104,7 @@ export default function DashboardPage() {
         ) : recent.error ? (
           <ErrorState message={recent.error.message} onRetry={recent.reload} />
         ) : !recent.data?.rows.length ? (
-          <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Сүүлийн 3 хоногт зар нэмэгдээгүй</p>
+          <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">{tr("Сүүлийн 3 хоногт зар нэмэгдээгүй")}</p>
         ) : (
           recent.data.rows.map((car) => <CarLine key={car.id} car={car} />)
         )}
@@ -113,11 +114,11 @@ export default function DashboardPage() {
         <>
           <div className="mt-6 flex items-center justify-between">
             <h2 className="font-bold">
-              Онцлох зарууд
+              {tr("Онцлох зарууд")}
               {featured.data && <span className="ml-1.5 text-sm font-semibold text-muted-foreground">{featured.data.count}</span>}
             </h2>
             <Link href="/cars?status=featured" className="flex items-center gap-1 text-sm font-semibold text-primary">
-              Бүгд
+              {tr("Бүгд")}
               <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -127,7 +128,7 @@ export default function DashboardPage() {
             ) : featured.error ? (
               <ErrorState message={featured.error.message} onRetry={featured.reload} />
             ) : !featured.data?.rows.length ? (
-              <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">Онцлох зар алга</p>
+              <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">{tr("Онцлох зар алга")}</p>
             ) : (
               featured.data.rows.map((car) => <CarLine key={car.id} car={car} />)
             )}
@@ -135,8 +136,8 @@ export default function DashboardPage() {
         </>
       ) : (
         <>
-          <TopCars kind="view" title="Хамгийн их хандалттай" />
-          <TopCars kind="phone" title="Хамгийн их дугаар харсан" />
+          <TopCars kind="view" title={tr("Хамгийн их хандалттай")} />
+          <TopCars kind="phone" title={tr("Хамгийн их дугаар харсан")} />
         </>
       )}
     </div>
@@ -157,7 +158,7 @@ function TopCars({ kind, title }: { kind: "view" | "phone"; title: string }) {
           <ErrorState message={top.error.message} onRetry={top.reload} />
         ) : !top.data?.rows.length ? (
           <p className="rounded-2xl bg-card py-8 text-center text-sm text-muted-foreground">
-            {kind === "phone" ? "Дугаар харсан зар алга" : "Үзсэн зар алга"}
+            {kind === "phone" ? tr("Дугаар харсан зар алга") : tr("Үзсэн зар алга")}
           </p>
         ) : (
           top.data.rows.map((row) => (

@@ -9,14 +9,15 @@ import { useApi } from "@/lib/useApi";
 import { carTitle, cn, timeAgo } from "@/lib/utils";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 type Tab = MessageStatus | "all";
 const TABS: { value: Tab; label: string }[] = [
-  { value: "all", label: "Бүгд" },
-  { value: "new", label: "Шинэ" },
-  { value: "seen", label: "Үзсэн" },
-  { value: "done", label: "Хариулсан" },
-  { value: "deleted", label: "Устгагдсан" },
+  { value: "all", get label() { return tr("Бүгд"); } },
+  { value: "new", get label() { return tr("Шинэ"); } },
+  { value: "seen", get label() { return tr("Үзсэн"); } },
+  { value: "done", get label() { return tr("Хариулсан"); } },
+  { value: "deleted", get label() { return tr("Устгагдсан"); } },
 ];
 
 /** One line per chat; opens the chat page. */
@@ -25,18 +26,18 @@ function ThreadRow({ thread }: { thread: Thread }) {
   const badge = BADGE[status];
   const lastReply = last.replies?.at(-1);
   // The newest line of the chat, ours or theirs.
-  const preview = lastReply && (lastReply.created_at ?? "") >= (last.created_at ?? "") ? `Та: ${lastReply.reply}` : last.message;
+  const preview = lastReply && (lastReply.created_at ?? "") >= (last.created_at ?? "") ? `${tr("Та")}: ${lastReply.reply}` : last.message;
   return (
     <Link href={`/messages/thread?m=${last.id}`} className="block px-4 py-3 hover:bg-muted/60">
       <div className="flex items-center gap-2">
-        <p className="min-w-0 flex-1 truncate font-bold">{last.name || last.phonenumber || "Нэргүй"}</p>
+        <p className="min-w-0 flex-1 truncate font-bold">{last.name || last.phonenumber || tr("Нэргүй")}</p>
         <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(thread.activeAt)}</span>
       </div>
       <p className={cn("mt-0.5 line-clamp-2 text-sm leading-5", status === "new" ? "font-semibold text-foreground" : "text-muted-foreground")}>{preview}</p>
       <div className="mt-1.5 flex items-center gap-2">
         <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold", badge.className)}>{badge.label}</span>
         {car && <span className="min-w-0 truncate text-xs font-semibold">{carTitle(car)}</span>}
-        {messages.length > 1 && <span className="ml-auto shrink-0 text-xs font-semibold text-muted-foreground">{messages.length} мессеж</span>}
+        {messages.length > 1 && <span className="ml-auto shrink-0 text-xs font-semibold text-muted-foreground">{tr("{n} мессеж", { n: messages.length })}</span>}
       </div>
     </Link>
   );
@@ -64,7 +65,7 @@ export default function MessagesPage() {
       ) : !threads ? (
         <ThreadListSkeleton />
       ) : !threads.length ? (
-        <EmptyState title={tab === "all" ? "Мессеж олдсонгүй" : `${TABS.find((t) => t.value === tab)?.label} мессеж олдсонгүй`} />
+        <EmptyState title={tab === "all" ? tr("Мессеж олдсонгүй") : tr("{status} мессеж олдсонгүй", { status: TABS.find((t) => t.value === tab)?.label ?? "" })} />
       ) : (
         // Edge to edge, right under the header, like the Дилерүүд list (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">

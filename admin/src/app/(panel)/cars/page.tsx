@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 function CarsInner() {
   const router = useRouter();
@@ -67,14 +68,14 @@ function CarsInner() {
             className="relative min-w-0 flex-1"
           >
             <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input className={cn(inputClass, "pl-10")} value={search} onChange={(e) => setSearch(e.target.value)} onBlur={() => search !== q && setParam({ q: search })} placeholder="Нэр, утас эсвэл #дугаар" />
+            <input className={cn(inputClass, "pl-10")} value={search} onChange={(e) => setSearch(e.target.value)} onBlur={() => search !== q && setParam({ q: search })} placeholder={tr("Нэр, утас эсвэл #дугаар")} />
           </form>
           {/* Dealers only ever see their own dealer's ads, so the filter is for admins. */}
           {isAdmin && (
             <span className="w-36 shrink-0">
               {/* Unpicked, the closed field reads "Дилер" as a placeholder; "Бүгд" stays the sheet's first row. */}
-              <Select title="Дилер" value={dealerId ? String(dealerId) : ""} valueLabel={dealerId ? undefined : "Дилер"} onChange={(e) => setParam({ dealer: e.target.value })} className={dealerId ? "font-semibold text-foreground" : undefined}>
-                <option value="">Бүгд</option>
+              <Select title={tr("Дилер")} value={dealerId ? String(dealerId) : ""} valueLabel={dealerId ? undefined : tr("Дилер")} onChange={(e) => setParam({ dealer: e.target.value })} className={dealerId ? "font-semibold text-foreground" : undefined}>
+                <option value="">{tr("Бүгд")}</option>
                 {dealers.data?.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -92,10 +93,10 @@ function CarsInner() {
       ) : cars.error ? (
         <ErrorState message={cars.error.message} onRetry={cars.reload} />
       ) : !cars.data?.rows.length ? (
-        <EmptyState title="Зар олдсонгүй" />
+        <EmptyState title={tr("Зар олдсонгүй")} />
       ) : (
         <>
-          <p className="mb-2 text-xs font-semibold text-muted-foreground">{cars.data.count} зар</p>
+          <p className="mb-2 text-xs font-semibold text-muted-foreground">{tr("{n} зар", { n: cars.data.count })}</p>
           <div className="space-y-3">
             {cars.data.rows.map((car) => (
               <CarRow key={car.id} car={car} onChanged={cars.reload} showDealer={isAdmin && !dealerId} />
@@ -105,7 +106,7 @@ function CarsInner() {
             // Like the catalog: the next page loads when the list is scrolled to its end. The sentinel is swapped
             // for a spinner while a page loads, so it can't ask twice, and fires again on remount if still in view.
             (cars.loading ? (
-              <div role="status" aria-label="Ачаалж байна" className="flex justify-center py-4">
+              <div role="status" aria-label={tr("Ачаалж байна")} className="flex justify-center py-4">
                 <Spinner className="size-5" />
               </div>
             ) : (

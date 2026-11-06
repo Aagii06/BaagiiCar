@@ -11,6 +11,7 @@ import DealerInfoSection, { type DealerInfo } from "./DealerInfoSection";
 import DealerListSection from "./DealerListSection";
 import DealerListSheet from "./DealerListSheet";
 import { DEALER_LIST_FIELDS, DEALER_LISTS } from "./dealerLists";
+import { tr } from "@/lib/i18n/translations";
 
 /** Lets the header's save icon submit the form via `form={DEALER_FORM_ID}`. */
 export const DEALER_FORM_ID = "dealer-form";
@@ -51,9 +52,9 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
   const saveList = async (field: DealerListField, items: string[]) => {
     const next = { ...lists, [field]: items };
     if (dealer) {
-      if (!info.name.trim()) throw new Error("Дилерийн нэр оруулна уу");
+      if (!info.name.trim()) throw new Error(tr("Дилерийн нэр оруулна уу"));
       await updateDealer(dealer.id, bodyOf(next));
-      toast("Хадгаллаа");
+      toast(tr("Хадгаллаа"));
     }
     setLists(next);
     setEditing(null);
@@ -71,7 +72,7 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!info.name.trim()) return setError("Дилерийн нэр оруулна уу");
+    if (!info.name.trim()) return setError(tr("Дилерийн нэр оруулна уу"));
     for (const field of DEALER_LIST_FIELDS) {
       const problem = DEALER_LISTS[field].check(lists[field]);
       if (problem) return setError(problem);
@@ -81,7 +82,7 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
     try {
       if (dealer) await updateDealer(dealer.id, bodyOf(lists));
       else await createDealer(bodyOf(lists));
-      toast("Хадгаллаа");
+      toast(tr("Хадгаллаа"));
       router.push(listHref);
     } catch (err) {
       setError(errorMessage(err));

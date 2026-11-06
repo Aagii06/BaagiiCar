@@ -15,6 +15,7 @@ import { timeAgo } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /** `listHref`: the list to return to after save / delete (keeps `?from=`). */
 function CustomerForm({ customer, listHref }: { customer: Customer; listHref: string }) {
@@ -35,7 +36,7 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     // They sign in with one of these, so at least one has to stay.
-    if (!f.phonenumber && !f.email.trim()) return setError("Утас эсвэл и-мэйлийн аль нэгийг оруулна уу");
+    if (!f.phonenumber && !f.email.trim()) return setError(tr("Утас эсвэл и-мэйлийн аль нэгийг оруулна уу"));
     setBusy(true);
     setError(null);
     const body: CustomerInput = {
@@ -47,7 +48,7 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
     };
     try {
       await updateCustomer(customer.id, body);
-      toast("Хадгаллаа");
+      toast(tr("Хадгаллаа"));
       router.push(listHref);
     } catch (err) {
       setError(errorMessage(err));
@@ -57,16 +58,16 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
 
   const remove = async () => {
     const ok = await confirm({
-      title: "Хэрэглэгчийг устгах уу?",
-      message: `${customerName(customer)} — дахин нэвтэрч чадахгүй болно.`,
-      confirmLabel: "Устгах",
+      title: tr("Хэрэглэгчийг устгах уу?"),
+      message: tr("{name} — дахин нэвтэрч чадахгүй болно.", { name: customerName(customer) }),
+      confirmLabel: tr("Устгах"),
       tone: "danger",
       icon: Trash2,
     });
     if (!ok) return;
     try {
       await deleteCustomer(customer.id);
-      toast("Устгалаа");
+      toast(tr("Устгалаа"));
       router.push(listHref);
     } catch (err) {
       toast(errorMessage(err), "error");
@@ -78,42 +79,42 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
       <section className="flex items-center gap-3 rounded-2xl bg-card p-4">
         <CustomerAvatar customer={customer} className="size-14" />
         <div className="min-w-0 text-xs text-muted-foreground">
-          <p>Бүртгүүлсэн: {customer.created_at?.slice(0, 10) ?? "—"}</p>
-          <p>Сүүлд нэвтэрсэн: {customer.last_login_at ? timeAgo(customer.last_login_at) : "—"}</p>
+          <p>{tr("Бүртгүүлсэн")}: {customer.created_at?.slice(0, 10) ?? "—"}</p>
+          <p>{tr("Сүүлд нэвтэрсэн")}: {customer.last_login_at ? timeAgo(customer.last_login_at) : "—"}</p>
         </div>
       </section>
 
       <section className="space-y-4 rounded-2xl bg-card p-4">
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Овог">
+          <Field label={tr("Овог")}>
             <input className={inputClass} value={f.lastname} onChange={set("lastname")} />
           </Field>
-          <Field label="Нэр">
+          <Field label={tr("Нэр")}>
             <input className={inputClass} value={f.firstname} onChange={set("firstname")} />
           </Field>
         </div>
-        <Field label="Утасны дугаар">
+        <Field label={tr("Утасны дугаар")}>
           <PhoneInput autoComplete="off" placeholder="00000000" value={f.phonenumber} onChange={(phonenumber) => setF({ ...f, phonenumber })} />
         </Field>
-        <Field label="И-мэйл">
+        <Field label={tr("И-мэйл")}>
           <input className={inputClass} type="email" value={f.email} onChange={set("email")} />
         </Field>
-        <Field label="Төлөв" hint="Идэвхгүй хэрэглэгч вэб дээр нэвтэрч чадахгүй">
+        <Field label={tr("Төлөв")} hint={tr("Идэвхгүй хэрэглэгч вэб дээр нэвтэрч чадахгүй")}>
           <Select value={f.status} onChange={set("status")}>
-            <option value="active">Идэвхтэй</option>
-            <option value="inactive">Идэвхгүй</option>
+            <option value="active">{tr("Идэвхтэй")}</option>
+            <option value="inactive">{tr("Идэвхгүй")}</option>
             {/* Set by the backend when another account verified this customer's number by code. */}
-            {customer.status === "blocked" && <option value="blocked">Блоклогдсон</option>}
+            {customer.status === "blocked" && <option value="blocked">{tr("Блоклогдсон")}</option>}
           </Select>
         </Field>
       </section>
 
       <FormError message={error} />
       <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
-        {busy ? "Хадгалж байна…" : "Хадгалах"}
+        {busy ? tr("Хадгалж байна…") : tr("Хадгалах")}
       </button>
       <button type="button" onClick={remove} className="w-full rounded-xl bg-destructive-soft py-3 text-sm font-bold text-destructive">
-        Устгах
+        {tr("Устгах")}
       </button>
     </form>
   );
@@ -134,13 +135,13 @@ function CustomerDetail() {
 
   return (
     <>
-      <DetailHeader title={data.data ? customerName(data.data) : "Хэрэглэгч"} back={listHref} />
+      <DetailHeader title={data.data ? customerName(data.data) : tr("Хэрэглэгч")} back={listHref} />
       {data.loading && !data.data ? (
         <FormSkeleton />
       ) : data.error ? (
         <ErrorState message={data.error.message} onRetry={data.reload} />
       ) : !data.data || data.data.status === "deleted" ? (
-        <EmptyState title="Хэрэглэгч олдсонгүй" />
+        <EmptyState title={tr("Хэрэглэгч олдсонгүй")} />
       ) : (
         <CustomerForm key={data.data.id} customer={data.data} listHref={listHref} />
       )}

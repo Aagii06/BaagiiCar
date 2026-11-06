@@ -14,6 +14,7 @@ import { carTitle, cn, timeAgo } from "@/lib/utils";
 import { Check, ChevronRight, Pencil, Phone, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useRef, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /**
  * `/messages/thread?m=<message id>`: one chat (the visitor's messages about one ad and our answers) as its own page.
@@ -44,13 +45,13 @@ function ThreadInner() {
 
   return (
     <>
-      <DetailHeader title={thread.data?.last.name || thread.data?.last.phonenumber || "Мессеж"} back="/messages" />
+      <DetailHeader title={thread.data?.last.name || thread.data?.last.phonenumber || tr("Мессеж")} back="/messages" />
       {thread.loading && !thread.data ? (
         <ChatSkeleton />
       ) : thread.error ? (
         <ErrorState message={thread.error.message} onRetry={thread.reload} />
       ) : !thread.data ? (
-        <EmptyState title="Мессеж олдсонгүй" />
+        <EmptyState title={tr("Мессеж олдсонгүй")} />
       ) : (
         <ThreadView thread={thread.data} onChanged={thread.reload} />
       )}
@@ -104,7 +105,7 @@ function ThreadView({ thread, onChanged }: { thread: Thread; onChanged: () => vo
       <section className="rounded-2xl bg-card p-4">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <p className="truncate font-bold">{last.name || "Нэргүй"}</p>
+            <p className="truncate font-bold">{last.name || tr("Нэргүй")}</p>
             <a href={`tel:${last.phonenumber}`} className="flex items-center gap-1 text-sm font-semibold text-primary">
               <Phone className="size-3.5" />
               {last.phonenumber}
@@ -128,7 +129,7 @@ function ThreadView({ thread, onChanged }: { thread: Thread; onChanged: () => vo
               <p className={cn("max-w-[85%] whitespace-pre-line rounded-2xl rounded-bl-md bg-white px-3.5 py-2 text-sm leading-6 shadow-sm", line.deleted && "opacity-60")}>{line.text}</p>
               <span className="mt-0.5 px-1 text-[11px] text-muted-foreground">
                 {timeAgo(line.at)}
-                {line.deleted && " · устгагдсан"}
+                {line.deleted && tr(" · устгагдсан")}
               </span>
             </div>
           ) : editing?.id === line.reply.id ? (
@@ -138,7 +139,7 @@ function ThreadView({ thread, onChanged }: { thread: Thread; onChanged: () => vo
               busy={busy}
               onChange={(text) => setEditing({ id: line.reply.id, text })}
               onCancel={() => setEditing(null)}
-              onSubmit={(text) => run(() => editMessageReply(line.reply.id, text), "Хариуг засварлалаа").then((ok) => ok && setEditing(null))}
+              onSubmit={(text) => run(() => editMessageReply(line.reply.id, text), tr("Хариуг засварлалаа")).then((ok) => ok && setEditing(null))}
             />
           ) : (
             <div key={line.id} className="flex flex-col items-end">
@@ -148,7 +149,7 @@ function ThreadView({ thread, onChanged }: { thread: Thread; onChanged: () => vo
                   <button
                     type="button"
                     onClick={() => setEditing({ id: line.reply.id, text: line.reply.reply })}
-                    aria-label="Хариу засах"
+                    aria-label={tr("Хариу засах")}
                     className="grid size-7 shrink-0 place-items-center rounded-lg text-success hover:bg-success/10"
                   >
                     <Pencil className="size-3.5" />
@@ -157,7 +158,7 @@ function ThreadView({ thread, onChanged }: { thread: Thread; onChanged: () => vo
               </div>
               <span className="mt-0.5 px-1 text-[11px] text-muted-foreground">
                 {timeAgo(line.at)}
-                {line.reply.updated_at && line.reply.updated_at !== line.reply.created_at && " · засварласан"}
+                {line.reply.updated_at && line.reply.updated_at !== line.reply.created_at && tr(" · засварласан")}
               </span>
             </div>
           )
@@ -167,34 +168,34 @@ function ThreadView({ thread, onChanged }: { thread: Thread; onChanged: () => vo
       <section className="space-y-3 rounded-2xl bg-card p-4">
         {/* Any number of answers; each goes to the visitor and answers the whole chat. */}
         {!isDeleted && !editing && (
-          <ReplyForm value={draft} busy={busy} onChange={setDraft} onSubmit={(text) => run(() => replyMessage(last.id, text), "Хариу илгээлээ").then((ok) => ok && setDraft(""))} />
+          <ReplyForm value={draft} busy={busy} onChange={setDraft} onSubmit={(text) => run(() => replyMessage(last.id, text), tr("Хариу илгээлээ")).then((ok) => ok && setDraft(""))} />
         )}
         <div className="flex gap-2">
           {isDeleted ? (
-            <button onClick={() => setAll("new", "Сэргээлээ")} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
+            <button onClick={() => setAll("new", tr("Сэргээлээ"))} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
               <RotateCcw className="size-3.5" />
-              Сэргээх
+              {tr("Сэргээх")}
             </button>
           ) : status === "new" || status === "seen" ? (
             // Answered by phone: just mark it done.
-            <button onClick={() => setAll("done", "Хариулсан гэж тэмдэглэлээ")} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
+            <button onClick={() => setAll("done", tr("Хариулсан гэж тэмдэглэлээ"))} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
               <Check className="size-3.5" />
-              Хариулсан
+              {tr("Хариулсан")}
             </button>
           ) : (
-            <button onClick={() => setAll("new", "Шинэ болголоо")} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
+            <button onClick={() => setAll("new", tr("Шинэ болголоо"))} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
               <RotateCcw className="size-3.5" />
-              Уншаагүй болгох
+              {tr("Уншаагүй болгох")}
             </button>
           )}
           {!isDeleted && (
             <button
               onClick={() =>
-                run(() => deleteRows("messages", ids), "Устгалаа", { title: "Чатыг устгах уу?", message: "Энэ чатын бүх мессеж устгагдана.", confirmLabel: "Устгах", tone: "danger", icon: Trash2 }).then(
+                run(() => deleteRows("messages", ids), tr("Устгалаа"), { title: tr("Чатыг устгах уу?"), message: tr("Энэ чатын бүх мессеж устгагдана."), confirmLabel: tr("Устгах"), tone: "danger", icon: Trash2 }).then(
                   (ok) => ok && router.push("/messages")
                 )
               }
-              aria-label="Чат устгах"
+              aria-label={tr("Чат устгах")}
               className="ml-auto grid size-8 place-items-center rounded-lg text-destructive hover:bg-destructive-soft"
             >
               <Trash2 className="size-4" />

@@ -10,6 +10,7 @@ import { KeyRound, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 const MIN_PASSWORD = 6;
 
@@ -46,9 +47,9 @@ export default function ChangePasswordPage() {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
-  const currentError = submitted && !current ? "Одоогийн нууц үгээ оруулна уу" : undefined;
-  const newError = submitted && next.length < MIN_PASSWORD ? "Нууц үг 6-аас дээш тэмдэгттэй байна" : undefined;
-  const confirmError = submitted && !newError && confirm !== next ? "Нууц үг таарахгүй байна" : undefined;
+  const currentError = submitted && !current ? tr("Одоогийн нууц үгээ оруулна уу") : undefined;
+  const newError = submitted && next.length < MIN_PASSWORD ? tr("Нууц үг 6-аас дээш тэмдэгттэй байна") : undefined;
+  const confirmError = submitted && !newError && confirm !== next ? tr("Нууц үг таарахгүй байна") : undefined;
 
   const body = { old_password: current, password: next, password_confirm: confirm };
 
@@ -67,7 +68,7 @@ export default function ChangePasswordPage() {
       setSentTo(sent.email || user?.email || "");
       setSentFor(`${current}\n${next}`);
       setCooldown(sent.resend_in ?? 60);
-      toast("Код илгээлээ");
+      toast(tr("Код илгээлээ"));
       setSheetOpen(true);
     } catch (err) {
       toast(errorMessage(err), "error");
@@ -80,7 +81,7 @@ export default function ChangePasswordPage() {
     <>
       <form onSubmit={onSubmit} noValidate>
         <DetailHeader
-          title="Нууц үг солих"
+          title={tr("Нууц үг солих")}
           back="/profile"
           aside={
             <button
@@ -89,30 +90,30 @@ export default function ChangePasswordPage() {
               className="flex h-10 items-center gap-2 rounded-xl bg-primary px-5 font-bold text-white hover:bg-primary-hover disabled:opacity-60"
             >
               {sending && <Loader2 className="size-4 animate-spin" />}
-              Хадгалах
+              {tr("Хадгалах")}
             </button>
           }
         />
 
         {hasEmail ? (
-          <p className="mb-4 text-sm text-muted-foreground">Солихын өмнө бүртгэлтэй имэйл рүү тань баталгаажуулах код илгээнэ.</p>
+          <p className="mb-4 text-sm text-muted-foreground">{tr("Солихын өмнө бүртгэлтэй имэйл рүү тань баталгаажуулах код илгээнэ.")}</p>
         ) : (
           <div className="mb-4 rounded-2xl border border-amber-300/50 bg-amber-50 px-4 py-3 text-sm">
-            <p className="font-medium text-amber-700">Нууц үг солихын тулд эхлээд профайлдаа имэйл хаягаа нэмнэ үү.</p>
+            <p className="font-medium text-amber-700">{tr("Нууц үг солихын тулд эхлээд профайлдаа имэйл хаягаа нэмнэ үү.")}</p>
             <Link href="/profile/edit" className="mt-1 inline-block font-semibold text-primary hover:underline">
-              Имэйл нэмэх
+              {tr("Имэйл нэмэх")}
             </Link>
           </div>
         )}
 
         <fieldset disabled={!hasEmail} className="space-y-4 rounded-2xl bg-card p-4 disabled:opacity-60">
-          <Field label="Одоогийн нууц үг" error={currentError}>
+          <Field label={tr("Одоогийн нууц үг")} error={currentError}>
             <PasswordInput ref={currentRef} autoFocus={hasEmail} autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} aria-invalid={Boolean(currentError)} />
           </Field>
-          <Field label="Шинэ нууц үг" error={newError} hint="6-аас дээш тэмдэгт">
+          <Field label={tr("Шинэ нууц үг")} error={newError} hint={tr("6-аас дээш тэмдэгт")}>
             <PasswordInput ref={newRef} autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} aria-invalid={Boolean(newError)} />
           </Field>
-          <Field label="Шинэ нууц үг давтах" error={confirmError}>
+          <Field label={tr("Шинэ нууц үг давтах")} error={confirmError}>
             <PasswordInput ref={confirmRef} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} aria-invalid={Boolean(confirmError)} />
           </Field>
         </fieldset>
@@ -121,7 +122,7 @@ export default function ChangePasswordPage() {
       {sheetOpen && (
         <OtpSheet<void>
           icon={<KeyRound className="size-7" />}
-          title="Баталгаажуулах код"
+          title={tr("Баталгаажуулах код")}
           target={sentTo}
           length={6}
           resendIn={cooldown}
@@ -129,7 +130,7 @@ export default function ChangePasswordPage() {
           resend={() => sendPasswordChangeCode(body)}
           verify={(code) => verifyPasswordChange(body, code)}
           onVerified={() => {
-            toast("Нууц үг солигдлоо");
+            toast(tr("Нууц үг солигдлоо"));
             router.replace("/profile");
           }}
           onClose={() => setSheetOpen(false)}

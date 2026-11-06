@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { ImageUp, Pencil, Plus, Trash2, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /** Rows shown at first and added each time the list is scrolled to its end (brands and models are fetched page by page). */
 const PAGE_SIZE = 10;
@@ -24,14 +25,14 @@ const SERVER_PAGED: ReadonlySet<Tab> = new Set(["brands", "models"]);
 
 type Tab = "brands" | "models" | "bodyTypes" | "locations";
 const TABS: { value: Tab; label: string }[] = [
-  { value: "brands", label: "Үйлдвэр" },
-  { value: "models", label: "Загвар" },
-  { value: "bodyTypes", label: "Төрөл" },
-  { value: "locations", label: "Байршил" },
+  { value: "brands", get label() { return tr("Үйлдвэр"); } },
+  { value: "models", get label() { return tr("Загвар"); } },
+  { value: "bodyTypes", get label() { return tr("Төрөл"); } },
+  { value: "locations", get label() { return tr("Байршил"); } },
 ];
 
 /** Word after the row count above the list. */
-const UNIT: Record<Tab, string> = { brands: "үйлдвэр", models: "загвар", bodyTypes: "төрөл", locations: "байршил" };
+const UNIT: Record<Tab, string> = { get brands() { return tr("үйлдвэр"); }, get models() { return tr("загвар"); }, get bodyTypes() { return tr("төрөл"); }, get locations() { return tr("байршил"); } };
 
 /** Backend table each tab writes to (`/api/base/:target`). */
 const TARGET: Record<Tab, string> = { brands: "brands", models: "carModels", bodyTypes: "bodyTypes", locations: "locations" };
@@ -48,23 +49,23 @@ type FieldDef = {
 
 const FIELDS: Record<Tab, FieldDef[]> = {
   brands: [
-    { key: "name", label: "Нэр", required: true, placeholder: "Үйлдвэрийн нэр" },
-    { key: "country", label: "Улс", placeholder: "Улсын нэр" },
-    { key: "logo", label: "Лого", type: "image", folder: "brands" },
-    { key: "sort_order", label: "Эрэмбэ", type: "number" },
+    { key: "name", get label() { return tr("Нэр"); }, required: true, get placeholder() { return tr("Үйлдвэрийн нэр"); } },
+    { key: "country", get label() { return tr("Улс"); }, get placeholder() { return tr("Улсын нэр"); } },
+    { key: "logo", get label() { return tr("Лого"); }, type: "image", folder: "brands" },
+    { key: "sort_order", get label() { return tr("Эрэмбэ"); }, type: "number" },
   ],
   models: [
-    { key: "brand_id", label: "Үйлдвэр", type: "brand", required: true },
-    { key: "name", label: "Нэр", required: true, placeholder: "Загварын нэр" },
+    { key: "brand_id", get label() { return tr("Үйлдвэр"); }, type: "brand", required: true },
+    { key: "name", get label() { return tr("Нэр"); }, required: true, get placeholder() { return tr("Загварын нэр"); } },
   ],
   bodyTypes: [
-    { key: "name", label: "Нэр", required: true, placeholder: "Төрлийн нэр" },
-    { key: "image", label: "Дүрс", type: "image", folder: "bodyTypes" },
-    { key: "sort_order", label: "Эрэмбэ", type: "number" },
+    { key: "name", get label() { return tr("Нэр"); }, required: true, get placeholder() { return tr("Төрлийн нэр"); } },
+    { key: "image", get label() { return tr("Дүрс"); }, type: "image", folder: "bodyTypes" },
+    { key: "sort_order", get label() { return tr("Эрэмбэ"); }, type: "number" },
   ],
   locations: [
-    { key: "name", label: "Нэр", required: true, placeholder: "Байршлын нэр" },
-    { key: "sort_order", label: "Эрэмбэ", type: "number" },
+    { key: "name", get label() { return tr("Нэр"); }, required: true, get placeholder() { return tr("Байршлын нэр"); } },
+    { key: "sort_order", get label() { return tr("Эрэмбэ"); }, type: "number" },
   ],
 };
 
@@ -73,7 +74,7 @@ type Row = { id: number; name: string; subtitle?: string; image?: string | null;
 const brandRow = (b: Brand): Row => ({
   id: b.id,
   name: b.name,
-  subtitle: [b.country, b.car_count != null && `${b.car_count} зар`].filter(Boolean).join(" · "),
+  subtitle: [b.country, b.car_count != null && tr("{n} зар", { n: b.car_count })].filter(Boolean).join(" · "),
   image: catalogImage(b.logo, "brands"),
   values: { ...b },
 });
@@ -86,7 +87,7 @@ async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
     const rows = await getBodyTypes();
     return {
       brands: [],
-      rows: rows.map((b) => ({ id: b.id, name: b.name, subtitle: b.car_count != null ? `${b.car_count} зар` : undefined, image: catalogImage(b.image, "bodyTypes"), values: { ...b } })),
+      rows: rows.map((b) => ({ id: b.id, name: b.name, subtitle: b.car_count != null ? tr("{n} зар", { n: b.car_count }) : undefined, image: catalogImage(b.image, "bodyTypes"), values: { ...b } })),
     };
   }
   const rows = await getLocations();
@@ -118,10 +119,10 @@ function ImageInput({ value, folder, onChange }: { value: string; folder: NonNul
       <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted">
         <Img src={preview} className="size-9 object-contain" />
       </span>
-      <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{uploading ? "Оруулж байна…" : value ? "Зураг оруулсан" : "Зураг оруулаагүй"}</p>
+      <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{uploading ? tr("Оруулж байна…") : value ? tr("Зураг оруулсан") : tr("Зураг оруулаагүй")}</p>
       <label className={cn("flex h-12 shrink-0 cursor-pointer items-center gap-1 rounded-xl bg-primary-soft px-3 text-sm font-bold text-primary", uploading && "pointer-events-none opacity-60")}>
         <ImageUp className="size-4" />
-        {uploading ? "…" : value ? "Солих" : "Оруулах"}
+        {uploading ? "…" : value ? tr("Солих") : tr("Оруулах")}
         <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={pick} disabled={uploading} />
       </label>
     </div>
@@ -142,7 +143,7 @@ function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | n
     const body: Record<string, unknown> = {};
     for (const f of fields) {
       const v = values[f.key].trim();
-      if (f.required && !v) return setError(`${f.label} оруулна уу`);
+      if (f.required && !v) return setError(tr("{field} оруулна уу", { field: f.label }));
       body[f.key] = f.type === "number" || f.type === "brand" ? (v ? Number(v) : null) : v || null;
     }
     setBusy(true);
@@ -150,7 +151,7 @@ function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | n
     try {
       if (row) await updateRow(TARGET[tab], row.id, body);
       else await createRow(TARGET[tab], body);
-      toast(row ? "Хадгаллаа" : "Нэмлээ");
+      toast(row ? tr("Хадгаллаа") : tr("Нэмлээ"));
       onSaved();
     } catch (err) {
       setError(errorMessage(err));
@@ -162,8 +163,8 @@ function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | n
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-dark/40" onClick={onClose}>
       <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="w-full max-w-md space-y-4 rounded-t-3xl bg-white p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">{row ? "Засах" : "Нэмэх"}</h2>
-          <button type="button" onClick={onClose} aria-label="Хаах" className="grid size-9 place-items-center rounded-full bg-muted">
+          <h2 className="text-lg font-bold">{row ? tr("Засах") : tr("Нэмэх")}</h2>
+          <button type="button" onClick={onClose} aria-label={tr("Хаах")} className="grid size-9 place-items-center rounded-full bg-muted">
             <X className="size-4" />
           </button>
         </div>
@@ -171,7 +172,7 @@ function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | n
           <Field key={f.key} label={f.label + (f.required ? " *" : "")}>
             {f.type === "brand" ? (
               <Select value={values[f.key]} onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {brands.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -193,7 +194,7 @@ function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | n
         ))}
         <FormError message={error} />
         <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
-          {busy ? "Хадгалж байна…" : "Хадгалах"}
+          {busy ? tr("Хадгалж байна…") : tr("Хадгалах")}
         </button>
       </form>
     </div>
@@ -261,10 +262,10 @@ function CatalogInner() {
   const reload = () => (paged ? page.reload() : data.reload());
 
   const remove = async (row: Row) => {
-    if (!(await confirm({ title: `"${row.name}" устгах уу?`, confirmLabel: "Устгах", tone: "danger", icon: Trash2 }))) return;
+    if (!(await confirm({ title: tr("\"{name}\" устгах уу?", { name: row.name }), confirmLabel: tr("Устгах"), tone: "danger", icon: Trash2 }))) return;
     try {
       await deleteRows(TARGET[tab], [row.id]);
-      toast("Устгалаа");
+      toast(tr("Устгалаа"));
       reload();
     } catch (err) {
       toast(errorMessage(err), "error");
@@ -274,12 +275,12 @@ function CatalogInner() {
   return (
     <>
       <PageHeader
-        title="Каталог"
+        title={tr("Каталог")}
         back="/profile"
         aside={
           <button onClick={() => setEditing("new")} className="flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white">
             <Plus className="size-4" strokeWidth={2.6} />
-            Нэмэх
+            {tr("Нэмэх")}
           </button>
         }
       >
@@ -291,7 +292,7 @@ function CatalogInner() {
             router.replace(`${pathname}?tab=${v}`);
           }}
         />
-        <input className={inputClass} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Хайх" />
+        <input className={inputClass} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Хайх")} />
       </PageHeader>
 
       {data.error || (paged && page.error) ? (
@@ -299,7 +300,7 @@ function CatalogInner() {
       ) : !tabData || (paged && !pageReady) ? (
         <ListSkeleton avatar="square" />
       ) : !rows.length ? (
-        <EmptyState title="Бичлэг алга" />
+        <EmptyState title={tr("Бичлэг алга")} />
       ) : (
         <>
           {/* Total like the Зарууд list (all pages, not just the rows loaded so far). */}
@@ -319,10 +320,10 @@ function CatalogInner() {
                   <p className="truncate font-semibold">{row.name}</p>
                   {row.subtitle && <p className="truncate text-xs text-muted-foreground">{row.subtitle}</p>}
                 </div>
-                <button onClick={() => setEditing(row)} aria-label="Засах" className="grid size-9 place-items-center rounded-lg hover:bg-muted">
+                <button onClick={() => setEditing(row)} aria-label={tr("Засах")} className="grid size-9 place-items-center rounded-lg hover:bg-muted">
                   <Pencil className="size-4" />
                 </button>
-                <button onClick={() => remove(row)} aria-label="Устгах" className="grid size-9 place-items-center rounded-lg text-destructive hover:bg-destructive-soft">
+                <button onClick={() => remove(row)} aria-label={tr("Устгах")} className="grid size-9 place-items-center rounded-lg text-destructive hover:bg-destructive-soft">
                   <Trash2 className="size-4" />
                 </button>
               </div>
@@ -334,7 +335,7 @@ function CatalogInner() {
         shown.length < total &&
         // While a page loads the sentinel is swapped out, so it can't ask for the same page twice; it fires again on remount.
         (list.loading ? (
-          <div role="status" aria-label="Ачаалж байна" className="flex justify-center py-4">
+          <div role="status" aria-label={tr("Ачаалж байна")} className="flex justify-center py-4">
             <Spinner className="size-5" />
           </div>
         ) : (

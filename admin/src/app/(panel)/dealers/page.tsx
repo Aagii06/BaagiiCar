@@ -12,6 +12,7 @@ import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /** Dealer registry: showrooms that ads and admin / dealer users belong to. */
 export default function DealersPage() {
@@ -34,12 +35,12 @@ function DealersList() {
   return (
     <>
       <PageHeader
-        title="Дилерүүд"
+        title={tr("Дилерүүд")}
         back={back}
         aside={
           <Link href={withFrom("/dealers/new", from)} className="flex items-center gap-1 rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white">
             <Plus className="size-4" strokeWidth={2.6} />
-            Бүртгэх
+            {tr("Бүртгэх")}
           </Link>
         }
       >
@@ -49,7 +50,7 @@ function DealersList() {
             setQ(search);
           }}
         >
-          <input className={inputClass} value={search} onChange={(e) => setSearch(e.target.value)} onBlur={() => setQ(search)} placeholder="Дилерийн нэр эсвэл утас" />
+          <input className={inputClass} value={search} onChange={(e) => setSearch(e.target.value)} onBlur={() => setQ(search)} placeholder={tr("Дилерийн нэр эсвэл утас")} />
         </form>
       </PageHeader>
 
@@ -58,7 +59,7 @@ function DealersList() {
       ) : dealers.error ? (
         <ErrorState message={dealers.error.message} onRetry={dealers.reload} />
       ) : !dealers.data?.rows.length ? (
-        <EmptyState title={q ? "Дилер олдсонгүй" : "Бүртгэлтэй дилер алга"} />
+        <EmptyState title={q ? tr("Дилер олдсонгүй") : tr("Бүртгэлтэй дилер алга")} />
       ) : (
         // Edge to edge, right under the header (cancels main's px-4 and the header's mb-4).
         <div className="-mx-4 -mt-4 divide-y divide-border border-b border-border bg-white">
@@ -71,7 +72,7 @@ function DealersList() {
                   <p className="truncate font-semibold">{d.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{[d.phonenumber, d.address].filter(Boolean).join(" · ")}</p>
                 </div>
-                {d.status !== "active" && <span className="text-[10px] font-semibold text-destructive">Идэвхгүй</span>}
+                {d.status !== "active" && <span className="text-[10px] font-semibold text-destructive">{tr("Идэвхгүй")}</span>}
               </Link>
               {/* Nothing to show for a dealer without ads, so the button stays inert. */}
               <button
@@ -80,7 +81,7 @@ function DealersList() {
                 onClick={() => setCarsOf(d)}
                 className="mx-3 flex shrink-0 items-center gap-0.5 rounded-lg bg-muted px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-border disabled:pointer-events-none disabled:opacity-40"
               >
-                Зарууд
+                {tr("Зарууд")}
                 {d.car_count != null && <span className="ml-0.5 rounded-full bg-primary px-1.5 text-[10px] leading-4 text-white">{d.car_count}</span>}
                 <ChevronRight className="size-3.5" strokeWidth={2.6} />
               </button>

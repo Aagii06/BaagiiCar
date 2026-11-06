@@ -10,6 +10,7 @@ import { useApi } from "@/lib/useApi";
 import { getDealers } from "@/lib/api/cars";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 export function DealerAvatar({ dealer, className = "size-11" }: { dealer: Pick<Dealer, "name" | "logo">; className?: string }) {
   const logo = catalogImage(dealer.logo, "dealers");
@@ -35,21 +36,21 @@ export default function DealerPicker({ onPick }: { onPick: (dealer: Dealer) => v
           <DealerAvatar dealer={mine} />
           <span className="min-w-0 flex-1">
             <span className="block truncate font-bold">{mine.name}</span>
-            <span className="block text-xs text-muted-foreground">Миний дилер</span>
+            <span className="block text-xs text-muted-foreground">{tr("Миний дилер")}</span>
           </span>
           <ChevronRight className="size-4 text-muted-foreground" />
         </button>
       )}
 
       <section className="space-y-3 rounded-2xl bg-card p-4">
-        <h2 className="text-lg font-bold">Дилер сонгох</h2>
-        <input className={inputClass} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Дилерийн нэр эсвэл утас" />
+        <h2 className="text-lg font-bold">{tr("Дилер сонгох")}</h2>
+        <input className={inputClass} value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Дилерийн нэр эсвэл утас")} />
         {dealers.loading && !dealers.data ? (
           <ListSkeleton count={5} avatar="square" className="-mx-1 divide-y divide-border" rowClassName="px-1 py-2.5" />
         ) : dealers.error ? (
           <ErrorState message={dealers.error.message} onRetry={dealers.reload} />
         ) : !rows.length ? (
-          <EmptyState title={dealers.data?.length ? "Дилер олдсонгүй" : "Идэвхтэй дилер алга"} />
+          <EmptyState title={dealers.data?.length ? tr("Дилер олдсонгүй") : tr("Идэвхтэй дилер алга")} />
         ) : (
           <div className="-mx-1 divide-y divide-border">
             {rows.map((d) => (

@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { APP_CUSTOMER_URL, useInApp } from "@/lib/inApp";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 function safeNext(value: string | null) {
   return value && value.startsWith("/") && !value.startsWith("//") ? value : "/";
@@ -33,7 +34,7 @@ function LoginForm() {
     try {
       await login(phone, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Нэвтрэх үед алдаа гарлаа");
+      setError(err instanceof Error ? err.message : tr("Нэвтрэх үед алдаа гарлаа"));
     } finally {
       setBusy(false);
     }
@@ -48,25 +49,25 @@ function LoginForm() {
       <div className="rounded-3xl bg-dark px-6 pb-8 pt-7 text-white">
         <BrandMark dark />
         <h1 className="mt-8 font-display text-[28px] font-bold leading-tight tracking-tight">
-          Удирдлагын <span className="text-primary">самбар</span>
+          {tr("Удирдлагын")} <span className="text-primary">{tr("самбар")}</span>
         </h1>
-        <p className="mt-2 text-sm text-white/70">Админ эсвэл дилер эрхтэй утасны дугаараараа нэвтэрнэ үү.</p>
+        <p className="mt-2 text-sm text-white/70">{tr("Админ эсвэл дилер эрхтэй утасны дугаараараа нэвтэрнэ үү.")}</p>
       </div>
       <form onSubmit={submit} className="-mt-4 space-y-4 rounded-3xl bg-white p-5 shadow-xl shadow-black/5">
-        <Field label="Утасны дугаар">
+        <Field label={tr("Утасны дугаар")}>
           <PhoneInput autoComplete="tel" placeholder="00000000" value={phone} onChange={setPhone} required />
         </Field>
-        <Field label="Нууц үг">
-          <PasswordInput autoComplete="current-password" placeholder="Нууц үг" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <Field label={tr("Нууц үг")}>
+          <PasswordInput autoComplete="current-password" placeholder={tr("Нууц үг")} value={password} onChange={(e) => setPassword(e.target.value)} required />
         </Field>
         <FormError message={error} />
         <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
-          {busy ? "Түр хүлээнэ үү…" : "Нэвтрэх"}
+          {busy ? tr("Түр хүлээнэ үү…") : tr("Нэвтрэх")}
         </button>
       </form>
       {inApp && (
         <a href={APP_CUSTOMER_URL} className="mt-5 block text-center text-sm font-semibold text-primary">
-          Хэрэглэгчээр үргэлжлүүлэх
+          {tr("Хэрэглэгчээр үргэлжлүүлэх")}
         </a>
       )}
     </div>

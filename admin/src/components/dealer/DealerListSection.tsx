@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Pencil, Plus, Star } from "lucide-react";
 import { DEALER_LISTS } from "./dealerLists";
 import MainBadge from "./MainBadge";
+import { tr } from "@/lib/i18n/translations";
 
 /**
  * One of the dealer's lists on the form: read-only rows, edited in `DealerListSheet`. The first row is the main one
@@ -31,7 +32,7 @@ export default function DealerListSection({
         </div>
         <button type="button" onClick={onEdit} className="flex shrink-0 items-center gap-1 rounded-xl bg-primary-soft px-3 py-2 text-sm font-bold text-primary hover:bg-primary/15">
           {items.length ? <Pencil className="size-3.5" /> : <Plus className="size-4" strokeWidth={2.6} />}
-          {items.length ? "Засах" : "Нэмэх"}
+          {items.length ? tr("Засах") : tr("Нэмэх")}
         </button>
       </div>
       {items.length ? (
@@ -47,8 +48,8 @@ export default function DealerListSection({
                   <button
                     type="button"
                     onClick={() => onMakeMain(i)}
-                    aria-label="Үндсэн болгох"
-                    title="Үндсэн болгох"
+                    aria-label={tr("Үндсэн болгох")}
+                    title={tr("Үндсэн болгох")}
                     className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-primary-soft hover:text-primary"
                   >
                     <Star className="size-4" />

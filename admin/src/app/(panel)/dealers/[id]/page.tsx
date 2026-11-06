@@ -9,6 +9,7 @@ import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { useRouteId } from "@/lib/useRouteId";
 import { Loader2, Save } from "lucide-react";
 import { Suspense, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 export default function DealerPage() {
   return (
@@ -25,12 +26,12 @@ function DealerDetail() {
   const data = useApi(() => (isNew ? Promise.resolve(null) : getDealer(id)), id);
   const [saving, setSaving] = useState(false);
   const formShown = isNew || (data.data && data.data.status !== "deleted");
-  const saveLabel = isNew ? "Бүртгэх" : "Хадгалах";
+  const saveLabel = isNew ? tr("Бүртгэх") : tr("Хадгалах");
 
   return (
     <>
       <DetailHeader
-        title={isNew ? "Шинэ дилер" : (data.data?.name ?? "Дилер")}
+        title={isNew ? tr("Шинэ дилер") : (data.data?.name ?? tr("Дилер"))}
         back={listHref}
         aside={
           formShown && (
@@ -54,7 +55,7 @@ function DealerDetail() {
       ) : data.error ? (
         <ErrorState message={data.error.message} onRetry={data.reload} />
       ) : !data.data || data.data.status === "deleted" ? (
-        <EmptyState title="Дилер олдсонгүй" />
+        <EmptyState title={tr("Дилер олдсонгүй")} />
       ) : (
         <DealerForm key={data.data.id} dealer={data.data} listHref={listHref} onBusyChange={setSaving} />
       )}

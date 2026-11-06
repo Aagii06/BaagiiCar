@@ -1,6 +1,7 @@
 import { Field, inputClass, Select } from "@/components/common/Field";
 import ImageInput from "@/components/common/ImageInput";
 import { cn } from "@/lib/utils";
+import { tr } from "@/lib/i18n/translations";
 
 export interface DealerInfo {
   name: string;
@@ -16,20 +17,20 @@ export default function DealerInfoSection({ value, onChange }: { value: DealerIn
 
   return (
     <section className="space-y-4 rounded-2xl bg-card p-4">
-      <Field label="Нэр *">
-        <input className={inputClass} value={value.name} onChange={set("name")} placeholder="Дилерийн нэр" required />
+      <Field label={tr("Нэр *")}>
+        <input className={inputClass} value={value.name} onChange={set("name")} placeholder={tr("Дилерийн нэр")} required />
       </Field>
       <div>
-        <span className="mb-1.5 block text-[13px] font-semibold">Лого</span>
-        <ImageInput value={value.logo} onChange={(logo) => onChange({ ...value, logo })} folder="dealers" label="Лого оруулах" hint="Дөрвөлжин, тунгалаг дэвсгэртэй зураг хамгийн сайн харагдана" />
+        <span className="mb-1.5 block text-[13px] font-semibold">{tr("Лого")}</span>
+        <ImageInput value={value.logo} onChange={(logo) => onChange({ ...value, logo })} folder="dealers" label={tr("Лого оруулах")} hint={tr("Дөрвөлжин, тунгалаг дэвсгэртэй зураг хамгийн сайн харагдана")} />
       </div>
-      <Field label="Төлөв">
+      <Field label={tr("Төлөв")}>
         <Select value={value.status} onChange={set("status")}>
-          <option value="active">Идэвхтэй</option>
-          <option value="inactive">Идэвхгүй</option>
+          <option value="active">{tr("Идэвхтэй")}</option>
+          <option value="inactive">{tr("Идэвхгүй")}</option>
         </Select>
       </Field>
-      <Field label="Тайлбар">
+      <Field label={tr("Тайлбар")}>
         <textarea className={cn(inputClass, "h-auto min-h-24 py-3")} value={value.description} onChange={set("description")} maxLength={2000} />
       </Field>
     </section>

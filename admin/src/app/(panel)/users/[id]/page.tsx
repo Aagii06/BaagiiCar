@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
 import { useEffect, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /** Lets the header's save icon submit the form via `form={USER_FORM_ID}`. */
 const USER_FORM_ID = "user-form";
@@ -52,9 +53,9 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (f.password !== f.password_confirm) return setError("Нууц үгийн давталт таарахгүй байна");
-    if (!user && f.password.length < 6) return setError("Нууц үг хамгийн багадаа 6 тэмдэгт байна");
-    if (f.role === ROLES.dealer && !f.dealer_id) return setError("Дилер эрхтэй хэрэглэгчид дилер сонгоно уу");
+    if (f.password !== f.password_confirm) return setError(tr("Нууц үгийн давталт таарахгүй байна"));
+    if (!user && f.password.length < 6) return setError(tr("Нууц үг хамгийн багадаа 6 тэмдэгт байна"));
+    if (f.role === ROLES.dealer && !f.dealer_id) return setError(tr("Дилер эрхтэй хэрэглэгчид дилер сонгоно уу"));
     setBusy(true);
     setError(null);
     const profile = {
@@ -74,7 +75,7 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
       } else {
         await createUser({ ...profile, password: f.password, password_confirm: f.password_confirm });
       }
-      toast("Хадгаллаа");
+      toast(tr("Хадгаллаа"));
       router.push("/users");
     } catch (err) {
       setError(errorMessage(err));
@@ -85,16 +86,16 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
   const remove = async () => {
     if (!user) return;
     const ok = await confirm({
-      title: "Хэрэглэгчийг устгах уу?",
-      message: `${userName(user)} — түүний идэвхтэй зарууд мөн устгагдана.`,
-      confirmLabel: "Устгах",
+      title: tr("Хэрэглэгчийг устгах уу?"),
+      message: tr("{name} — түүний идэвхтэй зарууд мөн устгагдана.", { name: userName(user) }),
+      confirmLabel: tr("Устгах"),
       tone: "danger",
       icon: Trash2,
     });
     if (!ok) return;
     try {
       await deleteRows("users", [user.id]);
-      toast("Устгалаа");
+      toast(tr("Устгалаа"));
       router.push("/users");
     } catch (err) {
       toast(errorMessage(err), "error");
@@ -105,23 +106,23 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
     <form id={USER_FORM_ID} onSubmit={submit} className="space-y-4">
       <section className="space-y-4 rounded-2xl bg-card p-4">
         <div>
-          <span className="mb-1.5 block text-[13px] font-semibold">Профайл зураг</span>
-          <ImageInput value={f.profile} onChange={(profile) => setF({ ...f, profile })} folder="users" label="Зураг оруулах" hint="Дөрвөлжин зураг хамгийн сайн харагдана" round />
+          <span className="mb-1.5 block text-[13px] font-semibold">{tr("Профайл зураг")}</span>
+          <ImageInput value={f.profile} onChange={(profile) => setF({ ...f, profile })} folder="users" label={tr("Зураг оруулах")} hint={tr("Дөрвөлжин зураг хамгийн сайн харагдана")} round />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Овог">
+          <Field label={tr("Овог")}>
             <input className={inputClass} value={f.lastname} onChange={set("lastname")} />
           </Field>
-          <Field label="Нэр">
+          <Field label={tr("Нэр")}>
             <input className={inputClass} value={f.firstname} onChange={set("firstname")} />
           </Field>
         </div>
         <Field
-          label="Утасны дугаар *"
+          label={tr("Утасны дугаар *")}
           hint={
             !user || user.role === ROLES.admin || user.phone_verified_at
               ? undefined
-              : `Утсаа баталгаажуулаагүй${user.phone_verify_deadline ? ` · ${user.phone_verify_deadline.slice(0, 16)}-д бүртгэл устна` : ""}`
+              : tr("Утсаа баталгаажуулаагүй") + (user.phone_verify_deadline ? ` · ${tr("{date}-д бүртгэл устна", { date: user.phone_verify_deadline.slice(0, 16) })}` : "")
           }
         >
           <span className="relative block">
@@ -134,15 +135,15 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
               className={user?.phone_verified_at ? "pr-10" : undefined}
             />
             {user?.phone_verified_at && f.phonenumber === user.phonenumber && (
-              <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
+              <BadgeCheck aria-label={tr("Баталгаажсан")} className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
             )}
           </span>
         </Field>
-        <Field label="И-мэйл">
+        <Field label={tr("И-мэйл")}>
           <input className={inputClass} type="email" value={f.email} onChange={set("email")} />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Эрх" hint={lockedOutOfAdmin ? "Админ болгохдоо устгаад дахин админаар бүртгэнэ" : undefined}>
+          <Field label={tr("Эрх")} hint={lockedOutOfAdmin ? tr("Админ болгохдоо устгаад дахин админаар бүртгэнэ") : undefined}>
             <Select value={f.role} onChange={set("role")} disabled={isMe}>
               {ROLE_LIST.map((r) => (
                 <option key={r} value={r} disabled={lockedOutOfAdmin && r === ROLES.admin}>
@@ -151,21 +152,21 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
               ))}
             </Select>
           </Field>
-          <Field label="Төлөв">
+          <Field label={tr("Төлөв")}>
             <Select value={f.status} onChange={set("status")} disabled={isMe}>
-              <option value="active">Идэвхтэй</option>
-              <option value="inactive">Идэвхгүй</option>
+              <option value="active">{tr("Идэвхтэй")}</option>
+              <option value="inactive">{tr("Идэвхгүй")}</option>
               {/* Set by the backend when another account verified this user's number by code. */}
-              {user?.status === "blocked" && <option value="blocked">Блоклогдсон</option>}
+              {user?.status === "blocked" && <option value="blocked">{tr("Блоклогдсон")}</option>}
             </Select>
           </Field>
         </div>
         {canHaveDealer && (
-          <Field label={f.role === ROLES.dealer ? "Дилер *" : "Дилер"} hint={f.role === ROLES.dealer ? "Энэ хэрэглэгчийн оруулсан зар уг дилерт харьяалагдана" : "Админ аль дилерийнх болох"}>
+          <Field label={f.role === ROLES.dealer ? tr("Дилер *") : tr("Дилер")} hint={f.role === ROLES.dealer ? tr("Энэ хэрэглэгчийн оруулсан зар уг дилерт харьяалагдана") : tr("Админ аль дилерийнх болох")}>
             <Select value={f.dealer_id} onChange={set("dealer_id")} required={f.role === ROLES.dealer}>
-              <option value="">-- Сонгох --</option>
+              <option value="">{tr("-- Сонгох --")}</option>
               {/* A dealer that's since been deactivated stays selectable for users already in it. */}
-              {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}
+              {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} ({tr("идэвхгүй")})</option>}
               {dealers.data?.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
@@ -177,27 +178,27 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
       </section>
 
       <section className="space-y-4 rounded-2xl bg-card p-4">
-        <h2 className="font-bold">{user ? "Нууц үг солих" : "Нууц үг *"}</h2>
-        <Field label="Нууц үг" hint={user ? "Хоосон орхивол өөрчлөгдөхгүй" : undefined}>
+        <h2 className="font-bold">{user ? tr("Нууц үг солих") : tr("Нууц үг *")}</h2>
+        <Field label={tr("Нууц үг")} hint={user ? tr("Хоосон орхивол өөрчлөгдөхгүй") : undefined}>
           <PasswordInput autoComplete="new-password" value={f.password} onChange={set("password")} required={!user} />
         </Field>
-        <Field label="Нууц үг давтах">
+        <Field label={tr("Нууц үг давтах")}>
           <PasswordInput autoComplete="new-password" value={f.password_confirm} onChange={set("password_confirm")} required={!user || !!f.password} />
         </Field>
       </section>
 
       <FormError message={error} />
       <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
-        {busy ? "Хадгалж байна…" : "Хадгалах"}
+        {busy ? tr("Хадгалж байна…") : tr("Хадгалах")}
       </button>
       {user && (
         <div className="flex gap-2">
           <Link href={`/cars?q=${user.phonenumber ?? ""}`} className="flex-1 rounded-xl bg-card py-3 text-center text-sm font-bold">
-            Зарууд
+            {tr("Зарууд")}
           </Link>
           {!isMe && (
             <button type="button" onClick={remove} className="flex-1 rounded-xl bg-destructive-soft py-3 text-sm font-bold text-destructive">
-              Устгах
+              {tr("Устгах")}
             </button>
           )}
         </div>
@@ -215,7 +216,7 @@ export default function UserPage() {
   return (
     <>
       <DetailHeader
-        title={isNew ? "Шинэ админ, дилер" : data.data ? userName(data.data) : "Admin & Dealer"}
+        title={isNew ? tr("Шинэ админ, дилер") : data.data ? userName(data.data) : "Admin & Dealer"}
         back="/users"
         aside={
           // Same as the save button at the bottom of the form.
@@ -226,8 +227,8 @@ export default function UserPage() {
               type="submit"
               form={USER_FORM_ID}
               disabled={saving}
-              aria-label="Хадгалах"
-              title="Хадгалах"
+              aria-label={tr("Хадгалах")}
+              title={tr("Хадгалах")}
               className="grid size-10 place-items-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-60"
             >
               {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
@@ -242,7 +243,7 @@ export default function UserPage() {
       ) : data.error ? (
         <ErrorState message={data.error.message} onRetry={data.reload} />
       ) : !data.data || data.data.status === "deleted" ? (
-        <EmptyState title="Хэрэглэгч олдсонгүй" />
+        <EmptyState title={tr("Хэрэглэгч олдсонгүй")} />
       ) : (
         <UserForm key={data.data.id} user={data.data} onBusyChange={setSaving} />
       )}

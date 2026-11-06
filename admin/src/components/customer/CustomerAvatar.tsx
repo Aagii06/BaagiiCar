@@ -2,9 +2,10 @@ import Img from "@/components/common/Img";
 import { catalogImage } from "@/lib/api/config";
 import type { Customer } from "@/lib/api/types";
 import { initials } from "@/lib/utils";
+import { tr } from "@/lib/i18n/translations";
 
 export const customerName = (c: Pick<Customer, "firstname" | "lastname" | "phonenumber" | "email">) =>
-  [c.lastname, c.firstname].filter(Boolean).join(" ") || c.phonenumber || c.email || "Нэргүй";
+  [c.lastname, c.firstname].filter(Boolean).join(" ") || c.phonenumber || c.email || tr("Нэргүй");
 
 export function CustomerAvatar({ customer, className = "size-10" }: { customer: Customer; className?: string }) {
   const photo = catalogImage(customer.profile, "users");

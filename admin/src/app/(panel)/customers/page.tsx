@@ -15,12 +15,13 @@ import { timeAgo } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 const STATUS_TABS: { value: "" | Customer["status"]; label: string }[] = [
-  { value: "", label: "Бүгд" },
-  { value: "active", label: "Идэвхтэй" },
-  { value: "inactive", label: "Идэвхгүй" },
-  { value: "blocked", label: "Блоклогдсон" },
+  { value: "", get label() { return tr("Бүгд"); } },
+  { value: "active", get label() { return tr("Идэвхтэй"); } },
+  { value: "inactive", get label() { return tr("Идэвхгүй"); } },
+  { value: "blocked", get label() { return tr("Блоклогдсон"); } },
 ];
 
 /** Web visitors (`customers` table): they sign up themselves with a one-time code. */
@@ -44,16 +45,16 @@ function CustomersList() {
 
   const remove = async (c: Customer) => {
     const ok = await confirm({
-      title: "Хэрэглэгчийг устгах уу?",
-      message: `${customerName(c)} — дахин нэвтэрч чадахгүй болно.`,
-      confirmLabel: "Устгах",
+      title: tr("Хэрэглэгчийг устгах уу?"),
+      message: tr("{name} — дахин нэвтэрч чадахгүй болно.", { name: customerName(c) }),
+      confirmLabel: tr("Устгах"),
       tone: "danger",
       icon: Trash2,
     });
     if (!ok) return;
     try {
       await deleteCustomer(c.id);
-      toast("Устгалаа");
+      toast(tr("Устгалаа"));
       customers.reload();
     } catch (err) {
       toast(errorMessage(err), "error");
@@ -62,14 +63,14 @@ function CustomersList() {
 
   return (
     <>
-      <PageHeader title="Хэрэглэгч" back={back}>
+      <PageHeader title={tr("Хэрэглэгч")} back={back}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             setQ(search);
           }}
         >
-          <input className={inputClass} value={search} onChange={(e) => setSearch(e.target.value)} onBlur={() => setQ(search)} placeholder="Нэр, утас эсвэл и-мэйл" />
+          <input className={inputClass} value={search} onChange={(e) => setSearch(e.target.value)} onBlur={() => setQ(search)} placeholder={tr("Нэр, утас эсвэл и-мэйл")} />
         </form>
         <ChipTabs items={STATUS_TABS} value={status} onChange={setStatus} />
       </PageHeader>
@@ -79,10 +80,10 @@ function CustomersList() {
       ) : customers.error ? (
         <ErrorState message={customers.error.message} onRetry={customers.reload} />
       ) : !customers.data?.rows.length ? (
-        <EmptyState title="Хэрэглэгч олдсонгүй" />
+        <EmptyState title={tr("Хэрэглэгч олдсонгүй")} />
       ) : (
         <>
-          <p className="mb-2 text-xs font-semibold text-muted-foreground">{customers.data.count} хэрэглэгч</p>
+          <p className="mb-2 text-xs font-semibold text-muted-foreground">{tr("{n} хэрэглэгч", { n: customers.data.count })}</p>
           {/* Edge to edge, like the Admin & Dealer list. */}
           <div className="-mx-4 divide-y divide-border border-y border-border bg-white">
             {customers.data.rows.map((c) => (
@@ -96,13 +97,13 @@ function CustomersList() {
                   </div>
                   <div className="flex flex-col items-end gap-1 text-[10px]">
                     {c.last_login_at && <span className="text-muted-foreground">{timeAgo(c.last_login_at)}</span>}
-                    {c.status !== "active" && <span className="font-semibold text-destructive">{c.status === "blocked" ? "Блоклогдсон" : "Идэвхгүй"}</span>}
+                    {c.status !== "active" && <span className="font-semibold text-destructive">{c.status === "blocked" ? tr("Блоклогдсон") : tr("Идэвхгүй")}</span>}
                   </div>
                 </Link>
                 <button
                   type="button"
                   onClick={() => remove(c)}
-                  aria-label={`${customerName(c)} устгах`}
+                  aria-label={tr("{name} устгах", { name: customerName(c) })}
                   className="mx-2 grid size-9 shrink-0 place-items-center rounded-lg text-destructive hover:bg-destructive-soft"
                 >
                   <Trash2 className="size-4" />

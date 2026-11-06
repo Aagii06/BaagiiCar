@@ -3,6 +3,7 @@ import { dealerPhones } from "@/lib/api/cars";
 import type { Dealer } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import { tr } from "@/lib/i18n/translations";
 
 /**
  * An ad's contact number, checked from its dealer's numbers. `current`: an edited ad's saved number, still
@@ -25,15 +26,15 @@ export default function DealerPhonePicker({
 
   if (!options.length)
     return (
-      <Field label="Холбогдох утас" hint="Худалдан авагч энэ дугаар руу залгана">
+      <Field label={tr("Холбогдох утас")} hint={tr("Худалдан авагч энэ дугаар руу залгана")}>
         <PhoneInput className="sm:max-w-xs" autoComplete="off" placeholder="00000000" value={value} onChange={onChange} />
       </Field>
     );
 
   return (
     <div>
-      <span className="mb-1.5 block text-[13px] font-semibold">Холбогдох утас</span>
-      <div role="radiogroup" aria-label="Холбогдох утас" className="divide-y divide-border overflow-hidden rounded-xl border border-input sm:max-w-xs">
+      <span className="mb-1.5 block text-[13px] font-semibold">{tr("Холбогдох утас")}</span>
+      <div role="radiogroup" aria-label={tr("Холбогдох утас")} className="divide-y divide-border overflow-hidden rounded-xl border border-input sm:max-w-xs">
         {options.map((phone) => {
           const checked = value === phone;
           return (
@@ -48,12 +49,12 @@ export default function DealerPhonePicker({
                 {checked && <Check className="size-3.5" strokeWidth={3} />}
               </span>
               <span className="flex-1 text-base font-semibold tabular-nums">{phone}</span>
-              {phone === extra && <span className="text-xs text-muted-foreground">одоогийн</span>}
+              {phone === extra && <span className="text-xs text-muted-foreground">{tr("одоогийн")}</span>}
             </label>
           );
         })}
       </div>
-      <span className="mt-1 block text-xs text-muted-foreground">Дилерийн бүртгэлтэй дугааруудаас сонгоно. Худалдан авагч энэ дугаар руу залгана</span>
+      <span className="mt-1 block text-xs text-muted-foreground">{tr("Дилерийн бүртгэлтэй дугааруудаас сонгоно. Худалдан авагч энэ дугаар руу залгана")}</span>
     </div>
   );
 }

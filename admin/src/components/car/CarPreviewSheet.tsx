@@ -13,6 +13,7 @@ import { carTitle, cn, formatPrice } from "@/lib/utils";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { carSpecs } from "./carSpecs";
+import { tr } from "@/lib/i18n/translations";
 
 /** Look at an ad (photos, price, specs) without leaving the page. */
 export default function CarPreviewSheet({ car, onClose }: { car: Car; onClose: () => void }) {
@@ -55,7 +56,7 @@ export default function CarPreviewSheet({ car, onClose }: { car: Car; onClose: (
               <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", status.className)}>{status.label}</span>
             </div>
           </div>
-          <button type="button" onClick={onClose} aria-label="Хаах" className="mt-4 grid size-9 shrink-0 place-items-center rounded-full bg-muted hover:bg-border">
+          <button type="button" onClick={onClose} aria-label={tr("Хаах")} className="mt-4 grid size-9 shrink-0 place-items-center rounded-full bg-muted hover:bg-border">
             <X className="size-4" />
           </button>
         </div>
@@ -72,7 +73,7 @@ export default function CarPreviewSheet({ car, onClose }: { car: Car; onClose: (
                   key={name}
                   type="button"
                   onClick={() => setViewing(i)}
-                  aria-label={`${i + 1}-р зураг томоор харах`}
+                  aria-label={tr("{n}-р зураг томоор харах", { n: i + 1 })}
                   className={cn("aspect-[4/3] shrink-0 snap-center overflow-hidden rounded-2xl bg-muted", photos.length > 1 ? "w-[85%]" : "w-full")}
                 >
                   <Img src={uploadUrl(name, "grid")} alt="" className="size-full object-cover" />

@@ -10,6 +10,7 @@ import type { Dealer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import { ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /** One dealer's ads over the whole phone column, so the dealer list stays where it was underneath. */
 export default function DealerCarsSheet({ dealer, onClose }: { dealer: Dealer; onClose: () => void }) {
@@ -41,7 +42,7 @@ export default function DealerCarsSheet({ dealer, onClose }: { dealer: Dealer; o
       <div role="dialog" aria-modal="true" aria-labelledby="dealer-cars-title" className="mx-auto flex h-full max-w-md animate-fade-in flex-col bg-background shadow-2xl">
         <header className="space-y-3 border-b border-border bg-white px-2 pb-3 pt-2">
           <div className="flex items-center gap-2">
-            <button type="button" onClick={onClose} aria-label="Буцах" className="grid size-10 shrink-0 place-items-center rounded-xl hover:bg-muted">
+            <button type="button" onClick={onClose} aria-label={tr("Буцах")} className="grid size-10 shrink-0 place-items-center rounded-xl hover:bg-muted">
               <ChevronLeft className="size-5" />
             </button>
             <DealerAvatar dealer={dealer} className="size-8" />
@@ -49,7 +50,7 @@ export default function DealerCarsSheet({ dealer, onClose }: { dealer: Dealer; o
               <h2 id="dealer-cars-title" className="truncate text-base font-bold">
                 {dealer.name}
               </h2>
-              {cars.data && <p className="text-xs font-semibold text-muted-foreground">{cars.data.count} зар</p>}
+              {cars.data && <p className="text-xs font-semibold text-muted-foreground">{tr("{n} зар", { n: cars.data.count })}</p>}
             </div>
           </div>
           <div className="px-2">
@@ -63,7 +64,7 @@ export default function DealerCarsSheet({ dealer, onClose }: { dealer: Dealer; o
           ) : cars.error ? (
             <ErrorState message={cars.error.message} onRetry={cars.reload} />
           ) : !cars.data?.rows.length ? (
-            <EmptyState title="Зар олдсонгүй" />
+            <EmptyState title={tr("Зар олдсонгүй")} />
           ) : (
             <>
               <div className="space-y-3">
@@ -73,7 +74,7 @@ export default function DealerCarsSheet({ dealer, onClose }: { dealer: Dealer; o
               </div>
               {cars.data.rows.length < cars.data.count &&
                 (cars.loading ? (
-                  <div role="status" aria-label="Ачаалж байна" className="flex justify-center py-4">
+                  <div role="status" aria-label={tr("Ачаалж байна")} className="flex justify-center py-4">
                     <Spinner className="size-5" />
                   </div>
                 ) : (

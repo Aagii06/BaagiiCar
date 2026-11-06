@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { Megaphone, Star } from "lucide-react";
 import { useEffect } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /** Asked when an admin publishes a new ad: featured or a normal ad. Backdrop / Escape cancels. */
 export default function PublishChoiceSheet({ onChoose, onClose }: { onChoose: (featured: boolean) => void; onClose: () => void }) {
@@ -26,8 +27,8 @@ export default function PublishChoiceSheet({ onChoose, onClose }: { onChoose: (f
         {featured ? <Star className="size-5 fill-current" /> : <Megaphone className="size-5" />}
       </span>
       <span className="min-w-0">
-        <span className="block font-bold">{featured ? "Онцлох зар" : "Энгийн зар"}</span>
-        <span className="block text-xs text-muted-foreground">{featured ? "Нүүр хуудсанд болон хайлтын эхэнд гарна" : "Зарын жагсаалтад ердийнхөөрөө гарна"}</span>
+        <span className="block font-bold">{featured ? tr("Онцлох зар") : tr("Энгийн зар")}</span>
+        <span className="block text-xs text-muted-foreground">{featured ? tr("Нүүр хуудсанд болон хайлтын эхэнд гарна") : tr("Зарын жагсаалтад ердийнхөөрөө гарна")}</span>
       </span>
     </button>
   );
@@ -43,14 +44,14 @@ export default function PublishChoiceSheet({ onChoose, onClose }: { onChoose: (f
       >
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
         <h2 id="publish-choice-title" className="text-center text-lg font-bold">
-          Зарыг хэрхэн нийтлэх вэ?
+          {tr("Зарыг хэрхэн нийтлэх вэ?")}
         </h2>
         <div className="mt-4 space-y-2">
           {option(false)}
           {option(true)}
         </div>
         <button type="button" onClick={onClose} className="mt-3 h-12 w-full rounded-xl bg-muted font-bold hover:bg-border">
-          Болих
+          {tr("Болих")}
         </button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { tr } from "@/lib/i18n/translations";
 
 const arrowClass = "grid h-5 w-8 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30";
 
@@ -22,15 +23,15 @@ export default function OrderedRow({
     <div className="flex items-center gap-2">
       <div className="min-w-0 flex-1">{children}</div>
       <div className="flex shrink-0 flex-col">
-        <button type="button" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Дээш зөөх" className={arrowClass}>
+        <button type="button" disabled={index === 0} onClick={() => onMove(-1)} aria-label={tr("Дээш зөөх")} className={arrowClass}>
           <ChevronUp className="size-4" />
         </button>
-        <button type="button" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Доош зөөх" className={arrowClass}>
+        <button type="button" disabled={index === count - 1} onClick={() => onMove(1)} aria-label={tr("Доош зөөх")} className={arrowClass}>
           <ChevronDown className="size-4" />
         </button>
       </div>
       {onRemove ? (
-        <button type="button" onClick={onRemove} aria-label="Хасах" className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground hover:bg-border">
+        <button type="button" onClick={onRemove} aria-label={tr("Хасах")} className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground hover:bg-border">
           <X className="size-4" />
         </button>
       ) : (

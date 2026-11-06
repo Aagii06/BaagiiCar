@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { BadgeCheck, Loader2, ShieldAlert, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /** The signed-in user's own details and photo; dealers also see their dealer. Role and status stay as they are. */
 function ProfileForm({ me }: { me: User }) {
@@ -63,7 +64,7 @@ function ProfileForm({ me }: { me: User }) {
   }, [phoneWait]);
 
   const sendPhoneChange = async () => {
-    if (f.phonenumber.length !== 8) return setError("Утасны дугаар 8 оронтой байна");
+    if (f.phonenumber.length !== 8) return setError(tr("Утасны дугаар 8 оронтой байна"));
     setSendingPhone(true);
     setError(null);
     try {
@@ -91,7 +92,7 @@ function ProfileForm({ me }: { me: User }) {
   };
 
   const sendCode = async () => {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) return setError("Имэйл хаяг буруу байна");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) return setError(tr("Имэйл хаяг буруу байна"));
     setSending(true);
     setError(null);
     try {
@@ -107,8 +108,8 @@ function ProfileForm({ me }: { me: User }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (phoneChanged) return setError("Шинэ дугаараа кодоор баталгаажуулна уу");
-    if (emailChanged) return setError(newEmail ? "Шинэ имэйлээ кодоор баталгаажуулна уу" : "Имэйлийг хоосон болгох боломжгүй");
+    if (phoneChanged) return setError(tr("Шинэ дугаараа кодоор баталгаажуулна уу"));
+    if (emailChanged) return setError(newEmail ? tr("Шинэ имэйлээ кодоор баталгаажуулна уу") : tr("Имэйлийг хоосон болгох боломжгүй"));
     setBusy(true);
     setError(null);
     try {
@@ -122,7 +123,7 @@ function ProfileForm({ me }: { me: User }) {
         role: me.role,
       });
       await refreshUser();
-      toast("Хадгаллаа");
+      toast(tr("Хадгаллаа"));
       router.push("/profile");
     } catch (err) {
       setError(errorMessage(err));
@@ -135,7 +136,7 @@ function ProfileForm({ me }: { me: User }) {
       <form onSubmit={submit} className="space-y-4">
         {/* Save sits in the header, like Нууц үг солих. */}
         <DetailHeader
-          title="Профайл засах"
+          title={tr("Профайл засах")}
           back="/profile"
           aside={
             <button
@@ -144,35 +145,35 @@ function ProfileForm({ me }: { me: User }) {
               className="flex h-10 items-center gap-2 rounded-xl bg-primary px-5 font-bold text-white hover:bg-primary-hover disabled:opacity-60"
             >
               {busy && <Loader2 className="size-4 animate-spin" />}
-              Хадгалах
+              {tr("Хадгалах")}
             </button>
           }
         />
         <section className="space-y-4 rounded-2xl bg-card p-4">
           <div>
-            <span className="mb-1.5 block text-[13px] font-semibold">Профайл зураг</span>
-            <ImageInput value={f.profile} onChange={(profile) => setF({ ...f, profile })} folder="users" label="Зураг оруулах" hint="Дөрвөлжин зураг хамгийн сайн харагдана" round />
+            <span className="mb-1.5 block text-[13px] font-semibold">{tr("Профайл зураг")}</span>
+            <ImageInput value={f.profile} onChange={(profile) => setF({ ...f, profile })} folder="users" label={tr("Зураг оруулах")} hint={tr("Дөрвөлжин зураг хамгийн сайн харагдана")} round />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Овог">
+            <Field label={tr("Овог")}>
               <input className={inputClass} value={f.lastname} onChange={(e) => setF({ ...f, lastname: e.target.value })} />
             </Field>
-            <Field label="Нэр">
+            <Field label={tr("Нэр")}>
               <input className={inputClass} value={f.firstname} onChange={(e) => setF({ ...f, firstname: e.target.value })} />
             </Field>
           </div>
           <Field
-            label="Утасны дугаар *"
+            label={tr("Утасны дугаар *")}
             hint={
               phoneChanged && phoneCooldown > 0
-                ? `Код дахин авах: ${phoneCooldown} сек`
+                ? tr("Код дахин авах: {n} сек", { n: phoneCooldown })
                 : phoneChanged
-                  ? "Шинэ дугаар руу SMS код илгээгдэнэ"
+                  ? tr("Шинэ дугаар руу SMS код илгээгдэнэ")
                   : phoneVerified
                     ? undefined
                     : me.phone_verify_deadline
-                      ? `Утсаа баталгаажуулна уу. ${me.phone_verify_deadline.slice(0, 16)} хүртэл баталгаажуулаагүй бол бүртгэл устна`
-                      : "Утсаа SMS кодоор баталгаажуулна уу"
+                      ? tr("Утсаа баталгаажуулна уу. {date} хүртэл баталгаажуулаагүй бол бүртгэл устна", { date: me.phone_verify_deadline.slice(0, 16) })
+                      : tr("Утсаа SMS кодоор баталгаажуулна уу")
             }
           >
             <span className="relative block">
@@ -192,17 +193,17 @@ function ProfileForm({ me }: { me: User }) {
                   className="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1.5 rounded-lg bg-primary-soft px-3 text-sm font-bold text-primary disabled:opacity-60"
                 >
                   {sendingPhone && <Loader2 className="size-4 animate-spin" />}
-                  Код авах
+                  {tr("Код авах")}
                 </button>
               ) : phoneVerified ? (
-                <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
+                <BadgeCheck aria-label={tr("Баталгаажсан")} className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
               ) : (
                 <button
                   type="button"
                   onClick={sendPhoneCode}
                   disabled={sendingPhone}
-                  aria-label="Утас баталгаажуулах"
-                  title="Утас баталгаажуулах"
+                  aria-label={tr("Утас баталгаажуулах")}
+                  title={tr("Утас баталгаажуулах")}
                   className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg bg-primary-soft text-primary disabled:opacity-60"
                 >
                   {sendingPhone ? <Loader2 className="size-5 animate-spin" /> : <ShieldAlert className="size-5" />}
@@ -211,15 +212,15 @@ function ProfileForm({ me }: { me: User }) {
             </span>
           </Field>
           <Field
-            label="И-мэйл"
+            label={tr("И-мэйл")}
             hint={
               emailChanged && emailCooldown > 0
-                ? `Код дахин авах: ${emailCooldown} сек`
+                ? tr("Код дахин авах: {n} сек", { n: emailCooldown })
                 : emailChanged
-                  ? "Шинэ хаяг руу баталгаажуулах код илгээгдэнэ"
+                  ? tr("Шинэ хаяг руу баталгаажуулах код илгээгдэнэ")
                   : verifiedEmail
                     ? undefined
-                    : "Имэйл нэмэхэд баталгаажуулах код илгээгдэнэ"
+                    : tr("Имэйл нэмэхэд баталгаажуулах код илгээгдэнэ")
             }
           >
             <span className="relative block">
@@ -237,20 +238,20 @@ function ProfileForm({ me }: { me: User }) {
                   className="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1.5 rounded-lg bg-primary-soft px-3 text-sm font-bold text-primary disabled:opacity-60"
                 >
                   {sending && <Loader2 className="size-4 animate-spin" />}
-                  Код авах
+                  {tr("Код авах")}
                 </button>
               ) : (
-                !emailChanged && verifiedEmail && <BadgeCheck aria-label="Баталгаажсан" className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
+                !emailChanged && verifiedEmail && <BadgeCheck aria-label={tr("Баталгаажсан")} className="absolute right-3.5 top-1/2 size-5 -translate-y-1/2 text-success" />
               )}
             </span>
           </Field>
           {/* Admins don't need a dealer here; a dealer sees theirs read-only (an admin changes it). */}
           {!isAdmin && (
-            <Field label="Дилер" hint="Таны зарууд энэ дилерт харьяалагдана. Солихыг админаас хүснэ үү">
+            <Field label={tr("Дилер")} hint={tr("Таны зарууд энэ дилерт харьяалагдана. Солихыг админаас хүснэ үү")}>
               {/* Placeholder grey goes on the select: browsers ignore colour on <option>. */}
               <Select value={f.dealer_id} disabled className={f.dealer_id ? undefined : "text-muted-foreground"}>
-                <option value="">-- Сонгох --</option>
-                {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} (идэвхгүй)</option>}
+                <option value="">{tr("-- Сонгох --")}</option>
+                {f.dealer_id && dealers.data && !dealers.data.some((d) => String(d.id) === f.dealer_id) && <option value={f.dealer_id}>#{f.dealer_id} ({tr("идэвхгүй")})</option>}
                 {dealers.data?.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -259,7 +260,7 @@ function ProfileForm({ me }: { me: User }) {
               </Select>
             </Field>
           )}
-          <p className="text-xs text-muted-foreground">Эрх: {roleLabel(me.role)}</p>
+          <p className="text-xs text-muted-foreground">{tr("Эрх")}: {roleLabel(me.role)}</p>
         </section>
 
         <FormError message={error} />
@@ -277,14 +278,14 @@ function ProfileForm({ me }: { me: User }) {
             setVerifiedEmail(user?.email ?? otp.email);
             setF((p) => ({ ...p, email: user?.email ?? otp.email }));
             await refreshUser();
-            toast("Имэйл баталгаажиж шинэчлэгдлээ");
+            toast(tr("Имэйл баталгаажиж шинэчлэгдлээ"));
           }}
         />
       )}
       {phoneOtp && (
         <OtpSheet
           icon={<Smartphone className="size-7" />}
-          title="Утас баталгаажуулах"
+          title={tr("Утас баталгаажуулах")}
           target={verifiedPhone}
           length={4}
           resendIn={phoneOtp.resendIn}
@@ -295,14 +296,14 @@ function ProfileForm({ me }: { me: User }) {
             setPhoneOtp(null);
             setPhoneVerified(true);
             await refreshUser();
-            toast("Утас баталгаажлаа");
+            toast(tr("Утас баталгаажлаа"));
           }}
         />
       )}
       {phoneChange && (
         <OtpSheet
           icon={<Smartphone className="size-7" />}
-          title="Утасны дугаар солих"
+          title={tr("Утасны дугаар солих")}
           target={phoneChange.phone}
           length={4}
           resendIn={phoneWait?.phone === phoneChange.phone ? phoneWait.left : phoneChange.resendIn}
@@ -316,7 +317,7 @@ function ProfileForm({ me }: { me: User }) {
             setPhoneVerified(Boolean(user?.phone_verified_at));
             setF((p) => ({ ...p, phonenumber: user?.phonenumber ?? phoneChange.phone }));
             await refreshUser();
-            toast("Утасны дугаар солигдлоо");
+            toast(tr("Утасны дугаар солигдлоо"));
           }}
         />
       )}
@@ -326,5 +327,5 @@ function ProfileForm({ me }: { me: User }) {
 
 export default function ProfileEditPage() {
   const { user } = useAuth();
-  return user ? <ProfileForm key={user.id} me={user} /> : <DetailHeader title="Профайл засах" back="/profile" />;
+  return user ? <ProfileForm key={user.id} me={user} /> : <DetailHeader title={tr("Профайл засах")} back="/profile" />;
 }

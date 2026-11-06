@@ -6,6 +6,7 @@ import { getAreas } from "@/lib/api/admin";
 import { cn } from "@/lib/utils";
 import type { Location } from "@/lib/api/types";
 import { useEffect, useRef, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /** Between the parts of a saved address: "Улаанбаатар, Баянзүрх, 1-р хороо, 5-р байр 12 тоот". */
 const SEP = ", ";
@@ -101,17 +102,17 @@ export default function AddressPicker({ value, onChange, index }: { value: strin
   const idOf = (v: string) => (v ? Number(v) : null);
 
   return (
-    <div role="group" aria-label={`Хаяг ${index + 1}`} className="space-y-2">
-      <Select title="Аймаг / Нийслэл" value={aimagId ?? ""} onChange={(e) => pickAimag(idOf(e.target.value))} valueLabel={aimag ?? "Аймаг / Нийслэл"}>
-        <option value="">Аймаг / Нийслэл</option>
+    <div role="group" aria-label={tr("Хаяг {n}", { n: index + 1 })} className="space-y-2">
+      <Select title={tr("Аймаг / Нийслэл")} value={aimagId ?? ""} onChange={(e) => pickAimag(idOf(e.target.value))} valueLabel={aimag ?? tr("Аймаг / Нийслэл")}>
+        <option value="">{tr("Аймаг / Нийслэл")}</option>
         {aimags.map((a) => (
           <option key={a.id} value={a.id}>
             {a.name}
           </option>
         ))}
       </Select>
-      <Select title="Сум / Дүүрэг" value={soumId ?? ""} disabled={!aimagId} onChange={(e) => pickSoum(idOf(e.target.value))} valueLabel={soum ?? "Сум / Дүүрэг"}>
-        <option value="">Сум / Дүүрэг</option>
+      <Select title={tr("Сум / Дүүрэг")} value={soumId ?? ""} disabled={!aimagId} onChange={(e) => pickSoum(idOf(e.target.value))} valueLabel={soum ?? tr("Сум / Дүүрэг")}>
+        <option value="">{tr("Сум / Дүүрэг")}</option>
         {soums.map((s) => (
           <option key={s.id} value={s.id}>
             {s.name}
@@ -119,13 +120,13 @@ export default function AddressPicker({ value, onChange, index }: { value: strin
         ))}
       </Select>
       <Select
-        title="Баг / Хороо"
+        title={tr("Баг / Хороо")}
         value={bagId ?? ""}
         disabled={!soumId || bags.length === 0}
         onChange={(e) => setPicked((p) => ({ ...p, bagId: idOf(e.target.value) }))}
-        valueLabel={bag ?? "Баг / Хороо"}
+        valueLabel={bag ?? tr("Баг / Хороо")}
       >
-        <option value="">Баг / Хороо</option>
+        <option value="">{tr("Баг / Хороо")}</option>
         {bags.map((b) => (
           <option key={b.id} value={b.id}>
             {b.name}
@@ -135,14 +136,14 @@ export default function AddressPicker({ value, onChange, index }: { value: strin
       <textarea
         rows={3}
         className={cn(inputClass, "h-auto resize-none py-3")}
-        aria-label={`Дэлгэрэнгүй хаяг ${index + 1}`}
+        aria-label={tr("Дэлгэрэнгүй хаяг {n}", { n: index + 1 })}
         value={detail}
         onChange={(e) => setPicked((p) => ({ ...p, detail: e.target.value }))}
         maxLength={200}
-        placeholder="Дэлгэрэнгүй хаяг (байр, орц, тоот…)"
+        placeholder={tr("Дэлгэрэнгүй хаяг (байр, орц, тоот…)")}
       />
       {/* Until it's complete the row saves as empty, i.e. is dropped. */}
-      {partial && <p className="px-1 text-xs text-muted-foreground">Аймаг/нийслэл, сум/дүүргээ заавал сонгоно уу</p>}
+      {partial && <p className="px-1 text-xs text-muted-foreground">{tr("Аймаг/нийслэл, сум/дүүргээ заавал сонгоно уу")}</p>}
     </div>
   );
 }

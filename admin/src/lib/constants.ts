@@ -1,3 +1,5 @@
+import { tr } from "@/lib/i18n/translations";
+
 // Must match backend/config/constants.js — the save endpoint validates these.
 export const FUEL_TYPES = ["Бензин", "Дизель", "Хайбрид", "Газ", "Цахилгаан"];
 export const TRANSMISSIONS = ["Автомат", "Механик", "CVT", "Типтроник"];
@@ -22,7 +24,7 @@ const ROLE_MN: Record<string, string> = { [ROLES.admin]: "Админ", [ROLES.de
 
 export function roleLabel(role: string | null | undefined) {
   if (!role) return "";
-  return ROLE_MN[role] ?? role;
+  return ROLE_MN[role] ? tr(ROLE_MN[role]) : role;
 }
 
 // Must match backend/config/constants.js (carRenewDays, carRestoreDays).
@@ -33,12 +35,12 @@ export const CAR_RESTORE_DAYS = 7;
 
 export const CAR_STATUS: Record<string, { label: string; className: string }> = {
   // Dealer ads wait here until an admin approves them; hidden from the web.
-  pending: { label: "Хүлээгдэж буй", className: "bg-amber-soft text-amber-ink" },
+  pending: { get label() { return tr("Хүлээгдэж буй"); }, className: "bg-amber-soft text-amber-ink" },
   // Sent back to the owner with a reason; saving their edit resubmits it.
-  rejected: { label: "Буцаасан", className: "bg-destructive-soft text-destructive" },
-  active: { label: "Идэвхтэй", className: "bg-success-soft text-success" },
-  sold: { label: "Зарагдсан", className: "bg-dark text-white" },
+  rejected: { get label() { return tr("Буцаасан"); }, className: "bg-destructive-soft text-destructive" },
+  active: { get label() { return tr("Идэвхтэй"); }, className: "bg-success-soft text-success" },
+  sold: { get label() { return tr("Зарагдсан"); }, className: "bg-dark text-white" },
   // Temporarily taken off the web by an admin; "Нийтлэх" brings it back.
-  hidden: { label: "Нуусан", className: "bg-muted text-muted-foreground" },
-  deleted: { label: "Устгасан", className: "bg-destructive-soft text-destructive" },
+  hidden: { get label() { return tr("Нуусан"); }, className: "bg-muted text-muted-foreground" },
+  deleted: { get label() { return tr("Устгасан"); }, className: "bg-destructive-soft text-destructive" },
 };

@@ -4,6 +4,7 @@ import { FormError } from "@/components/common/Field";
 import { errorMessage } from "@/components/common/Toast";
 import type { User } from "@/lib/api/types";
 import { useEffect, useRef, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /**
  * Bottom sheet for a one-time code that was already sent (e-mail or SMS) when it opens.
@@ -103,7 +104,7 @@ export default function OtpSheet<T = User>({
             {title}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{target}</span> руу илгээсэн {CODE_LENGTH} оронтой кодыг оруулна уу
+            {tr("{target} руу илгээсэн {n} оронтой кодыг оруулна уу", { target: "\u0000", n: CODE_LENGTH }).split("\u0000").flatMap((part, i) => (i ? [<span key={i} className="font-semibold text-foreground">{target}</span>, part] : [part]))}
           </p>
         </div>
 
@@ -120,7 +121,7 @@ export default function OtpSheet<T = User>({
           autoComplete="one-time-code"
           maxLength={CODE_LENGTH}
           placeholder={"0".repeat(CODE_LENGTH)}
-          aria-label="Баталгаажуулах код"
+          aria-label={tr("Баталгаажуулах код")}
           disabled={busy}
           className="mt-5 h-14 w-full rounded-xl border border-input bg-white text-center font-display text-2xl tracking-[0.5em] outline-none transition placeholder:text-muted-foreground/40 focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:bg-muted"
         />
@@ -129,20 +130,20 @@ export default function OtpSheet<T = User>({
         </div>
         <p className="mt-2 text-center text-xs text-muted-foreground">
           {resendIn > 0 ? (
-            `Дахин код авах: ${resendIn} сек`
+            tr("Дахин код авах: {n} сек", { n: resendIn })
           ) : (
             <button type="button" onClick={resend} className="font-bold text-primary hover:underline">
-              Код дахин илгээх
+              {tr("Код дахин илгээх")}
             </button>
           )}
         </p>
 
         <div className="mt-5 grid grid-cols-2 gap-2">
           <button type="button" onClick={onClose} className="h-12 rounded-xl bg-muted font-bold hover:bg-border">
-            Болих
+            {tr("Болих")}
           </button>
           <button disabled={busy || code.length !== CODE_LENGTH} className="h-12 rounded-xl bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
-            {busy ? "Шалгаж байна…" : "Баталгаажуулах"}
+            {busy ? tr("Шалгаж байна…") : tr("Баталгаажуулах")}
           </button>
         </div>
       </form>

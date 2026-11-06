@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import AddRowButton from "./AddRowButton";
 import { DEALER_LISTS, filledOf } from "./dealerLists";
 import OrderedRow from "./OrderedRow";
+import { tr } from "@/lib/i18n/translations";
 
 /**
  * Modal for one of the dealer's lists: add as many rows as needed, reorder with the arrows, remove, then one "Хадгалах" checks and saves them all and closes. Backdrop / Escape / "Болих" drops the changes.
@@ -79,7 +80,7 @@ export default function DealerListSheet({
           <h2 id="dealer-list-title" className="text-lg font-bold">
             {cfg.title}
           </h2>
-          <p className="text-xs text-muted-foreground">{cfg.hint}. Сумаар эрэмбэлнэ</p>
+          <p className="text-xs text-muted-foreground">{cfg.hint}. {tr("Сумаар эрэмбэлнэ")}</p>
         </div>
         <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto px-5 pb-1">
           {draft.map((value, i) => {
@@ -102,11 +103,11 @@ export default function DealerListSheet({
           <FormError message={error} />
           <div className="mt-2 flex gap-2">
             <button type="button" onClick={onClose} disabled={busy} className="h-12 flex-1 rounded-xl bg-muted font-bold hover:bg-border disabled:opacity-60">
-              Болих
+              {tr("Болих")}
             </button>
             <button type="submit" disabled={busy} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
               {busy && <Loader2 className="size-4 animate-spin" />}
-              Хадгалах
+              {tr("Хадгалах")}
             </button>
           </div>
         </div>

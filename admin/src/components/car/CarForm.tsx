@@ -17,10 +17,12 @@ import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { tr, trValue } from "@/lib/i18n/translations";
 
 const MAX_PHOTOS = 12;
 /** Wizard steps of a new ad (the last one is labelled Нийтлэх / Илгээх by role). */
-const FORM_STEPS = ["Мэдээлэл", "Зураг", "Нийтлэх"];
+/** A function so the labels follow the current language. */
+const formSteps = () => [tr("Мэдээлэл"), tr("Зураг"), tr("Нийтлэх")];
 /** Lets a button outside the form (the page header) submit it via `form={CAR_FORM_ID}`. */
 export const CAR_FORM_ID = "car-form";
 const THIS_YEAR = new Date().getFullYear();
@@ -154,7 +156,7 @@ function Chips({ options, value, onChange, disabled }: { options: string[]; valu
             o === value ? "border-foreground bg-foreground text-white" : "border-border bg-white hover:border-foreground/40 disabled:opacity-40 disabled:hover:border-border"
           )}
         >
-          {o}
+          {trValue(o)}
         </button>
       ))}
     </div>
@@ -187,7 +189,7 @@ function DealerSection({
   const name = dealer?.name ?? (current ? car?.dealer_name : null);
 
   return (
-    <Section title="Дилер">
+    <Section title={tr("Дилер")}>
       <div className="flex items-center gap-3">
         {dealer || current ? (
           <DealerAvatar dealer={dealer ?? { name: car?.dealer_name ?? "", logo: car?.dealer_logo ?? null }} className="size-12" />
@@ -205,8 +207,8 @@ function DealerSection({
               required
             >
               {/* Older ads may have no dealer yet: one has to be picked before saving. */}
-              {!value && <option value="">-- Сонгох --</option>}
-              {current && <option value={value}>{car.dealer_name || `#${car.dealer_id}`} (одоогийн)</option>}
+              {!value && <option value="">{tr("-- Сонгох --")}</option>}
+              {current && <option value={value}>{car.dealer_name || `#${car.dealer_id}`} ({tr("одоогийн")})</option>}
               {dealers.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
@@ -219,11 +221,11 @@ function DealerSection({
           )}
           <p className="mt-1 text-xs text-muted-foreground">
             {editable
-              ? "Зар энэ дилерийн хуудсанд харагдана"
+              ? tr("Зар энэ дилерийн хуудсанд харагдана")
               : car?.seller_role === ROLES.dealer
-                ? "Дилер өөрөө оруулсан тул солих боломжгүй"
-                : "Таны дилерийн нэр дээр нийтлэгдэнэ"}
-            {car && ` · Оруулсан: ${car.seller_name || car.seller_phone || "—"}`}
+                ? tr("Дилер өөрөө оруулсан тул солих боломжгүй")
+                : tr("Таны дилерийн нэр дээр нийтлэгдэнэ")}
+            {car && ` · ${tr("Оруулсан")}: ${car.seller_name || car.seller_phone || "—"}`}
           </p>
         </div>
       </div>
@@ -288,7 +290,7 @@ export default function CarForm({
   // A new ad is a wizard (Мэдээлэл → Зураг → Нийтлэх); editing keeps one long form.
   const wizard = !car;
   const [step, setStep] = useState(0);
-  const lastStep = FORM_STEPS.length - 1;
+  const lastStep = formSteps().length - 1;
   const show = (n: number) => !wizard || step === n;
   const [choosing, setChoosing] = useState(false);
 
@@ -365,8 +367,8 @@ export default function CarForm({
     });
 
     const name = [info.brand, info.model, info.manufactured_year].filter(Boolean).join(" ");
-    if (!brand) return `${name} олдлоо. "${info.brand ?? "—"}" үйлдвэр каталогид алга, гараар сонгоно уу`;
-    return `${name} — бүртгэлийн мэдээлэл бөглөгдөж түгжигдлээ. Хурдны хайрцгийг сонгоно уу`;
+    if (!brand) return tr("{name} олдлоо. \"{brand}\" үйлдвэр каталогид алга, гараар сонгоно уу", { name, brand: info.brand ?? "—" });
+    return tr("{name} — бүртгэлийн мэдээлэл бөглөгдөж түгжигдлээ. Хурдны хайрцгийг сонгоно уу", { name });
   };
 
   // New ad: location shows / saves as Улаанбаатар until another one is picked.
@@ -395,12 +397,12 @@ export default function CarForm({
 
   /** Required fields of the Мэдээлэл step (and of the whole form when editing); returns the first problem. */
   const detailsError = () => {
-    if (!f.brand_id) return "Үйлдвэр сонгоно уу";
-    if (!f.manufactured_year) return "Үйлдвэрлэсэн он оруулна уу";
-    if (!f.imported_year) return "Орж ирсэн он оруулна уу";
-    if (Number(f.imported_year) < Number(f.manufactured_year)) return "Орж ирсэн он үйлдвэрлэсэн оноос өмнө байж болохгүй";
-    if (!f.price) return "Үнэ оруулна уу";
-    if (!f.transmission) return "Хурдны хайрцаг сонгоно уу";
+    if (!f.brand_id) return tr("Үйлдвэр сонгоно уу");
+    if (!f.manufactured_year) return tr("Үйлдвэрлэсэн он оруулна уу");
+    if (!f.imported_year) return tr("Орж ирсэн он оруулна уу");
+    if (Number(f.imported_year) < Number(f.manufactured_year)) return tr("Орж ирсэн он үйлдвэрлэсэн оноос өмнө байж болохгүй");
+    if (!f.price) return tr("Үнэ оруулна уу");
+    if (!f.transmission) return tr("Хурдны хайрцаг сонгоно уу");
     return null;
   };
 
@@ -418,7 +420,7 @@ export default function CarForm({
       const problem = step === 0 ? detailsError() : null;
       return problem ? setError(problem) : goTo(step + 1);
     }
-    if (!f.dealer_id && isAdmin) return setError("Дилер сонгоно уу");
+    if (!f.dealer_id && isAdmin) return setError(tr("Дилер сонгоно уу"));
     const problem = detailsError();
     if (problem) {
       if (wizard) setStep(0);
@@ -441,18 +443,18 @@ export default function CarForm({
       const id = await saveCar({ ...input, ...(car ? { id: car.id } : {}) }, photos);
       onSaved(id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Хадгалах үед алдаа гарлаа");
+      setError(err instanceof Error ? err.message : tr("Хадгалах үед алдаа гарлаа"));
       setBusy(false);
     }
   };
 
-  const finalLabel = isAdmin ? "Нийтлэх" : "Илгээх";
+  const finalLabel = isAdmin ? tr("Нийтлэх") : tr("Илгээх");
 
   return (
     <form id={CAR_FORM_ID} onSubmit={submit} className="space-y-5">
       {wizard && (
         <Stepper
-          steps={[...leadingSteps, ...FORM_STEPS.slice(0, lastStep), finalLabel]}
+          steps={[...leadingSteps, ...formSteps().slice(0, lastStep), finalLabel]}
           current={leadingSteps.length + step}
           onStepClick={(i) => (i < leadingSteps.length ? onBackToLead?.() : goTo(i - leadingSteps.length))}
         />
@@ -465,8 +467,8 @@ export default function CarForm({
               <ShieldCheck className="size-5" />
             </span>
             <div className="min-w-0">
-              <p className="font-bold">Бүртгэлээс татсан{savedAutobox.plate ? ` · ${savedAutobox.plate}` : ""}</p>
-              <p className="text-xs text-muted-foreground">Бүртгэлийн мэдээллийг засах боломжгүй</p>
+              <p className="font-bold">{tr("Бүртгэлээс татсан")}{savedAutobox.plate ? ` · ${savedAutobox.plate}` : ""}</p>
+              <p className="text-xs text-muted-foreground">{tr("Бүртгэлийн мэдээллийг засах боломжгүй")}</p>
             </div>
           </section>
         ) : (
@@ -487,15 +489,15 @@ export default function CarForm({
         />
       )}
       {show(1) && (
-        <Section title="Зураг">
+        <Section title={tr("Зураг")}>
           <div className="grid grid-cols-3 gap-2">
             {photos.map((p, i) => (
               <div key={p.url} className="relative aspect-square overflow-hidden rounded-xl bg-muted">
-                <button type="button" onClick={() => setViewing(i)} aria-label="Зураг томоор харах" className="size-full">
+                <button type="button" onClick={() => setViewing(i)} aria-label={tr("Зураг томоор харах")} className="size-full">
                   <Img src={p.url} alt="" className="size-full object-cover" />
                 </button>
-                {i === 0 && <span className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold text-white">Нүүр</span>}
-                <button type="button" onClick={() => removePhoto(i)} aria-label="Зураг хасах" className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-dark/80 text-white">
+                {i === 0 && <span className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-md bg-dark px-1.5 py-0.5 text-[10px] font-bold text-white">{tr("Нүүр")}</span>}
+                <button type="button" onClick={() => removePhoto(i)} aria-label={tr("Зураг хасах")} className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-full bg-dark/80 text-white">
                   <X className="size-3.5" strokeWidth={3} />
                 </button>
               </div>
@@ -507,23 +509,23 @@ export default function CarForm({
                 className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-input text-xs font-semibold text-muted-foreground hover:border-primary hover:text-primary"
               >
                 <ImagePlus className="size-6" />
-                Зураг нэмэх
+                {tr("Зураг нэмэх")}
               </button>
             )}
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">JPG, PNG, WEBP · {MAX_PHOTOS} хүртэл зураг. Эхний зураг нүүр зураг болно.</p>
+          <p className="mt-3 text-xs text-muted-foreground">{tr("JPG, PNG, WEBP · {n} хүртэл зураг. Эхний зураг нүүр зураг болно.", { n: MAX_PHOTOS })}</p>
           {viewing !== null && <PhotoViewer urls={photos.map((p) => p.url)} start={viewing} onClose={() => setViewing(null)} />}
           <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => (addFiles(e.target.files), (e.target.value = ""))} />
         </Section>
       )}
 
       {show(0) && (
-        <Section title="Үндсэн мэдээлэл">
+        <Section title={tr("Үндсэн мэдээлэл")}>
           <div className="grid grid-cols-2 gap-3">
             {/* Both years on one row: buyers compare them. */}
-            <Field className="col-span-2" label="Үйлдвэр *">
+            <Field className="col-span-2" label={tr("Үйлдвэр *")}>
               <Select value={f.brand_id} onChange={(e) => setF((p) => ({ ...p, brand_id: e.target.value, car_model_id: "" }))} disabled={isLocked("brand_id")} required>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {brands.data?.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name}
@@ -531,9 +533,9 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field className="col-span-2" label="Загвар">
+            <Field className="col-span-2" label={tr("Загвар")}>
               <Select {...bind("car_model_id")} disabled={!f.brand_id || isLocked("car_model_id")}>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {models.data?.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name}
@@ -541,9 +543,9 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Үйлдвэрлэсэн он *">
+            <Field label={tr("Үйлдвэрлэсэн он *")}>
               <Select {...bind("manufactured_year")} required>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {yearOptions(f.manufactured_year).map((y) => (
                   <option key={y} value={y}>
                     {y}
@@ -551,9 +553,9 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Орж ирсэн он *">
+            <Field label={tr("Орж ирсэн он *")}>
               <Select {...bind("imported_year")} required>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {yearOptions(f.imported_year).map((y) => (
                   <option key={y} value={y}>
                     {y}
@@ -561,9 +563,9 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Байршил">
+            <Field label={tr("Байршил")}>
               <Select value={locationId} onChange={(e) => set("location_id", e.target.value)}>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {locations.data?.map((l) => (
                   <option key={l.id} value={l.id}>
                     {l.name}
@@ -571,44 +573,44 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field label="Гүйлт (км)">
-              <input className={inputClass} {...digits("mileage")} placeholder="Гүйлт" />
+            <Field label={tr("Гүйлт (км)")}>
+              <input className={inputClass} {...digits("mileage")} placeholder={tr("Гүйлт")} />
             </Field>
-            <Field className="col-span-2" label="Улсын дугаар">
+            <Field className="col-span-2" label={tr("Улсын дугаар")}>
               <Select {...bind("plate_type")}>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {withCurrent(PLATE_TYPES, f.plate_type).map((p) => (
                   <option key={p} value={p}>
-                    {p}
+                    {trValue(p)}
                   </option>
                 ))}
               </Select>
             </Field>
-            <Field className="col-span-2" label="Үнэ (₮) *" hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : undefined}>
-              <input className={inputClass} {...digits("price")} placeholder="Үнэ" required />
+            <Field className="col-span-2" label={tr("Үнэ (₮) *")} hint={f.price ? `${Number(f.price).toLocaleString("en-US")}₮` : undefined}>
+              <input className={inputClass} {...digits("price")} placeholder={tr("Үнэ")} required />
             </Field>
           </div>
         </Section>
       )}
 
       {show(0) && (
-        <Section title="Техникийн үзүүлэлт">
+        <Section title={tr("Техникийн үзүүлэлт")}>
           <div className="space-y-5">
-            <Field label="Түлш">
+            <Field label={tr("Түлш")}>
               <Chips options={FUEL_TYPES} value={f.fuel_type} onChange={(v) => set("fuel_type", v)} disabled={isLocked("fuel_type")} />
             </Field>
-            <Field label="Хурдны хайрцаг *">
+            <Field label={tr("Хурдны хайрцаг *")}>
               <Chips options={TRANSMISSIONS} value={f.transmission} onChange={(v) => set("transmission", v)} disabled={isLocked("transmission")} />
             </Field>
-            <Field label="Хөтлөгч">
+            <Field label={tr("Хөтлөгч")}>
               <Chips options={DRIVE_TYPES} value={f.drive_type} onChange={(v) => set("drive_type", v)} disabled={isLocked("drive_type")} />
             </Field>
-            <Field label="Хүрд">
+            <Field label={tr("Хүрд")}>
               <Chips options={STEERINGS} value={f.steering} onChange={(v) => set("steering", v)} disabled={isLocked("steering")} />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Хөдөлгүүр (л)">
-                <input className={inputClass} inputMode="decimal" disabled={isLocked("engine_capacity")} value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder="Багтаамж" />
+              <Field label={tr("Хөдөлгүүр (л)")}>
+                <input className={inputClass} inputMode="decimal" disabled={isLocked("engine_capacity")} value={f.engine_capacity} onChange={(e) => set("engine_capacity", e.target.value.replace(/[^\d.]/g, ""))} placeholder={tr("Багтаамж")} />
               </Field>
             </div>
           </div>
@@ -617,11 +619,11 @@ export default function CarForm({
 
       {/* Optional details buyers care least about. */}
       {show(0) && (
-        <Section title="Бусад мэдээлэл">
+        <Section title={tr("Бусад мэдээлэл")}>
           <div className="grid grid-cols-2 gap-3">
-            <Field className="col-span-2" label="Төрөл">
+            <Field className="col-span-2" label={tr("Төрөл")}>
               <Select {...bind("body_type_id")}>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {bodyTypes.data?.map((b) => (
                   <option key={b.id} value={b.id}>
                     {bodyTypeLabel(b.name)}
@@ -629,32 +631,32 @@ export default function CarForm({
                 ))}
               </Select>
             </Field>
-            <Field className="col-span-2" label="Зориулалт" hint="Бүртгэлээс бөглөгдөнө">
+            <Field className="col-span-2" label={tr("Зориулалт")} hint={tr("Бүртгэлээс бөглөгдөнө")}>
               <Select {...bind("vehicle_type")}>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {withCurrent(VEHICLE_TYPES, f.vehicle_type).map((v) => (
                   <option key={v} value={v}>
-                    {v}
+                    {trValue(v)}
                   </option>
                 ))}
               </Select>
             </Field>
-            <Field label="Гадна өнгө">
+            <Field label={tr("Гадна өнгө")}>
               <Select {...bind("color")}>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {withCurrent(EXTERIOR_COLORS, f.color).map((c) => (
                   <option key={c} value={c}>
-                    {c}
+                    {trValue(c)}
                   </option>
                 ))}
               </Select>
             </Field>
-            <Field label="Дотор өнгө">
+            <Field label={tr("Дотор өнгө")}>
               <Select {...bind("interior_color")}>
-                <option value="">Сонгох</option>
+                <option value="">{tr("Сонгох")}</option>
                 {withCurrent(INTERIOR_COLORS, f.interior_color).map((c) => (
                   <option key={c} value={c}>
-                    {c}
+                    {trValue(c)}
                   </option>
                 ))}
               </Select>
@@ -662,17 +664,17 @@ export default function CarForm({
             <label className="col-span-2 my-3 flex w-fit cursor-pointer select-none items-center gap-3">
               <input type="checkbox" role="switch" className="peer sr-only" checked={f.is_leasing} onChange={(e) => setF((p) => ({ ...p, is_leasing: e.target.checked }))} />
               <span className={switchTrack} />
-              <span className="text-base font-bold">Лизинг боломжтой эсэх</span>
+              <span className="text-base font-bold">{tr("Лизинг боломжтой эсэх")}</span>
             </label>
           </div>
         </Section>
       )}
 
       {show(lastStep) && (
-        <Section title="Тайлбар, холбоо барих">
+        <Section title={tr("Тайлбар, холбоо барих")}>
           <div className="space-y-4">
-            <Field label="Тайлбар">
-              <textarea className={cn(inputClass, "h-auto min-h-32 py-3")} {...bind("description")} maxLength={5000} placeholder="Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…" />
+            <Field label={tr("Тайлбар")}>
+              <textarea className={cn(inputClass, "h-auto min-h-32 py-3")} {...bind("description")} maxLength={5000} placeholder={tr("Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…")} />
             </Field>
             <DealerPhonePicker dealer={adDealer} current={car?.phonenumber} value={f.phonenumber} onChange={(v) => set("phonenumber", v)} />
           </div>
@@ -681,17 +683,17 @@ export default function CarForm({
 
       {/* New ads ask featured / normal on publish (PublishChoiceSheet) instead. */}
       {isAdmin && !wizard && (
-        <Section title="Админ">
+        <Section title={tr("Админ")}>
           <div className="space-y-4">
             <label className="flex w-fit cursor-pointer select-none items-center gap-3">
               <input type="checkbox" role="switch" className="peer sr-only" checked={f.is_featured} onChange={(e) => setF((p) => ({ ...p, is_featured: e.target.checked }))} />
               <span className={switchTrack} />
               <span>
-                <span className="block text-base font-bold">Онцлох зар</span>
-                <span className="block text-xs text-muted-foreground">Нүүр хуудсанд болон хайлтын эхэнд гарна</span>
+                <span className="block text-base font-bold">{tr("Онцлох зар")}</span>
+                <span className="block text-xs text-muted-foreground">{tr("Нүүр хуудсанд болон хайлтын эхэнд гарна")}</span>
               </span>
             </label>
-            <Field label="Төлөв">
+            <Field label={tr("Төлөв")}>
               <Select {...bind("status")}>
                 {Object.entries(CAR_STATUS)
                   .filter(([k]) => k !== "deleted")
@@ -718,18 +720,18 @@ export default function CarForm({
               className="flex h-12 items-center justify-center gap-1 rounded-xl bg-card px-5 font-bold hover:bg-muted"
             >
               <ChevronLeft className="size-4" />
-              Буцах
+              {tr("Буцах")}
             </button>
           )}
           <button disabled={busy} className="flex h-12 flex-1 items-center justify-center gap-1 rounded-xl bg-primary px-6 font-bold text-white hover:bg-primary-hover disabled:opacity-60">
-            {busy ? "Хадгалж байна…" : step < lastStep ? "Дараах" : isAdmin ? "Зар нийтлэх" : "Батлуулахаар илгээх"}
+            {busy ? tr("Хадгалж байна…") : step < lastStep ? tr("Дараах") : isAdmin ? tr("Зар нийтлэх") : tr("Батлуулахаар илгээх")}
             {!busy && step < lastStep && <ChevronRight className="size-4" />}
           </button>
         </div>
       ) : (
         <div className="flex justify-end">
           <button disabled={busy} className="h-12 w-full rounded-xl bg-primary px-8 font-bold text-white hover:bg-primary-hover disabled:opacity-60">
-            {busy ? "Хадгалж байна…" : "Хадгалах"}
+            {busy ? tr("Хадгалж байна…") : tr("Хадгалах")}
           </button>
         </div>
       )}

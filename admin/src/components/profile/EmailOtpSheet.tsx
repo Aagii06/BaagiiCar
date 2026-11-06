@@ -4,6 +4,7 @@ import OtpSheet from "@/components/profile/OtpSheet";
 import { sendEmailChangeCode, verifyEmailChange } from "@/lib/api/admin";
 import type { User } from "@/lib/api/types";
 import { MailCheck } from "lucide-react";
+import { tr } from "@/lib/i18n/translations";
 
 /**
  * Bottom sheet for confirming a new email: the code was already sent to `email` when it opens.
@@ -26,7 +27,7 @@ export default function EmailOtpSheet({
   return (
     <OtpSheet
       icon={<MailCheck className="size-7" />}
-      title="Имэйл баталгаажуулах"
+      title={tr("Имэйл баталгаажуулах")}
       target={email}
       length={6}
       resendIn={resendIn}

@@ -15,19 +15,20 @@ import { carTitle, cn, daysUntil, formatPrice } from "@/lib/utils";
 import { ArchiveRestore, BadgeCheck, Check, Clock, Eye, EyeOff, Phone, RefreshCw, Star, Store, Trash2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 export const PAGE_SIZE = 20;
 export type Tab = CarStatusFilter | "all";
 // Each status in its own colour: soft while off, solid once picked.
 export const TABS: ChipTab<Tab>[] = [
-  { value: "all", label: "Бүгд" },
-  { value: "pending", label: "Хүлээгдэж буй", tone: { on: "bg-amber text-dark", off: "bg-amber-soft text-amber-ink" } },
-  { value: "rejected", label: "Буцаасан", tone: { on: "bg-destructive text-white", off: "bg-destructive-soft text-destructive" } },
-  { value: "active", label: "Идэвхтэй", tone: { on: "bg-success text-white", off: "bg-success-soft text-success" } },
-  { value: "featured", label: "Онцлох", tone: { on: "bg-primary text-white", off: "bg-primary-soft text-primary" } },
-  { value: "hidden", label: "Нуусан", tone: { on: "bg-slate-500 text-white", off: "bg-slate-100 text-slate-600" } },
-  { value: "sold", label: "Зарагдсан", tone: { on: "bg-sky-600 text-white", off: "bg-tint-blue text-sky-700" } },
-  { value: "deleted", label: "Устгасан", tone: { on: "bg-rose-800 text-white", off: "bg-tint-rose text-rose-800" } },
+  { value: "all", get label() { return tr("Бүгд"); } },
+  { value: "pending", get label() { return tr("Хүлээгдэж буй"); }, tone: { on: "bg-amber text-dark", off: "bg-amber-soft text-amber-ink" } },
+  { value: "rejected", get label() { return tr("Буцаасан"); }, tone: { on: "bg-destructive text-white", off: "bg-destructive-soft text-destructive" } },
+  { value: "active", get label() { return tr("Идэвхтэй"); }, tone: { on: "bg-success text-white", off: "bg-success-soft text-success" } },
+  { value: "featured", get label() { return tr("Онцлох"); }, tone: { on: "bg-primary text-white", off: "bg-primary-soft text-primary" } },
+  { value: "hidden", get label() { return tr("Нуусан"); }, tone: { on: "bg-slate-500 text-white", off: "bg-slate-100 text-slate-600" } },
+  { value: "sold", get label() { return tr("Зарагдсан"); }, tone: { on: "bg-sky-600 text-white", off: "bg-tint-blue text-sky-700" } },
+  { value: "deleted", get label() { return tr("Устгасан"); }, tone: { on: "bg-rose-800 text-white", off: "bg-tint-rose text-rose-800" } },
 ];
 
 /** One ad in an admin list, with its status actions. */
@@ -84,7 +85,7 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
             // No dealer at all: a shop icon; a dealer without a (working) logo: the "no image" picture.
             fallback={car.dealer_name ? undefined : <Store className="size-4 shrink-0 text-white/70" />}
           />
-          <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-white/70")}>{car.dealer_name || "Дилергүй"}</span>
+          <span className={cn("truncate text-xs font-bold", !car.dealer_name && "font-semibold text-white/70")}>{car.dealer_name || tr("Дилергүй")}</span>
         </div>
       )}
       <div className="p-3">
@@ -100,11 +101,11 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
               #{car.code ?? car.id} · {car.phonenumber || car.seller_phone}
             </p>
             <p className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1" title="Зар үзсэн">
+              <span className="flex items-center gap-1" title={tr("Зар үзсэн")}>
                 <Eye className="size-3.5" />
                 {car.view_count ?? 0}
               </span>
-              <span className="flex items-center gap-1" title="Дугаар харсан">
+              <span className="flex items-center gap-1" title={tr("Дугаар харсан")}>
                 <Phone className="size-3.5" />
                 {car.phone_view_count ?? 0}
               </span>
@@ -113,13 +114,13 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
             {car.status === "active" && (
               <p className={cn("mt-1 flex items-center gap-1 text-xs font-semibold", renewIn ? "text-muted-foreground" : "text-success")}>
                 <RefreshCw className="size-3.5" />
-                {renewIn ? `${renewIn} хоногийн дараа үнэгүй шинэчлэх боломжтой` : "Үнэгүй шинэчлэх боломжтой"}
+                {renewIn ? tr("{n} хоногийн дараа үнэгүй шинэчлэх боломжтой", { n: renewIn }) : tr("Үнэгүй шинэчлэх боломжтой")}
               </p>
             )}
             {car.status === "deleted" && (
               <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-destructive">
                 <Clock className="size-3.5" />
-                {purgeIn ? `${purgeIn} хоногийн дараа бүр мөсөн устна` : "Удахгүй бүр мөсөн устна"}
+                {purgeIn ? tr("{n} хоногийн дараа бүр мөсөн устна", { n: purgeIn }) : tr("Удахгүй бүр мөсөн устна")}
               </p>
             )}
           </div>
@@ -128,10 +129,10 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
           <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
             <button
               onClick={() =>
-                run(() => restoreCar(car.id), "Зарыг сэргээлээ", {
-                  title: "Зарыг сэргээх үү?",
-                  message: "Зар устгахаас өмнөх төлөвтөө буцна.",
-                  confirmLabel: "Сэргээх",
+                run(() => restoreCar(car.id), tr("Зарыг сэргээлээ"), {
+                  title: tr("Зарыг сэргээх үү?"),
+                  message: tr("Зар устгахаас өмнөх төлөвтөө буцна."),
+                  confirmLabel: tr("Сэргээх"),
                   tone: "success",
                   icon: ArchiveRestore,
                 })
@@ -139,16 +140,16 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
               className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white"
             >
               <ArchiveRestore className="size-3.5" />
-              Сэргээх
+              {tr("Сэргээх")}
             </button>
           </div>
         )}
         {car.status !== "deleted" && (
           <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
             {car.status === "pending" && isAdmin && (
-              <button onClick={() => run(() => approveCar(car.id), "Баталлаа, вэб дээр нийтлэгдлээ", { title: "Зарыг батлах уу?", message: "Батласны дараа вэб дээр нийтлэгдэнэ.", confirmLabel: "Батлах", tone: "success", icon: Check })} className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white">
+              <button onClick={() => run(() => approveCar(car.id), tr("Баталлаа, вэб дээр нийтлэгдлээ"), { title: tr("Зарыг батлах уу?"), message: tr("Батласны дараа вэб дээр нийтлэгдэнэ."), confirmLabel: tr("Батлах"), tone: "success", icon: Check })} className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white">
                 <Check className="size-3.5" strokeWidth={3} />
-                Батлах
+                {tr("Батлах")}
               </button>
             )}
             {car.status === "pending" && isAdmin && (
@@ -161,7 +162,7 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
                 className="flex items-center gap-1 rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive"
               >
                 <Undo2 className="size-3.5" />
-                Буцаах
+                {tr("Буцаах")}
               </button>
             )}
             {isAdmin && car.status === "active" && (
@@ -169,30 +170,30 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
                 onClick={() =>
                   run(
                     () => setFeatured(car, !featured),
-                    featured ? "Онцлохоос хаслаа" : "Онцоллоо",
+                    featured ? tr("Онцлохоос хаслаа") : tr("Онцоллоо"),
                     featured
-                      ? { title: "Онцлохоос хасах уу?", message: "Нүүр хуудас болон хайлтын эхэнд гарахаа болино.", confirmLabel: "Хасах", tone: "amber", icon: Star }
-                      : { title: "Онцлох зар болгох уу?", message: "Нүүр хуудсанд болон хайлтын эхэнд гарна.", confirmLabel: "Онцлох", tone: "amber", icon: Star }
+                      ? { title: tr("Онцлохоос хасах уу?"), message: tr("Нүүр хуудас болон хайлтын эхэнд гарахаа болино."), confirmLabel: tr("Хасах"), tone: "amber", icon: Star }
+                      : { title: tr("Онцлох зар болгох уу?"), message: tr("Нүүр хуудсанд болон хайлтын эхэнд гарна."), confirmLabel: tr("Онцлох"), tone: "amber", icon: Star }
                   )
                 }
                 className={cn("flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold", featured ? "bg-amber" : "bg-muted")}
               >
                 <Star className={cn("size-3.5", featured && "fill-current")} />
-                Онцлох
+                {tr("Онцлох")}
               </button>
             )}
             {isAdmin && car.status === "active" && (
-              <button onClick={() => run(() => markSold(car.id), "Зарагдсан гэж тэмдэглэлээ", { title: "Зарагдсан гэж тэмдэглэх үү?", message: "Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана.", confirmLabel: "Тэмдэглэх", icon: BadgeCheck })} className="rounded-lg bg-muted px-3 py-1.5 text-xs font-bold">
-                Зарагдсан
+              <button onClick={() => run(() => markSold(car.id), tr("Зарагдсан гэж тэмдэглэлээ"), { title: tr("Зарагдсан гэж тэмдэглэх үү?"), message: tr("Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана."), confirmLabel: tr("Тэмдэглэх"), icon: BadgeCheck })} className="rounded-lg bg-muted px-3 py-1.5 text-xs font-bold">
+                {tr("Зарагдсан")}
               </button>
             )}
             {car.status === "active" && !renewIn && (
               <button
                 onClick={() =>
-                  run(() => renewCar(car.id), "Шинэчиллээ, жагсаалтын эхэнд гарлаа", {
-                    title: "Зарыг шинэчлэх үү?",
-                    message: `Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл ${CAR_RENEW_DAYS} хоногийн дараа.`,
-                    confirmLabel: "Шинэчлэх",
+                  run(() => renewCar(car.id), tr("Шинэчиллээ, жагсаалтын эхэнд гарлаа"), {
+                    title: tr("Зарыг шинэчлэх үү?"),
+                    message: tr("Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл {n} хоногийн дараа.", { n: CAR_RENEW_DAYS }),
+                    confirmLabel: tr("Шинэчлэх"),
                     tone: "success",
                     icon: RefreshCw,
                   })
@@ -200,16 +201,16 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
                 className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white"
               >
                 <RefreshCw className="size-3.5" />
-                Шинэчлэх
+                {tr("Шинэчлэх")}
               </button>
             )}
             {car.status === "active" && (
               <button
                 onClick={() =>
-                  run(() => setHidden(car.id, true), "Нууллаа, вэб дээр харагдахгүй", {
-                    title: "Зарыг түр нуух уу?",
-                    message: "Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно.",
-                    confirmLabel: "Нуух",
+                  run(() => setHidden(car.id, true), tr("Нууллаа, вэб дээр харагдахгүй"), {
+                    title: tr("Зарыг түр нуух уу?"),
+                    message: tr("Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно."),
+                    confirmLabel: tr("Нуух"),
                     tone: "amber",
                     icon: EyeOff,
                   })
@@ -217,16 +218,16 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
                 className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5 text-xs font-bold"
               >
                 <EyeOff className="size-3.5" />
-                Нуух
+                {tr("Нуух")}
               </button>
             )}
             {car.status === "hidden" && (
               <button
                 onClick={() =>
-                  run(() => setHidden(car.id, false), "Нийтэллээ, вэб дээр харагдана", {
-                    title: "Зарыг нийтлэх үү?",
-                    message: "Нийтэлсэн зар вэб дээр харагдах боломжтой болно.",
-                    confirmLabel: "Нийтлэх",
+                  run(() => setHidden(car.id, false), tr("Нийтэллээ, вэб дээр харагдана"), {
+                    title: tr("Зарыг нийтлэх үү?"),
+                    message: tr("Нийтэлсэн зар вэб дээр харагдах боломжтой болно."),
+                    confirmLabel: tr("Нийтлэх"),
                     tone: "success",
                     icon: Eye,
                   })
@@ -234,13 +235,13 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
                 className="flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-bold text-white"
               >
                 <Eye className="size-3.5" />
-                Нийтлэх
+                {tr("Нийтлэх")}
               </button>
             )}
             {/* Dealers can't delete live or sold ads, only hide / edit them. */}
             {(isAdmin || (car.status !== "active" && car.status !== "sold")) && (
-              <button onClick={() => run(() => deleteCar(car.id), "Устгалаа", { title: "Зарыг устгах уу?", message: `Устгасан зар вэб дээр харагдахгүй болно. ${CAR_RESTORE_DAYS} хоногийн дотор сэргээх боломжтой, дараа нь бүр мөсөн устна.`, confirmLabel: "Устгах", tone: "danger", icon: Trash2 })} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">
-              Устгах
+              <button onClick={() => run(() => deleteCar(car.id), tr("Устгалаа"), { title: tr("Зарыг устгах уу?"), message: tr("Устгасан зар вэб дээр харагдахгүй болно. {n} хоногийн дотор сэргээх боломжтой, дараа нь бүр мөсөн устна.", { n: CAR_RESTORE_DAYS }), confirmLabel: tr("Устгах"), tone: "danger", icon: Trash2 })} className="ml-auto rounded-lg bg-destructive-soft px-3 py-1.5 text-xs font-bold text-destructive">
+              {tr("Устгах")}
             </button>
             )}
           </div>

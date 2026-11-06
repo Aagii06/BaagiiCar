@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { Suspense, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /**
  * Read-only preview of an ad laid out like the web detail page. The web only
@@ -66,11 +67,11 @@ function CarViewInner() {
   return (
     <>
       <DetailHeader
-        title={car?.name || "Зар"}
+        title={car?.name || tr("Зар")}
         back={withFrom(`/cars/${id}`, from)}
         aside={
           car && car.status !== "deleted" ? (
-            <Link href={withFrom(`/cars/${car.id}`, from)} aria-label="Засах" className="grid size-10 place-items-center rounded-xl hover:bg-muted">
+            <Link href={withFrom(`/cars/${car.id}`, from)} aria-label={tr("Засах")} className="grid size-10 place-items-center rounded-xl hover:bg-muted">
               <Pencil className="size-4" />
             </Link>
           ) : null
@@ -81,14 +82,14 @@ function CarViewInner() {
       ) : data.error ? (
         <ErrorState message={data.error.message} onRetry={data.reload} />
       ) : !car ? (
-        <EmptyState title="Зар олдсонгүй" />
+        <EmptyState title={tr("Зар олдсонгүй")} />
       ) : (
         // Full-width like the web detail page: photos + specs left, price / seller right on desktop.
         <div className={cn("mx-auto max-w-[1280px] md:px-6", busy && "pointer-events-none opacity-60")}>
           <StatusBanner
             car={car}
-            onApprove={() => run(() => approveCar(car.id), "Баталлаа, вэб дээр нийтлэгдлээ")}
-            onHidden={(hidden) => run(() => setHidden(car.id, hidden), hidden ? "Нууллаа, вэб дээр харагдахгүй" : "Нийтэллээ, вэб дээр харагдана")}
+            onApprove={() => run(() => approveCar(car.id), tr("Баталлаа, вэб дээр нийтлэгдлээ"))}
+            onHidden={(hidden) => run(() => setHidden(car.id, hidden), hidden ? tr("Нууллаа, вэб дээр харагдахгүй") : tr("Нийтэллээ, вэб дээр харагдана"))}
             onRejected={data.reload}
           />
           <RejectNote car={car} className="mt-3" />
@@ -104,11 +105,11 @@ function CarViewInner() {
                 <p className="mt-1 text-sm text-muted-foreground">{[car.manufactured_year, car.location_name].filter(Boolean).join(" · ")}</p>
                 <p className="mt-3 font-display text-2xl font-bold text-primary md:text-3xl">{formatPrice(car.price)}</p>
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-muted-foreground">
-                  <span className="flex items-center gap-1" title="Зар үзсэн">
+                  <span className="flex items-center gap-1" title={tr("Зар үзсэн")}>
                     <Eye className="size-3.5" />
                     {car.view_count ?? 0}
                   </span>
-                  <span className="flex items-center gap-1" title="Дугаар харсан">
+                  <span className="flex items-center gap-1" title={tr("Дугаар харсан")}>
                     <Phone className="size-3.5" />
                     {car.phone_view_count ?? 0}
                   </span>
@@ -122,7 +123,7 @@ function CarViewInner() {
 
               <section className="flex items-center gap-3 rounded-2xl bg-card p-4 md:p-5">
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-muted-foreground">Зарын эзэн</p>
+                  <p className="text-xs font-medium text-muted-foreground">{tr("Зарын эзэн")}</p>
                   <p className="truncate font-bold">{car.dealer_name || car.seller_name || "—"}</p>
                 </div>
                 {(car.phonenumber || car.seller_phone) && (
@@ -138,7 +139,7 @@ function CarViewInner() {
               <Specs car={car} />
               {car.description && (
                 <section className="rounded-2xl bg-card p-4 md:p-5">
-                  <h2 className="font-bold">Тайлбар</h2>
+                  <h2 className="font-bold">{tr("Тайлбар")}</h2>
                   <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">{car.description}</p>
                 </section>
               )}
@@ -160,46 +161,46 @@ function StatusBanner({ car, onApprove, onHidden, onRejected }: { car: Car; onAp
     <div className={cn("flex flex-wrap items-center gap-3 rounded-2xl p-3.5", car.status === "pending" ? "bg-amber-soft text-amber-ink" : "bg-card")}>
       <div className="min-w-0 flex-1">
         <span className={cn("inline-block rounded-full px-2 py-0.5 text-[10px] font-bold", st.className)}>{st.label}</span>
-        <p className="mt-1 text-xs font-medium">{onWeb ? "Вэб сайт дээр нийтлэгдсэн" : car.status === "pending" ? "Батлагдаагүй тул вэб дээр харагдахгүй" : car.status === "rejected" ? "Буцаасан — эзэн нь засаж дахин илгээнэ" : car.status === "hidden" ? "Түр нуусан тул вэб дээр харагдахгүй" : "Вэб дээр харагдахгүй"}</p>
+        <p className="mt-1 text-xs font-medium">{onWeb ? tr("Вэб сайт дээр нийтлэгдсэн") : car.status === "pending" ? tr("Батлагдаагүй тул вэб дээр харагдахгүй") : car.status === "rejected" ? tr("Буцаасан — эзэн нь засаж дахин илгээнэ") : car.status === "hidden" ? tr("Түр нуусан тул вэб дээр харагдахгүй") : tr("Вэб дээр харагдахгүй")}</p>
       </div>
       {car.status === "pending" && isAdmin && (
         <button onClick={async () => (await reject(car)) && onRejected()} className="flex shrink-0 items-center gap-1 rounded-xl bg-destructive-soft px-3 py-2 text-sm font-bold text-destructive">
           <Undo2 className="size-4" />
-          Буцаах
+          {tr("Буцаах")}
         </button>
       )}
       {car.status === "pending" && isAdmin && (
         <button
-          onClick={async () => (await confirm({ title: "Зарыг батлах уу?", message: "Батласны дараа вэб дээр нийтлэгдэнэ.", confirmLabel: "Батлах", tone: "success", icon: Check })) && onApprove()}
+          onClick={async () => (await confirm({ title: tr("Зарыг батлах уу?"), message: tr("Батласны дараа вэб дээр нийтлэгдэнэ."), confirmLabel: tr("Батлах"), tone: "success", icon: Check })) && onApprove()}
           className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white">
           <Check className="size-4" strokeWidth={3} />
-          Батлах
+          {tr("Батлах")}
         </button>
       )}
       {/* Dealers can hide / unhide their own ads too, not only admins. */}
       {car.status === "active" && (
         <button
           onClick={async () =>
-            (await confirm({ title: "Зарыг түр нуух уу?", message: "Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно.", confirmLabel: "Нуух", tone: "amber", icon: EyeOff })) && onHidden(true)
+            (await confirm({ title: tr("Зарыг түр нуух уу?"), message: tr("Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно."), confirmLabel: tr("Нуух"), tone: "amber", icon: EyeOff })) && onHidden(true)
           }
           className="flex shrink-0 items-center gap-1 rounded-xl bg-muted px-3 py-2 text-sm font-bold"
         >
           <EyeOff className="size-4" />
-          Нуух
+          {tr("Нуух")}
         </button>
       )}
       {car.status === "hidden" && (
         <button
-          onClick={async () => (await confirm({ title: "Зарыг нийтлэх үү?", message: "Нийтэлсэн зар вэб дээр харагдах боломжтой болно.", confirmLabel: "Нийтлэх", tone: "success", icon: Eye })) && onHidden(false)}
+          onClick={async () => (await confirm({ title: tr("Зарыг нийтлэх үү?"), message: tr("Нийтэлсэн зар вэб дээр харагдах боломжтой болно."), confirmLabel: tr("Нийтлэх"), tone: "success", icon: Eye })) && onHidden(false)}
           className="flex shrink-0 items-center gap-1 rounded-xl bg-success px-3 py-2 text-sm font-bold text-white"
         >
           <Eye className="size-4" />
-          Нийтлэх
+          {tr("Нийтлэх")}
         </button>
       )}
       {onWeb && WEB_URL && (
         <a href={`${WEB_URL}/cars/${car.id}`} target="_blank" rel="noreferrer" className="flex shrink-0 items-center gap-1 rounded-xl bg-muted px-3 py-2 text-sm font-bold">
-          Вэб
+          {tr("Вэб")}
           <ExternalLink className="size-3.5" />
         </a>
       )}
@@ -229,7 +230,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
             className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto rounded-2xl bg-muted"
           >
             {photos.map((name, i) => (
-              <button key={name} type="button" onClick={() => setViewing(i)} aria-label="Зураг томоор харах" className="aspect-[4/3] w-full shrink-0 snap-center">
+              <button key={name} type="button" onClick={() => setViewing(i)} aria-label={tr("Зураг томоор харах")} className="aspect-[4/3] w-full shrink-0 snap-center">
                 <Img src={uploadUrl(name, "grid")} alt="" loading={i ? "lazy" : undefined} className="size-full object-contain" />
               </button>
             ))}
@@ -247,7 +248,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
 
       {/* Desktop: smaller main photo with a thumbnail column beside it. */}
       <div className="hidden h-[460px] gap-2 md:flex">
-        <button type="button" onClick={() => setViewing(index)} aria-label="Зураг томоор харах" className="relative min-w-0 flex-1 overflow-hidden rounded-2xl bg-muted">
+        <button type="button" onClick={() => setViewing(index)} aria-label={tr("Зураг томоор харах")} className="relative min-w-0 flex-1 overflow-hidden rounded-2xl bg-muted">
           <Img src={uploadUrl(photos[index], "full")} alt="" className="size-full object-contain" />
           {counter}
         </button>
@@ -258,7 +259,7 @@ function Gallery({ car, photos }: { car: Car; photos: string[] }) {
                 key={name}
                 type="button"
                 onClick={() => setIndex(i)}
-                aria-label={`${i + 1}-р зураг`}
+                aria-label={tr("{n}-р зураг", { n: i + 1 })}
                 className={cn("aspect-[4/3] w-full shrink-0 overflow-hidden rounded-lg border-2", i === index ? "border-foreground" : "border-transparent opacity-80 hover:opacity-100")}
               >
                 <Img src={uploadUrl(name, "thumb")} alt="" className="size-full object-cover" />
@@ -277,7 +278,7 @@ function Specs({ car }: { car: Car }) {
   const specs = carSpecs(car);
   return (
     <section className="rounded-2xl bg-card p-4 md:p-5">
-      <h2 className="font-bold">Үзүүлэлт</h2>
+      <h2 className="font-bold">{tr("Үзүүлэлт")}</h2>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
         {specs.map(([label, value]) => (
           <div key={label} className="rounded-xl bg-muted px-3 py-2.5">

@@ -4,14 +4,15 @@ import { inputClass } from "@/components/common/Field";
 import type { Car, Message } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { SendHorizontal } from "lucide-react";
+import { tr } from "@/lib/i18n/translations";
 
 export type MessageStatus = Message["status"];
 
 export const BADGE: Record<MessageStatus, { label: string; className: string }> = {
-  new: { label: "Шинэ", className: "bg-primary text-white" },
-  seen: { label: "Үзсэн", className: "bg-amber-soft text-amber-ink" },
-  done: { label: "Хариулсан", className: "bg-success-soft text-success" },
-  deleted: { label: "Устгагдсан", className: "bg-destructive-soft text-destructive" },
+  new: { get label() { return tr("Шинэ"); }, className: "bg-primary text-white" },
+  seen: { get label() { return tr("Үзсэн"); }, className: "bg-amber-soft text-amber-ink" },
+  done: { get label() { return tr("Хариулсан"); }, className: "bg-success-soft text-success" },
+  deleted: { get label() { return tr("Устгагдсан"); }, className: "bg-destructive-soft text-destructive" },
 };
 
 /**
@@ -78,18 +79,18 @@ export function ReplyForm({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         maxLength={2000}
-        placeholder="Хариугаа бичнэ үү…"
-        aria-label="Хариу"
+        placeholder={tr("Хариугаа бичнэ үү…")}
+        aria-label={tr("Хариу")}
       />
       <div className="flex justify-end gap-2">
         {onCancel && (
           <button type="button" onClick={onCancel} className="rounded-lg bg-muted px-3 py-2 text-xs font-bold hover:bg-border">
-            Болих
+            {tr("Болих")}
           </button>
         )}
         <button disabled={!value.trim() || busy} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-hover disabled:opacity-50">
           <SendHorizontal className="size-3.5" />
-          Илгээх
+          {tr("Илгээх")}
         </button>
       </div>
     </form>

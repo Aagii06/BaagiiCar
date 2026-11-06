@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { tr } from "@/lib/i18n/translations";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -13,14 +14,14 @@ export function toNumber(value: string | number | null | undefined) {
 /** "45,000,000₮" */
 export function formatPrice(value: string | number | null | undefined) {
   const n = toNumber(value);
-  return n ? `${Math.round(n).toLocaleString("en-US")}₮` : "Үнэ тохирно";
+  return n ? `${Math.round(n).toLocaleString("en-US")}₮` : tr("Үнэ тохирно");
 }
 
 /** "45.5 сая₮" — compact price for cards. */
 export function formatPriceShort(value: string | number | null | undefined) {
   const n = toNumber(value);
-  if (!n) return "Үнэ тохирно";
-  if (n >= 1_000_000) return `${Number((n / 1_000_000).toFixed(1)).toLocaleString("en-US")} сая₮`;
+  if (!n) return tr("Үнэ тохирно");
+  if (n >= 1_000_000) return tr("{n} сая₮", { n: Number((n / 1_000_000).toFixed(1)).toLocaleString("en-US") });
   return formatPrice(n);
 }
 
@@ -30,7 +31,7 @@ export function formatNumber(value: string | number | null | undefined) {
 
 export function formatEngine(value: string | number | null | undefined) {
   const n = toNumber(value);
-  return n ? `${n} л` : "—";
+  return n ? `${n} ${tr("л")}` : "—";
 }
 
 /** "2 цагийн өмнө" from the backend's "YYYY-MM-DD HH:mm:ss" (+08:00). */
@@ -39,12 +40,12 @@ export function timeAgo(value: string | null | undefined) {
   const date = new Date(value.replace(" ", "T") + "+08:00");
   if (Number.isNaN(date.getTime())) return "";
   const minutes = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
-  if (minutes < 1) return "саяхан";
-  if (minutes < 60) return `${minutes} минутын өмнө`;
+  if (minutes < 1) return tr("саяхан");
+  if (minutes < 60) return tr("{n} минутын өмнө", { n: minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} цагийн өмнө`;
+  if (hours < 24) return tr("{n} цагийн өмнө", { n: hours });
   const days = Math.round(hours / 24);
-  if (days < 30) return `${days} өдрийн өмнө`;
+  if (days < 30) return tr("{n} өдрийн өмнө", { n: days });
   return value.slice(0, 10);
 }
 

@@ -4,6 +4,7 @@ import { useConfirm } from "@/components/common/Confirm";
 import { useInApp } from "@/lib/inApp";
 import { isIos, useInstallPrompt } from "@/lib/installPrompt";
 import { Download, Share } from "lucide-react";
+import { tr } from "@/lib/i18n/translations";
 
 /** "Апп суулгах": Chrome/Android get the browser's install dialog; iPhone (no such API) gets the steps. Hidden once installed. */
 export default function InstallAppButton() {
@@ -15,13 +16,13 @@ export default function InstallAppButton() {
 
   const showSteps = () =>
     confirm({
-      title: "Нүүр дэлгэцэд нэмэх",
+      title: tr("Нүүр дэлгэцэд нэмэх"),
       icon: isIos() ? Share : Download,
       message: isIos()
-        ? "Safari-гийн доод талын Share (□↑) товч → «Add to Home Screen» → «Add» дарна. Chrome-д хаягийн мөрний Share товчноос мөн адил."
-        : "Браузерын ⋮ цэс → «Install app» эсвэл «Add to Home screen» → «Install» дарна.",
-      confirmLabel: "Ойлголоо",
-      cancelLabel: "Хаах",
+        ? tr("Safari-гийн доод талын Share (□↑) товч → «Add to Home Screen» → «Add» дарна. Chrome-д хаягийн мөрний Share товчноос мөн адил.")
+        : tr("Браузерын ⋮ цэс → «Install app» эсвэл «Add to Home screen» → «Install» дарна."),
+      confirmLabel: tr("Ойлголоо"),
+      cancelLabel: tr("Хаах"),
     });
 
   return (
@@ -30,7 +31,7 @@ export default function InstallAppButton() {
       onClick={() => (canPrompt ? prompt().catch(showSteps) : showSteps())}
       className="flex w-full items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold"
     >
-      Апп суулгах
+      {tr("Апп суулгах")}
       <Download className="size-4" />
     </button>
   );
