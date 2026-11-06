@@ -8,8 +8,18 @@ import InstallAppButton from "@/components/profile/InstallAppButton";
 import { getDealers } from "@/lib/api/admin";
 import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
-import { ChevronRight, ExternalLink, KeyRound, LibraryBig, LogOut, MessageSquareText, Pencil, ShieldUser, Store, Users } from "lucide-react";
+import { tr } from "@/lib/i18n/translations";
+import { ChevronRight, ExternalLink, KeyRound, LibraryBig, LogOut, MessageSquareText, Pencil, ShieldUser, Store, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
+
+/** Admin sections, moved out of the bottom nav to keep it at four tabs. Labels are Mongolian keys for tr(). */
+const ADMIN_MENU: { href: string; label: string; desc: string; icon: LucideIcon; tone: string }[] = [
+  { href: "/catalog", label: "Каталог", desc: "Үйлдвэр, загвар, төрөл, байршил", icon: LibraryBig, tone: "bg-amber-100 text-amber-600 ring-amber-200" },
+  { href: "/dealers", label: "Дилерүүд", desc: "Авто худалдааны төвүүдийг бүртгэх, засах", icon: Store, tone: "bg-sky-100 text-sky-600 ring-sky-200" },
+  { href: "/users", label: "Admin & Dealer", desc: "Админ, дилерийн хэрэглэгчид", icon: ShieldUser, tone: "bg-violet-100 text-violet-600 ring-violet-200" },
+  { href: "/customers", label: "Хэрэглэгч", desc: "Вэбээр бүртгүүлсэн хэрэглэгчид", icon: Users, tone: "bg-emerald-100 text-emerald-600 ring-emerald-200" },
+  { href: "/feedbacks", label: "Санал хүсэлт", desc: "Вэбийн “Бидэнд бичих” маягтаар ирсэн захидал", icon: MessageSquareText, tone: "bg-rose-100 text-rose-600 ring-rose-200" },
+];
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
@@ -28,56 +38,44 @@ export default function ProfilePage() {
           {dealer && <p className="truncate text-sm font-semibold text-white">{dealer.name}</p>}
         </div>
         <div className="ml-auto flex shrink-0 gap-2">
-          <Link href="/profile/edit" aria-label="Профайл засах" title="Профайл засах" className="grid size-10 place-items-center rounded-xl bg-white/10 hover:bg-white/20">
+          <Link href="/profile/edit" aria-label={tr("Профайл засах")} title={tr("Профайл засах")} className="grid size-10 place-items-center rounded-xl bg-white/10 hover:bg-white/20">
             <Pencil className="size-4" />
           </Link>
-          <Link href="/profile/password" aria-label="Нууц үг солих" title="Нууц үг солих" className="grid size-10 place-items-center rounded-xl bg-white/10 hover:bg-white/20">
+          <Link href="/profile/password" aria-label={tr("Нууц үг солих")} title={tr("Нууц үг солих")} className="grid size-10 place-items-center rounded-xl bg-white/10 hover:bg-white/20">
             <KeyRound className="size-4" />
           </Link>
         </div>
       </section>
 
-      {/* Moved out of the bottom nav to keep it at four tabs; admins only. */}
       {user?.role === ROLES.admin && (
-        <div className="mt-4 space-y-2">
-          <Link href="/catalog" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
-            <LibraryBig className="size-5 text-muted-foreground" />
-            Каталог
-            <ChevronRight className="ml-auto size-4" />
-          </Link>
-          <Link href="/dealers" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
-            <Store className="size-5 text-muted-foreground" />
-            Дилерүүд
-            <ChevronRight className="ml-auto size-4" />
-          </Link>
-          <Link href="/users" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
-            <ShieldUser className="size-5 text-muted-foreground" />
-            Admin &amp; Dealer
-            <ChevronRight className="ml-auto size-4" />
-          </Link>
-          <Link href="/customers" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
-            <Users className="size-5 text-muted-foreground" />
-            Хэрэглэгч
-            <ChevronRight className="ml-auto size-4" />
-          </Link>
-          <Link href="/feedbacks" className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 font-semibold">
-            <MessageSquareText className="size-5 text-muted-foreground" />
-            Санал хүсэлт
-            <ChevronRight className="ml-auto size-4" />
-          </Link>
-        </div>
+        <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl bg-card">
+          {ADMIN_MENU.map(({ href, label, desc, icon: Icon, tone }) => (
+            <li key={href}>
+              <Link href={href} className="group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/60 active:bg-muted">
+                <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ring-1 ring-inset transition-transform group-hover:scale-105 ${tone}`}>
+                  <Icon className="size-5" />
+                </span>
+                <span className="min-w-0 grow">
+                  <span className="block truncate text-[15px] font-bold">{tr(label)}</span>
+                  <span className="block truncate text-sm text-muted-foreground">{tr(desc)}</span>
+                </span>
+                <ChevronRight className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
 
       <div className="mt-4 space-y-2">
         <InstallAppButton />
         {WEB_URL && (
           <a href={WEB_URL} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold">
-            Вэб сайт нээх
+            {tr("Вэб сайт нээх")}
             <ExternalLink className="size-4" />
           </a>
         )}
         <button onClick={logout} className="flex w-full items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold text-destructive">
-          Гарах
+          {tr("Гарах")}
           <LogOut className="size-4" />
         </button>
       </div>

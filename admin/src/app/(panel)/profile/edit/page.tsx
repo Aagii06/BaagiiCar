@@ -133,6 +133,21 @@ function ProfileForm({ me }: { me: User }) {
   return (
     <>
       <form onSubmit={submit} className="space-y-4">
+        {/* Save sits in the header, like Нууц үг солих. */}
+        <DetailHeader
+          title="Профайл засах"
+          back="/profile"
+          aside={
+            <button
+              type="submit"
+              disabled={busy}
+              className="flex h-10 items-center gap-2 rounded-xl bg-primary px-5 font-bold text-white hover:bg-primary-hover disabled:opacity-60"
+            >
+              {busy && <Loader2 className="size-4 animate-spin" />}
+              Хадгалах
+            </button>
+          }
+        />
         <section className="space-y-4 rounded-2xl bg-card p-4">
           <div>
             <span className="mb-1.5 block text-[13px] font-semibold">Профайл зураг</span>
@@ -248,9 +263,6 @@ function ProfileForm({ me }: { me: User }) {
         </section>
 
         <FormError message={error} />
-        <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
-          {busy ? "Хадгалж байна…" : "Хадгалах"}
-        </button>
       </form>
 
       {/* Outside the form: the sheet has its own <form>, and nested submits would bubble into this one. */}
@@ -314,10 +326,5 @@ function ProfileForm({ me }: { me: User }) {
 
 export default function ProfileEditPage() {
   const { user } = useAuth();
-  return (
-    <>
-      <DetailHeader title="Профайл засах" back="/profile" />
-      {user && <ProfileForm key={user.id} me={user} />}
-    </>
-  );
+  return user ? <ProfileForm key={user.id} me={user} /> : <DetailHeader title="Профайл засах" back="/profile" />;
 }
