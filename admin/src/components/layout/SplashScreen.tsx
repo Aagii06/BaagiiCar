@@ -1,5 +1,6 @@
-/**
 import { tr } from "@/lib/i18n/translations";
+
+/**
  * Full-screen loader shown while the saved session is checked, before either the panel or the login page.
  * The logo sits in a white disc; an orange arc spins around it and a faint inner arc turns the other way.
  */

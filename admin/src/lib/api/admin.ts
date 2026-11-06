@@ -553,6 +553,12 @@ export async function listFeedbacks(status?: Feedback["status"]) {
   return res.data;
 }
 
+/** One feedback; null when it's gone. */
+export async function getFeedback(id: number | string) {
+  const res = await apiFetch<ApiItemResponse<Feedback | null>>(`/api/base/feedbacks/${id}`);
+  return res.data;
+}
+
 export const setFeedbackStatus = (id: number, status: Feedback["status"]) => updateRow("feedbacks", id, { status });
 export const deleteFeedback = (id: number) => deleteRows("feedbacks", [id]);
 

@@ -8,6 +8,8 @@ export type ChipTab<T extends string> = {
   label: string;
   /** Own colours instead of the neutral ones: `on` when selected, `off` otherwise. */
   tone?: { on: string; off: string };
+  /** Small badge after the label (e.g. how many are new); hidden when 0 / missing. */
+  count?: number;
 };
 
 /** `value` may be a list when several chips can be on at once; `onChange` still reports the tapped chip. */
@@ -36,9 +38,10 @@ export default function ChipTabs<T extends string>({ items, value, onChange }: {
           key={it.value}
           onClick={() => onChange(it.value)}
           aria-pressed={isOn(it.value)}
-          className={cn("shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold", isOn(it.value) ? (it.tone?.on ?? "bg-dark text-white") : (it.tone?.off ?? "bg-muted text-foreground/80 hover:bg-border"))}
+          className={cn("flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold", isOn(it.value) ? (it.tone?.on ?? "bg-dark text-white") : (it.tone?.off ?? "bg-muted text-foreground/80 hover:bg-border"))}
         >
           {it.label}
+          {!!it.count && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[11px] font-bold leading-none text-white">{it.count}</span>}
         </button>
       ))}
     </div>
