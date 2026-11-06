@@ -16,6 +16,8 @@ const {
   otpLoginValidation,
   emailOtpSendValidation,
   emailOtpLoginValidation,
+  passwordChangeSendValidation,
+  passwordChangeVerifyValidation,
 } = require("./validation");
 
 const {
@@ -28,6 +30,8 @@ const {
   logout,
   getUserData,
   changePassword,
+  passwordChangeSend,
+  passwordChangeVerify,
   emailChangeSend,
   emailChangeVerify,
   phoneVerifySend,
@@ -70,5 +74,9 @@ router.route("/get-user-data").post(protect, getUserData);
 router
   .route("/change-password")
   .post(protect, changePasswordValidation, byAndAt, changePassword);
+
+// Өөрийн нууц үг солих: хуучин нууц үг шалгаад бүртгэлтэй имэйл рүү код → кодоор баталгаажсаны дараа л солигдоно
+router.route("/password-change/send").post(protect, passwordChangeSendValidation, passwordChangeSend);
+router.route("/password-change/verify").post(protect, passwordChangeVerifyValidation, byAndAt, passwordChangeVerify);
 
 module.exports = router;

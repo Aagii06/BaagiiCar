@@ -615,6 +615,79 @@ module.exports.changePassword = async (req, res) => {
   }
 };
 
+// --- Өөрийн нууц үг солих: хуучин нууц үг зөв бол бүртгэлтэй имэйл рүү код илгээж, кодоор баталгаажсаны дараа солино ----
+// Код хэрэглэгч бүрт тусдаа (purpose = "password:<id>").
+const passwordChangePurpose = (userId) => `password:${userId}`;
+
+// Давталт, хуучин нууц үгийг шалгаад хэрэглэгчийг буцаана; алдаатай бол { message }
+const checkPasswordChange = async (loggedUser, { old_password, password, password_confirm }) => {
+  if (password.replace(/\s+/g, "") !== password_confirm.replace(/\s+/g, ""))
+    return { message: "Нууц үгийн давталт буруу байна" };
+  const me = await users.findOne({
+    where: { id: loggedUser?.id, status: "active" },
+    attributes: ["id", "email", "password"],
+    raw: true,
+  });
+  if (!me) return { message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
+  const current = me.password ? me.password.toString().replace(/^\$2y/, "$2a") : "";
+  if (!current || !(await bcrypt.compare(old_password, current)))
+    return { message: "Хуучин нууц үг таарахгүй байна" };
+  if (old_password === password) return { message: "Шинэ нууц үг хуучинтай ижил байна" };
+  if (!me.email) return { message: "Профайл дээрээ имэйл хаяг нэмсний дараа нууц үгээ солино уу" };
+  return { me };
+};
+
+module.exports.passwordChangeSend = async (req, res) => {
+  try {
+    const { me, message } = await checkPasswordChange(req.loggedUser, req.body);
+    if (!me) return res.status(200).json({ success: false, data: null, message });
+    const result = await sendEmailOtp(me.email, passwordChangePurpose(me.id));
+    // Код аль хаяг руу явсныг харуулахын тулд өөрийнх нь имэйлийг буцаана
+    result.data = { ...result.data, email: me.email };
+    return res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Код илгээж чадсангүй" });
+  }
+};
+
+module.exports.passwordChangeVerify = async (req, res) => {
+  const { password, code, by, at } = req.body;
+  try {
+    const { me, message } = await checkPasswordChange(req.loggedUser, req.body);
+    if (!me) return res.status(200).json({ success: false, data: null, message });
+    const verified = await verifyEmailOtp(me.email, passwordChangePurpose(me.id), code);
+    if (!verified.success) return res.status(200).json({ success: false, data: null, message: verified.message });
+
+    const t = await sequelize.transaction();
+    try {
+      await users.update(
+        { password, pass_changed_by: by, pass_changed_at: at },
+        { where: { id: me.id, status: "active" }, individualHooks: true, transaction: t },
+      );
+      await saveLog(
+        {
+          object_name: "users",
+          object_id: me.id,
+          log_action: "change_password",
+          log_action_mn: "Нууц үгээ имэйл кодоор сольсон",
+          created_by: by,
+          created_at: at,
+        },
+        t,
+      );
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+    return res.status(200).json({ success: true, data: null, message: "Нууц үг солигдлоо" });
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: typeof error === "string" ? error : "Алдаа" });
+  }
+};
+
 const findUserData = async (id) => {
   const user = await users.findOne({
     where: { id, status: { [op.ne]: "deleted" } },

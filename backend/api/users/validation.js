@@ -97,6 +97,19 @@ module.exports.changePasswordValidation = [
   validation,
 ];
 
+// Өөрийн нууц үг солих: хуучин + шинэ + давталт (код илгээх, баталгаажуулах аль алинд)
+const passwordChangeFields = [
+  body("old_password").notEmpty().withMessage("Хуучин нууц үгээ оруулна уу"),
+  body("password").notEmpty().withMessage("Шинэ нууц үгээ оруулна уу"),
+  passwordConfirmValidation,
+];
+module.exports.passwordChangeSendValidation = [...passwordChangeFields, validation];
+module.exports.passwordChangeVerifyValidation = [
+  ...passwordChangeFields,
+  body("code").trim().matches(/^\d{6}$/).withMessage("6 оронтой код оруулна уу"),
+  validation,
+];
+
 // Код илгээх: зөвхөн утасны дугаар
 module.exports.otpSendValidation = [
   phonenumberValidation("Утасны дугаар оруулна уу"),

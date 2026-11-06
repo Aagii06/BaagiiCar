@@ -74,6 +74,8 @@ const subjects = {
   login: "нэвтрэх код",
   // "email:<userId>" - нэвтэрсэн хэрэглэгч имэйлээ солих
   email: "имэйл баталгаажуулах код",
+  // "password:<userId>" - нэвтэрсэн хэрэглэгч нууц үгээ солих (бүртгэлтэй имэйл рүү)
+  password: "нууц үг солих код",
   // "customer-email:<customerId>" - вэбийн зочин имэйлээ солих
   "customer-email": "имэйл баталгаажуулах код",
   // "user-phone:<userId>" / "cust-phone:<customerId>" - нэвтэрсэн хэрэглэгч утсаа баталгаажуулах

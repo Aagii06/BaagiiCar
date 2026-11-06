@@ -36,6 +36,8 @@ export async function changePassword(id: number, password: string, password_conf
 
 type OtpSent = { expires_in?: number; resend_in: number };
 
+export type PasswordChange = { old_password: string; password: string; password_confirm: string };
+
 /**
  * Asked again before the resend wait is over: the earlier code is still valid, so this counts as sent
  * and the caller just shows the remaining countdown instead of an error.
@@ -62,6 +64,22 @@ export function sendEmailChangeCode(email: string) {
 export async function verifyEmailChange(email: string, code: string) {
   const res = await apiFetch<ApiItemResponse<User>>("/api/users/email-change/verify", { method: "POST", body: { email, code } });
   return res.data;
+}
+
+/**
+ * Checks the old password and emails a 6-digit code to the signed-in user's own address;
+ * the password changes only after `verifyPasswordChange`.
+ */
+export function sendPasswordChangeCode(body: PasswordChange) {
+  return allowCooldown(async () => {
+    const res = await apiFetch<ApiItemResponse<OtpSent>>("/api/users/password-change/send", { method: "POST", body });
+    return res.data;
+  });
+}
+
+/** Checks the code (and the passwords again) and saves the new password. */
+export async function verifyPasswordChange(body: PasswordChange, code: string) {
+  await apiFetch("/api/users/password-change/verify", { method: "POST", body: { ...body, code } });
 }
 
 /** Texts a 4-digit code to the signed-in user's own phone number. */

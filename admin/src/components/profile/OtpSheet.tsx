@@ -7,9 +7,9 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * Bottom sheet for a one-time code that was already sent (e-mail or SMS) when it opens.
- * Calls `onVerified` with the updated user once the server has accepted the code.
+ * Calls `onVerified` with the verify result (usually the updated user) once the server has accepted the code.
  */
-export default function OtpSheet({
+export default function OtpSheet<T = User>({
   icon,
   title,
   target,
@@ -31,8 +31,8 @@ export default function OtpSheet({
   resend: () => Promise<{ resend_in: number } | undefined>;
   /** Told about each resend's new wait, so the page behind can show the same countdown. */
   onResent?: (seconds: number) => void;
-  verify: (code: string) => Promise<User>;
-  onVerified: (user: User) => void;
+  verify: (code: string) => Promise<T>;
+  onVerified: (result: T) => void;
   onClose: () => void;
 }) {
   const [code, setCode] = useState("");
