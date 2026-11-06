@@ -39,7 +39,7 @@ type RequestOptions = Omit<RequestInit, "body"> & {
 function statusMessage(status: number) {
   if (status === 401) return tr("Нэвтэрнэ үү");
   if (status === 404) return tr("Хүсэлт олдсонгүй");
-  if (status >= 500) return `Серверийн алдаа (${status})`;
+  if (status >= 500) return tr("Серверийн алдаа ({status})", { status });
   return tr("Хүсэлт амжилтгүй боллоо");
 }
 

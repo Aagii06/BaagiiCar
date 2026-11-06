@@ -63,7 +63,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
                     className={cn("flex flex-1 flex-col items-center gap-1 pb-2.5 pt-3 text-[11px] font-semibold", active ? "text-primary" : "text-muted-foreground hover:text-foreground")}
                   >
                     <Icon className="size-[22px]" strokeWidth={active ? 2.4 : 2} />
-                    {label}
+                    {tr(label)}
                   </Link>
                 );
                 // Three tabs either side; the middle slot sits under the notch.

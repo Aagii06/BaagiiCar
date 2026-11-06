@@ -157,7 +157,7 @@ export default function PhotoViewer({ urls, start, onClose }: { urls: string[]; 
       {urls.length > 1 && (
         <div className="flex justify-center gap-1.5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
           {urls.map((url, i) => (
-            <button key={url} type="buttontr(" onClick={() => go(i)} aria-label={`${i + 1}-р зураг`} className={cn(")h-1.5 rounded-full transition-all", i === index ? "w-5 bg-white" : "w-1.5 bg-white/40")} />
+            <button key={url} type="button" onClick={() => go(i)} aria-label={tr("{n}-р зураг", { n: i + 1 })} className={cn("h-1.5 rounded-full transition-all", i === index ? "w-5 bg-white" : "w-1.5 bg-white/40")} />
           ))}
         </div>
       )}

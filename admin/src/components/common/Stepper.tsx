@@ -30,7 +30,7 @@ export default function Stepper({ steps, current, onStepClick }: { steps: string
             {/* Line to the previous step, filled once this step is reached. */}
             {i > 0 && <span aria-hidden className={cn("absolute right-1/2 top-4 h-0.5 w-full -translate-y-1/2", i <= current ? "bg-primary" : "bg-border")} />}
             {clickable ? (
-              <button type="buttontr(" onClick={() => onStepClick(i)} aria-label={`${label} руу буцах`} className=")rounded-full">
+              <button type="button" onClick={() => onStepClick(i)} aria-label={tr("{label} руу буцах", { label })} className="rounded-full">
                 {dot}
               </button>
             ) : (
