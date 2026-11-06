@@ -35,7 +35,7 @@ export function Field({
 /** Bottom-sheet select (see Select.tsx); kept exported here so forms import every control from one place. */
 export { default as Select } from "./Select";
 
-export function PasswordInput({ className, ...props }: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">) {
+export function PasswordInput({ className, ...props }: Omit<React.ComponentProps<"input">, "type">) {
   const [visible, setVisible] = useState(false);
   return (
     <span className="relative block">
