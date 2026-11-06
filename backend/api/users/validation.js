@@ -100,7 +100,7 @@ module.exports.changePasswordValidation = [
 // Өөрийн нууц үг солих: хуучин + шинэ + давталт (код илгээх, баталгаажуулах аль алинд)
 const passwordChangeFields = [
   body("old_password").notEmpty().withMessage("Хуучин нууц үгээ оруулна уу"),
-  body("password").notEmpty().withMessage("Шинэ нууц үгээ оруулна уу"),
+  body("password").isLength({ min: 6 }).withMessage("Нууц үг 6-аас дээш тэмдэгттэй байна"),
   passwordConfirmValidation,
 ];
 module.exports.passwordChangeSendValidation = [...passwordChangeFields, validation];

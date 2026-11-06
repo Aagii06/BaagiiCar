@@ -554,21 +554,12 @@ module.exports.changePassword = async (req, res) => {
           return res.status(200).json(result);
         }
 
-        let isPasswordMatch = true;
-        // Өөрийн нууц үгийг солиход админ ч гэсэн хуучин нууц үгээ оруулна
+        // Өөрийн нууц үгийг зөвхөн имэйл кодоор (/password-change) солино; энд админ бусдынхыг л солино
         if (!isAdmin || id + "" === loggedUser?.id + "") {
-          if (old_password) {
-            isPasswordMatch = await bcrypt.compare(old_password, user.password);
-            if (!isPasswordMatch) {
-              result.success = false;
-              result.message = "Хуучин нууц үг таарахгүй байна";
-              return res.status(200).json(result);
-            }
-          } else {
-            result.success = false;
-            result.message = "Хуучин нууц үгийг оруулаагүй байна";
-            return res.status(200).json(result);
-          }
+          await t.rollback();
+          result.success = false;
+          result.message = "Нууц үгээ профайл хэсгээс имэйл кодоор солино уу";
+          return res.status(200).json(result);
         }
 
         await users.update(
@@ -619,6 +610,13 @@ module.exports.changePassword = async (req, res) => {
 // Код хэрэглэгч бүрт тусдаа (purpose = "password:<id>").
 const passwordChangePurpose = (userId) => `password:${userId}`;
 
+// "bataa@gmail.com" → "b***a@gmail.com"
+const maskEmail = (email) => {
+  const [local, domain] = String(email).split("@");
+  if (!domain) return email;
+  return `${local.length <= 2 ? local[0] : local[0] + "***" + local.slice(-1)}@${domain}`;
+};
+
 // Давталт, хуучин нууц үгийг шалгаад хэрэглэгчийг буцаана; алдаатай бол { message }
 const checkPasswordChange = async (loggedUser, { old_password, password, password_confirm }) => {
   if (password.replace(/\s+/g, "") !== password_confirm.replace(/\s+/g, ""))
@@ -629,11 +627,11 @@ const checkPasswordChange = async (loggedUser, { old_password, password, passwor
     raw: true,
   });
   if (!me) return { message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
+  if (!me.email) return { message: "Эхлээд профайлдаа имэйл хаягаа баталгаажуулж нэмнэ үү" };
   const current = me.password ? me.password.toString().replace(/^\$2y/, "$2a") : "";
   if (!current || !(await bcrypt.compare(old_password, current)))
-    return { message: "Хуучин нууц үг таарахгүй байна" };
-  if (old_password === password) return { message: "Шинэ нууц үг хуучинтай ижил байна" };
-  if (!me.email) return { message: "Профайл дээрээ имэйл хаяг нэмсний дараа нууц үгээ солино уу" };
+    return { message: "Одоогийн нууц үг буруу байна" };
+  if (await bcrypt.compare(password, current)) return { message: "Шинэ нууц үг одоогийнхоос өөр байна" };
   return { me };
 };
 
@@ -642,8 +640,8 @@ module.exports.passwordChangeSend = async (req, res) => {
     const { me, message } = await checkPasswordChange(req.loggedUser, req.body);
     if (!me) return res.status(200).json({ success: false, data: null, message });
     const result = await sendEmailOtp(me.email, passwordChangePurpose(me.id));
-    // Код аль хаяг руу явсныг харуулахын тулд өөрийнх нь имэйлийг буцаана
-    result.data = { ...result.data, email: me.email };
+    // Аль хаяг руу явсныг харуулахад (жишээ нь b***a@gmail.com)
+    result.data = { ...result.data, email: maskEmail(me.email) };
     return res.status(200).json(result);
   } catch (error) {
     console.log(error);

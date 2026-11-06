@@ -88,10 +88,16 @@ const subjects = {
 const titleFor = (purpose) => `Cardealer ${subjects[purpose.split(":")[0]] || "баталгаажуулах код"}`;
 
 // --- Имэйл ------------------------------------------------------------------
-const otpEmailHtml = (code, title) => `
+// Зорилго тус бүрийн тайлбар (байхгүй бол зөвхөн код)
+const intros = {
+  password:
+    "Таны бүртгэлийн нууц үгийг солих хүсэлт ирлээ. Доорх кодыг оруулж баталгаажуулна уу. Хэрэв та хүсэлт гаргаагүй бол нууц үгээ даруй солино уу.",
+};
+const otpEmailHtml = (code, title, intro) => `
 <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#111">
   <p style="color:#888;font-size:13px;margin:0 0 8px">Cardealer</p>
   <h2 style="margin:0 0 12px">${title}</h2>
+  ${intro ? `<p style="color:#333;margin:0 0 12px">${intro}</p>` : ""}
   <p style="font-size:32px;font-weight:bold;letter-spacing:8px;margin:0 0 12px">${code}</p>
   <p style="color:#555;margin:0">Код ${OTP_TTL_SECONDS / 60} минутын турш хүчинтэй. Та энэ хүсэлтийг илгээгээгүй бол энэ имэйлийг үл тоомсорлоно уу.</p>
 </div>`;
@@ -112,7 +118,7 @@ module.exports.sendEmailOtp = (email, purpose) =>
         return;
       }
       const title = titleFor(purpose);
-      const sent = await sendMail(email, { subject: `${title}: ${code}`, html: otpEmailHtml(code, title) });
+      const sent = await sendMail(email, { subject: `${title}: ${code}`, html: otpEmailHtml(code, title, intros[purpose.split(":")[0]]) });
       if (!sent) throw new Error("Имэйл хаяг буруу байна");
     },
   });
