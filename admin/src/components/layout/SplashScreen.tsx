@@ -1,4 +1,5 @@
 /**
+import { tr } from "@/lib/i18n/translations";
  * Full-screen loader shown while the saved session is checked, before either the panel or the login page.
  * The logo sits in a white disc; an orange arc spins around it and a faint inner arc turns the other way.
  */
@@ -7,7 +8,7 @@ export default function SplashScreen() {
     <div
       className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-background"
       role="status"
-      aria-label="Ачаалж байна"
+      aria-label={tr("Ачаалж байна")}
     >
       <div className="relative size-32">
         {/* Outer track + spinning orange arc. */}

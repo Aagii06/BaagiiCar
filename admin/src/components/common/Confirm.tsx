@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { CircleAlert, type LucideIcon } from "lucide-react";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 type Tone = "primary" | "amber" | "success" | "danger";
 
@@ -65,7 +66,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
 }
 
 function Sheet({ options, onClose }: { options: NonNullable<Open>; onClose: (value: string | null) => void }) {
-  const { title, message, detail, confirmLabel = "Тийм", cancelLabel = "Болих", tone = "primary", icon: Icon = CircleAlert, input, label, placeholder } = options;
+  const { title, message, detail, confirmLabel = tr("Тийм"), cancelLabel = tr("Болих"), tone = "primary", icon: Icon = CircleAlert, input, label, placeholder } = options;
   const confirmRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState("");

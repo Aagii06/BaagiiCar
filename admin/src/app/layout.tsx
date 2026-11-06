@@ -1,6 +1,7 @@
 import RequiredFieldMarker from "@/components/common/RequiredFieldMarker";
 import AppColumn from "@/components/layout/AppColumn";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
+import LanguageProvider from "@/lib/i18n/LanguageProvider";
 import type { Metadata, Viewport } from "next";
 import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
@@ -30,7 +31,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="bg-[#e4e6ea] font-sans antialiased">
         <AppColumn>
           <RequiredFieldMarker />
-          <AuthProvider>{children}</AuthProvider>
+          {/* Inside auth: switching language remounts the page, not the session. */}
+          <AuthProvider>
+            <LanguageProvider>{children}</LanguageProvider>
+          </AuthProvider>
         </AppColumn>
       </body>
     </html>

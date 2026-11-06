@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { tr } from "@/lib/i18n/translations";
 
 export function Spinner({ className }: { className?: string }) {
   return <Loader2 className={cn("size-6 animate-spin text-primary", className)} />;
@@ -12,7 +13,7 @@ export function ErrorState({ message, onRetry, className }: { message: string; o
       <p className="max-w-sm text-sm text-muted-foreground">{message}</p>
       {onRetry && (
         <button onClick={onRetry} className="rounded-xl border-[1.5px] border-foreground px-4 py-2 text-sm font-bold hover:bg-muted">
-          Дахин оролдох
+          {tr("Дахин оролдох")}
         </button>
       )}
     </div>
@@ -52,7 +53,7 @@ function Bone({ className }: { className?: string }) {
 /** Самбар's stat tiles: the summary row (3 for admins, 1 for dealers) and the 4 ad-status tiles. */
 export function StatsSkeleton({ admin }: { admin: boolean }) {
   return (
-    <div className="animate-pulse space-y-2" role="status" aria-label="Ачаалж байна">
+    <div className="animate-pulse space-y-2" role="status" aria-label={tr("Ачаалж байна")}>
       <div className={cn("grid gap-2", admin ? "grid-cols-3" : "grid-cols-1")}>
         {Array.from({ length: admin ? 3 : 1 }, (_, i) => (
           <div key={i} className="rounded-2xl bg-card p-3.5">
@@ -76,7 +77,7 @@ export function StatsSkeleton({ admin }: { admin: boolean }) {
 /** Small ad lines of the Самбар (thumb, title, price, status pill). */
 export function CarLinesSkeleton({ count = 3 }: { count?: number }) {
   return (
-    <div className="animate-pulse space-y-2" role="status" aria-label="Ачаалж байна">
+    <div className="animate-pulse space-y-2" role="status" aria-label={tr("Ачаалж байна")}>
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="flex items-center gap-3 rounded-2xl bg-card p-2.5">
           <Bone className="h-12 w-16 shrink-0 rounded-xl" />
@@ -94,7 +95,7 @@ export function CarLinesSkeleton({ count = 3 }: { count?: number }) {
 /** Ad cards of the Зарууд list (CarRow): count line, then cards with the action bar. */
 export function CarRowsSkeleton({ count = 4 }: { count?: number }) {
   return (
-    <div className="animate-pulse" role="status" aria-label="Ачаалж байна">
+    <div className="animate-pulse" role="status" aria-label={tr("Ачаалж байна")}>
       <Bone className="mb-2 h-4 w-12" />
       <div className="space-y-3">
         {Array.from({ length: count }, (_, i) => (
@@ -137,7 +138,7 @@ export function ListSkeleton({
   rowClassName?: string;
 }) {
   return (
-    <div className={cn("animate-pulse", className)} role="status" aria-label="Ачаалж байна">
+    <div className={cn("animate-pulse", className)} role="status" aria-label={tr("Ачаалж байна")}>
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className={cn("flex items-center gap-3", rowClassName)}>
           {avatar && <Bone className={cn("size-10 shrink-0", avatar === "round" ? "rounded-full" : "rounded-xl")} />}
@@ -155,7 +156,7 @@ export function ListSkeleton({
 /** Chats of the Мессеж list: name and time, two preview lines, status badge. */
 export function ThreadListSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="-mx-4 -mt-4 animate-pulse divide-y divide-border border-b border-border bg-white" role="status" aria-label="Ачаалж байна">
+    <div className="-mx-4 -mt-4 animate-pulse divide-y divide-border border-b border-border bg-white" role="status" aria-label={tr("Ачаалж байна")}>
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="px-4 py-3">
           <div className="flex items-center gap-2">
@@ -174,7 +175,7 @@ export function ThreadListSkeleton({ count = 6 }: { count?: number }) {
 /** One chat: the visitor's bubbles on the left, our answers on the right. */
 export function ChatSkeleton() {
   return (
-    <div className="animate-pulse space-y-3" role="status" aria-label="Ачаалж байна">
+    <div className="animate-pulse space-y-3" role="status" aria-label={tr("Ачаалж байна")}>
       <Bone className="h-16 rounded-2xl bg-card" />
       {["mr-auto w-3/4", "ml-auto w-2/3", "mr-auto w-1/2", "ml-auto w-3/5"].map((c, i) => (
         <Bone key={i} className={cn("h-14 rounded-2xl", i % 2 ? "bg-primary-soft" : "bg-card", c)} />
@@ -186,7 +187,7 @@ export function ChatSkeleton() {
 /** Edit forms (ad, user, dealer, customer): white sections of label + field pairs; `sections` lists each one's field count. */
 export function FormSkeleton({ sections = [5] }: { sections?: number[] }) {
   return (
-    <div className="animate-pulse space-y-4" role="status" aria-label="Ачаалж байна">
+    <div className="animate-pulse space-y-4" role="status" aria-label={tr("Ачаалж байна")}>
       {sections.map((fields, i) => (
         <section key={i} className="space-y-4 rounded-2xl bg-card p-4">
           {Array.from({ length: fields }, (_, j) => (
@@ -204,7 +205,7 @@ export function FormSkeleton({ sections = [5] }: { sections?: number[] }) {
 /** An ad's read-only page: photo, then the title / price card and the seller card (side column on desktop). */
 export function CarDetailSkeleton() {
   return (
-    <div className="mx-auto max-w-[1280px] animate-pulse md:px-6" role="status" aria-label="Ачаалж байна">
+    <div className="mx-auto max-w-[1280px] animate-pulse md:px-6" role="status" aria-label={tr("Ачаалж байна")}>
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px] lg:items-start lg:gap-6">
         <Bone className="aspect-[4/3] rounded-2xl bg-card" />
         <div className="space-y-4">

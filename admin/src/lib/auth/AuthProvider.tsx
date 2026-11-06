@@ -6,6 +6,7 @@ import { clearSession, getAuthToken, getStoredUser, setSession } from "@/lib/api
 import type { User } from "@/lib/api/types";
 import { ROLES } from "@/lib/constants";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 type AuthStatus = "loading" | "authenticated" | "anonymous";
 
@@ -64,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Only admins and dealers get a session here; the backend enforces it on every write too.
   const login = useCallback(async (phonenumber: string, password: string) => {
     const { token, loggedUser } = await loginRequest(phonenumber, password);
-    if (!canUsePanel(loggedUser)) throw new Error("Зөвхөн админ, дилер эрхтэй хэрэглэгч нэвтэрнэ");
+    if (!canUsePanel(loggedUser)) throw new Error(tr("Зөвхөн админ, дилер эрхтэй хэрэглэгч нэвтэрнэ"));
     setSession(token, loggedUser);
     setUser(loggedUser);
     setStatus("authenticated");

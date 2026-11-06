@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
 import { createContext, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 /** The enclosing Field's label, so a Select can title its sheet with it. */
 export const FieldLabelContext = createContext<string | null>(null);
@@ -43,7 +44,7 @@ export function PasswordInput({ className, ...props }: Omit<React.ComponentProps
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        aria-label={visible ? "Нууц үг нуух" : "Нууц үг харуулах"}
+        aria-label={visible ? tr("Нууц үг нуух") : tr("Нууц үг харуулах")}
         className="absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground"
       >
         {visible ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}

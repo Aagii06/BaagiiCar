@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import { tr } from "@/lib/i18n/translations";
 
 /**
  * Numbered circles joined by a line: finished steps get a check and a filled line, the current one is
@@ -7,7 +8,7 @@ import { Check } from "lucide-react";
  */
 export default function Stepper({ steps, current, onStepClick }: { steps: string[]; current: number; onStepClick?: (index: number) => void }) {
   return (
-    <ol className="flex rounded-2xl bg-card px-2 pb-3 pt-4" aria-label="Алхам">
+    <ol className="flex rounded-2xl bg-card px-2 pb-3 pt-4" aria-label={tr("Алхам")}>
       {steps.map((label, i) => {
         const done = i < current;
         const active = i === current;
@@ -29,7 +30,7 @@ export default function Stepper({ steps, current, onStepClick }: { steps: string
             {/* Line to the previous step, filled once this step is reached. */}
             {i > 0 && <span aria-hidden className={cn("absolute right-1/2 top-4 h-0.5 w-full -translate-y-1/2", i <= current ? "bg-primary" : "bg-border")} />}
             {clickable ? (
-              <button type="button" onClick={() => onStepClick(i)} aria-label={`${label} руу буцах`} className="rounded-full">
+              <button type="buttontr(" onClick={() => onStepClick(i)} aria-label={`${label} руу буцах`} className=")rounded-full">
                 {dot}
               </button>
             ) : (

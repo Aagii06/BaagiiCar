@@ -12,6 +12,7 @@ import { ROLES } from "@/lib/constants";
 import { isActivePath, NAV_ITEMS } from "./nav";
 // Starts listening for the install prompt as soon as the panel loads (see InstallAppButton).
 import "@/lib/installPrompt";
+import { tr } from "@/lib/i18n/translations";
 
 // Tab pages get the brand header and bottom nav; detail pages bring their
 // own back-button header instead.
@@ -28,7 +29,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
       <ConfirmProvider>
       {isTabPage && (
         <header className="sticky top-0 z-30 flex min-h-[61px] items-center justify-between gap-3 border-b border-border bg-white/95 px-4 py-3 backdrop-blur">
-          <Link href="/" aria-label="Самбар">
+          <Link href="/" aria-label={tr("Самбар")}>
             <BrandMark />
           </Link>
         </header>
@@ -37,7 +38,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
       <main className={cn("min-w-0 px-4", isTabPage ? "pb-[calc(6rem+env(safe-area-inset-bottom))]" : "pb-10")}>{children}</main>
 
       {isTabPage && (
-        <nav aria-label="Үндсэн цэс" className="fixed inset-x-0 bottom-0 z-30">
+        <nav aria-label={tr("Үндсэн цэс")} className="fixed inset-x-0 bottom-0 z-30">
           <div className="relative mx-auto max-w-md">
             {/* Bar background with a curved notch cut out for the + button; drop-shadow draws the top border along the curve. */}
             <div aria-hidden className="absolute inset-0 flex flex-col [filter:drop-shadow(0_-1px_0_var(--color-border))_drop-shadow(0_-4px_12px_rgb(0_0_0/0.04))]">
@@ -72,7 +73,7 @@ export default function PanelShell({ children }: { children: React.ReactNode }) 
 
             <Link
               href="/cars/new"
-              aria-label="Зар нэмэх"
+              aria-label={tr("Зар нэмэх")}
               className="absolute -top-8 left-1/2 grid size-14 -translate-x-1/2 place-items-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 transition hover:bg-primary-hover active:scale-95"
             >
               <Plus className="size-7" strokeWidth={2.6} />

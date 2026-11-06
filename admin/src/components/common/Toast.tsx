@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { CircleAlert, CircleCheck, X } from "lucide-react";
 import { createContext, useCallback, useContext, useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 type Tone = "success" | "error";
 interface ToastItem {
@@ -53,7 +54,7 @@ export function ToastProvider({ children, aboveNav = false }: { children: React.
               <button
                 type="button"
                 onClick={() => dismiss(t.id)}
-                aria-label="Хаах"
+                aria-label={tr("Хаах")}
                 className="grid size-7 shrink-0 place-items-center rounded-lg text-white/85 transition hover:bg-white/15 hover:text-white"
               >
                 <X className="size-4" strokeWidth={2.6} />
@@ -72,4 +73,4 @@ export function useToast() {
   return ctx;
 }
 
-export const errorMessage = (err: unknown) => (err instanceof Error ? err.message : "Алдаа гарлаа");
+export const errorMessage = (err: unknown) => (err instanceof Error ? err.message : tr("Алдаа гарлаа"));

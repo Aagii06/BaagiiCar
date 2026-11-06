@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "./config";
 import { clearSession, getAuthToken } from "./token";
+import { tr } from "@/lib/i18n/translations";
 
 /** Fired on `window` when the backend rejects the stored token. */
 export const UNAUTHORIZED_EVENT = "admin-unauthorized";
@@ -36,10 +37,10 @@ type RequestOptions = Omit<RequestInit, "body"> & {
 };
 
 function statusMessage(status: number) {
-  if (status === 401) return "Нэвтэрнэ үү";
-  if (status === 404) return "Хүсэлт олдсонгүй";
+  if (status === 401) return tr("Нэвтэрнэ үү");
+  if (status === 404) return tr("Хүсэлт олдсонгүй");
   if (status >= 500) return `Серверийн алдаа (${status})`;
-  return "Хүсэлт амжилтгүй боллоо";
+  return tr("Хүсэлт амжилтгүй боллоо");
 }
 
 // The car-dealer backend answers both success and failure with HTTP 200 and
@@ -65,7 +66,7 @@ export async function apiFetch<T>(
       body: isForm ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch (err) {
-    if (err instanceof TypeError) throw new ApiError(0, "Сервертэй холбогдож чадсангүй");
+    if (err instanceof TypeError) throw new ApiError(0, tr("Сервертэй холбогдож чадсангүй"));
     throw err;
   }
 

@@ -1,4 +1,5 @@
 import { CarFront, ChartNoAxesColumn, MessageCircle, UserRound, type LucideIcon } from "lucide-react";
+import { tr } from "@/lib/i18n/translations";
 
 export interface NavItem {
   href: string;
@@ -9,11 +10,11 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Самбар", icon: ChartNoAxesColumn },
-  { href: "/cars", label: "Зарууд", icon: CarFront },
+  { href: "/", label: tr("Самбар"), icon: ChartNoAxesColumn },
+  { href: "/cars", label: tr("Зарууд"), icon: CarFront },
   // Dealers see messages about their own dealer's ads (the backend scopes them).
-  { href: "/messages", label: "Мессеж", icon: MessageCircle },
-  { href: "/profile", label: "Профайл", icon: UserRound },
+  { href: "/messages", label: tr("Мессеж"), icon: MessageCircle },
+  { href: "/profile", label: tr("Профайл"), icon: UserRound },
 ];
 
 export function isActivePath(pathname: string, href: string) {

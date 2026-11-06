@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Check, ChevronDown, Search } from "lucide-react";
 import { Children, isValidElement, useContext, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { tr } from "@/lib/i18n/translations";
 
 const SEARCH_FROM = 12;
 
@@ -72,7 +73,7 @@ export default function Select({ value, onChange, children, className, disabled,
         onClick={() => setOpen(true)}
         className={cn(bare ? "h-full outline-none" : cn(inputClass, "flex items-center pr-10 text-left"), "select-trigger", empty && !bare && "text-muted-foreground", className)}
       >
-        <span className="min-w-0 flex-1 truncate">{valueLabel ?? selected?.label ?? (current ? current : "Сонгох")}</span>
+        <span className="min-w-0 flex-1 truncate">{valueLabel ?? selected?.label ?? (current ? current : tr("Сонгох"))}</span>
       </button>
       <ChevronDown className={cn("pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground", chevronClassName)} />
       {/* Keeps native form validation (required) and the invalid mark; focus is passed to the button. */}
@@ -91,7 +92,7 @@ export default function Select({ value, onChange, children, className, disabled,
       >
         {children}
       </select>
-      {open && <OptionSheet title={title ?? fieldLabel?.replace(/\s*\*$/, "") ?? "Сонгох"} options={options} value={current} onPick={pick} onClose={() => setOpen(false)} />}
+      {open && <OptionSheet title={title ?? fieldLabel?.replace(/\s*\*$/, "") ?? tr("Сонгох")} options={options} value={current} onPick={pick} onClose={() => setOpen(false)} />}
     </span>
   );
 }
@@ -141,7 +142,7 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
           {searchable && (
             <label className="relative mt-3 block">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Хайх" className={cn(inputClass, "pl-10")} />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Хайх")} className={cn(inputClass, "pl-10")} />
             </label>
           )}
         </div>
@@ -168,7 +169,7 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
               );
             })
           ) : (
-            <p className="py-10 text-center text-sm text-muted-foreground">Олдсонгүй</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">{tr("Олдсонгүй")}</p>
           )}
         </div>
       </div>

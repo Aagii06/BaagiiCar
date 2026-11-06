@@ -6,6 +6,7 @@ import { catalogImage } from "@/lib/api/config";
 import { cn } from "@/lib/utils";
 import { CircleX, CloudUpload, ImageUp, Loader2, RefreshCw, Trash2, Undo2 } from "lucide-react";
 import { useState } from "react";
+import { tr } from "@/lib/i18n/translations";
 
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
 
@@ -48,13 +49,13 @@ export default function ImageInput({
       className="flex h-9 items-center gap-1.5 rounded-lg bg-muted px-3 text-[13px] font-bold disabled:opacity-60"
     >
       <Undo2 className="size-3.5" />
-      Буцаах
+      {tr("Буцаах")}
     </button>
   );
 
   const upload = async (file: File | undefined) => {
     if (!file) return;
-    if (!IMAGE_TYPES.includes(file.type)) return toast("PNG, JPG, WEBP эсвэл SVG зураг сонгоно уу", "error");
+    if (!IMAGE_TYPES.includes(file.type)) return toast(tr("PNG, JPG, WEBP эсвэл SVG зураг сонгоно уу"), "error");
     setUploading(true);
     try {
       onChange(await uploadCatalogImage(folder, file));
@@ -122,8 +123,8 @@ export default function ImageInput({
               type="button"
               onClick={() => onChange("")}
               disabled={uploading}
-              aria-label="Зураг устгах"
-              title="Зураг устгах"
+              aria-label={tr("Зураг устгах")}
+              title={tr("Зураг устгах")}
               className="absolute right-0 top-2 grid size-8 place-items-center rounded-full bg-white text-muted-foreground shadow-md hover:text-destructive disabled:opacity-60"
             >
               <CircleX className="size-6" strokeWidth={1.75} />
@@ -149,8 +150,8 @@ export default function ImageInput({
           <span className="grid size-12 place-items-center rounded-full bg-primary-soft text-primary">
             {uploading ? <Loader2 className="size-5 animate-spin" /> : <ImageUp className="size-5" />}
           </span>
-          <span className="text-sm font-bold">{uploading ? "Оруулж байна…" : label}</span>
-          <span className="text-xs text-muted-foreground">Дарж сонгох эсвэл энд чирж оруулна · PNG, JPG, WEBP, SVG</span>
+          <span className="text-sm font-bold">{uploading ? tr("Оруулж байна…") : label}</span>
+          <span className="text-xs text-muted-foreground">{tr("Дарж сонгох эсвэл энд чирж оруулна · PNG, JPG, WEBP, SVG")}</span>
           {fileInput}
         </label>
         {changed && <div className="flex justify-end">{revert}</div>}
@@ -173,7 +174,7 @@ export default function ImageInput({
         <div className="flex gap-2">
           <label className={cn("flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-primary-soft px-3 text-[13px] font-bold text-primary", uploading && "pointer-events-none opacity-60")}>
             <RefreshCw className="size-3.5" />
-            Солих
+            {tr("Солих")}
             {fileInput}
           </label>
           {changed ? (
@@ -186,7 +187,7 @@ export default function ImageInput({
               className="flex h-9 items-center gap-1.5 rounded-lg bg-destructive-soft px-3 text-[13px] font-bold text-destructive disabled:opacity-60"
             >
               <Trash2 className="size-3.5" />
-              Устгах
+              {tr("Устгах")}
             </button>
           )}
         </div>

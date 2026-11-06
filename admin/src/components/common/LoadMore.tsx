@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Spinner } from "./States";
+import { tr } from "@/lib/i18n/translations";
 
 /** Infinite-scroll sentinel: calls `onMore` when it comes near the viewport. Re-key it after each page so a still-visible sentinel fires again. */
 export default function LoadMore({ onMore }: { onMore: () => void }) {
@@ -20,7 +21,7 @@ export default function LoadMore({ onMore }: { onMore: () => void }) {
   }, []);
 
   return (
-    <div ref={ref} role="status" aria-label="Ачаалж байна" className="flex justify-center py-4">
+    <div ref={ref} role="status" aria-label={tr("Ачаалж байна")} className="flex justify-center py-4">
       <Spinner className="size-5" />
     </div>
   );
