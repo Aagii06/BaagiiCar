@@ -3,7 +3,6 @@
 import CarImage from "@/components/car/CarImage";
 import Img from "@/components/common/Img";
 import PhotoViewer from "@/components/common/PhotoViewer";
-import { Spinner } from "@/components/common/States";
 import { getCarFiles } from "@/lib/api/admin";
 import { uploadUrl } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
@@ -63,9 +62,7 @@ export default function CarPreviewSheet({ car, onClose }: { car: Car; onClose: (
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
           {files.loading && !files.data ? (
-            <div className="grid aspect-[4/3] place-items-center rounded-2xl bg-muted">
-              <Spinner className="size-5" />
-            </div>
+            <div role="status" aria-label={tr("Ачаалж байна")} className="aspect-[4/3] animate-pulse rounded-2xl bg-muted" />
           ) : photos.length ? (
             <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-2 overflow-x-auto px-5">
               {photos.map((name, i) => (

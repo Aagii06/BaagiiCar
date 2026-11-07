@@ -9,7 +9,7 @@ import type { Feedback } from "@/lib/api/types";
 import { tr } from "@/lib/i18n/translations";
 import { useApi } from "@/lib/useApi";
 import { cn, timeAgo } from "@/lib/utils";
-import { Check, ChevronRight, Mail, Phone, Reply, Trash2, Undo2, UserRound } from "lucide-react";
+import { Check, ChevronRight, Mail, Phone, Reply, Trash2, Undo2, UserRound, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useRef, useState } from "react";
@@ -79,6 +79,7 @@ function FeedbackDetail({ feedback: f, onChanged }: { feedback: Feedback; onChan
     }
   };
 
+  const [removing, setRemoving] = useState(false);
   const remove = async () => {
     const ok = await confirm({
       title: tr("Санал хүсэлтийг устгах уу?"),
@@ -88,12 +89,15 @@ function FeedbackDetail({ feedback: f, onChanged }: { feedback: Feedback; onChan
       icon: Trash2,
     });
     if (!ok) return;
+    setRemoving(true);
     try {
       await deleteFeedback(f.id);
       toast(tr("Устгалаа"));
       router.push("/feedbacks");
     } catch (err) {
       toast(errorMessage(err), "error");
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -157,11 +161,11 @@ function FeedbackDetail({ feedback: f, onChanged }: { feedback: Feedback; onChan
       )}
       <div className="grid grid-cols-2 gap-2">
         <button type="button" onClick={toggleSeen} disabled={busy} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-card font-bold hover:bg-muted disabled:opacity-60">
-          {isNew ? <Check className="size-4" /> : <Undo2 className="size-4" />}
+          {busy ? <Loader2 className="size-4 animate-spin" /> : isNew ? <Check className="size-4" /> : <Undo2 className="size-4" />}
           {isNew ? tr("Уншсан болгох") : tr("Шинэ болгох")}
         </button>
-        <button type="button" onClick={remove} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-card font-bold text-destructive hover:bg-destructive-soft">
-          <Trash2 className="size-4" />
+        <button type="button" onClick={remove} disabled={removing} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-card font-bold text-destructive hover:bg-destructive-soft disabled:opacity-60">
+          {removing ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
           {tr("Устгах")}
         </button>
       </div>

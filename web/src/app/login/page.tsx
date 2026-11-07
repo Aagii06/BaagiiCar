@@ -11,7 +11,7 @@ import { Suspense, useEffect, useState } from "react";
 
 const CODE_LENGTH = 4;
 const buttonClass =
-  "h-12 w-full rounded-xl bg-primary text-[15px] font-bold text-white transition hover:bg-primary-hover disabled:opacity-60";
+  "flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-white transition hover:bg-primary-hover disabled:opacity-60";
 
 /** Only same-site paths, so `?next=` can't send the user off-site. */
 function safeNext(next: string | null) {
@@ -83,6 +83,7 @@ function LoginInner() {
             <PhoneInput value={phone} onChange={setPhone} autoComplete="tel" placeholder={t("Утасны дугаар")} autoFocus required />
           </Field>
           <button disabled={busy || phone.length !== 8} className={buttonClass}>
+            {busy && <Loader2 className="size-4 animate-spin" />}
             {t("Код авах")}
           </button>
           <p className="text-xs text-muted-foreground">{t("Бүртгэлгүй дугаар бол автоматаар бүртгэгдэнэ.")}</p>
@@ -110,6 +111,7 @@ function LoginInner() {
             />
           </Field>
           <button disabled={busy || code.length !== CODE_LENGTH} className={buttonClass}>
+            {busy && <Loader2 className="size-4 animate-spin" />}
             {t("Нэвтрэх")}
           </button>
           <div className="flex justify-between gap-4 text-sm font-semibold">

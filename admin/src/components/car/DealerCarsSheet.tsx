@@ -4,7 +4,7 @@ import CarRow, { PAGE_SIZE, TABS, type Tab } from "@/components/car/CarRow";
 import { DealerAvatar } from "@/components/car/DealerPicker";
 import ChipTabs from "@/components/common/ChipTabs";
 import LoadMore from "@/components/common/LoadMore";
-import { CarRowsSkeleton, EmptyState, ErrorState, Spinner } from "@/components/common/States";
+import { CarRowsSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import { listCars, type CarStatusFilter } from "@/lib/api/admin";
 import type { Dealer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
@@ -74,9 +74,7 @@ export default function DealerCarsSheet({ dealer, onClose }: { dealer: Dealer; o
               </div>
               {cars.data.rows.length < cars.data.count &&
                 (cars.loading ? (
-                  <div role="status" aria-label={tr("Ачаалж байна")} className="flex justify-center py-4">
-                    <Spinner className="size-5" />
-                  </div>
+                  <CarRowsSkeleton count={2} />
                 ) : (
                   <LoadMore key={take} onMore={() => setTake((t) => t + PAGE_SIZE)} />
                 ))}

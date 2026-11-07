@@ -12,7 +12,7 @@ import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_RENEW_DAYS, CAR_RESTORE_DAYS, CAR_STATUS, ROLES } from "@/lib/constants";
 import { carTitle, cn, daysUntil, formatPrice } from "@/lib/utils";
-import { ArchiveRestore, BadgeCheck, Check, Clock, Eye, EyeOff, Phone, RefreshCw, Star, Store, Trash2, Undo2 } from "lucide-react";
+import { ArchiveRestore, BadgeCheck, Check, Clock, Eye, EyeOff, Phone, RefreshCw, Star, Store, Trash2, Undo2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { tr } from "@/lib/i18n/translations";
@@ -74,7 +74,13 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
   const dealerLogo = catalogImage(car.dealer_logo, "dealers");
 
   return (
-    <div className={cn("overflow-hidden rounded-2xl bg-card", busy && "pointer-events-none opacity-60")}>
+    <div className={cn("relative overflow-hidden rounded-2xl bg-card", busy && "pointer-events-none")} aria-busy={busy || undefined}>
+      {/* The action in flight: the card locks under a spinner. */}
+      {busy && (
+        <div className="absolute inset-0 z-10 grid place-items-center bg-card/60">
+          <Loader2 className="size-6 animate-spin text-primary" />
+        </div>
+      )}
       {/* Dealer title bar across the card's top, like a status bar, in a muted slate with a soft shadow onto the card.
           Left out when the list is already one dealer's. */}
       {showDealer && (

@@ -3,12 +3,12 @@
 import { getPushKey, subscribeEmail, subscribePush, unsubscribePush, verifyEmail } from "@/lib/api/subscriptions";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Bell, BellOff, CheckCircle2 } from "lucide-react";
+import { Bell, BellOff, CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const fieldClass =
   "h-11 min-w-0 flex-1 rounded-xl border border-white/15 bg-dark-2 px-4 text-sm text-white outline-none placeholder:text-white/40 focus:border-primary";
-const buttonClass = "h-11 shrink-0 rounded-xl bg-primary px-4 text-sm font-bold text-white hover:bg-primary-hover disabled:opacity-60";
+const buttonClass = "flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-white hover:bg-primary-hover disabled:opacity-60";
 
 /** Email → 6-digit code → confirmed. Listings then arrive as a periodic digest. Styled for a dark background. */
 export function EmailSignup() {
@@ -76,6 +76,7 @@ export function EmailSignup() {
             className={fieldClass}
           />
           <button disabled={busy} className={buttonClass}>
+            {busy && <Loader2 className="size-4 animate-spin" />}
             {t("Бүртгүүлэх")}
           </button>
         </form>
@@ -103,6 +104,7 @@ export function EmailSignup() {
               className={cn(fieldClass, "tracking-[0.3em]")}
             />
             <button disabled={busy || code.length !== 6} className={buttonClass}>
+              {busy && <Loader2 className="size-4 animate-spin" />}
               {t("Баталгаажуулах")}
             </button>
           </div>
@@ -224,7 +226,7 @@ function PushToggle() {
             state === "on" ? "bg-dark-2 text-white hover:bg-white/15" : "bg-white text-dark hover:bg-white/90"
           )}
         >
-          {state === "on" ? <BellOff className="size-4" /> : <Bell className="size-4" />}
+          {state === "loading" ? <Loader2 className="size-4 animate-spin" /> : state === "on" ? <BellOff className="size-4" /> : <Bell className="size-4" />}
           {state === "on" ? t("Мэдэгдэл унтраах") : t("Хөтчийн мэдэгдэл асаах")}
         </button>
       )}

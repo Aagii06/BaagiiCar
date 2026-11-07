@@ -16,7 +16,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_STATUS, ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn, formatPrice, timeAgo } from "@/lib/utils";
-import { Check, ExternalLink, Eye, EyeOff, Heart, Pencil, Phone, Undo2 } from "lucide-react";
+import { Check, ExternalLink, Eye, EyeOff, Heart, Pencil, Phone, Undo2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouteId } from "@/lib/useRouteId";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
@@ -85,7 +85,13 @@ function CarViewInner() {
         <EmptyState title={tr("Зар олдсонгүй")} />
       ) : (
         // Full-width like the web detail page: photos + specs left, price / seller right on desktop.
-        <div className={cn("mx-auto max-w-[1280px] md:px-6", busy && "pointer-events-none opacity-60")}>
+        <div className={cn("relative mx-auto max-w-[1280px] md:px-6", busy && "pointer-events-none")} aria-busy={busy || undefined}>
+          {/* An approve / hide in flight: the page locks under a spinner. */}
+          {busy && (
+            <div className="fixed inset-0 z-40 grid place-items-center bg-background/50">
+              <Loader2 className="size-8 animate-spin text-primary" />
+            </div>
+          )}
           <StatusBanner
             car={car}
             onApprove={() => run(() => approveCar(car.id), tr("Баталлаа, вэб дээр нийтлэгдлээ"))}

@@ -3,7 +3,7 @@
 import { inputClass } from "@/components/common/Field";
 import type { Car, Message } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
-import { SendHorizontal } from "lucide-react";
+import { SendHorizontal, Loader2 } from "lucide-react";
 import { tr } from "@/lib/i18n/translations";
 
 export type MessageStatus = Message["status"];
@@ -89,7 +89,7 @@ export function ReplyForm({
           </button>
         )}
         <button disabled={!value.trim() || busy} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-hover disabled:opacity-50">
-          <SendHorizontal className="size-3.5" />
+          {busy ? <Loader2 className="size-3.5 animate-spin" /> : <SendHorizontal className="size-3.5" />}
           {tr("Илгээх")}
         </button>
       </div>

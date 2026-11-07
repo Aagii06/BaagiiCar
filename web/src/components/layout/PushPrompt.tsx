@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { Bell, X } from "lucide-react";
+import { Bell, X, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePush } from "./NotifySignup";
 
@@ -88,8 +88,9 @@ export default function PushPrompt() {
             onClick={async () => {
               if (await enable()) setOpen(false);
             }}
-            className="h-11 flex-1 rounded-xl bg-primary text-sm font-bold text-white hover:bg-primary-hover disabled:opacity-60"
+            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-primary text-sm font-bold text-white hover:bg-primary-hover disabled:opacity-60"
           >
+            {state === "loading" && <Loader2 className="size-4 animate-spin" />}
             {t("Зөвшөөрөх")}
           </button>
         </div>

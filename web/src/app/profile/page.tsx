@@ -18,7 +18,7 @@ import ProfileSidebar from "@/components/layout/ProfileSidebar";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { BadgeCheck, Check, LogOut, ShieldAlert } from "lucide-react";
+import { BadgeCheck, Check, LogOut, ShieldAlert, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -221,7 +221,7 @@ function ProfileForm({ user }: { user: WebUser }) {
               disabled={busy}
               className="absolute right-1.5 top-1/2 flex h-9 -translate-y-1/2 items-center gap-1.5 rounded-lg bg-primary px-3 text-sm font-bold text-white transition hover:bg-primary-hover disabled:opacity-60"
             >
-              <ShieldAlert className="size-4" />
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <ShieldAlert className="size-4" />}
               {t("Баталгаажуулах")}
             </button>
           )}

@@ -4,7 +4,7 @@ import CarRow, { PAGE_SIZE, TABS, type Tab } from "@/components/car/CarRow";
 import ChipTabs from "@/components/common/ChipTabs";
 import { inputClass, Select } from "@/components/common/Field";
 import LoadMore from "@/components/common/LoadMore";
-import { CarRowsSkeleton, EmptyState, ErrorState, Spinner } from "@/components/common/States";
+import { CarRowsSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listCars, listDealers, type CarStatusFilter } from "@/lib/api/admin";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -106,9 +106,7 @@ function CarsInner() {
             // Like the catalog: the next page loads when the list is scrolled to its end. The sentinel is swapped
             // for a spinner while a page loads, so it can't ask twice, and fires again on remount if still in view.
             (cars.loading ? (
-              <div role="status" aria-label={tr("Ачаалж байна")} className="flex justify-center py-4">
-                <Spinner className="size-5" />
-              </div>
+              <CarRowsSkeleton count={2} />
             ) : (
               <LoadMore key={take} onMore={() => setTake((t) => t + PAGE_SIZE)} />
             ))}

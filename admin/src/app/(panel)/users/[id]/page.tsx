@@ -97,6 +97,7 @@ function UserForm({
     }
   };
 
+  const [removing, setRemoving] = useState(false);
   const remove = async () => {
     if (!user) return;
     const ok = await confirm({
@@ -107,12 +108,15 @@ function UserForm({
       icon: Trash2,
     });
     if (!ok) return;
+    setRemoving(true);
     try {
       await deleteRows("users", [user.id]);
       toast(tr("Устгалаа"));
       router.push("/users");
     } catch (err) {
       toast(errorMessage(err), "error");
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -211,7 +215,8 @@ function UserForm({
             {tr("Зарууд")}
           </Link>
           {!isMe && (
-            <button type="button" onClick={remove} className="flex-1 rounded-xl bg-destructive-soft py-3 text-sm font-bold text-destructive">
+            <button type="button" onClick={remove} disabled={removing} className="inline-flex items-center justify-center gap-2 disabled:opacity-60 flex-1 rounded-xl bg-destructive-soft py-3 text-sm font-bold text-destructive">
+              {removing && <Loader2 className="size-4 animate-spin" />}
               {tr("Устгах")}
             </button>
           )}

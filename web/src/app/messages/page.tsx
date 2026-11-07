@@ -13,7 +13,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useApi } from "@/lib/useApi";
 import { cn, timeAgo } from "@/lib/utils";
-import { ArrowLeft, ChevronRight, MessageCircle, SendHorizontal } from "lucide-react";
+import { ArrowLeft, ChevronRight, MessageCircle, SendHorizontal, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -313,7 +313,7 @@ function ThreadView({ thread, token, onSent, className }: { thread: Thread; toke
             aria-label={t("Мессеж")}
           />
           <button disabled={busy || !draft.trim()} aria-label={t("Илгээх")} className="grid size-11 shrink-0 place-items-center rounded-lg bg-primary text-white disabled:opacity-50">
-            <SendHorizontal className="size-4" />
+            {busy ? <Loader2 className="size-4 animate-spin" /> : <SendHorizontal className="size-4" />}
           </button>
         </div>
       </form>

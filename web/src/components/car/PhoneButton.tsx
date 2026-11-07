@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import type { Car } from "@/lib/api/types";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { Check, Copy, Eye, Phone, X } from "lucide-react";
+import { Check, Copy, Eye, Phone, X, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 /** "99•• ••••": enough to tell it's a number without giving it away. */
@@ -52,11 +52,11 @@ export default function PhoneButton({ car, phone, variant = "card", className }:
           title={t("Дугаар харах")}
           className={cn("grid shrink-0 place-items-center rounded-xl bg-primary-soft text-primary transition-colors hover:bg-primary hover:text-white disabled:opacity-60", className)}
         >
-          <Phone className="size-4" />
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <Phone className="size-4" />}
         </button>
       ) : variant === "bar" ? (
         <button type="button" onClick={show} disabled={busy} className={cn("flex items-center justify-center gap-2 font-bold disabled:opacity-60", className)}>
-          <Phone className="size-4" />
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <Phone className="size-4" />}
           {t("Дугаар харах")}
         </button>
       ) : (
@@ -67,7 +67,7 @@ export default function PhoneButton({ car, phone, variant = "card", className }:
           className={cn("group flex w-full items-center gap-3 rounded-xl border border-border bg-white p-2 pr-2.5 text-left transition-colors hover:border-primary disabled:opacity-60", className)}
         >
           <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">
-            <Phone className="size-[18px]" />
+            {busy ? <Loader2 className="size-[18px] animate-spin" /> : <Phone className="size-[18px]" />}
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[11px] font-medium text-muted-foreground">{t("Утасны дугаар")}</span>

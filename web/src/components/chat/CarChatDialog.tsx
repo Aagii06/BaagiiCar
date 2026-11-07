@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { OPEN_CHAT_EVENT, type ChatTopic } from "@/lib/chat";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
-import { MessageCircle, Phone, SendHorizontal, X } from "lucide-react";
+import { MessageCircle, Phone, SendHorizontal, X, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const CODE_LENGTH = 4;
@@ -192,7 +192,8 @@ export default function CarChatDialog() {
                 autoFocus
               />
               {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-              <button disabled={busy || phone.length !== 8} className="h-11 w-full rounded-lg bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+              <button disabled={busy || phone.length !== 8} className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+                {busy && <Loader2 className="size-4 animate-spin" />}
                 {t("Код авах")}
               </button>
               {CONTACT.phone && (
@@ -216,7 +217,8 @@ export default function CarChatDialog() {
                 autoFocus
               />
               {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-              <button disabled={busy || code.length !== CODE_LENGTH} className="h-11 w-full rounded-lg bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+              <button disabled={busy || code.length !== CODE_LENGTH} className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+                {busy && <Loader2 className="size-4 animate-spin" />}
                 {t("Баталгаажуулах")}
               </button>
               <div className="flex justify-between gap-4 pt-1 text-sm font-semibold">
@@ -266,7 +268,7 @@ export default function CarChatDialog() {
                 aria-label={t("Мессеж")}
               />
               <button disabled={busy || !draft.trim()} aria-label={t("Илгээх")} className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-white disabled:opacity-50">
-                <SendHorizontal className="size-4" />
+                {busy ? <Loader2 className="size-4 animate-spin" /> : <SendHorizontal className="size-4" />}
               </button>
             </form>
           </>

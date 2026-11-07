@@ -1,5 +1,6 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
 import { FormError } from "@/components/common/Field";
 import { errorMessage } from "@/components/common/Toast";
 import type { User } from "@/lib/api/types";
@@ -69,8 +70,10 @@ export default function OtpSheet<T = User>({
     }
   };
 
+  const [resending, setResending] = useState(false);
   const resend = async () => {
     setError(null);
+    setResending(true);
     try {
       const sent = await sendAgain();
       setResendIn(sent?.resend_in ?? 60);
@@ -79,6 +82,8 @@ export default function OtpSheet<T = User>({
       inputRef.current?.focus();
     } catch (err) {
       setError(errorMessage(err));
+    } finally {
+      setResending(false);
     }
   };
 
@@ -132,7 +137,8 @@ export default function OtpSheet<T = User>({
           {resendIn > 0 ? (
             tr("Дахин код авах: {n} сек", { n: resendIn })
           ) : (
-            <button type="button" onClick={resend} className="font-bold text-primary hover:underline">
+            <button type="button" onClick={resend} disabled={resending} className="inline-flex items-center gap-1.5 font-bold text-primary hover:underline disabled:opacity-60">
+              {resending && <Loader2 className="size-3.5 animate-spin" />}
               {tr("Код дахин илгээх")}
             </button>
           )}

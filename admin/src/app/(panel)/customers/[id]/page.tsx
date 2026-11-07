@@ -12,7 +12,7 @@ import { useApi } from "@/lib/useApi";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
 import { useRouteId } from "@/lib/useRouteId";
 import { timeAgo } from "@/lib/utils";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 import { tr } from "@/lib/i18n/translations";
@@ -60,6 +60,7 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
     }
   };
 
+  const [removing, setRemoving] = useState(false);
   const remove = async () => {
     const ok = await confirm({
       title: tr("Хэрэглэгчийг устгах уу?"),
@@ -69,12 +70,15 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
       icon: Trash2,
     });
     if (!ok) return;
+    setRemoving(true);
     try {
       await deleteCustomer(customer.id);
       toast(tr("Устгалаа"));
       router.push(listHref);
     } catch (err) {
       toast(errorMessage(err), "error");
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -117,7 +121,8 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
       <button disabled={busy || !dirty} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
         {busy ? tr("Хадгалж байна…") : tr("Хадгалах")}
       </button>
-      <button type="button" onClick={remove} className="w-full rounded-xl bg-destructive-soft py-3 text-sm font-bold text-destructive">
+      <button type="button" onClick={remove} disabled={removing} className="inline-flex items-center justify-center gap-2 disabled:opacity-60 w-full rounded-xl bg-destructive-soft py-3 text-sm font-bold text-destructive">
+        {removing && <Loader2 className="size-4 animate-spin" />}
         {tr("Устгах")}
       </button>
     </form>
