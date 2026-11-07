@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { tr, trValue } from "@/lib/i18n/translations";
+import { useDirty } from "@/lib/useDirty";
 
 const MAX_PHOTOS = 12;
 /** Wizard steps of a new ad (the last one is labelled Нийтлэх / Илгээх by role). */
@@ -258,6 +259,7 @@ export default function CarForm({
   onBackToLead,
   onSaved,
   onBusyChange,
+  onDirtyChange,
 }: {
   car?: Car | null;
   photos?: PhotoItem[];
@@ -271,6 +273,8 @@ export default function CarForm({
   onSaved: (id: number) => void;
   /** Mirrors the saving state to the header's save button. */
   onBusyChange?: (busy: boolean) => void;
+  /** Mirrors whether anything changed, so the header's save button stays off until then. */
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
   const { user: me } = useAuth();
   const isAdmin = me?.role === ROLES.admin;
@@ -293,6 +297,8 @@ export default function CarForm({
   const lastStep = formSteps().length - 1;
   const show = (n: number) => !wizard || step === n;
   const [choosing, setChoosing] = useState(false);
+  // Editing: "Хадгалах" stays off until something changes. A new ad's wizard always moves on.
+  const { dirty } = useDirty({ f, photos: photos.map((p) => p.url), locked: [...locked] });
 
   const brands = useApi(getBrands);
   const models = useApi(() => (f.brand_id ? getModels(Number(f.brand_id)) : Promise.resolve([])), f.brand_id);
@@ -390,6 +396,7 @@ export default function CarForm({
 
   const errorRef = useRef<HTMLDivElement>(null);
   useEffect(() => onBusyChange?.(busy), [busy, onBusyChange]);
+  useEffect(() => onDirtyChange?.(dirty), [dirty, onDirtyChange]);
   // The header button submits from the top; bring the message into view.
   useEffect(() => {
     if (error) errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -414,7 +421,7 @@ export default function CarForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (busy) return;
+    if (busy || (!wizard && !dirty)) return;
     // Enter / "Дараах" on an earlier step moves forward instead of saving.
     if (wizard && step < lastStep) {
       const problem = step === 0 ? detailsError() : null;
@@ -730,7 +737,7 @@ export default function CarForm({
         </div>
       ) : (
         <div className="flex justify-end">
-          <button disabled={busy} className="h-12 w-full rounded-xl bg-primary px-8 font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+          <button disabled={busy || !dirty} className="h-12 w-full rounded-xl bg-primary px-8 font-bold text-white hover:bg-primary-hover disabled:opacity-60">
             {busy ? tr("Хадгалж байна…") : tr("Хадгалах")}
           </button>
         </div>

@@ -18,11 +18,21 @@ import { useRouter } from "next/navigation";
 import { useRouteId } from "@/lib/useRouteId";
 import { useEffect, useState } from "react";
 import { tr } from "@/lib/i18n/translations";
+import { useDirty } from "@/lib/useDirty";
 
 /** Lets the header's save icon submit the form via `form={USER_FORM_ID}`. */
 const USER_FORM_ID = "user-form";
 
-function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (busy: boolean) => void }) {
+function UserForm({
+  user,
+  onBusyChange,
+  onDirtyChange,
+}: {
+  user: User | null;
+  onBusyChange?: (busy: boolean) => void;
+  /** Whether anything changed, so the header's save button stays off until then. */
+  onDirtyChange?: (dirty: boolean) => void;
+}) {
   const router = useRouter();
   const toast = useToast();
   const confirm = useConfirm();
@@ -42,6 +52,9 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => onBusyChange?.(busy), [busy, onBusyChange]);
+  // "Хадгалах" stays off until something changes.
+  const { dirty } = useDirty(f);
+  useEffect(() => onDirtyChange?.(dirty), [dirty, onDirtyChange]);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setF({ ...f, [k]: k === "phonenumber" ? e.target.value.replace(/\D/g, "") : e.target.value });
   const isMe = user?.id === me?.id;
@@ -53,6 +66,7 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy || !dirty) return;
     if (f.password !== f.password_confirm) return setError(tr("Нууц үгийн давталт таарахгүй байна"));
     if (!user && f.password.length < 6) return setError(tr("Нууц үг хамгийн багадаа 6 тэмдэгт байна"));
     if (f.role === ROLES.dealer && !f.dealer_id) return setError(tr("Дилер эрхтэй хэрэглэгчид дилер сонгоно уу"));
@@ -188,7 +202,7 @@ function UserForm({ user, onBusyChange }: { user: User | null; onBusyChange?: (b
       </section>
 
       <FormError message={error} />
-      <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
+      <button disabled={busy || !dirty} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
         {busy ? tr("Хадгалж байна…") : tr("Хадгалах")}
       </button>
       {user && (
@@ -212,6 +226,7 @@ export default function UserPage() {
   const isNew = id === "new";
   const data = useApi(() => (isNew ? Promise.resolve(null) : getUser(id)), id);
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   return (
     <>
@@ -226,7 +241,7 @@ export default function UserPage() {
             <button
               type="submit"
               form={USER_FORM_ID}
-              disabled={saving}
+              disabled={saving || !dirty}
               aria-label={tr("Хадгалах")}
               title={tr("Хадгалах")}
               className="grid size-10 place-items-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-60"
@@ -245,7 +260,7 @@ export default function UserPage() {
       ) : !data.data || data.data.status === "deleted" ? (
         <EmptyState title={tr("Хэрэглэгч олдсонгүй")} />
       ) : (
-        <UserForm key={data.data.id} user={data.data} onBusyChange={setSaving} />
+        <UserForm key={data.data.id} user={data.data} onBusyChange={setSaving} onDirtyChange={setDirty} />
       )}
     </>
   );

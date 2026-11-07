@@ -16,6 +16,7 @@ import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 import { tr } from "@/lib/i18n/translations";
+import { useDirty } from "@/lib/useDirty";
 
 /** `listHref`: the list to return to after save / delete (keeps `?from=`). */
 function CustomerForm({ customer, listHref }: { customer: Customer; listHref: string }) {
@@ -31,10 +32,13 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // "Хадгалах" stays off until something changes.
+  const { dirty } = useDirty(f);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy || !dirty) return;
     // They sign in with one of these, so at least one has to stay.
     if (!f.phonenumber && !f.email.trim()) return setError(tr("Утас эсвэл и-мэйлийн аль нэгийг оруулна уу"));
     setBusy(true);
@@ -110,7 +114,7 @@ function CustomerForm({ customer, listHref }: { customer: Customer; listHref: st
       </section>
 
       <FormError message={error} />
-      <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
+      <button disabled={busy || !dirty} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
         {busy ? tr("Хадгалж байна…") : tr("Хадгалах")}
       </button>
       <button type="button" onClick={remove} className="w-full rounded-xl bg-destructive-soft py-3 text-sm font-bold text-destructive">

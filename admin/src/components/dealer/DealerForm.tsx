@@ -12,6 +12,7 @@ import DealerListSection from "./DealerListSection";
 import DealerListSheet from "./DealerListSheet";
 import { DEALER_LIST_FIELDS, DEALER_LISTS } from "./dealerLists";
 import { tr } from "@/lib/i18n/translations";
+import { useDirty } from "@/lib/useDirty";
 
 /** Lets the header's save icon submit the form via `form={DEALER_FORM_ID}`. */
 export const DEALER_FORM_ID = "dealer-form";
@@ -19,7 +20,18 @@ export const DEALER_FORM_ID = "dealer-form";
 type DealerLists = Record<DealerListField, string[]>;
 
 /** Create / edit a dealer. `listHref`: the list to return to after save / delete (keeps `?from=`). */
-export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer: Dealer | null; listHref: string; onBusyChange: (busy: boolean) => void }) {
+export default function DealerForm({
+  dealer,
+  listHref,
+  onBusyChange,
+  onDirtyChange,
+}: {
+  dealer: Dealer | null;
+  listHref: string;
+  onBusyChange: (busy: boolean) => void;
+  /** Whether anything changed, so the header's save button stays off until then. */
+  onDirtyChange: (dirty: boolean) => void;
+}) {
   const router = useRouter();
   const toast = useToast();
   const [info, setInfo] = useState<DealerInfo>({
@@ -39,6 +51,8 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => onBusyChange(busy), [busy, onBusyChange]);
+  const { dirty, markSaved } = useDirty({ info, lists });
+  useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
 
   const bodyOf = (l: DealerLists): DealerInput => ({
     name: info.name.trim(),
@@ -54,6 +68,8 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
     if (dealer) {
       if (!info.name.trim()) throw new Error(tr("Дилерийн нэр оруулна уу"));
       await updateDealer(dealer.id, bodyOf(next));
+      // The whole dealer went out with the list, so it all counts as saved.
+      markSaved(JSON.stringify({ info, lists: next }));
       toast(tr("Хадгаллаа"));
     }
     setLists(next);
@@ -72,6 +88,7 @@ export default function DealerForm({ dealer, listHref, onBusyChange }: { dealer:
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy || !dirty) return;
     if (!info.name.trim()) return setError(tr("Дилерийн нэр оруулна уу"));
     for (const field of DEALER_LIST_FIELDS) {
       const problem = DEALER_LISTS[field].check(lists[field]);

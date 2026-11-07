@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { tr } from "@/lib/i18n/translations";
+import { useDirty } from "@/lib/useDirty";
 
 const MIN_PASSWORD = 6;
 
@@ -40,6 +41,8 @@ export default function ChangePasswordPage() {
   // The passwords the last code was asked for; changing them needs a new code.
   const [sentFor, setSentFor] = useState("");
   const [cooldown, setCooldown] = useState(0);
+  // "Хадгалах" stays off until something is typed.
+  const { dirty } = useDirty({ current, next, confirm });
 
   useEffect(() => {
     if (!cooldown) return;
@@ -55,6 +58,7 @@ export default function ChangePasswordPage() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!dirty) return;
     setSubmitted(true);
     if (!current) return currentRef.current?.focus();
     if (next.length < MIN_PASSWORD) return newRef.current?.focus();
@@ -86,7 +90,7 @@ export default function ChangePasswordPage() {
           aside={
             <button
               type="submit"
-              disabled={!hasEmail || sending}
+              disabled={!hasEmail || sending || !dirty}
               className="flex h-10 items-center gap-2 rounded-xl bg-primary px-5 font-bold text-white hover:bg-primary-hover disabled:opacity-60"
             >
               {sending && <Loader2 className="size-4 animate-spin" />}

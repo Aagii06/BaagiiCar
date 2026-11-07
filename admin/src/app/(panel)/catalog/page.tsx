@@ -17,6 +17,7 @@ import { ImageUp, Pencil, Plus, Trash2, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { tr } from "@/lib/i18n/translations";
+import { useDirty } from "@/lib/useDirty";
 
 /** Rows shown at first and added each time the list is scrolled to its end (brands and models are fetched page by page). */
 const PAGE_SIZE = 10;
@@ -137,9 +138,12 @@ function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | n
   );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // "Хадгалах" stays off until something changes.
+  const { dirty } = useDirty(values);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy || !dirty) return;
     const body: Record<string, unknown> = {};
     for (const f of fields) {
       const v = values[f.key].trim();
@@ -193,7 +197,7 @@ function Editor({ tab, row, brands, onClose, onSaved }: { tab: Tab; row: Row | n
           </Field>
         ))}
         <FormError message={error} />
-        <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
+        <button disabled={busy || !dirty} className="h-12 w-full rounded-xl bg-primary font-bold text-white disabled:opacity-60">
           {busy ? tr("Хадгалж байна…") : tr("Хадгалах")}
         </button>
       </form>

@@ -48,6 +48,7 @@ function CarEditInner() {
   const toast = useToast();
   const confirm = useConfirm();
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const { user } = useAuth();
   const isAdmin = user?.role === ROLES.admin;
@@ -105,7 +106,7 @@ function CarEditInner() {
             )}
             {/* Same as the save button at the bottom of the form; a new ad uses the wizard's own buttons. */}
             {!isNew && data.data && data.data.car?.status !== "deleted" && (
-              <button type="submit" form={CAR_FORM_ID} disabled={saving} aria-label={saving ? tr("Хадгалж байна…") : tr("Хадгалах")} title={tr("Хадгалах")} className="grid size-10 place-items-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-60">
+              <button type="submit" form={CAR_FORM_ID} disabled={saving || !dirty} aria-label={saving ? tr("Хадгалж байна…") : tr("Хадгалах")} title={tr("Хадгалах")} className="grid size-10 place-items-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-60">
                 {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
               </button>
             )}
@@ -161,6 +162,7 @@ function CarEditInner() {
             leadingSteps={isNew && isAdmin ? [tr("Дилер")] : []}
             onBackToLead={() => setRepicking(true)}
             onBusyChange={setSaving}
+            onDirtyChange={setDirty}
             onSaved={() => {
               // The backend sends a dealer's edit of a live / hidden / returned ad back for approval.
               toast(!isNew && !isAdmin && RESUBMIT.includes(data.data?.car?.status ?? "") ? tr("Хадгаллаа. Админ батлах хүртэл хүлээгдэнэ") : tr("Хадгаллаа"));

@@ -10,6 +10,7 @@ import AddRowButton from "./AddRowButton";
 import { DEALER_LISTS, filledOf } from "./dealerLists";
 import OrderedRow from "./OrderedRow";
 import { tr } from "@/lib/i18n/translations";
+import { useDirty } from "@/lib/useDirty";
 
 /**
  * Modal for one of the dealer's lists: add as many rows as needed, reorder with the arrows, remove, then one "Хадгалах" checks and saves them all and closes. Backdrop / Escape / "Болих" drops the changes.
@@ -31,6 +32,8 @@ export default function DealerListSheet({
   const [draft, setDraft] = useState(() => (items.length ? items : [""]));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // "Хадгалах" stays off until something changes.
+  const { dirty } = useDirty(draft);
   // The row being typed in: its format error waits until the user leaves it.
   const [focused, setFocused] = useState<number | null>(null);
   const rowError = (value: string, i: number) => (value.trim() && i !== focused ? (cfg.rowError?.(value) ?? null) : null);
@@ -51,6 +54,7 @@ export default function DealerListSheet({
     e.preventDefault();
     // React bubbles the portal's submit up to the dealer form; keep it here.
     e.stopPropagation();
+    if (busy || !dirty) return;
     const clean = filledOf(draft, cfg.lower);
     const problem = cfg.check(clean);
     if (problem) return setError(problem);
@@ -105,7 +109,7 @@ export default function DealerListSheet({
             <button type="button" onClick={onClose} disabled={busy} className="h-12 flex-1 rounded-xl bg-muted font-bold hover:bg-border disabled:opacity-60">
               {tr("Болих")}
             </button>
-            <button type="submit" disabled={busy} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
+            <button type="submit" disabled={busy || !dirty} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
               {busy && <Loader2 className="size-4 animate-spin" />}
               {tr("Хадгалах")}
             </button>

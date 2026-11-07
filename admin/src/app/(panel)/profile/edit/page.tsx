@@ -16,6 +16,7 @@ import { BadgeCheck, Loader2, ShieldAlert, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { tr } from "@/lib/i18n/translations";
+import { useDirty } from "@/lib/useDirty";
 
 /** The signed-in user's own details and photo; dealers also see their dealer. Role and status stay as they are. */
 function ProfileForm({ me }: { me: User }) {
@@ -57,6 +58,10 @@ function ProfileForm({ me }: { me: User }) {
   const phoneChanged = f.phonenumber !== verifiedPhone;
   const [phoneWait, setPhoneWait] = useState<{ phone: string; left: number } | null>(null);
   const phoneCooldown = phoneWait?.phone === f.phonenumber ? phoneWait.left : 0;
+  // "Хадгалах" stays off until something changes. A typed new phone / email counts, so saving tells
+  // to confirm it; once confirmed (saved by its code) it matches again.
+  const { dirty: fieldsDirty } = useDirty({ lastname: f.lastname, firstname: f.firstname, profile: f.profile, dealer_id: f.dealer_id });
+  const dirty = fieldsDirty || phoneChanged || emailChanged;
   useEffect(() => {
     if (!phoneWait || phoneWait.left <= 0) return;
     const timer = window.setTimeout(() => setPhoneWait((w) => w && { ...w, left: w.left - 1 }), 1000);
@@ -108,6 +113,7 @@ function ProfileForm({ me }: { me: User }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy || !dirty) return;
     if (phoneChanged) return setError(tr("Шинэ дугаараа кодоор баталгаажуулна уу"));
     if (emailChanged) return setError(newEmail ? tr("Шинэ имэйлээ кодоор баталгаажуулна уу") : tr("Имэйлийг хоосон болгох боломжгүй"));
     setBusy(true);
@@ -141,7 +147,7 @@ function ProfileForm({ me }: { me: User }) {
           aside={
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || !dirty}
               className="flex h-10 items-center gap-2 rounded-xl bg-primary px-5 font-bold text-white hover:bg-primary-hover disabled:opacity-60"
             >
               {busy && <Loader2 className="size-4 animate-spin" />}
