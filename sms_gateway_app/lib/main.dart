@@ -64,7 +64,19 @@ class _GatewayPageState extends State<GatewayPage> {
 
   void _toast(String text) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 
+  /// The start/stop or test send in flight — its button spins.
+  String? _busy;
+
   Future<void> _toggle() async {
+    setState(() => _busy = 'toggle');
+    try {
+      await _toggleInner();
+    } finally {
+      if (mounted) setState(() => _busy = null);
+    }
+  }
+
+  Future<void> _toggleInner() async {
     if (_status['running'] == true) {
       await _channel.invokeMethod('stop');
     } else {
@@ -83,9 +95,13 @@ class _GatewayPageState extends State<GatewayPage> {
   Future<void> _sendTest() async {
     final phone = _testPhone.text.trim();
     if (phone.isEmpty) return _toast('Утасны дугаар оруулна уу');
-    _toast('Илгээж байна...');
-    final error = await _channel.invokeMethod<String>('sendTest', {'phonenumber': phone});
-    _toast(error == null ? 'Илгээлээ' : 'Алдаа: $error');
+    setState(() => _busy = 'test');
+    try {
+      final error = await _channel.invokeMethod<String>('sendTest', {'phonenumber': phone});
+      _toast(error == null ? 'Илгээлээ' : 'Алдаа: $error');
+    } finally {
+      if (mounted) setState(() => _busy = null);
+    }
   }
 
   @override
@@ -146,8 +162,10 @@ class _GatewayPageState extends State<GatewayPage> {
           ),
           const SizedBox(height: 12),
           FilledButton.icon(
-            onPressed: _toggle,
-            icon: Icon(running ? Icons.stop : Icons.play_arrow),
+            onPressed: _busy != null ? null : _toggle,
+            icon: _busy == 'toggle'
+                ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Icon(running ? Icons.stop : Icons.play_arrow),
             label: Text(running ? 'Зогсоох' : 'Эхлүүлэх'),
             style: running ? FilledButton.styleFrom(backgroundColor: Colors.red) : null,
           ),
@@ -166,7 +184,12 @@ class _GatewayPageState extends State<GatewayPage> {
                 ),
               ),
               const SizedBox(width: 8),
-              OutlinedButton(onPressed: _sendTest, child: const Text('Илгээх')),
+              OutlinedButton(
+                onPressed: _busy != null ? null : _sendTest,
+                child: _busy == 'test'
+                    ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Илгээх'),
+              ),
             ],
           ),
           const SizedBox(height: 24),

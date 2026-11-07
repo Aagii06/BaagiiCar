@@ -400,7 +400,11 @@ class SquareIconButton extends StatelessWidget {
     this.color,
     this.background,
     this.borderColor,
+    this.busy = false,
   });
+
+  /// Its request is in flight: a spinner in place of the icon, taps ignored.
+  final bool busy;
 
   @override
   Widget build(BuildContext context) => Tooltip(
@@ -413,10 +417,17 @@ class SquareIconButton extends StatelessWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: onTap,
+            onTap: busy ? null : onTap,
             child: SizedBox.square(
               dimension: size,
-              child: Icon(icon, size: 19, color: onTap == null ? AppPalette.mutedForeground.withValues(alpha: 0.5) : (color ?? AppPalette.foreground)),
+              child: busy
+                  ? Center(
+                      child: SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2.2, color: color ?? AppPalette.primary),
+                      ),
+                    )
+                  : Icon(icon, size: 19, color: onTap == null ? AppPalette.mutedForeground.withValues(alpha: 0.5) : (color ?? AppPalette.foreground)),
             ),
           ),
         ),

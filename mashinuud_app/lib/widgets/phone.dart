@@ -68,7 +68,8 @@ class _PhoneButtonState extends State<PhoneButton> {
         size: widget.size,
         color: AppPalette.primary,
         borderColor: AppPalette.primary,
-        onTap: _busy ? null : _show,
+        busy: _busy,
+        onTap: _show,
       );
     }
     return PrimaryButton(label: 'Дугаар харах', icon: Icons.phone_rounded, height: widget.size, busy: _busy, onTap: _show);
