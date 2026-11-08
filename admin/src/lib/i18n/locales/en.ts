@@ -37,6 +37,7 @@ export const en: Dict = {
   "Түр нуусан тул вэб дээр харагдахгүй": "Temporarily hidden, so not shown on the website",
   "Вэб дээр харагдахгүй": "Not shown on the website",
   "Буцаах": "Send back",
+  "«{name}» зураг {size}MB байна. {max}MB хүртэлх зураг сонгоно уу.": "“{name}” is {size} MB. Pick an image up to {max} MB.",
   "Зарыг батлах уу?": "Approve this ad?",
   "Батласны дараа вэб дээр нийтлэгдэнэ.": "Once approved it will be published on the website.",
   "Батлах": "Approve",

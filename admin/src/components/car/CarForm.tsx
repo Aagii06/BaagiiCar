@@ -19,6 +19,8 @@ import { ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "luc
 import { useEffect, useRef, useState } from "react";
 import { tr, trValue } from "@/lib/i18n/translations";
 import { useDirty } from "@/lib/useDirty";
+import { useToast } from "@/components/common/Toast";
+import { imageSizeError } from "@/lib/image";
 
 const MAX_PHOTOS = 12;
 /** Wizard steps of a new ad (the last one is labelled Нийтлэх / Илгээх by role). */
@@ -280,6 +282,7 @@ export default function CarForm({
   const isAdmin = me?.role === ROLES.admin;
   const [f, setF] = useState<FormState>(() => initialState(car, dealerDefaultPhone(dealer, defaultPhone), dealer?.id));
   const [photos, setPhotos] = useState<PhotoItem[]>(initialPhotos);
+  const toast = useToast();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [viewing, setViewing] = useState<number | null>(null);
@@ -320,8 +323,14 @@ export default function CarForm({
   const addFiles = (files: FileList | null) => {
     if (!files) return;
     const room = MAX_PHOTOS - photos.length;
-    const added = [...files]
-      .filter((file) => /^image\/(jpeg|png|webp)$/.test(file.type))
+    // Over 50MB: refused here with a message, the rest still go in.
+    const picked = [...files].filter((file) => /^image\/(jpeg|png|webp)$/.test(file.type));
+    picked.forEach((file) => {
+      const tooLarge = imageSizeError(file);
+      if (tooLarge) toast(tooLarge, "error");
+    });
+    const added = picked
+      .filter((file) => !imageSizeError(file))
       .slice(0, room)
       .map((file) => ({ kind: "new" as const, file, url: URL.createObjectURL(file) }));
     setPhotos((prev) => [...prev, ...added]);

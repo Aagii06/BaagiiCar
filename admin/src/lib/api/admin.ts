@@ -1,6 +1,7 @@
 import { ApiError, apiFetch, listQuery, type ApiItemResponse, type ApiListResponse, type Condition } from "./client";
 import { ROLES } from "@/lib/constants";
 import { setSession } from "./token";
+import { imageSizeError } from "@/lib/image";
 import type { BodyType, Brand, Car, CarFile, CarModel, Customer, Dealer, Feedback, Location, Message, MessageReply, User } from "./types";
 
 const NOT_DELETED: Condition = ["status", "<>", "deleted"];
@@ -141,6 +142,8 @@ export type UploadFolder = "bodyTypes" | "brands" | "users" | "dealers";
 
 /** `POST /api/upload/image` (admin): saves into `uploads/<folder>`, returns the file name for the image/logo/profile column. */
 export async function uploadCatalogImage(folder: UploadFolder, file: File) {
+  const tooLarge = imageSizeError(file);
+  if (tooLarge) throw new Error(tooLarge);
   const form = new FormData();
   form.append("folder", folder);
   form.append("image", file);
