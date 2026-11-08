@@ -35,17 +35,24 @@ const encode = (image, fileName) => {
   return image.jpeg({ quality: QUALITY, mozjpeg: true });
 };
 
-module.exports.saveSharpConverter = async (tempPath, uploadPath, fileName) => {
-  const sizes = [
-    { width: 64, prefix: "icon_" },
-    { width: 120, prefix: "thumb_" },
-    { width: 300, prefix: "grid_" },
-    { width: 800, prefix: "" },
-  ];
+// Зураг бүр 4 файлтай. Тус бүр size×size дөрвөлжин хайрцагт багтахаар (fit: inside — харьцаа
+// хэвээр, урт тал нь size) жижигрүүлнэ; жижиг зургийг томруулахгүй. Retina-д харагдах хэмжээнээс ~2 дахин:
+//   icon_  — 128: брэнд/төрлийн жижиг дүрс, жагсаалтын мөр (≤64px)
+//   thumb_ — 240: мессеж, харьцуулалт, лизингийн жижиг зураг (≤120px)
+//   grid_  — 480: машины карт (~240–300px)
+//   <нэр>  — 800: дэлгэрэнгүйн том зураг, зураг томоор харах
+const SIZES = [
+  { size: 128, prefix: "icon_" },
+  { size: 240, prefix: "thumb_" },
+  { size: 480, prefix: "grid_" },
+  { size: 800, prefix: "" },
+];
+module.exports.IMAGE_SIZES = SIZES;
 
+module.exports.saveSharpConverter = async (tempPath, uploadPath, fileName) => {
   await Promise.all(
-    sizes.map(({ width, prefix }) =>
-      encode(sharp(tempPath).rotate().resize({ width, withoutEnlargement: true }), fileName).toFile(
+    SIZES.map(({ size, prefix }) =>
+      encode(sharp(tempPath).rotate().resize({ width: size, height: size, fit: "inside", withoutEnlargement: true }), fileName).toFile(
         path.join(uploadPath, `${prefix}${fileName}`),
       ),
     ),

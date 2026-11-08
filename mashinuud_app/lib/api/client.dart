@@ -80,7 +80,7 @@ Future<Map<String, dynamic>> apiFetch(String path, {String method = 'GET', Objec
   return data;
 }
 
-/// Photo under `<backend>/uploads/<folder>`; cars come in four widths (icon, thumb, grid, full).
+/// Photo under `<backend>/uploads/<folder>`; cars come in four sizes, each fit into a square box (icon 128, thumb 240, grid 480, full 800).
 String? uploadUrl(String? fileName, {String size = 'full', String folder = 'cars'}) {
   final name = fileName?.trim();
   if (name == null || name.isEmpty) return null;

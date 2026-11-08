@@ -5,7 +5,7 @@ export const ADMIN_URL =
   process.env.NEXT_PUBLIC_ADMIN_URL ||
   (process.env.NODE_ENV === "production" ? "https://admin.cardealer.mn/" : "http://localhost:3881/");
 
-/** Car photos live under `<backend>/uploads/cars`, in four widths. */
+/** Car photos live under `<backend>/uploads/cars`, in four sizes, each fit into a square box (icon 128, thumb 240, grid 480, full 800). */
 export type ImageSize = "icon" | "thumb" | "grid" | "full";
 
 export function uploadUrl(fileName: string | null | undefined, size: ImageSize = "full", folder = "cars") {

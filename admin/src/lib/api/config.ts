@@ -1,6 +1,6 @@
 export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5011").replace(/\/$/, "");
 
-/** Car photos live under `<backend>/uploads/cars`, in four widths. */
+/** Car photos live under `<backend>/uploads/cars`, in four sizes, each fit into a square box (icon 128, thumb 240, grid 480, full 800). */
 export type ImageSize = "icon" | "thumb" | "grid" | "full";
 
 export function uploadUrl(fileName: string | null | undefined, size: ImageSize = "full", folder = "cars") {

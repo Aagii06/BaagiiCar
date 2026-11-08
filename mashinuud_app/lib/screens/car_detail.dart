@@ -159,7 +159,7 @@ class _GalleryState extends State<_Gallery> {
                     fullscreenDialog: true,
                     builder: (_) => PhotoViewer(urls: [for (final p in photos) uploadUrl(p)!], start: i),
                   )),
-                  child: NetImage(uploadUrl(photos[i], size: 'grid'), fit: BoxFit.contain, background: AppPalette.card),
+                  child: NetImage(uploadUrl(photos[i]), fit: BoxFit.contain, background: AppPalette.card),
                 ),
               ),
               Positioned(
