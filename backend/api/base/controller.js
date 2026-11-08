@@ -8,7 +8,7 @@ const config = require("./config");
 
 const { allFiles, sequelize, op } = require("../../models");
 
-const { getType, getDateNumbers } = require("../../helper/fileHelper");
+const { getType, getDateNumbers, MAX_UPLOAD_BYTES, TOO_LARGE_MESSAGE, isTooLarge } = require("../../helper/fileHelper");
 const { saveLog } = require("../../utils/logHelper");
 
 const { getSelect } = require("../../utils/modelHelper");
@@ -318,7 +318,7 @@ exports.uploadFile = async (req, res) => {
   const { by, at } = req.body;
   try {
     const form = formidable({
-      maxFileSize: 1000 * 1024 * 1024,
+      maxFileSize: MAX_UPLOAD_BYTES,
       maxFieldsSize: 1000 * 1024 * 1024,
       multiples: true,
       keepExtensions: true,
@@ -330,7 +330,7 @@ exports.uploadFile = async (req, res) => {
 
     promiseData = await new Promise(function (resolve, reject) {
       form.parse(req, async function (error, fields, files) {
-        if (error) reject(error);
+        if (error) return reject(error);
 
         const dataInfo = JSON.parse(fields["dataInfo"]);
         const data_id = dataInfo.data_id;
@@ -440,7 +440,7 @@ exports.uploadFile = async (req, res) => {
   } catch (error) {
     console.error({ uploadFileError: error });
     result.success = false;
-    result.message = "Алдаа";
+    result.message = isTooLarge(error) ? TOO_LARGE_MESSAGE : "Алдаа";
     return res.status(200).json(result);
   }
 };

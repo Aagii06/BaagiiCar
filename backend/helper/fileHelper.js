@@ -16,6 +16,25 @@ module.exports.getDateNumbers = () =>
 
 module.exports.getType = (fileName) => path.extname(fileName).replace(".", "");
 
+// Хуулах зургийн дээд хэмжээ — түүнээс томыг formidable татгалзана (middleware/formData.js, */base/controller.js).
+const MAX_UPLOAD_MB = 50;
+module.exports.MAX_UPLOAD_MB = MAX_UPLOAD_MB;
+module.exports.MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
+module.exports.TOO_LARGE_MESSAGE = `Зураг ${MAX_UPLOAD_MB}MB-аас ихгүй байх ёстой`;
+// formidable-ийн "файл хэт том" алдаа (code 1009 / HTTP 413)
+module.exports.isTooLarge = (error) => error?.code === 1009 || error?.httpCode === 413;
+
+// Хадгалахдаа шахна: JPG — mozjpeg 80%, PNG — палитр + хамгийн их шахалт, WEBP — 80%.
+// Хэмжээ (px) нь өргөнөөр багасна, эх формат хэвээр (файлын нэр/өргөтгөл өөрчлөгдөхгүй).
+// .rotate() — утасны зургийн EXIF эргэлтийг засна.
+const QUALITY = 80;
+const encode = (image, fileName) => {
+  const ext = path.extname(fileName).toLowerCase();
+  if (ext === ".png") return image.png({ compressionLevel: 9, palette: true, quality: QUALITY, effort: 7 });
+  if (ext === ".webp") return image.webp({ quality: QUALITY, effort: 4 });
+  return image.jpeg({ quality: QUALITY, mozjpeg: true });
+};
+
 module.exports.saveSharpConverter = async (tempPath, uploadPath, fileName) => {
   const sizes = [
     { width: 64, prefix: "icon_" },
@@ -26,9 +45,9 @@ module.exports.saveSharpConverter = async (tempPath, uploadPath, fileName) => {
 
   await Promise.all(
     sizes.map(({ width, prefix }) =>
-      sharp(tempPath)
-        .resize({ width, withoutEnlargement: true })
-        .toFile(path.join(uploadPath, `${prefix}${fileName}`)),
+      encode(sharp(tempPath).rotate().resize({ width, withoutEnlargement: true }), fileName).toFile(
+        path.join(uploadPath, `${prefix}${fileName}`),
+      ),
     ),
   );
 };
