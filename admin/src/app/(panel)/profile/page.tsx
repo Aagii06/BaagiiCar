@@ -28,20 +28,20 @@ export default function ProfilePage() {
 
   return (
     <>
-      <section className="mt-4 flex items-center gap-3 rounded-2xl bg-dark p-4 text-white">
-        <UserAvatar user={user} className="size-12 bg-primary text-white" />
+      <section className="mt-4 flex items-center gap-3 rounded-2xl bg-linear-to-br from-primary-soft via-orange-50 to-amber-100 p-4 text-foreground ring-1 ring-orange-200/70">
+        <UserAvatar user={user} className="size-12 bg-primary text-white shadow-md shadow-primary/30" />
         <div className="min-w-0">
           <p className="truncate font-bold">{userName(user)}</p>
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-muted-foreground">
             {user?.phonenumber} · {roleLabel(user?.role)}
           </p>
-          {dealer && <p className="truncate text-sm font-semibold text-white">{dealer.name}</p>}
+          {dealer && <p className="truncate text-sm font-semibold text-primary">{dealer.name}</p>}
         </div>
         <div className="ml-auto flex shrink-0 gap-2">
-          <Link href="/profile/edit" aria-label={tr("Профайл засах")} title={tr("Профайл засах")} className="grid size-10 place-items-center rounded-xl bg-white/10 hover:bg-white/20">
+          <Link href="/profile/edit" aria-label={tr("Профайл засах")} title={tr("Профайл засах")} className="grid size-10 place-items-center rounded-xl bg-white/80 text-primary shadow-sm hover:bg-white">
             <Pencil className="size-4" />
           </Link>
-          <Link href="/profile/password" aria-label={tr("Нууц үг солих")} title={tr("Нууц үг солих")} className="grid size-10 place-items-center rounded-xl bg-white/10 hover:bg-white/20">
+          <Link href="/profile/password" aria-label={tr("Нууц үг солих")} title={tr("Нууц үг солих")} className="grid size-10 place-items-center rounded-xl bg-white/80 text-primary shadow-sm hover:bg-white">
             <KeyRound className="size-4" />
           </Link>
         </div>

@@ -22,9 +22,6 @@ const hashOtp = (key, code) =>
   crypto.createHmac("sha256", process.env.JWT_SECRET || "otp").update(`${key}:${code}`).digest("hex");
 const newOtp = (length) => String(crypto.randomInt(0, 10 ** length)).padStart(length, "0");
 
-// SMS холбогдоогүй үед бүх дугаарт ажиллах тогтмол код (.env: OTP_DEV_CODE)
-const phoneDevCode = () => process.env.OTP_DEV_CODE || "2222";
-
 // Код deliver(code)-оор илгээгээд hash-ийг хадгална. Өмнөх код байвал хүчингүй болно.
 // Буцаах: { success, message, data: { expires_in, resend_in } }
 const sendOtp = async ({ model, where, key, code, deliver, message }) => {
@@ -127,21 +124,23 @@ module.exports.verifyEmailOtp = (email, purpose, code) =>
   verifyOtp({ model: emailOtps, where: { email, purpose }, key: emailKey(email, purpose), code });
 
 // --- Утас (SMS) -------------------------------------------------------------
-// SMS холбогдоогүй үед (helper/smsHelper.js, SMS_GATEWAY_TOKEN хоосон) код нь OTP_DEV_CODE (анхдагч "2222")
-// байна - бусад дүрэм (хугацаа, дахин авах хугацаа, оролдлогын тоо) адилхан ажиллана.
+// Код үргэлж санамсаргүй. SMS холбогдоогүй үед (helper/smsHelper.js, SMS_GATEWAY_TOKEN хоосон)
+// production-д код илгээхгүй (алдаа буцаана), dev орчинд кодыг консолд хэвлэнэ.
 const phoneKey = (phonenumber, purpose) => `phone:${purpose}:${phonenumber}`;
 
-module.exports.sendPhoneOtp = (phonenumber, purpose) => {
+module.exports.sendPhoneOtp = async (phonenumber, purpose) => {
   const sms = isSmsConfigured();
+  if (!sms && process.env.NODE_ENV === "production")
+    return { success: false, data: null, message: "SMS үйлчилгээ одоогоор ажиллахгүй байна" };
   return sendOtp({
     model: phoneOtps,
     where: { phonenumber, purpose },
     key: phoneKey(phonenumber, purpose),
-    code: sms ? newOtp(PHONE_OTP_LENGTH) : phoneDevCode(),
+    code: newOtp(PHONE_OTP_LENGTH),
     message: "Код SMS-ээр илгээлээ",
     deliver: async (code) => {
       if (!sms) {
-        console.log(`[sms холбогдоогүй] ${phonenumber} (${purpose}) код: ${code}`);
+        console.log(`[dev, sms холбогдоогүй] ${phonenumber} (${purpose}) код: ${code}`);
         return;
       }
       await sendSms(phonenumber, `${titleFor(purpose)}: ${code}`);
@@ -173,7 +172,7 @@ module.exports.sendPhoneVerify = async (model, prefix, id) => {
   if (!me) return { success: false, data: null, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
   if (!/^\d{8}$/.test(me.phonenumber || "")) return { success: false, data: null, message: "Утасны дугаараа эхлээд оруулна уу" };
   if (me.phone_verified_at) return { success: false, data: null, message: "Утас аль хэдийн баталгаажсан байна" };
-  // OTP_DEV_CODE-оор "баталгаажуулах" нь утгагүй
+  // SMS-гүйгээр (dev консолын код) "баталгаажуулах" нь утгагүй
   if (!isSmsConfigured()) return { success: false, data: null, message: "SMS үйлчилгээ одоогоор ажиллахгүй байна" };
   return module.exports.sendPhoneOtp(me.phonenumber, `${prefix}:${me.id}`);
 };
@@ -241,7 +240,7 @@ module.exports.confirmPhoneChange = async (model, prefix, id, phonenumber, code,
   const t = await model.sequelize.transaction();
   try {
     await blockPhoneOwners(model, phonenumber, me.id, id, at, t);
-    // SMS кодоор солисон бол шинэ дугаар баталгаажсан (OTP_DEV_CODE бол үгүй - hook дахин баталгаажуулах хугацаа өгнө)
+    // SMS кодоор солисон бол шинэ дугаар баталгаажсан (SMS холбогдоогүй dev орчинд үгүй - hook дахин баталгаажуулах хугацаа өгнө)
     await me.update(
       { phonenumber, phone_verified_at: isSmsConfigured() ? at : null, updated_by: id, updated_at: at },
       { transaction: t },

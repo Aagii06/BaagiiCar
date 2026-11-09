@@ -30,7 +30,7 @@ SMS_GATEWAY_TOKEN=энд_үүсгэсэн_token
 
 Дараа нь backend-ээ restart хийнэ.
 
-> `SMS_GATEWAY_TOKEN` хоосон бол SMS илгээхгүй бөгөөд бүх дугаарт `OTP_DEV_CODE` (анхдагч `2222`) код ажиллана.
+> `SMS_GATEWAY_TOKEN` хоосон бол SMS илгээхгүй: production-д утсаар код авах боломжгүй, dev орчинд санамсаргүй код backend-ийн консолд хэвлэгдэнэ.
 
 ## 2. APK гаргах
 

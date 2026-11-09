@@ -22,7 +22,7 @@ const findCustomerData = async (id) => {
   return { success: true, user: customer, message: "" };
 };
 
-// Утас руу нэвтрэх код илгээнэ (SMS_GATEWAY_TOKEN тохируулаагүй бол OTP_DEV_CODE - helper/otpHelper.js)
+// Утас руу нэвтрэх код илгээнэ (SMS_GATEWAY_TOKEN тохируулаагүй бол production-д алдаа, dev-д консолд - helper/otpHelper.js)
 module.exports.otpSend = async (req, res) => {
   const { phonenumber } = req.body;
   try {
@@ -60,7 +60,7 @@ module.exports.otpLogin = async (req, res) => {
     if (!customer) {
       const created = await customers.create({
         phonenumber,
-        // SMS кодоор нэвтэрсэн бол утас баталгаажсан (OTP_DEV_CODE бол үгүй)
+        // SMS кодоор нэвтэрсэн бол утас баталгаажсан (SMS холбогдоогүй dev орчинд үгүй)
         ...(isSmsConfigured() && { phone_verified_at: at }),
         firstname: "Зочин",
         status: "active",
