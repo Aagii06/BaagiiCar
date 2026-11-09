@@ -8,6 +8,7 @@ import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/app_bar.dart';
 import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/widgets/dealer_avatar.dart';
 import 'package:mashinuud_app/widgets/select.dart';
 
 const _mln = 1000000;
@@ -190,7 +191,8 @@ class _CarsScreenState extends State<CarsScreen> {
                   for (final d in _dealers ?? <Dealer>[])
                     _LogoTile(
                       label: d.name,
-                      image: uploadUrl(d.logo, folder: 'dealers'),
+                      image: null,
+                      avatar: DealerAvatar(logo: d.logo, name: d.name, padding: const EdgeInsets.all(9), background: AppPalette.card),
                       // Picks the dealer filter (tap again to clear), like the brand row.
                       selected: _search.dealerId == d.id,
                       onTap: () => _apply(_copy(_search, dealerId: _search.dealerId == d.id ? null : d.id)),
@@ -343,7 +345,10 @@ class _LogoTile extends StatelessWidget {
   final String? image;
   final bool selected;
   final VoidCallback onTap;
-  const _LogoTile({required this.label, required this.image, required this.onTap, this.selected = false});
+
+  /// Fills the tile instead of [image] (dealers: logo or initials).
+  final Widget? avatar;
+  const _LogoTile({required this.label, required this.image, required this.onTap, this.selected = false, this.avatar});
 
   @override
   Widget build(BuildContext context) => Tooltip(
@@ -359,14 +364,15 @@ class _LogoTile extends StatelessWidget {
             onTap: onTap,
             child: SizedBox.square(
               dimension: 64,
-              child: Padding(
-                padding: const EdgeInsets.all(9),
-                child: NetImage(
-                  image,
-                  fit: BoxFit.contain,
-                  background: AppPalette.card,
-                ),
-              ),
+              child: avatar ??
+                  Padding(
+                    padding: const EdgeInsets.all(9),
+                    child: NetImage(
+                      image,
+                      fit: BoxFit.contain,
+                      background: AppPalette.card,
+                    ),
+                  ),
             ),
           ),
         ),

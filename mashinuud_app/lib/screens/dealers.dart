@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/api/api.dart';
-import 'package:mashinuud_app/api/client.dart';
 import 'package:mashinuud_app/api/models.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/app_bar.dart';
 import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/widgets/dealer_avatar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DealerLogo extends StatelessWidget {
@@ -16,13 +16,9 @@ class DealerLogo extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: size,
         height: size,
-        padding: const EdgeInsets.all(8),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(AppRadius.md), border: Border.all(color: AppPalette.border)),
-        child: NetImage(
-          uploadUrl(dealer.logo, folder: 'dealers'),
-          fit: BoxFit.contain,
-          background: Colors.white,
-        ),
+        child: DealerAvatar(logo: dealer.logo, name: dealer.name, padding: const EdgeInsets.all(8)),
       );
 }
 

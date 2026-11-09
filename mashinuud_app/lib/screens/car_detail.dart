@@ -12,6 +12,7 @@ import 'package:mashinuud_app/screens/leasing.dart';
 import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/widgets/dealer_avatar.dart';
 import 'package:mashinuud_app/widgets/phone.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -316,14 +317,7 @@ class _Seller extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       alignment: Alignment.center,
       child: dealer
-          ? Padding(
-              padding: const EdgeInsets.all(5),
-              child: NetImage(
-                uploadUrl(car.dealerLogo, folder: 'dealers'),
-                fit: BoxFit.contain,
-                background: Colors.white,
-              ),
-            )
+          ? DealerAvatar(logo: car.dealerLogo, name: car.dealerName, padding: const EdgeInsets.all(5))
           : Text(initials(car.sellerName), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppPalette.primary)),
     );
     final info = Expanded(

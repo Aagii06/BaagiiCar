@@ -60,8 +60,9 @@ String timeAgo(String? value) {
   return value.substring(0, 10);
 }
 
-String initials(String? name) {
+/// Two-letter avatar text; [fromStart] takes the first two words (dealers), else the last two.
+String initials(String? name, {bool fromStart = false}) {
   final parts = (name ?? '').trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
   if (parts.isEmpty) return '?';
-  return parts.skip(parts.length > 2 ? parts.length - 2 : 0).map((p) => p[0]).join().toUpperCase();
+  return (fromStart ? parts.take(2) : parts.skip(parts.length > 2 ? parts.length - 2 : 0)).map((p) => p[0]).join().toUpperCase();
 }
