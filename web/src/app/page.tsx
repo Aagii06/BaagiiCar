@@ -87,6 +87,7 @@ function DealerGrid() {
               <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted md:size-14">
                 <DealerAvatar
                   logo={dealer.logo}
+                  name={name}
                   loading="lazy"
                   className="size-full object-contain"
                 />

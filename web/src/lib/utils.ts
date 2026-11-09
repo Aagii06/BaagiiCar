@@ -49,11 +49,11 @@ export function timeAgo(value: string | null | undefined, t: T) {
   return value.slice(0, 10);
 }
 
-export function initials(name: string | null | undefined) {
+/** Two-letter avatar text; `from: "start"` takes the first two words (dealers), else the last two. */
+export function initials(name: string | null | undefined, from: "start" | "end" = "end") {
   const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return "?";
-  return parts
-    .slice(-2)
+  return (from === "start" ? parts.slice(0, 2) : parts.slice(-2))
     .map((p) => p[0])
     .join("")
     .toUpperCase();

@@ -77,6 +77,7 @@ export default function DealersMenu({ className }: { className?: string }) {
                       <span className="grid size-10 shrink-0 place-items-center overflow-hidden rounded-full bg-muted">
                         <DealerAvatar
                           logo={dealer.logo}
+                          name={name}
                           className="size-full object-cover"
                         />
                       </span>

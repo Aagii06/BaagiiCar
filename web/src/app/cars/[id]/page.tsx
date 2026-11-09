@@ -382,6 +382,7 @@ function Summary({ car: c, phone, sold }: { car: Car; phone: string | null; sold
           <Link href={`/dealers?d=${c.dealer_id}`} className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80">
             <DealerAvatar
               logo={c.dealer_logo}
+              name={c.dealer_name}
               className="size-11 shrink-0 rounded-full border border-border bg-white object-contain p-1"
             />
             <span className="min-w-0 flex-1">

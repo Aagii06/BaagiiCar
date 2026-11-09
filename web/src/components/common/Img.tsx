@@ -10,7 +10,8 @@ import { useEffect, useRef, useState } from "react";
  * give the image a size, or `placeholderClassName` one for while it loads
  * (images sized only by max-width/height are 0×0 until they arrive).
  * `skeletonClassName` swaps the default color, e.g. for dark backgrounds.
- * No src (not uploaded / empty path) or a file that fails to load shows the "no image" picture instead.
+ * No src (not uploaded / empty path) or a file that fails to load shows the "no image" picture instead,
+ * or `fallback` when given.
  */
 export default function Img({
   src,
@@ -20,8 +21,15 @@ export default function Img({
   onLoad,
   onError,
   alt = "",
+  fallback,
   ...props
-}: Omit<React.ImgHTMLAttributes<HTMLImageElement>, "src"> & { src: string | null | undefined; skeletonClassName?: string; placeholderClassName?: string }) {
+}: Omit<React.ImgHTMLAttributes<HTMLImageElement>, "src"> & {
+  src: string | null | undefined;
+  skeletonClassName?: string;
+  placeholderClassName?: string;
+  /** Shown instead of the "no image" picture when there is no src or it fails to load. */
+  fallback?: React.ReactNode;
+}) {
   const ref = useRef<HTMLImageElement>(null);
   // The src that failed, so a new src gets its own try.
   const [failed, setFailed] = useState<string | null>(null);
@@ -36,6 +44,7 @@ export default function Img({
     if (src && el?.complete && el.naturalWidth) setDoneSrc(src);
   }, [src]);
 
+  if (missing && fallback !== undefined) return <>{fallback}</>;
   if (missing) return <NoImage alt={alt} className={className} {...props} />;
 
   return (

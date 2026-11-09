@@ -42,9 +42,10 @@ export default function DealerTabs({
           >
             <DealerAvatar
               logo={d.logo}
+              name={name}
               loading="lazy"
               skeletonClassName="bg-foreground/10 rounded-md"
-              className={cn("h-full w-full object-contain transition", active ? "" : "opacity-80 grayscale group-hover:opacity-100 group-hover:grayscale-0")}
+              className="h-full w-full object-contain"
             />
           </button>
         );
