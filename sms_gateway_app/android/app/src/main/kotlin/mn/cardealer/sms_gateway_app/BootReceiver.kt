@@ -8,7 +8,7 @@ import android.content.Intent
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
-        if (GatewayState.enabled(context) && GatewayState.serverUrl(context).isNotEmpty())
+        if (GatewayState.enabled(context) && GatewayState.servers(context).isNotEmpty())
             GatewayService.start(context)
     }
 }

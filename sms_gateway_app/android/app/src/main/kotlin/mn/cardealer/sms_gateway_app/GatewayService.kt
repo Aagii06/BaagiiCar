@@ -36,48 +36,74 @@ class GatewayService : Service() {
         }
     }
 
-    private var worker: Thread? = null
+    private val workers = mutableListOf<Thread>()
     private var wakeLock: PowerManager.WakeLock? = null
+
+    // Зогсоогоод шууд асаахад хуучин (long-poll дээр хүлээж буй) thread-үүд үргэлжлэхгүйн тулд
+    @Volatile private var generation = 0
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startInForeground("Холбогдож байна...")
-        if (worker?.isAlive != true) {
-            wakeLock = (getSystemService(POWER_SERVICE) as PowerManager)
-                .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "sms_gateway:loop")
-                .apply { acquire() }
+        if (workers.none { it.isAlive }) {
+            val servers = GatewayState.servers(this)
+            if (servers.isEmpty()) {
+                GatewayState.addLog("Сервер тохируулаагүй байна")
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            if (wakeLock?.isHeld != true) {
+                wakeLock = (getSystemService(POWER_SERVICE) as PowerManager)
+                    .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "sms_gateway:loop")
+                    .apply { acquire() }
+            }
             GatewayState.running = true
-            GatewayState.addLog("Gateway асаалаа")
-            worker = Thread(::loop, "sms-gateway").apply { start() }
+            GatewayState.connected.clear()
+            GatewayState.lastError.clear()
+            GatewayState.addLog("Gateway асаалаа (${servers.size} сервер)")
+            val gen = ++generation
+            workers.clear()
+            servers.forEach { server ->
+                workers += Thread({ loop(server, gen) }, "sms-gateway-${server.label}").apply { start() }
+            }
         }
         return START_STICKY
     }
 
     override fun onDestroy() {
+        generation++
         GatewayState.running = false
-        GatewayState.connected = false
-        worker?.interrupt()
-        worker = null
+        GatewayState.connected.clear()
+        workers.forEach { it.interrupt() }
+        workers.clear()
         wakeLock?.takeIf { it.isHeld }?.release()
         GatewayState.addLog("Gateway унтраалаа")
         super.onDestroy()
     }
 
-    private fun loop() {
+    private fun active(gen: Int) = GatewayState.running && gen == generation && !Thread.currentThread().isInterrupted
+
+    private fun statusText(): String {
+        val total = GatewayState.servers(this).size
+        val online = GatewayState.connected.count { it.value }
+        return "Холбогдсон $online/$total · илгээсэн ${GatewayState.sentCount}"
+    }
+
+    private fun loop(server: GatewayServer, gen: Int) {
+        val name = server.label
         var backoff = 2_000L
-        while (GatewayState.running && !Thread.currentThread().isInterrupted) {
+        while (active(gen)) {
             try {
-                val server = GatewayState.serverUrl(this)
-                val token = GatewayState.token(this)
-                val body = request("GET", "$server/api/sms-gateway/pending?wait=$WAIT_SECONDS", token, null)
+                val body = request("GET", "${server.url}/api/sms-gateway/pending?wait=$WAIT_SECONDS", server.token, null)
+                if (!active(gen)) break
                 val items = JSONObject(body).optJSONArray("data")
 
-                if (!GatewayState.connected) {
-                    GatewayState.connected = true
-                    GatewayState.lastError = null
-                    GatewayState.addLog("Сервертэй холбогдлоо")
-                    updateNotification("Ажиллаж байна · илгээсэн ${GatewayState.sentCount}")
+                if (GatewayState.connected[server.url] != true) {
+                    GatewayState.connected[server.url] = true
+                    GatewayState.lastError.remove(server.url)
+                    GatewayState.addLog("[$name] Сервертэй холбогдлоо")
+                    updateNotification(statusText())
                 }
                 backoff = 2_000L
 
@@ -85,26 +111,29 @@ class GatewayService : Service() {
                     val item = items!!.getJSONObject(i)
                     val id = item.getInt("id")
                     val phone = item.getString("phonenumber")
-                    val error = SmsSender.send(this, phone, item.getString("text"))
+                    // SIM нэг тул серверүүдийн мессежийг ээлжлэн илгээнэ
+                    val error = synchronized(SmsSender) { SmsSender.send(this, phone, item.getString("text")) }
 
                     if (error == null) {
-                        GatewayState.sentCount++
-                        GatewayState.addLog("✓ $phone руу илгээлээ (#$id)")
+                        GatewayState.incrementSent()
+                        GatewayState.addLog("[$name] ✓ $phone руу илгээлээ (#$id)")
                     } else {
-                        GatewayState.failedCount++
-                        GatewayState.addLog("✗ $phone: $error (#$id)")
+                        GatewayState.incrementFailed()
+                        GatewayState.addLog("[$name] ✗ $phone: $error (#$id)")
                     }
-                    report(server, token, id, error)
-                    updateNotification("Ажиллаж байна · илгээсэн ${GatewayState.sentCount}")
+                    report(server, id, error)
+                    updateNotification(statusText())
                 }
             } catch (e: InterruptedException) {
                 break
             } catch (e: Exception) {
+                if (!active(gen)) break
                 val message = e.message ?: e.javaClass.simpleName
-                if (GatewayState.connected || GatewayState.lastError != message) GatewayState.addLog("Холболтын алдаа: $message")
-                GatewayState.connected = false
-                GatewayState.lastError = message
-                updateNotification("Холболт тасарсан, дахин оролдож байна...")
+                if (GatewayState.connected[server.url] == true || GatewayState.lastError[server.url] != message)
+                    GatewayState.addLog("[$name] Холболтын алдаа: $message")
+                GatewayState.connected[server.url] = false
+                GatewayState.lastError[server.url] = message
+                updateNotification(statusText())
                 try {
                     Thread.sleep(backoff)
                 } catch (_: InterruptedException) {
@@ -116,14 +145,14 @@ class GatewayService : Service() {
     }
 
     // Үр дүнг мэдээлэхэд алдаа гарвал хэдэн удаа дахин оролдоно (мэдээлээгүй бол сервер 2 минутын дараа дахин өгнө)
-    private fun report(server: String, token: String, id: Int, error: String?) {
+    private fun report(server: GatewayServer, id: Int, error: String?) {
         val payload = JSONObject().put("status", if (error == null) "sent" else "failed").put("error", error ?: "")
         repeat(3) { attempt ->
             try {
-                request("POST", "$server/api/sms-gateway/$id/status", token, payload.toString())
+                request("POST", "${server.url}/api/sms-gateway/$id/status", server.token, payload.toString())
                 return
             } catch (e: Exception) {
-                if (attempt == 2) GatewayState.addLog("Үр дүн мэдээлж чадсангүй #$id: ${e.message}")
+                if (attempt == 2) GatewayState.addLog("[${server.label}] Үр дүн мэдээлж чадсангүй #$id: ${e.message}")
                 else Thread.sleep(1_000)
             }
         }

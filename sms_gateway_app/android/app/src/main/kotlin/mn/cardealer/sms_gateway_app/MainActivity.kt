@@ -24,13 +24,18 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sms_gateway").setMethodCallHandler { call, result ->
             when (call.method) {
                 "getConfig" -> result.success(
-                    mapOf("serverUrl" to GatewayState.serverUrl(this), "token" to GatewayState.token(this)),
+                    mapOf("servers" to GatewayState.servers(this).map { mapOf("url" to it.url, "token" to it.token) }),
                 )
                 "status" -> result.success(
                     mapOf(
                         "running" to GatewayState.running,
-                        "connected" to GatewayState.connected,
-                        "lastError" to GatewayState.lastError,
+                        "servers" to GatewayState.servers(this).map {
+                            mapOf(
+                                "url" to it.url,
+                                "connected" to (GatewayState.connected[it.url] == true),
+                                "lastError" to GatewayState.lastError[it.url],
+                            )
+                        },
                         "sentCount" to GatewayState.sentCount,
                         "failedCount" to GatewayState.failedCount,
                         "log" to GatewayState.logLines(),
@@ -39,7 +44,8 @@ class MainActivity : FlutterActivity() {
                     ),
                 )
                 "start" -> {
-                    GatewayState.save(this, call.argument<String>("serverUrl") ?: "", call.argument<String>("token") ?: "")
+                    val servers = call.argument<List<Map<String, String>>>("servers").orEmpty()
+                    GatewayState.save(this, servers.map { GatewayServer(it["url"].orEmpty(), it["token"].orEmpty()) })
                     GatewayState.setEnabled(this, true)
                     GatewayService.start(this)
                     result.success(null)

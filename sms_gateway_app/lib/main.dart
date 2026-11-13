@@ -29,9 +29,23 @@ class GatewayPage extends StatefulWidget {
   State<GatewayPage> createState() => _GatewayPageState();
 }
 
+/// Нэг backend-ийн тохиргооны талбарууд
+class _ServerFields {
+  _ServerFields([String url = '', String token = ''])
+      : url = TextEditingController(text: url),
+        token = TextEditingController(text: token);
+
+  final TextEditingController url;
+  final TextEditingController token;
+
+  void dispose() {
+    url.dispose();
+    token.dispose();
+  }
+}
+
 class _GatewayPageState extends State<GatewayPage> {
-  final _serverUrl = TextEditingController();
-  final _token = TextEditingController();
+  final List<_ServerFields> _servers = [];
   final _testPhone = TextEditingController();
   Map<dynamic, dynamic> _status = {};
   Timer? _timer;
@@ -46,13 +60,19 @@ class _GatewayPageState extends State<GatewayPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    for (final server in _servers) {
+      server.dispose();
+    }
     super.dispose();
   }
 
   Future<void> _load() async {
     final config = await _channel.invokeMapMethod<String, dynamic>('getConfig') ?? {};
-    _serverUrl.text = config['serverUrl'] ?? '';
-    _token.text = config['token'] ?? '';
+    final saved = (config['servers'] as List?) ?? [];
+    setState(() {
+      _servers.addAll(saved.map((s) => _ServerFields(s['url'] ?? '', s['token'] ?? '')));
+      if (_servers.isEmpty) _servers.add(_ServerFields());
+    });
     await _channel.invokeMethod('requestPermissions');
     await _refresh();
   }
@@ -80,14 +100,20 @@ class _GatewayPageState extends State<GatewayPage> {
     if (_status['running'] == true) {
       await _channel.invokeMethod('stop');
     } else {
-      if (!_serverUrl.text.startsWith('http') || _token.text.trim().isEmpty) {
-        return _toast('Серверийн хаяг (http...) болон token оруулна уу');
+      final filled = _servers.where((s) => s.url.text.trim().isNotEmpty).toList();
+      if (filled.isEmpty) return _toast('Дор хаяж нэг серверийн хаяг оруулна уу');
+      for (final s in filled) {
+        if (!s.url.text.trim().startsWith('http') || s.token.text.trim().isEmpty) {
+          return _toast('Сервер бүрт хаяг (http...) болон token оруулна уу');
+        }
       }
       if (_status['smsPermission'] != true) {
         await _channel.invokeMethod('requestPermissions');
         return _toast('SMS илгээх зөвшөөрөл өгнө үү');
       }
-      await _channel.invokeMethod('start', {'serverUrl': _serverUrl.text, 'token': _token.text});
+      await _channel.invokeMethod('start', {
+        'servers': [for (final s in filled) {'url': s.url.text.trim(), 'token': s.token.text.trim()}],
+      });
     }
     await _refresh();
   }
@@ -107,13 +133,16 @@ class _GatewayPageState extends State<GatewayPage> {
   @override
   Widget build(BuildContext context) {
     final running = _status['running'] == true;
-    final connected = _status['connected'] == true;
+    final serverStatus = {
+      for (final s in (_status['servers'] as List?) ?? []) s['url'] as String: s as Map,
+    };
+    final online = serverStatus.values.where((s) => s['connected'] == true).length;
     final log = (_status['log'] as List?)?.cast<String>() ?? [];
     final (color, label) = !running
         ? (Colors.grey, 'Унтраалттай')
-        : connected
+        : online == serverStatus.length && online > 0
             ? (Colors.green, 'Ажиллаж байна')
-            : (Colors.orange, 'Холбогдож байна... ${_status['lastError'] ?? ''}');
+            : (Colors.orange, 'Холбогдсон $online/${serverStatus.length}');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Cardealer SMS Gateway')),
@@ -140,26 +169,27 @@ class _GatewayPageState extends State<GatewayPage> {
               onPressed: () => _channel.invokeMethod('requestBatteryUnrestricted'),
             ),
           const SizedBox(height: 8),
-          TextField(
-            controller: _serverUrl,
-            enabled: !running,
-            keyboardType: TextInputType.url,
-            decoration: const InputDecoration(
-              labelText: 'Серверийн хаяг',
-              hintText: 'https://api.example.mn',
-              border: OutlineInputBorder(),
+          for (final (i, server) in _servers.indexed) ...[
+            _ServerCard(
+              index: i,
+              fields: server,
+              enabled: !running,
+              status: serverStatus[server.url.text.trim().replaceAll(RegExp(r'/+$'), '')],
+              onRemove: _servers.length > 1
+                  ? () => setState(() => _servers.removeAt(i).dispose())
+                  : null,
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _token,
-            enabled: !running,
-            obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Token (backend .env: SMS_GATEWAY_TOKEN)',
-              border: OutlineInputBorder(),
+            const SizedBox(height: 12),
+          ],
+          if (!running)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => setState(() => _servers.add(_ServerFields())),
+                icon: const Icon(Icons.add),
+                label: const Text('Сервер нэмэх'),
+              ),
             ),
-          ),
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: _busy != null ? null : _toggle,
@@ -201,6 +231,86 @@ class _GatewayPageState extends State<GatewayPage> {
               child: Text(line, style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ServerCard extends StatelessWidget {
+  const _ServerCard({
+    required this.index,
+    required this.fields,
+    required this.enabled,
+    required this.status,
+    required this.onRemove,
+  });
+
+  final int index;
+  final _ServerFields fields;
+  final bool enabled;
+  final Map? status;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final connected = status?['connected'] == true;
+    final error = status?['lastError'] as String?;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 4, 4, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                if (status != null) ...[
+                  Icon(Icons.circle, size: 12, color: connected ? Colors.green : Colors.orange),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: Text(
+                    status == null || connected ? 'Сервер ${index + 1}' : 'Сервер ${index + 1} · ${error ?? 'холбогдож байна...'}',
+                    style: Theme.of(context).textTheme.titleSmall,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (enabled && onRemove != null)
+                  IconButton(onPressed: onRemove, icon: const Icon(Icons.delete_outline), tooltip: 'Устгах')
+                else
+                  const SizedBox(height: 48),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: fields.url,
+                    enabled: enabled,
+                    keyboardType: TextInputType.url,
+                    decoration: const InputDecoration(
+                      labelText: 'Серверийн хаяг',
+                      hintText: 'https://api.example.mn',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: fields.token,
+                    enabled: enabled,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Token (backend .env: SMS_GATEWAY_TOKEN)',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
