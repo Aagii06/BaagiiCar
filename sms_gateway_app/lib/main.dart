@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'history_page.dart';
+
 // Cardealer SMS gateway: энэ утасны SIM-ээр backend-ийн OTP SMS-ийг илгээнэ.
 // Ажиллах хэсэг нь native foreground service (android/.../GatewayService.kt), энд зөвхөн тохиргоо, төлөв.
 const _channel = MethodChannel('sms_gateway');
@@ -145,7 +147,19 @@ class _GatewayPageState extends State<GatewayPage> {
             : (Colors.orange, 'Холбогдсон $online/${serverStatus.length}');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cardealer SMS Gateway')),
+      appBar: AppBar(
+        title: const Text('Cardealer SMS Gateway'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Илгээсэн SMS',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const HistoryPage(channel: _channel)),
+            ),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -112,7 +112,9 @@ class GatewayService : Service() {
                     val id = item.getInt("id")
                     val phone = item.getString("phonenumber")
                     // SIM нэг тул серверүүдийн мессежийг ээлжлэн илгээнэ
-                    val error = synchronized(SmsSender) { SmsSender.send(this, phone, item.getString("text")) }
+                    val text = item.getString("text")
+                    val error = synchronized(SmsSender) { SmsSender.send(this, phone, text) }
+                    SmsHistory.add(this, name, phone, text, error)
 
                     if (error == null) {
                         GatewayState.incrementSent()

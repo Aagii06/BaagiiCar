@@ -55,6 +55,14 @@ class MainActivity : FlutterActivity() {
                     GatewayService.stop(this)
                     result.success(null)
                 }
+                "history" -> Thread {
+                    val items = SmsHistory.list(this)
+                    runOnUiThread { result.success(items) }
+                }.start()
+                "clearHistory" -> {
+                    SmsHistory.clear(this)
+                    result.success(null)
+                }
                 "requestPermissions" -> {
                     requestPermissions(requiredPermissions.toTypedArray(), 1)
                     result.success(null)
@@ -66,7 +74,9 @@ class MainActivity : FlutterActivity() {
                 "sendTest" -> {
                     val phone = call.argument<String>("phonenumber") ?: ""
                     Thread {
-                        val error = SmsSender.send(this, phone, "Cardealer SMS gateway: туршилтын мессеж")
+                        val text = "Cardealer SMS gateway: туршилтын мессеж"
+                        val error = synchronized(SmsSender) { SmsSender.send(this, phone, text) }
+                        SmsHistory.add(this, "Туршилт", phone, text, error)
                         GatewayState.addLog(if (error == null) "✓ Туршилт $phone руу илгээлээ" else "✗ Туршилт $phone: $error")
                         runOnUiThread { result.success(error) }
                     }.start()
