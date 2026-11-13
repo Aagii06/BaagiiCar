@@ -21,14 +21,25 @@ const ROLE_TONE: Record<string, string> = {
 };
 
 /** A function so the labels follow the current language. */
-const roleTabs = () => [{ value: "", label: tr("Бүгд") }, ...ROLE_LIST.map((r) => ({ value: r as string, label: roleLabel(r) }))];
+// The last tab lists users blocked for not verifying their phone in time (backend helper/phoneVerifyHelper.js)
+// or for losing their number to another account; opening one and setting it active unblocks it.
+const BLOCKED = "blocked";
+const roleTabs = () => [
+  { value: "", label: tr("Бүгд") },
+  ...ROLE_LIST.map((r) => ({ value: r as string, label: roleLabel(r) })),
+  { value: BLOCKED, label: tr("Блоклогдсон") },
+];
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
   const [role, setRole] = useState("");
   const { user } = useAuth();
-  const users = useApi(() => listUsers(q, user?.id, role || undefined), `${q}|${role}|${user?.id ?? ""}`);
+  const blocked = role === BLOCKED;
+  const users = useApi(
+    () => listUsers(q, user?.id, blocked ? undefined : role || undefined, blocked ? BLOCKED : undefined),
+    `${q}|${role}|${user?.id ?? ""}`,
+  );
 
   return (
     <>

@@ -5,6 +5,7 @@ import BrandMark from "@/components/layout/BrandMark";
 import SplashScreen from "@/components/layout/SplashScreen";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { APP_CUSTOMER_URL, useInApp } from "@/lib/inApp";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { tr } from "@/lib/i18n/translations";
@@ -60,6 +61,11 @@ function LoginForm() {
         <Field label={tr("Нууц үг")}>
           <PasswordInput autoComplete="current-password" placeholder={tr("Нууц үг")} value={password} onChange={(e) => setPassword(e.target.value)} required />
         </Field>
+        <div className="-mt-1 text-right">
+          <Link href={phone ? `/forgot-password?phone=${phone}` : "/forgot-password"} className="text-sm font-semibold text-primary">
+            {tr("Нууц үгээ мартсан уу?")}
+          </Link>
+        </div>
         <FormError message={error} />
         <button disabled={busy} className="h-12 w-full rounded-xl bg-primary font-bold text-white hover:bg-primary-hover disabled:opacity-60">
           {busy ? tr("Түр хүлээнэ үү…") : tr("Нэвтрэх")}

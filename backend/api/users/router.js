@@ -18,6 +18,9 @@ const {
   emailOtpLoginValidation,
   passwordChangeSendValidation,
   passwordChangeVerifyValidation,
+  forgotSendValidation,
+  forgotVerifyValidation,
+  forgotResetValidation,
 } = require("./validation");
 
 const {
@@ -38,6 +41,9 @@ const {
   phoneVerifyConfirm,
   phoneChangeSend,
   phoneChangeVerify,
+  forgotSend,
+  forgotVerify,
+  forgotReset,
 } = require("./controller");
 const { phoneVerifyValidation } = require("../../web/auth/validation");
 // Утас + кодоор нэвтрэх логик вэбтэй нэг (web/auth)
@@ -53,6 +59,10 @@ router
   .post(protect, isAdmin, createValidation, byAndAt, create);
 
 router.route("/login").post(loginValidation, login);
+// Нууц үгээ мартсан: утас → SMS код → баталгаажуулж reset_token → шинэ нууц үг
+router.route("/forgot/send").post(forgotSendValidation, forgotSend);
+router.route("/forgot/verify").post(forgotVerifyValidation, forgotVerify);
+router.route("/forgot/reset").post(forgotResetValidation, byAndAt, forgotReset);
 // Вэб: утас + нэг удаагийн кодоор нэвтрэх
 router.route("/otp-send").post(otpSendValidation, otpSend);
 router.route("/otp-login").post(otpLoginValidation, byAndAt, otpLogin);

@@ -1,14 +1,13 @@
 const schedule = require("node-schedule");
 const moment = require("moment");
-const { users, customers, cars, sequelize, op } = require("../models");
+const { users, customers, op } = require("../models");
 const { roles } = require("../config/constants");
 const { saveLog } = require("../utils/logHelper");
 const { isSmsConfigured } = require("./smsHelper");
 const { phoneVerifyDeadline } = require("./phoneVerifyDeadline");
 
-// Утсаа phone_verify_deadline-аас өмнө баталгаажуулаагүй users (ADMIN-аас бусад) болон customers-ийг
-// бүр мөсөн устгана. Хэрэглэгчийн зарууд (cars.user_id) устахгүй - эхний идэвхтэй админ руу шилжинэ.
-// Чат, хадгалсан зар зэрэг нь FK-ийн CASCADE-аар хамт устна.
+// Утсаа phone_verify_deadline-аас өмнө баталгаажуулаагүй users (ADMIN-аас бусад)-ийг блоклоно (status = "blocked"),
+// customers-ийг бүр мөсөн устгана (чат, хадгалсан зар зэрэг нь FK-ийн CASCADE-аар хамт устна).
 // SMS холбогдоогүй үед (SMS_GATEWAY_TOKEN хоосон) баталгаажуулах боломжгүй тул устгахгүй, харин
 // хугацааг сунгасаар байна - SMS асаасан өдрөөс хойш phoneVerifyDays хоног өгөгдөнө.
 
@@ -25,41 +24,26 @@ module.exports.runPhoneVerifyCleanup = async () => {
       return;
     }
     const at = now();
+    // users: устгахгүй, "blocked" болгоно - нэвтэрч чадахгүй, админ /users-ийн "Блоклогдсон" хэсгээс
+    // идэвхжүүлбэл дахин phoneVerifyDays хоног өгөгдөнө (models/users.js hook). Зарууд нь хэвээр.
     const staleUsers = await users.findAll({
-      where: { ...expired(), role: { [op.ne]: roles.admin } },
+      where: { ...expired(), role: { [op.ne]: roles.admin }, status: "active" },
       attributes: ["id", "phonenumber", "role"],
       raw: true,
     });
-    if (staleUsers.length) {
-      const admin = await users.findOne({
-        where: { role: roles.admin, status: "active" },
-        order: [["id", "ASC"]],
-        attributes: ["id"],
-        raw: true,
-      });
-      for (const user of staleUsers) {
-        const t = await sequelize.transaction();
-        try {
-          const owned = await cars.count({ where: { user_id: user.id }, transaction: t });
-          if (owned && !admin) throw new Error("зар шилжүүлэх идэвхтэй админ алга");
-          if (owned) await cars.update({ user_id: admin.id }, { where: { user_id: user.id }, transaction: t, hooks: false });
-          await users.destroy({ where: { id: user.id }, transaction: t });
-          await saveLog(
-            {
-              object_name: "users",
-              object_id: user.id,
-              log_action: "phone_unverified_deleted",
-              log_action_mn: "Утсаа баталгаажуулаагүй тул устгагдсан",
-              modify_data: JSON.stringify({ ...user, moved_cars: owned }),
-              created_at: at,
-            },
-            t,
-          );
-          await t.commit();
-        } catch (error) {
-          await t.rollback();
-          console.log(`phone verify cleanup: user ${user.id} устгаж чадсангүй:`, error?.message || error);
-        }
+    for (const user of staleUsers) {
+      try {
+        await users.update({ status: "blocked", updated_at: at }, { where: { id: user.id }, hooks: false });
+        await saveLog({
+          object_name: "users",
+          object_id: user.id,
+          log_action: "phone_unverified_blocked",
+          log_action_mn: "Утсаа баталгаажуулаагүй тул блоклогдсон",
+          modify_data: JSON.stringify(user),
+          created_at: at,
+        });
+      } catch (error) {
+        console.log(`phone verify cleanup: user ${user.id} блоклож чадсангүй:`, error?.message || error);
       }
     }
 
@@ -80,7 +64,7 @@ module.exports.runPhoneVerifyCleanup = async () => {
       }
     }
     if (staleUsers.length || staleCustomers.length)
-      console.log(`phone verify cleanup: users ${staleUsers.length}, customers ${staleCustomers.length}`);
+      console.log(`phone verify cleanup: blocked users ${staleUsers.length}, deleted customers ${staleCustomers.length}`);
   } catch (error) {
     console.log("runPhoneVerifyCleanup failed:", error);
   }

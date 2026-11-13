@@ -178,7 +178,7 @@ function ProfileForm({ me }: { me: User }) {
                   : phoneVerified
                     ? undefined
                     : me.phone_verify_deadline
-                      ? tr("Утсаа баталгаажуулна уу. {date} хүртэл баталгаажуулаагүй бол бүртгэл устна", { date: me.phone_verify_deadline.slice(0, 16) })
+                      ? tr("Утсаа баталгаажуулна уу. {date} хүртэл баталгаажуулаагүй бол бүртгэл блоклогдоно", { date: me.phone_verify_deadline.slice(0, 16) })
                       : tr("Утсаа SMS кодоор баталгаажуулна уу")
             }
           >

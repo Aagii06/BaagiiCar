@@ -151,3 +151,17 @@ module.exports.loginValidation = [
   body("password").notEmpty().withMessage("Нууц үг оруулна уу"),
   validation,
 ];
+
+// Нууц үгээ мартсан (нэвтрээгүй)
+module.exports.forgotSendValidation = [phonenumberValidation("Утасны дугаар оруулна уу"), validation];
+module.exports.forgotVerifyValidation = [
+  phonenumberValidation("Утасны дугаар оруулна уу"),
+  body("code").trim().notEmpty().withMessage("Код оруулна уу"),
+  validation,
+];
+module.exports.forgotResetValidation = [
+  body("reset_token").notEmpty().withMessage("Дахин код авна уу"),
+  body("password").isLength({ min: 6 }).withMessage("Нууц үг 6-аас дээш тэмдэгттэй байна"),
+  passwordConfirmValidation,
+  validation,
+];

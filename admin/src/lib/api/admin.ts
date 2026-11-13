@@ -22,6 +22,30 @@ export async function login(phonenumber: string, password: string) {
   return res.data;
 }
 
+// Forgotten password (signed out): `forgotSend` texts a code to a registered
+// number, `forgotVerify` checks it and returns a 30-minute reset token,
+// `forgotReset` sets the new password with it.
+export async function forgotSend(phonenumber: string) {
+  await apiFetch<ApiItemResponse<null>>("/api/users/forgot/send", { method: "POST", auth: false, body: { phonenumber } });
+}
+
+export async function forgotVerify(phonenumber: string, code: string) {
+  const res = await apiFetch<ApiItemResponse<{ reset_token: string }>>("/api/users/forgot/verify", {
+    method: "POST",
+    auth: false,
+    body: { phonenumber, code },
+  });
+  return res.data.reset_token;
+}
+
+export async function forgotReset(reset_token: string, password: string, password_confirm: string) {
+  await apiFetch<ApiItemResponse<null>>("/api/users/forgot/reset", {
+    method: "POST",
+    auth: false,
+    body: { reset_token, password, password_confirm },
+  });
+}
+
 /** Also returns a fresh 7-day token, so every visit slides the session forward. */
 export async function getUserData() {
   const res = await apiFetch<{ success: boolean; loggedUser: User | null; token?: string }>("/api/users/get-user-data", {
@@ -433,11 +457,12 @@ export async function deleteCar(id: number) {
 // --- users -----------------------------------------------------------------
 
 /** `excludeId` leaves the signed-in user out (they manage themselves from Профайл). */
-export async function listUsers(search?: string, excludeId?: number, role?: string) {
+export async function listUsers(search?: string, excludeId?: number, role?: string, status?: string) {
   // Leftover CUSTOMER rows (web sign-ups) belong on the Хэрэглэгч page, not here.
   const filter: Condition[] = [NOT_DELETED, ["role", "<>", ROLES.customer]];
   if (excludeId) filter.push(["id", "<>", excludeId]);
   if (role) filter.push(["role", "=", role]);
+  if (status) filter.push(["status", "=", status]);
   const q = search?.trim();
   if (q) filter.push(/^\d+$/.test(q) ? ["phonenumber", "contains", q] : ["firstname", "contains", q]);
   const res = await apiFetch<ApiListResponse<User>>(`/api/base/users${listQuery({ filter, sort: NEWEST, take: 200 })}`);

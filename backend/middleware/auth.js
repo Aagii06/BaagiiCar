@@ -24,13 +24,37 @@ const readToken = (req) => {
 
 module.exports.readToken = readToken;
 
+const BLOCKED_MESSAGE = "Таны бүртгэл блоклогдсон байна. Админд хандана уу";
+module.exports.BLOCKED_MESSAGE = BLOCKED_MESSAGE;
+
+// Нууц үг сэргээх: SMS кодоор баталгаажсан хэрэглэгчид 30 минутын токен (api/users forgot-*)
+module.exports.signPasswordReset = (userId) =>
+  jwt.sign({ passwordReset: { id: userId } }, process.env.JWT_SECRET, { expiresIn: "30m" });
+module.exports.readPasswordReset = (token) => {
+  try {
+    return jwt.verify(String(token ?? ""), process.env.JWT_SECRET).passwordReset?.id ?? null;
+  } catch (error) {
+    return null;
+  }
+};
+
 const unauthorized = (res) => res.status(401).json({ success: false, message: "Систем рүү нэвтэрнэ үү" });
 
 // Админ / дилер (users хүснэгт). Вэбийн зочны (customers) токен энд хүчингүй:
 // түүний id нь customers-ийнх тул users-ийн ижил id-тай андуурагдах ёсгүй.
+// Блоклогдсон / идэвхгүй / устгагдсан хэрэглэгчийн хуучин токен хүчингүй.
 module.exports.protect = async (req, res, next) => {
   const user = readToken(req);
   if (!user || user.customer) return unauthorized(res);
+  try {
+    const { users } = require("../models");
+    const row = await users.findOne({ where: { id: user.id }, attributes: ["status"], raw: true });
+    if (row?.status === "blocked")
+      return res.status(401).json({ success: false, message: BLOCKED_MESSAGE });
+    if (row?.status !== "active") return unauthorized(res);
+  } catch (error) {
+    return next(error);
+  }
   req.loggedUser = user;
   next();
 };

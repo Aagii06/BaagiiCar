@@ -81,6 +81,8 @@ const subjects = {
   // "user-phone-new:<userId>" / "cust-phone-new:<customerId>" - нэвтэрсэн хэрэглэгч дугаараа солих
   "user-phone-new": "утасны дугаар солих код",
   "cust-phone-new": "утасны дугаар солих код",
+  // "user-forgot:<userId>" - нэвтрэх хуудаснаас нууц үгээ сэргээх
+  "user-forgot": "нууц үг сэргээх код",
 };
 const titleFor = (purpose) => `Cardealer ${subjects[purpose.split(":")[0]] || "баталгаажуулах код"}`;
 
@@ -162,7 +164,7 @@ module.exports.releaseEmail = async (email, { customerId, userId } = {}, transac
 };
 
 // --- Нэвтэрсэн хэрэглэгч өөрийн утсаа баталгаажуулах -----------------------
-// model: users | customers. Баталгаажуулаагүй бол phone_verify_deadline-ийн дараа бүртгэл устна
+// model: users | customers. Баталгаажуулаагүй бол phone_verify_deadline-ийн дараа users блоклогдоно, customers устна
 // (helper/phoneVerifyHelper.js). Код хэрэглэгч бүрт тусдаа (purpose = "<prefix>:<id>").
 const findForVerify = (model, id) =>
   model.findOne({ where: { id, status: "active" }, attributes: ["id", "phonenumber", "phone_verified_at", "role"].filter((f) => model.rawAttributes[f]) });

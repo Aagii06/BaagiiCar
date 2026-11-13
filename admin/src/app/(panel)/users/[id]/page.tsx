@@ -140,7 +140,9 @@ function UserForm({
           hint={
             !user || user.role === ROLES.admin || user.phone_verified_at
               ? undefined
-              : tr("Утсаа баталгаажуулаагүй") + (user.phone_verify_deadline ? ` · ${tr("{date}-д бүртгэл устна", { date: user.phone_verify_deadline.slice(0, 16) })}` : "")
+              : user.status === "blocked"
+                ? tr("Утсаа баталгаажуулаагүй · Төлөвийг идэвхтэй болговол дахин 7 хоног өгнө")
+                : tr("Утсаа баталгаажуулаагүй") + (user.phone_verify_deadline ? ` · ${tr("{date}-д бүртгэл блоклогдоно", { date: user.phone_verify_deadline.slice(0, 16) })}` : "")
           }
         >
           <span className="relative block">
@@ -174,7 +176,7 @@ function UserForm({
             <Select value={f.status} onChange={set("status")} disabled={isMe}>
               <option value="active">{tr("Идэвхтэй")}</option>
               <option value="inactive">{tr("Идэвхгүй")}</option>
-              {/* Set by the backend when another account verified this user's number by code. */}
+              {/* Set by the backend when the phone wasn't verified in time, or another account verified this number by code. */}
               {user?.status === "blocked" && <option value="blocked">{tr("Блоклогдсон")}</option>}
             </Select>
           </Field>

@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       phonenumber: { type: DataTypes.STRING },
       // SMS кодоор баталгаажсан огноо (null - баталгаажаагүй)
       phone_verified_at: { type: DataTypes.STRING },
-      // Энэ хугацаанд баталгаажуулаагүй бол устна (ADMIN-д null)
+      // Энэ хугацаанд баталгаажуулаагүй бол блоклогдоно (helper/phoneVerifyHelper.js; ADMIN-д null)
       phone_verify_deadline: { type: DataTypes.STRING },
       firstname: { type: DataTypes.STRING },
       lastname: { type: DataTypes.STRING },
@@ -63,11 +63,17 @@ module.exports = (sequelize, DataTypes) => {
   users.softDelete = true;
 
   users.beforeSave(async (data, options) => {
-    // Дугаар солигдвол дахин баталгаажуулна. ADMIN-аас бусад нь хугацаандаа баталгаажуулаагүй бол устна.
+    // Дугаар солигдвол дахин баталгаажуулна. ADMIN-аас бусад нь хугацаандаа баталгаажуулаагүй бол блоклогдоно;
+    // админ блокоос гаргавал (blocked → active) дахин шинэ хугацаа өгнө.
     if (!data.isNewRecord && data.changed("phonenumber") && !data.changed("phone_verified_at"))
       data.phone_verified_at = null;
     if (data.role === roles.admin || data.phone_verified_at) data.phone_verify_deadline = null;
-    else if (!data.phone_verify_deadline || data.changed("phonenumber") || data.previous("status") === "deleted")
+    else if (
+      !data.phone_verify_deadline ||
+      data.changed("phonenumber") ||
+      data.previous("status") === "deleted" ||
+      (data.changed("status") && data.previous("status") === "blocked")
+    )
       data.phone_verify_deadline = phoneVerifyDeadline();
 
     // Бүртгэлтэй хэрэглэгчийг (DEALER г.м.) шууд ADMIN болгохгүй - устгасны дараа (status = deleted)

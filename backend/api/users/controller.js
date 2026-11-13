@@ -4,7 +4,7 @@ const moment = require("moment");
 const { users, dealers, sequelize, op } = require("../../models");
 
 const { uploadImage } = require("../../helper/fileHelper");
-const { authLogin } = require("../../middleware/auth");
+const { authLogin, BLOCKED_MESSAGE, signPasswordReset, readPasswordReset } = require("../../middleware/auth");
 const { saveLog } = require("../../utils/logHelper");
 const { roles } = require("../../config/constants");
 const {
@@ -15,6 +15,8 @@ const {
   confirmPhoneVerify,
   sendPhoneChange,
   confirmPhoneChange,
+  sendPhoneOtp,
+  verifyPhoneOtp,
 } = require("../../helper/otpHelper");
 
 module.exports.save = async (req, res) => {
@@ -250,8 +252,12 @@ module.exports.login = async (req, res) => {
         }
       }
     } else {
+      // Блоклогдсон бол нууц үг зөв үед л шалтгааныг хэлнэ
+      const blocked = await users.findOne({ where: { phonenumber, status: "blocked" }, attributes: ["password"], raw: true });
+      const blockedMatch =
+        blocked?.password && (await bcrypt.compare(password, blocked.password.toString().replace(/^\$2y/, "$2a")));
       result.success = false;
-      result.message = "Хэрэглэгчийн утасны дугаар эсвэл нууц үг буруу байна";
+      result.message = blockedMatch ? BLOCKED_MESSAGE : "Хэрэглэгчийн утасны дугаар эсвэл нууц үг буруу байна";
       return res.status(200).json(result);
     }
   } catch (error) {
@@ -259,6 +265,74 @@ module.exports.login = async (req, res) => {
     result.success = false;
     result.message = "Алдаа!";
     return res.status(200).json(result);
+  }
+};
+
+// --- Нууц үгээ мартсан: бүртгэлтэй утас руу SMS код → кодоор баталгаажуулж 30 минутын токен → шинэ нууц үг ----
+// Код хэрэглэгч бүрт тусдаа (purpose = "user-forgot:<id>"). Бүртгэл байгаа эсэхийг задруулахгүйн тулд
+// олдоогүй дугаарт ч ижил хариу өгнө (SMS явахгүй).
+const forgotPurpose = (userId) => `user-forgot:${userId}`;
+const findForgotUser = (phonenumber) =>
+  users.findOne({ where: { phonenumber, status: "active" }, attributes: ["id", "phonenumber"], raw: true });
+
+module.exports.forgotSend = async (req, res) => {
+  try {
+    const user = await findForgotUser(req.body.phonenumber);
+    if (!user) return res.status(200).json({ success: true, data: null, message: "Код SMS-ээр илгээлээ" });
+    return res.status(200).json(await sendPhoneOtp(user.phonenumber, forgotPurpose(user.id)));
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Код илгээж чадсангүй" });
+  }
+};
+
+module.exports.forgotVerify = async (req, res) => {
+  try {
+    const user = await findForgotUser(req.body.phonenumber);
+    if (!user) return res.status(200).json({ success: false, data: null, message: "Код буруу байна" });
+    const verified = await verifyPhoneOtp(user.phonenumber, forgotPurpose(user.id), req.body.code);
+    if (!verified.success) return res.status(200).json({ success: false, data: null, message: verified.message });
+    return res.status(200).json({ success: true, data: { reset_token: signPasswordReset(user.id) }, message: "" });
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: "Алдаа" });
+  }
+};
+
+// Код утсанд ирсэн тул утсыг мөн баталгаажсан гэж тооцно (hook phone_verify_deadline-ийг null болгоно)
+module.exports.forgotReset = async (req, res) => {
+  const { reset_token, password, at } = req.body;
+  try {
+    const id = readPasswordReset(reset_token);
+    if (!id) return res.status(200).json({ success: false, data: null, message: "Хугацаа дууссан байна. Дахин код авна уу" });
+    const user = await users.findOne({ where: { id, status: "active" } });
+    if (!user) return res.status(200).json({ success: false, data: null, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" });
+    const t = await sequelize.transaction();
+    try {
+      await user.update(
+        { password, phone_verified_at: user.phone_verified_at || at, pass_changed_by: id, pass_changed_at: at, updated_at: at },
+        { transaction: t },
+      );
+      await saveLog(
+        {
+          object_name: "users",
+          object_id: id,
+          log_action: "reset_password",
+          log_action_mn: "Нууц үгээ SMS кодоор сэргээсэн",
+          created_by: id,
+          created_at: at,
+        },
+        t,
+      );
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+    return res.status(200).json({ success: true, data: null, message: "Нууц үг шинэчлэгдлээ" });
+  } catch (error) {
+    console.log(error);
+    return res.status(200).json({ success: false, data: null, message: typeof error === "string" ? error : "Алдаа" });
   }
 };
 
