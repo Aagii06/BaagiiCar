@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
 
@@ -471,4 +473,39 @@ void showToast(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(message), duration: const Duration(seconds: 2)));
+}
+
+/// Shakes [child] side to side once each time [trigger] changes (a rejected input).
+class Shake extends StatefulWidget {
+  final int trigger;
+  final Widget child;
+  const Shake({super.key, required this.trigger, required this.child});
+  @override
+  State<Shake> createState() => _ShakeState();
+}
+
+class _ShakeState extends State<Shake> with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+
+  @override
+  void didUpdateWidget(Shake old) {
+    super.didUpdateWidget(old);
+    if (widget.trigger != old.trigger) _c.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _c,
+        child: widget.child,
+        builder: (context, child) {
+          final t = _c.value;
+          return Transform.translate(offset: Offset(math.sin(t * math.pi * 6) * 8 * (1 - t), 0), child: child);
+        },
+      );
 }

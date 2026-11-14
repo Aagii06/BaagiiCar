@@ -120,6 +120,16 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppPalette.primary, width: 1.5),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: const BorderSide(color: AppPalette.destructive, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: const BorderSide(color: AppPalette.destructive, width: 1.5),
+        ),
+        errorStyle: const TextStyle(fontSize: 13, color: AppPalette.destructive, fontWeight: FontWeight.w500),
+        errorMaxLines: 2,
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppPalette.background,

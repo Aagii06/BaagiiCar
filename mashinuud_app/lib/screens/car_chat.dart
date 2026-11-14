@@ -259,6 +259,7 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
   bool _codeStep = false;
   bool _busy = false;
   String? _error;
+  int _shakes = 0;
   int _cooldown = 0;
   Timer? _timer;
 
@@ -278,14 +279,24 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
     try {
       await action();
     } catch (e) {
-      if (mounted) setState(() => _error = '$e');
+      if (mounted) {
+        setState(() {
+          _error = '$e';
+          _shakes++;
+        });
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
+  /// Typing again clears the red border and message.
+  void _edited() => setState(() => _error = null);
+
   void _requestCode() => _run(() async {
-        if (!RegExp(r'^\d{8}$').hasMatch(_phone.text)) throw const ApiError(0, '8 оронтой утасны дугаар оруулна уу');
+        if (_phone.text.length != 8) throw const ApiError(0, '8 оронтой утасны дугаар оруулна уу');
+        // Mongolian numbers start with 5–9 (mobile and landline).
+        if (!RegExp(r'^[5-9]\d{7}$').hasMatch(_phone.text)) throw const ApiError(0, 'Утасны дугаар буруу байна');
         final token = Stores.auth.token;
         if (widget.change && _phone.text == Stores.auth.user?.phonenumber) throw const ApiError(0, 'Одоогийн дугаараас өөр дугаар оруулна уу');
         final wait = widget.change && token != null ? await Api.sendPhoneChangeCode(token, _phone.text) : await Api.sendLoginCode(_phone.text);
@@ -317,29 +328,29 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
 
   @override
   Widget build(BuildContext context) {
-    final error = _error == null
-        ? null
-        : Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: Text(_error!, style: const TextStyle(fontSize: 13, color: AppPalette.destructive, fontWeight: FontWeight.w500)),
-          );
     if (!_codeStep) {
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text(widget.change ? 'Шинэ дугаараа оруулна уу. Шинэ дугаар руу SMS код илгээнэ.' : 'Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.',
             style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
         const SizedBox(height: 12),
-        TextField(
-          controller: _phone,
-          autofocus: widget.autofocus,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
-          decoration: InputDecoration(hintText: widget.change ? 'Шинэ дугаар' : 'Утасны дугаар', prefixIcon: const Icon(Icons.phone_iphone_rounded, size: 20)),
-          onChanged: (_) => setState(() {}),
-          onSubmitted: (_) => _requestCode(),
+        Shake(
+          trigger: _shakes,
+          child: TextField(
+            controller: _phone,
+            autofocus: widget.autofocus,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
+            decoration: InputDecoration(
+              hintText: widget.change ? 'Шинэ дугаар' : 'Утасны дугаар',
+              prefixIcon: const Icon(Icons.phone_iphone_rounded, size: 20),
+              errorText: _error,
+            ),
+            onChanged: (_) => _edited(),
+            onSubmitted: (_) => _requestCode(),
+          ),
         ),
-        ?error,
         const SizedBox(height: 12),
-        PrimaryButton(label: 'Код авах', busy: _busy, onTap: _phone.text.length == 8 ? _requestCode : null),
+        PrimaryButton(label: 'Код авах', busy: _busy, onTap: _phone.text.isNotEmpty ? _requestCode : null),
         if (!widget.change) ...[
           const SizedBox(height: 10),
           const Text('Бүртгэлгүй дугаар бол автоматаар бүртгэгдэнэ.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
@@ -356,21 +367,23 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Text('${_phone.text} дугаар руу илгээсэн 4 оронтой кодыг оруулна уу.', style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
       const SizedBox(height: 12),
-      TextField(
-        controller: _code,
-        autofocus: true,
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        autofillHints: const [AutofillHints.oneTimeCode],
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(4)],
-        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: 12),
-        decoration: const InputDecoration(hintText: '0000'),
-        onChanged: (v) {
-          setState(() {});
-          if (v.length == 4) _verify();
-        },
+      Shake(
+        trigger: _shakes,
+        child: TextField(
+          controller: _code,
+          autofocus: true,
+          keyboardType: TextInputType.number,
+          textAlign: TextAlign.center,
+          autofillHints: const [AutofillHints.oneTimeCode],
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(4)],
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: 12),
+          decoration: InputDecoration(hintText: '0000', errorText: _error),
+          onChanged: (v) {
+            _edited();
+            if (v.length == 4) _verify();
+          },
+        ),
       ),
-      ?error,
       const SizedBox(height: 12),
       PrimaryButton(label: 'Баталгаажуулах', busy: _busy, onTap: _code.text.length == 4 ? _verify : null),
       const SizedBox(height: 6),
