@@ -572,7 +572,6 @@ function CarsPageInner() {
               items={dealers.data?.rows ?? []}
               loading={dealers.loading && !dealers.data}
               selectedId={p.dealer}
-              onSelect={(id) => set({ dealer: id })}
             />
           </>
         ) : null}
