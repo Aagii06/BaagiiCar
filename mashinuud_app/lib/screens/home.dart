@@ -225,7 +225,7 @@ class _HeroState extends State<_Hero> {
   }
 }
 
-/// White search card: tabs, then make / model / year / price and "Хайх".
+/// White search card: make / model / year / price and "Хайх".
 class _HeroSearch extends StatefulWidget {
   const _HeroSearch();
   @override
@@ -233,10 +233,8 @@ class _HeroSearch extends StatefulWidget {
 }
 
 class _HeroSearchState extends State<_HeroSearch> {
-  static const _tabs = ['Бүх машин', 'Шинэвтэр', 'Хямд'];
   static const _years = [2020, 2015, 2010, 2005, 2000];
   static const _prices = [30, 60, 100, 200];
-  int _tab = 0;
   int? _brand, _model, _yearFrom, _priceMax;
   List<Brand> _brands = [];
   List<CarModel> _models = [];
@@ -265,12 +263,11 @@ class _HeroSearchState extends State<_HeroSearch> {
   }
 
   void _submit() {
-    final year = DateTime.now().year;
     Stores.shell.openCars(CarSearch(
       brandIds: _brand != null ? [_brand!] : const [],
       modelId: _model,
-      yearFrom: _yearFrom ?? (_tab == 1 ? year - 3 : null),
-      priceMax: (_priceMax ?? (_tab == 2 ? 30 : null)) == null ? null : (_priceMax ?? 30) * _mln,
+      yearFrom: _yearFrom,
+      priceMax: _priceMax == null ? null : _priceMax! * _mln,
     ));
   }
 
@@ -279,35 +276,10 @@ class _HeroSearchState extends State<_HeroSearch> {
     final year = DateTime.now().year;
     Widget divider() => const Divider(height: 1, indent: 16, endIndent: 16);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        for (var i = 0; i < _tabs.length; i++)
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: Material(
-              color: i == _tab ? Colors.white : AppPalette.dark,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.md)),
-              child: InkWell(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.md)),
-                onTap: () => setState(() => _tab = i),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  child: Text(
-                    _tabs[i].toUpperCase(),
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.1, color: i == _tab ? AppPalette.foreground : Colors.white),
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ]),
       Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(AppRadius.xl),
-            bottomRight: Radius.circular(AppRadius.xl),
-            topRight: Radius.circular(AppRadius.xl),
-          ),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 40, offset: const Offset(0, 20))],
         ),
         clipBehavior: Clip.antiAlias,
