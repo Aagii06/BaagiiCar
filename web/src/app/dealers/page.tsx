@@ -160,29 +160,9 @@ function DealerDetail({ id, page }: { id: number; page: number }) {
     );
 
   return (
-    <Container className="pt-4 md:pt-12">
-      {back}
-      <div className="flex items-center gap-4 md:mt-5 md:gap-6">
-        {dealer.data ? (
-          <DealerLogo dealer={dealer.data} className="size-20 md:size-24" />
-        ) : (
-          <div className="size-20 animate-pulse rounded-xl bg-muted md:size-24" />
-        )}
-        <div className="min-w-0">
-          {dealer.data ? (
-            <>
-              <PageTitle count={dealer.data.car_count} className="max-md:flex max-md:text-[28px]">{dealerName(dealer.data) || t("Дилер")}</PageTitle>
-              <div className="mt-3">
-                <DealerPhone phone={dealer.data.phonenumber} />
-              </div>
-            </>
-          ) : (
-            <div className="h-10 w-56 animate-pulse rounded-lg bg-muted" />
-          )}
-        </div>
-      </div>
-
-      <div className="mt-8 md:mt-10">
+    <>
+      <DealerHero dealer={dealer.data} />
+      <Container className="mt-6 md:mt-10">
         {cars.loading && !cars.data ? (
           <CardGridSkeleton />
         ) : cars.error ? (
@@ -206,8 +186,69 @@ function DealerDetail({ id, page }: { id: number; page: number }) {
         ) : (
           <EmptyState title={t("Энэ дилерт одоогоор зар алга")} />
         )}
+      </Container>
+    </>
+  );
+}
+
+/** Dealer profile band: dark gradient with soft brand-colour glows, white logo tile, name, count, phone pill. */
+function DealerHero({ dealer }: { dealer: Dealer | undefined }) {
+  const { t } = useI18n();
+  return (
+    <section className="relative isolate overflow-hidden bg-[linear-gradient(135deg,#1b1d24,#23262f_50%,#2e2219)] text-white">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -left-24 -top-24 size-72 rounded-full bg-primary opacity-30 blur-3xl" />
+        <div className="absolute -bottom-32 right-0 size-96 rounded-full bg-amber opacity-20 blur-3xl" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
       </div>
-    </Container>
+      <Container className="py-6 md:py-10">
+        <Link
+          href="/dealers"
+          className="hidden items-center gap-1.5 text-sm font-semibold text-white/70 transition-colors hover:text-white md:inline-flex"
+        >
+          <ArrowLeft className="size-4" />
+          {t("Бүх дилер")}
+        </Link>
+        <div className="flex items-center gap-4 md:mt-6 md:gap-6">
+          {dealer ? (
+            <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg shadow-black/30 md:size-28">
+              <DealerAvatar logo={dealer.logo} name={dealerName(dealer)} className="size-full object-contain" />
+            </div>
+          ) : (
+            <div className="size-20 shrink-0 animate-pulse rounded-2xl bg-white/15 md:size-28" />
+          )}
+          <div className="min-w-0">
+            {dealer ? (
+              <>
+                <h1 className="flex flex-wrap items-center gap-3 font-display text-[26px] font-bold leading-tight md:text-[44px]">
+                  {dealerName(dealer) || t("Дилер")}
+                  <span className="rounded-lg bg-primary px-2.5 py-1 font-sans text-sm font-bold text-white md:text-base">
+                    {t("{n} зар", { n: dealer.car_count })}
+                  </span>
+                </h1>
+                {dealer.address && <p className="mt-1.5 text-sm text-white/70">{dealer.address}</p>}
+                {dealer.phonenumber && (
+                  <a
+                    href={`tel:${dealer.phonenumber}`}
+                    className="group mt-3 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/10 py-1 pl-1 pr-4 text-sm font-semibold backdrop-blur transition-colors hover:bg-white/20"
+                  >
+                    <span className="grid size-7 place-items-center rounded-full bg-white text-primary transition-transform group-hover:scale-105">
+                      <Phone className="size-3.5" />
+                    </span>
+                    {dealer.phonenumber}
+                  </a>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="h-9 w-56 animate-pulse rounded-lg bg-white/15" />
+                <div className="mt-3 h-8 w-36 animate-pulse rounded-full bg-white/10" />
+              </>
+            )}
+          </div>
+        </div>
+      </Container>
+    </section>
   );
 }
 
