@@ -269,8 +269,8 @@ module.exports.login = async (req, res) => {
 };
 
 // --- Нууц үгээ мартсан: бүртгэлтэй утас руу SMS код → кодоор баталгаажуулж 30 минутын токен → шинэ нууц үг ----
-// Код хэрэглэгч бүрт тусдаа (purpose = "user-forgot:<id>"). Бүртгэл байгаа эсэхийг задруулахгүйн тулд
-// олдоогүй дугаарт ч ижил хариу өгнө (SMS явахгүй).
+// Код хэрэглэгч бүрт тусдаа (purpose = "user-forgot:<id>"). Бүртгэлгүй дугаарт код илгээхгүй,
+// шинээр бүртгүүлэхийг сануулна.
 const forgotPurpose = (userId) => `user-forgot:${userId}`;
 const findForgotUser = (phonenumber) =>
   users.findOne({ where: { phonenumber, status: "active" }, attributes: ["id", "phonenumber"], raw: true });
@@ -278,7 +278,7 @@ const findForgotUser = (phonenumber) =>
 module.exports.forgotSend = async (req, res) => {
   try {
     const user = await findForgotUser(req.body.phonenumber);
-    if (!user) return res.status(200).json({ success: true, data: null, message: "Код SMS-ээр илгээлээ" });
+    if (!user) return res.status(200).json({ success: false, data: null, message: "Энэ утасны дугаар бүртгэлгүй байна. Шинээр бүртгүүлнэ үү" });
     return res.status(200).json(await sendPhoneOtp(user.phonenumber, forgotPurpose(user.id)));
   } catch (error) {
     console.log(error);
