@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:mashinuud_app/app/constant.dart';
 
 class ApiError implements Exception {
   final int status;
   final String message;
-  const ApiError(this.status, this.message);
+
+  /// The response's `data`, e.g. `{ resend_in }` when a code was asked for too soon.
+  final Object? data;
+  const ApiError(this.status, this.message, [this.data]);
   @override
   String toString() => message;
 }
@@ -59,23 +63,88 @@ Future<Map<String, dynamic>> apiFetch(String path, {String method = 'GET', Objec
     throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
   }
 
+  return _answer(response.statusCode, text);
+}
+
+/// One file in a multipart request.
+class UploadFile {
+  final String field;
+  final String filename;
+  final List<int> bytes;
+  const UploadFile(this.field, this.filename, this.bytes);
+}
+
+String _mimeOf(String filename) {
+  final ext = filename.split('.').last.toLowerCase();
+  return switch (ext) {
+    'png' => 'image/png',
+    'webp' => 'image/webp',
+    'svg' => 'image/svg+xml',
+    'heic' => 'image/heic',
+    _ => 'image/jpeg',
+  };
+}
+
+/// multipart/form-data request (photo uploads); answered like [apiFetch].
+Future<Map<String, dynamic>> apiUpload(String path, {Map<String, String> fields = const {}, List<UploadFile> files = const [], String? token}) async {
+  final boundary = '----cardealer${DateTime.now().microsecondsSinceEpoch}';
+  final body = BytesBuilder(copy: false);
+  void line(String s) => body.add(utf8.encode('$s\r\n'));
+  fields.forEach((k, v) {
+    line('--$boundary');
+    line('Content-Disposition: form-data; name="$k"');
+    line('');
+    line(v);
+  });
+  for (final f in files) {
+    line('--$boundary');
+    line('Content-Disposition: form-data; name="${f.field}"; filename="${f.filename.replaceAll('"', '')}"');
+    line('Content-Type: ${_mimeOf(f.filename)}');
+    line('');
+    body.add(f.bytes);
+    line('');
+  }
+  line('--$boundary--');
+
+  final uri = Uri.parse('${AppConstants.apiUrl}$path');
+  HttpClientResponse response;
+  String text;
+  try {
+    final request = await _http.openUrl('POST', uri);
+    request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+    if (token != null) request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+    request.headers.contentType = ContentType('multipart', 'form-data', parameters: {'boundary': boundary});
+    request.add(body.takeBytes());
+    response = await request.close().timeout(const Duration(seconds: 120));
+    text = await response.transform(utf8.decoder).join();
+  } on SocketException {
+    throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
+  } on TimeoutException {
+    throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
+  } on HttpException {
+    throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
+  }
+  return _answer(response.statusCode, text);
+}
+
+Map<String, dynamic> _answer(int status, String text) {
   Map<String, dynamic>? data;
   try {
     final decoded = jsonDecode(text);
     if (decoded is Map<String, dynamic>) data = decoded;
   } catch (_) {}
-
-  final ok = response.statusCode >= 200 && response.statusCode < 300;
+  final ok = status >= 200 && status < 300;
   if (!ok || data == null || data['success'] == false) {
     final errors = data?['errors'];
     final first = errors is List && errors.isNotEmpty && errors.first is Map ? (errors.first as Map)['message'] : null;
-    final status = response.statusCode;
-    final fallback = status == 404
-        ? 'Хүсэлт олдсонгүй'
-        : status >= 500
-            ? 'Серверийн алдаа ($status)'
-            : 'Хүсэлт амжилтгүй боллоо';
-    throw ApiError(status, (data?['message'] as String?)?.isNotEmpty == true ? data!['message'] as String : (first?.toString() ?? fallback));
+    final fallback = status == 401
+        ? 'Нэвтэрнэ үү'
+        : status == 404
+            ? 'Хүсэлт олдсонгүй'
+            : status >= 500
+                ? 'Серверийн алдаа ($status)'
+                : 'Хүсэлт амжилтгүй боллоо';
+    throw ApiError(status, (data?['message'] as String?)?.isNotEmpty == true ? data!['message'] as String : (first?.toString() ?? fallback), data?['data']);
   }
   return data;
 }

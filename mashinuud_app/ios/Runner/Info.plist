@@ -72,6 +72,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Admin: car photos, dealer logos and profile photos -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Зарын зураг, лого, профайл зураг сонгоход ашиглана.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Зарын зураг авахад ашиглана.</string>
 	<!-- Dev backend over http://localhost -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
