@@ -3,6 +3,7 @@
 import Container from "@/components/common/Container";
 import EmailCodeDialog from "@/components/common/EmailCodeDialog";
 import { Field, inputClass, PhoneInput } from "@/components/common/Field";
+import ReCaptcha, { RECAPTCHA_SITE_KEY, type ReCaptchaHandle } from "@/components/common/ReCaptcha";
 import { PageSkeleton } from "@/components/common/States";
 import { EmailSignup } from "@/components/layout/NotifySignup";
 import { sendEmailCode } from "@/lib/api/auth";
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { BadgeCheck, CreditCard, Mail, Minus, Phone, Plus, Search, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 
 const TOPICS: { icon: typeof Plus; tint: string; title: MessageKey; text: MessageKey; href: string }[] = [
   { icon: Search, tint: "bg-tint-blue text-primary", title: "Машин хайх", text: "Шүүлтүүр ашиглан тохирох машинаа олох.", href: "/cars" },
@@ -78,18 +79,27 @@ function HelpInner() {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
-  const canSend = !sending && !!form.message.trim() && (!!form.phone || !!trimmedEmail);
+  const captcha = useRef<ReCaptchaHandle>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  // Without a configured site key there is no widget, so don't block the button on it.
+  const captchaOk = !RECAPTCHA_SITE_KEY || !!captchaToken;
+  const canSend = !sending && captchaOk && !!form.message.trim() && (!!form.phone || !!trimmedEmail);
   const send = async () => {
     if (!canSend) return;
     setSending(true);
     setSendError(null);
     try {
-      await sendFeedback({ name: form.name.trim(), phonenumber: form.phone, email: trimmedEmail, message: form.message.trim() }, token);
+      await sendFeedback(
+        { name: form.name.trim(), phonenumber: form.phone, email: trimmedEmail, message: form.message.trim(), recaptchaToken: captchaToken ?? "" },
+        token
+      );
       setSent(true);
       setForm((f) => ({ ...f, message: "" }));
     } catch (err) {
       setSendError(err instanceof Error ? err.message : String(err));
     } finally {
+      // A token is good for one check only: tick again before the next send.
+      captcha.current?.reset();
       setSending(false);
     }
   };
@@ -208,6 +218,7 @@ function HelpInner() {
                 }}
               />
             </Field>
+            <ReCaptcha ref={captcha} onChange={setCaptchaToken} />
             {sendError && <p className="rounded-xl bg-destructive-soft px-4 py-3 text-sm font-medium text-destructive">{sendError}</p>}
             {sent && (
               <p className="flex items-center gap-2 rounded-xl bg-success-soft px-4 py-3 text-sm font-medium text-success">

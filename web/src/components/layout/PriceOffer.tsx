@@ -1,11 +1,12 @@
 "use client";
 
 import { Field, inputClass, PhoneInput } from "@/components/common/Field";
+import ReCaptcha, { RECAPTCHA_SITE_KEY, type ReCaptchaHandle } from "@/components/common/ReCaptcha";
 import { sendFeedback } from "@/lib/api/feedbacks";
 import { displayName, useAuth } from "@/lib/auth/AuthProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { CheckCircle2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Footer "Тусламж" link that opens a price-offer form (car + price + phone). For now it goes through the
@@ -46,7 +47,10 @@ function PriceOfferDialog({ onClose }: { onClose: () => void }) {
     };
   }, [onClose]);
 
-  const canSend = !busy && car.trim().length > 0 && Number(price) > 0 && phone.length === 8;
+  const captcha = useRef<ReCaptchaHandle>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaOk = !RECAPTCHA_SITE_KEY || !!captchaToken;
+  const canSend = !busy && captchaOk && car.trim().length > 0 && Number(price) > 0 && phone.length === 8;
 
   const send = async () => {
     if (!canSend) return;
@@ -60,12 +64,15 @@ function PriceOfferDialog({ onClose }: { onClose: () => void }) {
           email: "",
           // Always in Mongolian: the admin reads it.
           message: [`Үнийн санал: ${price} сая ₮`, `Машин: ${car.trim()}`, note.trim()].filter(Boolean).join("\n"),
+          recaptchaToken: captchaToken ?? "",
         },
         token
       );
       setSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("Алдаа гарлаа"));
+      // A token is good for one check only: tick again before retrying.
+      captcha.current?.reset();
     } finally {
       setBusy(false);
     }
@@ -125,6 +132,7 @@ function PriceOfferDialog({ onClose }: { onClose: () => void }) {
             <Field label={t("Нэмэлт тайлбар")}>
               <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={1000} rows={3} className={`${inputClass} h-auto py-3`} />
             </Field>
+            <ReCaptcha ref={captcha} onChange={setCaptchaToken} />
             {error && <p className="rounded-xl bg-destructive-soft px-4 py-3 text-sm font-medium text-destructive">{error}</p>}
             <button disabled={!canSend} className="h-12 w-full rounded-xl bg-primary text-sm font-bold text-white hover:bg-primary-hover disabled:opacity-60">
               {busy ? t("Илгээж байна…") : t("Илгээх")}

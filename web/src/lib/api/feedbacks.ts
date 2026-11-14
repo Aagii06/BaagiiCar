@@ -5,6 +5,8 @@ export interface FeedbackInput {
   phonenumber: string;
   email: string;
   message: string;
+  /** Google reCAPTCHA v2 token; the backend rejects the form without a valid one. */
+  recaptchaToken: string;
 }
 
 /** "Бидэнд бичих" form; lands in the admin panel under Профайл → Санал хүсэлт. */
