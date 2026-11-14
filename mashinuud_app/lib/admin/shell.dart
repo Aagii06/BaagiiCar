@@ -8,6 +8,7 @@ import 'package:mashinuud_app/admin/screens/messages.dart';
 import 'package:mashinuud_app/admin/screens/profile.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/app_bar.dart';
+import 'package:mashinuud_app/widgets/logo_loader.dart';
 
 /// Which admin tab shows, and a status filter handed to the Зарууд tab (dashboard tiles).
 class AdminNav extends ChangeNotifier {
@@ -48,17 +49,26 @@ class AdminRoot extends StatefulWidget {
 }
 
 class _AdminRootState extends State<AdminRoot> {
+  /// A saved session is being checked: the full-screen loader shows until it's confirmed or dropped.
+  bool _checking = AdminApi.session.signedIn;
+
   @override
   void initState() {
     super.initState();
     // Slides the session forward and drops a revoked one.
-    AdminApi.session.refresh();
+    AdminApi.session.refresh().whenComplete(() {
+      if (mounted) setState(() => _checking = false);
+    });
   }
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
         listenable: AdminApi.session,
-        builder: (context, _) => AdminApi.session.signedIn ? AdminShell(key: ValueKey(AdminApi.session.user!.id)) : const AdminLoginScreen(),
+        builder: (context, _) => _checking
+            ? const FullScreenLoader()
+            : AdminApi.session.signedIn
+                ? AdminShell(key: ValueKey(AdminApi.session.user!.id))
+                : const AdminLoginScreen(),
       );
 }
 
