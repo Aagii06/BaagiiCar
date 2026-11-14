@@ -147,7 +147,8 @@ class _DashboardTabState extends State<DashboardTab> {
         );
     const gap = SizedBox(width: 8);
     return Column(children: [
-      Row(children: [
+      IntrinsicHeight(
+          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         if (admin) ...[
           big('Нийт дилер', s.dealers, Icons.storefront_outlined, AppPalette.tintBlue, const Color(0xFF2F80ED), () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DealersScreen()))),
           gap,
@@ -155,9 +156,10 @@ class _DashboardTabState extends State<DashboardTab> {
           gap,
         ],
         big('Нийт зар', s.total, Icons.directions_car_outlined, AppPalette.tintLavender, const Color(0xFF7B61FF), () => adminNav.openCars()),
-      ]),
+      ])),
       const SizedBox(height: 8),
-      Row(children: [
+      IntrinsicHeight(
+          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         small('Хүлээгдэж буй', s.pending, s.pending > 0 ? AppPalette.amberSoft : Colors.white, s.pending > 0 ? AppPalette.amberInk : AppPalette.foreground, () => adminNav.openCars(statuses: ['pending']), ring: s.pending > 0),
         gap,
         small('Идэвхтэй', s.active, AppPalette.primary, Colors.white, () => adminNav.openCars(statuses: ['active'])),
@@ -165,7 +167,7 @@ class _DashboardTabState extends State<DashboardTab> {
         small('Онцлох', s.featured, AppPalette.amber, AppPalette.dark, () => adminNav.openCars(statuses: ['featured'])),
         gap,
         small('Зарагдсан', s.sold, AppPalette.dark, Colors.white, () => adminNav.openCars(statuses: ['sold'])),
-      ]),
+      ])),
     ]);
   }
 }

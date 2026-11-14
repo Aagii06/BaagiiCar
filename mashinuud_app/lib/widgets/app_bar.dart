@@ -57,9 +57,15 @@ class SavedAction extends StatelessWidget {
 class AdminAction extends StatelessWidget {
   const AdminAction({super.key});
   @override
-  Widget build(BuildContext context) => IconButton(
-        tooltip: 'Админ самбар',
-        icon: const Icon(Icons.dashboard_outlined),
-        onPressed: () => Stores.mode.setAdmin(true),
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: Stores.auth,
+        // Only for a customer whose number also has an admin / dealer account.
+        builder: (context, _) => Stores.auth.user?.isStaff != true
+            ? const SizedBox.shrink()
+            : IconButton(
+                tooltip: 'Админ самбар',
+                icon: const Icon(Icons.dashboard_outlined),
+                onPressed: () => Stores.mode.setAdmin(true),
+              ),
       );
 }

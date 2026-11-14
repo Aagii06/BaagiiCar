@@ -216,9 +216,13 @@ class WebUser {
   final int id;
   final String? phonenumber;
   final String? firstname;
-  const WebUser({required this.id, this.phonenumber, this.firstname});
-  factory WebUser.fromJson(Map<String, dynamic> j) => WebUser(id: _int(j['id'])!, phonenumber: _str(j['phonenumber']), firstname: _str(j['firstname']));
-  Map<String, dynamic> toJson() => {'id': id, 'phonenumber': phonenumber, 'firstname': firstname};
+
+  /// An active admin / dealer account exists with this phone number: the profile offers the admin half.
+  final bool isStaff;
+  const WebUser({required this.id, this.phonenumber, this.firstname, this.isStaff = false});
+  factory WebUser.fromJson(Map<String, dynamic> j) =>
+      WebUser(id: _int(j['id'])!, phonenumber: _str(j['phonenumber']), firstname: _str(j['firstname']), isStaff: j['is_staff'] == true || j['is_staff'] == 1);
+  Map<String, dynamic> toJson() => {'id': id, 'phonenumber': phonenumber, 'firstname': firstname, 'is_staff': isStaff};
 
   /// Name if the user has one, else the phone number.
   String get displayName => (firstname?.isNotEmpty ?? false) ? firstname! : (phonenumber ?? '');

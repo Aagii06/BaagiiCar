@@ -1,4 +1,4 @@
-const { customers, sequelize, op } = require("../../models");
+const { customers, users, sequelize, op } = require("../../models");
 const { authLogin } = require("../../middleware/auth");
 const { isSmsConfigured } = require("../../helper/smsHelper");
 const { saveLog } = require("../../utils/logHelper");
@@ -19,7 +19,11 @@ const {
 const findCustomerData = async (id) => {
   const customer = await customers.findOne({ where: { id, status: "active" }, raw: true });
   if (customer === null) return { success: false, message: "Хэрэглэгчийн мэдээлэл олдсонгүй" };
-  return { success: true, user: customer, message: "" };
+  // Энэ дугаараар идэвхтэй админ / дилер бүртгэлтэй бол апп "Админ хэсэг рүү шилжих"-ийг харуулна
+  const staff = customer.phonenumber
+    ? await users.count({ where: { phonenumber: customer.phonenumber, role: { [op.in]: ["ADMIN", "DEALER"] }, status: "active" } })
+    : 0;
+  return { success: true, user: { ...customer, is_staff: staff > 0 }, message: "" };
 };
 
 // Утас руу нэвтрэх код илгээнэ (SMS_GATEWAY_TOKEN тохируулаагүй бол production-д алдаа, dev-д консолд - helper/otpHelper.js)

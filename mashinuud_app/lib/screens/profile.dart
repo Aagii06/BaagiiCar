@@ -144,7 +144,7 @@ class _AccountState extends State<_Account> {
           padding: EdgeInsets.zero,
           child: Column(children: [
             _Link(icon: Icons.phone_iphone_rounded, label: 'Утасны дугаар солих', onTap: () => _changePhone(context)),
-            if (AdminApi.session.signedIn) ...[
+            if (user.isStaff) ...[
               const Divider(height: 1),
               _Link(icon: Icons.admin_panel_settings_outlined, label: 'Админ хэсэг рүү шилжих', onTap: () => Stores.mode.setAdmin(true)),
             ],
