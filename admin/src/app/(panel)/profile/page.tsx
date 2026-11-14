@@ -1,6 +1,5 @@
 "use client";
 
-import { WEB_URL } from "@/lib/api/config";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { roleLabel, ROLES } from "@/lib/constants";
 import UserAvatar from "@/components/common/UserAvatar";
@@ -9,7 +8,8 @@ import { getDealers } from "@/lib/api/admin";
 import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
 import { tr } from "@/lib/i18n/translations";
-import { ChevronRight, ExternalLink, KeyRound, LibraryBig, LogOut, MessageSquareText, Pencil, ShieldUser, Store, Users, type LucideIcon } from "lucide-react";
+import { APP_CUSTOMER_URL, useInApp } from "@/lib/inApp";
+import { ArrowLeftRight, ChevronRight, KeyRound, LibraryBig, LogOut, MessageSquareText, Pencil, ShieldUser, Store, Users, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 /** Admin sections, moved out of the bottom nav to keep it at four tabs. Labels are Mongolian keys for tr(). */
@@ -23,6 +23,7 @@ const ADMIN_MENU: { href: string; label: string; desc: string; icon: LucideIcon;
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
+  const inApp = useInApp();
   const dealers = useApi(getDealers);
   const dealer = dealers.data?.find((d) => d.id === user?.dealer_id);
 
@@ -68,10 +69,10 @@ export default function ProfilePage() {
 
       <div className="mt-4 space-y-2">
         <InstallAppButton />
-        {WEB_URL && (
-          <a href={WEB_URL} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold">
-            {tr("Вэб сайт нээх")}
-            <ExternalLink className="size-4" />
+        {inApp && (
+          <a href={`${APP_CUSTOMER_URL}?admin=1`} className="flex items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold">
+            {tr("Хэрэглэгч рүү шилжих")}
+            <ArrowLeftRight className="size-4" />
           </a>
         )}
         <button onClick={logout} className="flex w-full items-center justify-between rounded-2xl bg-card px-4 py-3.5 font-semibold text-destructive">

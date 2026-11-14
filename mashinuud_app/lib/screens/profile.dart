@@ -16,7 +16,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: const TabAppBar(title: 'Профайл'),
         body: ListenableBuilder(
-          listenable: Stores.auth,
+          listenable: Listenable.merge([Stores.auth, Stores.mode]),
           builder: (context, _) {
             final user = Stores.auth.user;
             if (user == null) {
@@ -27,7 +27,7 @@ class ProfileScreen extends StatelessWidget {
                 TextButton.icon(
                   onPressed: () => Stores.mode.setAdmin(true),
                   icon: const Icon(Icons.admin_panel_settings_outlined, size: 18),
-                  label: const Text('Админ / Дилераар нэвтрэх'),
+                  label: Text(Stores.mode.adminSignedIn ? 'Админ хэсэг рүү шилжих' : 'Админ / Дилераар нэвтрэх'),
                   style: TextButton.styleFrom(foregroundColor: AppPalette.primary, textStyle: const TextStyle(fontWeight: FontWeight.w600)),
                 ),
               ]);
@@ -110,6 +110,10 @@ class _AccountState extends State<_Account> {
           padding: EdgeInsets.zero,
           child: Column(children: [
             _Link(icon: Icons.phone_iphone_rounded, label: 'Утасны дугаар солих', onTap: () => _changePhone(context)),
+            if (Stores.mode.adminSignedIn) ...[
+              const Divider(height: 1),
+              _Link(icon: Icons.admin_panel_settings_outlined, label: 'Админ хэсэг рүү шилжих', onTap: () => Stores.mode.setAdmin(true)),
+            ],
           ]),
         ),
         const SizedBox(height: 12),

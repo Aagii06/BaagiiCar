@@ -8,7 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// The admin half of the app: admin.cardealer.mn in a WebView, as admins / dealers see it in the browser.
 /// The panel recognises the app by [_userAgentMarker] (admin/src/lib/inApp.ts) and offers a
-/// [_customerUrl] link on its sign-in page, which switches back to the customer screens.
+/// [_customerUrl] link on its sign-in page and its profile page (with `?admin=1`, as someone is signed in),
+/// which switches back to the customer screens.
 class AdminWebScreen extends StatefulWidget {
   const AdminWebScreen({super.key});
 
@@ -28,7 +29,7 @@ class _AdminWebScreenState extends State<AdminWebScreen> {
     final uri = action.request.url;
     if (uri == null) return NavigationActionPolicy.ALLOW;
     if (uri.toString().startsWith(_customerUrl)) {
-      Stores.mode.setAdmin(false);
+      Stores.mode.leaveAdmin(signedIn: uri.queryParameters['admin'] == '1');
       return NavigationActionPolicy.CANCEL;
     }
     if (_webSchemes.contains(uri.scheme)) return NavigationActionPolicy.ALLOW;

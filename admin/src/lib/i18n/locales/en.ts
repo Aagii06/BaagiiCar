@@ -188,7 +188,7 @@ export const en: Dict = {
   "Утасны дугаар солих": "Change phone number",
   "Утасны дугаар солигдлоо": "Phone number changed",
   "Нууц үг солих": "Change password",
-  "Вэб сайт нээх": "Open website",
+  "Хэрэглэгч рүү шилжих": "Switch to customer",
   "Гарах": "Sign out",
   "Одоогийн нууц үгээ оруулна уу": "Enter your current password",
   "Нууц үг 6-аас дээш тэмдэгттэй байна": "Password must be at least 6 characters",

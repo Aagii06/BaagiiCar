@@ -179,14 +179,36 @@ class ShellController extends ChangeNotifier {
 /// Kept on the device, so a signed-in dealer lands back in the panel on the next start.
 class AppModeStore extends ChangeNotifier {
   static const _key = 'baagii_car_admin_mode';
+  static const _signedInKey = 'baagii_car_admin_signed_in';
   SharedPreferences? _prefs;
   bool _admin = false;
+  bool _adminSignedIn = false;
 
   bool get admin => _admin;
+
+  /// Someone is signed in on the admin panel (they left it from its profile page, not its sign-in page),
+  /// so the customer profile offers a way back to the panel.
+  bool get adminSignedIn => _adminSignedIn;
 
   void _load(SharedPreferences prefs) {
     _prefs = prefs;
     _admin = prefs.getBool(_key) ?? false;
+    _adminSignedIn = prefs.getBool(_signedInKey) ?? false;
+  }
+
+  /// Back to the customer screens; [signedIn] says whether the panel still has someone signed in.
+  void leaveAdmin({required bool signedIn}) {
+    _adminSignedIn = signedIn;
+    if (signedIn) {
+      _prefs?.setBool(_signedInKey, true);
+    } else {
+      _prefs?.remove(_signedInKey);
+    }
+    if (_admin) {
+      setAdmin(false);
+    } else {
+      notifyListeners();
+    }
   }
 
   void setAdmin(bool value) {
