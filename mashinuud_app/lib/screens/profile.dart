@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mashinuud_app/admin/api.dart';
+import 'package:mashinuud_app/admin/screens/login.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/screens/car_chat.dart';
 import 'package:mashinuud_app/screens/help.dart';
@@ -16,10 +18,10 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: const TabAppBar(title: 'Профайл'),
         body: ListenableBuilder(
-          listenable: Listenable.merge([Stores.auth, Stores.mode]),
+          listenable: Listenable.merge([Stores.auth, AdminApi.session]),
           builder: (context, _) {
             final user = Stores.auth.user;
-            if (user == null) return _SignIn(adminSignedIn: Stores.mode.adminSignedIn);
+            if (user == null) return _SignIn(adminSignedIn: AdminApi.session.signedIn);
             return _Account(key: ValueKey(user.id));
           },
         ),
@@ -27,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
 }
 
 /// Signed out: two tabs like the shop app — customers sign in with an SMS code,
-/// admins / dealers on the admin panel itself (phone + password, in the WebView).
+/// admins / dealers with phone + password (or straight back to the panel when already signed in).
 class _SignIn extends StatelessWidget {
   final bool adminSignedIn;
   const _SignIn({required this.adminSignedIn});
@@ -48,27 +50,20 @@ class _SignIn extends StatelessWidget {
               ListView(padding: const EdgeInsets.all(16), children: const [Panel(child: PhoneCodeForm())]),
               ListView(padding: const EdgeInsets.all(16), children: [
                 Panel(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    const Icon(Icons.admin_panel_settings_outlined, size: 40, color: AppPalette.primary),
-                    const SizedBox(height: 12),
-                    Text(
-                      adminSignedIn
-                          ? 'Та админ хэсэгт нэвтэрсэн байна.'
-                          : 'Админ болон дилер утасны дугаар, нууц үгээрээ нэвтэрнэ.',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppPalette.mutedForeground),
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton(
-                      onPressed: () => Stores.mode.setAdmin(true),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppPalette.primary,
-                        minimumSize: const Size.fromHeight(48),
-                        textStyle: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      child: Text(adminSignedIn ? 'Админ хэсэг рүү шилжих' : 'Админ / Дилераар нэвтрэх'),
-                    ),
-                  ]),
+                  child: adminSignedIn
+                      ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                          const Icon(Icons.admin_panel_settings_outlined, size: 40, color: AppPalette.primary),
+                          const SizedBox(height: 12),
+                          Text('${AdminApi.session.user?.firstname ?? AdminApi.session.user?.phonenumber ?? ''} — та админ хэсэгт нэвтэрсэн байна.',
+                              textAlign: TextAlign.center, style: const TextStyle(color: AppPalette.mutedForeground)),
+                          const SizedBox(height: 16),
+                          PrimaryButton(label: 'Админ хэсэг рүү шилжих', onTap: () => Stores.mode.setAdmin(true)),
+                        ])
+                      : const Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                          Text('Админ болон дилер утасны дугаар, нууц үгээрээ нэвтэрнэ.', style: TextStyle(color: AppPalette.mutedForeground)),
+                          SizedBox(height: 16),
+                          AdminLoginForm(),
+                        ]),
                 ),
               ]),
             ]),
@@ -149,7 +144,7 @@ class _AccountState extends State<_Account> {
           padding: EdgeInsets.zero,
           child: Column(children: [
             _Link(icon: Icons.phone_iphone_rounded, label: 'Утасны дугаар солих', onTap: () => _changePhone(context)),
-            if (Stores.mode.adminSignedIn) ...[
+            if (AdminApi.session.signedIn) ...[
               const Divider(height: 1),
               _Link(icon: Icons.admin_panel_settings_outlined, label: 'Админ хэсэг рүү шилжих', onTap: () => Stores.mode.setAdmin(true)),
             ],
