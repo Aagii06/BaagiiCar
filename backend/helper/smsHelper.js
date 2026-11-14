@@ -87,10 +87,11 @@ module.exports.reportSms = async (id, status, error) => {
   return true;
 };
 
-// phonenumber: 8 оронтой дугаар. Gateway холбогдоогүй бол алдаа шиднэ.
-// Дараалалд хийгээд шууд буцна - утас хэдэн секундын дотор илгээнэ.
+// phonenumber: 8 оронтой дугаар. Дараалалд хийгээд шууд буцна - утас хэдэн секундын дотор илгээнэ.
+// lastSeenAt нь зөвхөн энэ процессын санах ойд байдаг (pm2 cluster-ийн өөр instance, restart-ийн дараа
+// утас холбогдсон ч энд "offline" харагдана) тул татгалзахгүй - утас MAX_AGE_SECONDS дотор холбогдвол илгээнэ.
 module.exports.sendSms = async (phonenumber, text) => {
-  if (!isGatewayOnline()) throw new Error("SMS илгээх утас холбогдоогүй байна. Түр хүлээгээд дахин оролдоно уу");
+  if (!isGatewayOnline()) console.warn(`[sms] Gateway энэ процесст сүүлд харагдаагүй - дараалалд хийлээ (${phonenumber})`);
   const at = now();
   await smsOutbox.create({ phonenumber, text, status: "pending", attempts: 0, created_at: at, updated_at: at });
   wakeGateway();

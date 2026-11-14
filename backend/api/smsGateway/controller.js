@@ -2,6 +2,7 @@ const { checkGatewayToken, touchGateway, waitForSms, takePendingSms, reportSms }
 
 // Long-poll-ийн хамгийн их хугацаа (утас ?wait=-ээр багасгаж болно)
 const MAX_WAIT_SECONDS = 25;
+const POLL_MS = 2000;
 
 module.exports.gatewayAuth = (req, res, next) => {
   const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
@@ -17,8 +18,10 @@ module.exports.pending = async (req, res) => {
   try {
     const wait = Math.min(Math.max(Number(req.query.wait) || 0, 0), MAX_WAIT_SECONDS);
     let items = await takePendingSms();
-    if (!items.length && wait > 0) {
-      await waitForSms(wait * 1000);
+    // Энэ процессын sendSms шууд сэрээнэ; өөр процесст (pm2 cluster) үүссэн мессежийг DB-ээс POLL_MS тутам шалгана
+    const deadline = Date.now() + wait * 1000;
+    while (!items.length && Date.now() < deadline) {
+      await waitForSms(Math.min(POLL_MS, deadline - Date.now()));
       touchGateway();
       items = await takePendingSms();
     }
