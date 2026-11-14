@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/admin/api.dart';
+import 'package:mashinuud_app/admin/lock.dart';
+import 'package:mashinuud_app/admin/screens/lock_screen.dart';
 import 'package:mashinuud_app/admin/screens/car_form.dart';
 import 'package:mashinuud_app/admin/screens/cars.dart';
 import 'package:mashinuud_app/admin/screens/dashboard.dart';
@@ -51,25 +53,73 @@ class AdminRoot extends StatefulWidget {
 class _AdminRootState extends State<AdminRoot> {
   /// A saved session is being checked: the full-screen loader shows until it's confirmed or dropped.
   bool _checking = AdminApi.session.signedIn;
+  late final AppLifecycleListener _life;
 
   @override
   void initState() {
     super.initState();
+    // Entering the admin half (from the customer side or at app start) asks for the PIN;
+    // so does coming back after the chosen time in the background.
+    appLock.lock();
+    appLock.addListener(_syncLock);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncLock());
+    _life = AppLifecycleListener(
+      onHide: appLock.appHidden,
+      onShow: appLock.appShown,
+    );
     // Slides the session forward and drops a revoked one.
     AdminApi.session.refresh().whenComplete(() {
-      if (mounted) setState(() => _checking = false);
+      if (!mounted) return;
+      setState(() => _checking = false);
+      _syncLock();
     });
+  }
+
+  Route<void>? _lockRoute;
+
+  /// The lock screen goes on top of the whole navigator, over any page that's open, and comes off once unlocked.
+  void _syncLock() {
+    final nav = rootNavigatorKey.currentState;
+    if (nav == null || !mounted) return;
+    final show = appLock.locked && !_checking && AdminApi.session.signedIn;
+    if (show && _lockRoute == null) {
+      _lockRoute = PageRouteBuilder<void>(
+        transitionDuration: const Duration(milliseconds: 150),
+        pageBuilder: (_, _, _) => const LockScreen(),
+        transitionsBuilder: (_, a, _, child) =>
+            FadeTransition(opacity: a, child: child),
+      );
+      nav.push(_lockRoute!);
+    } else if (!show && _lockRoute != null) {
+      final route = _lockRoute!;
+      _lockRoute = null;
+      if (route.isActive) nav.removeRoute(route);
+    }
+  }
+
+  @override
+  void dispose() {
+    appLock.removeListener(_syncLock);
+    // Left for the customer side while locked: take the lock screen off after this frame.
+    final route = _lockRoute;
+    if (route != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (route.isActive) rootNavigatorKey.currentState?.removeRoute(route);
+      });
+    }
+    _life.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-        listenable: AdminApi.session,
-        builder: (context, _) => _checking
-            ? const FullScreenLoader()
-            : AdminApi.session.signedIn
-                ? AdminShell(key: ValueKey(AdminApi.session.user!.id))
-                : const AdminLoginScreen(),
-      );
+    listenable: AdminApi.session,
+    builder: (context, _) {
+      if (_checking) return const FullScreenLoader();
+      if (!AdminApi.session.signedIn) return const AdminLoginScreen();
+      return AdminShell(key: ValueKey(AdminApi.session.user!.id));
+    },
+  );
 }
 
 /// Bottom nav with four tabs and the "+" (new ad) button in its notch (admin PanelShell).
@@ -88,50 +138,63 @@ class _AdminShellState extends State<AdminShell> {
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-        listenable: adminNav,
-        builder: (context, _) => PopScope(
-          canPop: adminNav.tab == AdminNav.home,
-          onPopInvokedWithResult: (didPop, _) {
-            if (!didPop) adminNav.go(AdminNav.home);
+    listenable: adminNav,
+    builder: (context, _) => PopScope(
+      canPop: adminNav.tab == AdminNav.home,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) adminNav.go(AdminNav.home);
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Logo(), titleSpacing: 16),
+        body: IndexedStack(
+          index: adminNav.tab,
+          children: const [
+            DashboardTab(),
+            CarsTab(),
+            MessagesTab(),
+            AdminProfileTab(),
+          ],
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: FloatingActionButton(
+          heroTag: 'admin-new-ad',
+          tooltip: 'Зар нэмэх',
+          backgroundColor: AppPalette.primary,
+          foregroundColor: Colors.white,
+          shape: const CircleBorder(),
+          elevation: 4,
+          onPressed: () async {
+            final saved = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(builder: (_) => const CarEditScreen()),
+            );
+            if (saved == true) adminNav.changed();
           },
-          child: Scaffold(
-            appBar: AppBar(title: const Logo(), titleSpacing: 16),
-            body: IndexedStack(
-              index: adminNav.tab,
-              children: const [DashboardTab(), CarsTab(), MessagesTab(), AdminProfileTab()],
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-            floatingActionButton: FloatingActionButton(
-              heroTag: 'admin-new-ad',
-              tooltip: 'Зар нэмэх',
-              backgroundColor: AppPalette.primary,
-              foregroundColor: Colors.white,
-              shape: const CircleBorder(),
-              elevation: 4,
-              onPressed: () async {
-                final saved = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const CarEditScreen()));
-                if (saved == true) adminNav.changed();
-              },
-              child: const Icon(Icons.add_rounded, size: 30),
-            ),
-            bottomNavigationBar: BottomAppBar(
-              color: Colors.white,
-              surfaceTintColor: Colors.white,
-              shape: const CircularNotchedRectangle(),
-              notchMargin: 6,
-              padding: EdgeInsets.zero,
-              height: 64,
-              child: Row(children: [
-                _tab(AdminNav.home, Icons.bar_chart_rounded, 'Самбар'),
-                _tab(AdminNav.cars, Icons.directions_car_outlined, 'Зарууд'),
-                const SizedBox(width: 72),
-                _tab(AdminNav.messages, Icons.chat_bubble_outline_rounded, 'Мессеж'),
-                _tab(AdminNav.profile, Icons.person_outline_rounded, 'Профайл'),
-              ]),
-            ),
+          child: const Icon(Icons.add_rounded, size: 30),
+        ),
+        bottomNavigationBar: BottomAppBar(
+          color: Colors.white,
+          surfaceTintColor: Colors.white,
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 6,
+          padding: EdgeInsets.zero,
+          height: 64,
+          child: Row(
+            children: [
+              _tab(AdminNav.home, Icons.bar_chart_rounded, 'Самбар'),
+              _tab(AdminNav.cars, Icons.directions_car_outlined, 'Зарууд'),
+              const SizedBox(width: 72),
+              _tab(
+                AdminNav.messages,
+                Icons.chat_bubble_outline_rounded,
+                'Мессеж',
+              ),
+              _tab(AdminNav.profile, Icons.person_outline_rounded, 'Профайл'),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _tab(int index, IconData icon, String label) {
     final on = adminNav.tab == index;
@@ -139,11 +202,21 @@ class _AdminShellState extends State<AdminShell> {
     return Expanded(
       child: InkWell(
         onTap: () => adminNav.go(index),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(icon, color: color, size: 23),
-          const SizedBox(height: 3),
-          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
-        ]),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 23),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

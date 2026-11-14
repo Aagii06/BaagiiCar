@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/admin/api.dart';
+import 'package:mashinuud_app/admin/lock.dart';
+import 'package:mashinuud_app/admin/screens/lock_screen.dart';
 import 'package:mashinuud_app/admin/models.dart';
 import 'package:mashinuud_app/admin/screens/catalog.dart';
 import 'package:mashinuud_app/admin/screens/customers.dart';
@@ -100,6 +102,8 @@ class AdminProfileTab extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 16),
+            const _LockSettings(),
+            const SizedBox(height: 16),
             _action('Хэрэглэгч рүү шилжих', Icons.swap_horiz_rounded, AppPalette.foreground, () => Stores.mode.setAdmin(false)),
             const SizedBox(height: 8),
             _action('Гарах', Icons.logout_rounded, AppPalette.destructive, () {
@@ -120,6 +124,69 @@ class AdminProfileTab extends StatelessWidget {
             child: Row(children: [Expanded(child: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: color))), Icon(icon, size: 18, color: color)]),
           ),
         ),
+      );
+}
+
+/// "Апп түгжих": a 4-digit PIN asked when entering the admin half and after the chosen time in the background.
+class _LockSettings extends StatelessWidget {
+  const _LockSettings();
+
+  String _label(int m) => m == 0 ? 'Шууд' : '$m минут';
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: appLock,
+        builder: (context, _) {
+          final on = appLock.enabled;
+          Widget row(IconData icon, String label, {String? value, VoidCallback? onTap}) => InkWell(
+                onTap: onTap,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  child: Row(children: [
+                    Icon(icon, size: 20, color: AppPalette.mutedForeground),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600))),
+                    if (value != null) Text(value, style: const TextStyle(color: AppPalette.mutedForeground)),
+                    const Icon(Icons.chevron_right_rounded, color: AppPalette.mutedForeground),
+                  ]),
+                ),
+              );
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: Container(
+              color: AppPalette.card,
+              child: Column(children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 6, 16, 6),
+                  child: SwitchRow(
+                    label: 'Апп түгжих',
+                    hint: 'Админ хэсэг рүү ороход 4 оронтой PIN асууна',
+                    value: on,
+                    onChanged: (v) async {
+                      if (v) {
+                        if (await setPinSheet(context) && context.mounted) toast(context, 'PIN тохирууллаа');
+                      } else if (await confirmSheet(context, title: 'Апп түгжихийг унтраах уу?', message: 'Админ хэсэг рүү ороход PIN асуухаа болино.', confirmLabel: 'Унтраах', tone: Tone.danger, icon: Icons.lock_open_rounded)) {
+                        appLock.disable();
+                      }
+                    },
+                  ),
+                ),
+                if (on) ...[
+                  const Divider(height: 1),
+                  row(Icons.timer_outlined, 'Ар талд байх хугацаа', value: _label(appLock.timeoutMinutes), onTap: () async {
+                    final picked = await pickOption<int>(context,
+                        title: 'Апп ар талд хэдэн минут байвал түгжих вэ?', options: [for (final m in AppLock.timeouts) Option(m, _label(m))], selected: appLock.timeoutMinutes);
+                    if (picked?.value != null) appLock.setTimeout(picked!.value!);
+                  }),
+                  const Divider(height: 1),
+                  row(Icons.pin_outlined, 'PIN солих', onTap: () async {
+                    if (await setPinSheet(context, verifyCurrent: true) && context.mounted) toast(context, 'PIN солигдлоо');
+                  }),
+                ],
+              ]),
+            ),
+          );
+        },
       );
 }
 

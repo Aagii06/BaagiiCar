@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:mashinuud_app/admin/api.dart';
+import 'package:mashinuud_app/admin/lock.dart';
 import 'package:mashinuud_app/api/api.dart';
 import 'package:mashinuud_app/api/client.dart';
 import 'package:mashinuud_app/api/models.dart';
@@ -24,6 +25,7 @@ class Stores {
     auth._load(prefs);
     mode._load(prefs);
     AdminApi.session.load(prefs);
+    appLock.load(prefs);
   }
 }
 
