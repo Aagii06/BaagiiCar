@@ -338,7 +338,7 @@ class FormError extends StatelessWidget {
 }
 
 /// Looks like a text field; opens a bottom-sheet list (admin's Select.tsx).
-class SelectField<T> extends StatelessWidget {
+class AdminSelect<T> extends StatelessWidget {
   final String? title;
   final T? value;
   final List<Option<T>> options;
@@ -347,7 +347,7 @@ class SelectField<T> extends StatelessWidget {
   final bool enabled;
   final bool searchable;
   final bool invalid;
-  const SelectField({
+  const AdminSelect({
     super.key,
     this.title,
     required this.value,
