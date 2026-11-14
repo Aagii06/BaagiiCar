@@ -19,22 +19,61 @@ class ProfileScreen extends StatelessWidget {
           listenable: Listenable.merge([Stores.auth, Stores.mode]),
           builder: (context, _) {
             final user = Stores.auth.user;
-            if (user == null) {
-              return ListView(padding: const EdgeInsets.all(16), children: [
-                const Panel(child: PhoneCodeForm()),
-                const SizedBox(height: 12),
-                // Admins / dealers sign in on the admin panel itself (phone + password).
-                TextButton.icon(
-                  onPressed: () => Stores.mode.setAdmin(true),
-                  icon: const Icon(Icons.admin_panel_settings_outlined, size: 18),
-                  label: Text(Stores.mode.adminSignedIn ? 'Админ хэсэг рүү шилжих' : 'Админ / Дилераар нэвтрэх'),
-                  style: TextButton.styleFrom(foregroundColor: AppPalette.primary, textStyle: const TextStyle(fontWeight: FontWeight.w600)),
-                ),
-              ]);
-            }
+            if (user == null) return _SignIn(adminSignedIn: Stores.mode.adminSignedIn);
             return _Account(key: ValueKey(user.id));
           },
         ),
+      );
+}
+
+/// Signed out: two tabs like the shop app — customers sign in with an SMS code,
+/// admins / dealers on the admin panel itself (phone + password, in the WebView).
+class _SignIn extends StatelessWidget {
+  final bool adminSignedIn;
+  const _SignIn({required this.adminSignedIn});
+
+  @override
+  Widget build(BuildContext context) => DefaultTabController(
+        length: 2,
+        child: Column(children: [
+          const TabBar(
+            labelColor: AppPalette.primary,
+            indicatorColor: AppPalette.primary,
+            unselectedLabelColor: AppPalette.mutedForeground,
+            labelStyle: TextStyle(fontWeight: FontWeight.w700),
+            tabs: [Tab(text: 'Хэрэглэгч'), Tab(text: 'Админ / Дилер')],
+          ),
+          Expanded(
+            child: TabBarView(children: [
+              ListView(padding: const EdgeInsets.all(16), children: const [Panel(child: PhoneCodeForm())]),
+              ListView(padding: const EdgeInsets.all(16), children: [
+                Panel(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    const Icon(Icons.admin_panel_settings_outlined, size: 40, color: AppPalette.primary),
+                    const SizedBox(height: 12),
+                    Text(
+                      adminSignedIn
+                          ? 'Та админ хэсэгт нэвтэрсэн байна.'
+                          : 'Админ болон дилер утасны дугаар, нууц үгээрээ нэвтэрнэ.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: AppPalette.mutedForeground),
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: () => Stores.mode.setAdmin(true),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppPalette.primary,
+                        minimumSize: const Size.fromHeight(48),
+                        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      child: Text(adminSignedIn ? 'Админ хэсэг рүү шилжих' : 'Админ / Дилераар нэвтрэх'),
+                    ),
+                  ]),
+                ),
+              ]),
+            ]),
+          ),
+        ]),
       );
 }
 
