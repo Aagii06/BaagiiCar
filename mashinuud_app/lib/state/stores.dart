@@ -194,6 +194,8 @@ class AppModeStore extends ChangeNotifier {
   void setAdmin(bool value) {
     if (_admin == value) return;
     _admin = value;
+    // Back on the customer side: start from its home page, not the tab the admin half was opened from.
+    if (!value) Stores.shell.tab = ShellController.home;
     notifyListeners();
   }
 }
