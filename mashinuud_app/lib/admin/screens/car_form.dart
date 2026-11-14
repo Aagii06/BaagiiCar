@@ -896,7 +896,7 @@ class _CarFormState extends State<CarForm> {
     final editable = _admin && car?.sellerRole != Roles.dealer;
     final dealer = _dealers.where((d) => '${d.id}' == f['dealer_id']).firstOrNull;
     final current = car?.dealerId != null && f['dealer_id'] == '${car!.dealerId}' && dealer == null;
-    final name = dealer?.name ?? (current ? car!.dealerName : null);
+    final name = dealer?.name ?? (current ? car.dealerName : null);
     return Section(
       title: 'Дилер',
       child: Row(children: [
@@ -911,7 +911,7 @@ class _CarFormState extends State<CarForm> {
                 searchable: true,
                 placeholder: '-- Сонгох --',
                 options: [
-                  if (current) Option(f['dealer_id'], '${car!.dealerName ?? '#${car.dealerId}'} (одоогийн)'),
+                  if (current) Option(f['dealer_id'], '${car.dealerName ?? '#${car.dealerId}'} (одоогийн)'),
                   for (final d in _dealers) Option('${d.id}', d.phonenumber != null ? '${d.name} · ${d.phonenumber}' : d.name),
                 ],
                 onChanged: (v) {

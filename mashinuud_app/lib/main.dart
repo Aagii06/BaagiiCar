@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/l10n/app_localizations.dart';
-import 'package:mashinuud_app/screens/admin_web.dart';
+import 'package:mashinuud_app/admin/shell.dart';
 import 'package:mashinuud_app/screens/shell.dart';
 import 'package:mashinuud_app/state/stores.dart';
 
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
       // Admins / dealers get the admin panel; everyone else the customer screens.
       home: ListenableBuilder(
         listenable: Stores.mode,
-        builder: (context, _) => Stores.mode.admin ? const AdminWebScreen() : const Shell(),
+        builder: (context, _) => Stores.mode.admin ? const AdminRoot() : const Shell(),
       ),
     );
   }
