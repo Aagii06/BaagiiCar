@@ -192,7 +192,27 @@
 @utility animate-splash-breathe {
   animation: splash-breathe 1.8s ease-in-out infinite;
 }
+/* Rejected sign-in: the fields shake side to side once. */
+@keyframes shake {
+  15%,
+  55% {
+    transform: translateX(-8px);
+  }
+  35%,
+  75% {
+    transform: translateX(8px);
+  }
+  90% {
+    transform: translateX(-3px);
+  }
+}
+@utility animate-shake {
+  animation: shake 0.42s ease-in-out;
+}
 @media (prefers-reduced-motion: reduce) {
+  .animate-shake {
+    animation: none;
+  }
   .animate-splash-breathe {
     animation: none;
   }
@@ -203,10 +223,10 @@
 }
 
 /* Empty required field after a submit attempt (RequiredFieldMarker): red border only, no tooltip. */
-:is(input, select, textarea)[data-invalid] {
+:is(input, select, textarea):is([data-invalid], [aria-invalid="true"]) {
   border-color: var(--destructive);
 }
-:is(input, select, textarea)[data-invalid]:focus {
+:is(input, select, textarea):is([data-invalid], [aria-invalid="true"]):focus {
   border-color: var(--destructive);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--destructive) 12%, transparent);
 }

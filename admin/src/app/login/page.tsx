@@ -21,6 +21,9 @@ function LoginForm() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Which fields get a red border: a bad number only the phone; wrong credentials both.
+  const [invalid, setInvalid] = useState<"phone" | "both" | null>(null);
+  const [shaking, setShaking] = useState(false);
   const [busy, setBusy] = useState(false);
   const inApp = useInApp();
 
@@ -28,14 +31,26 @@ function LoginForm() {
     if (status === "authenticated") router.replace(next);
   }, [status, next, router]);
 
+  const fail = (message: string, fields: "phone" | "both") => {
+    setError(message);
+    setInvalid(fields);
+    setShaking(true);
+  };
+
+  const clearError = () => {
+    setError(null);
+    setInvalid(null);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!/^[5-9]\d{7}$/.test(phone)) return fail(tr("Утасны дугаар 5–9-өөр эхэлсэн 8 оронтой тоо байна"), "phone");
     setBusy(true);
-    setError(null);
+    clearError();
     try {
       await login(phone, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : tr("Нэвтрэх үед алдаа гарлаа"));
+      fail(err instanceof Error ? err.message : tr("Нэвтрэх үед алдаа гарлаа"), "both");
     } finally {
       setBusy(false);
     }
@@ -55,12 +70,28 @@ function LoginForm() {
         <p className="mt-2 text-sm text-white/70">{tr("Админ эсвэл дилер эрхтэй утасны дугаараараа нэвтэрнэ үү.")}</p>
       </div>
       <form onSubmit={submit} className="-mt-4 space-y-4 rounded-3xl bg-white p-5 shadow-xl shadow-black/5">
-        <Field label={tr("Утасны дугаар")}>
-          <PhoneInput autoComplete="tel" placeholder="00000000" value={phone} onChange={setPhone} required />
-        </Field>
-        <Field label={tr("Нууц үг")}>
-          <PasswordInput autoComplete="current-password" placeholder={tr("Нууц үг")} value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </Field>
+        <div className={shaking ? "animate-shake space-y-4" : "space-y-4"} onAnimationEnd={() => setShaking(false)}>
+          <Field label={tr("Утасны дугаар")}>
+            <PhoneInput
+              autoComplete="tel"
+              placeholder="00000000"
+              value={phone}
+              onChange={(v) => (setPhone(v), clearError())}
+              aria-invalid={invalid !== null}
+              required
+            />
+          </Field>
+          <Field label={tr("Нууц үг")}>
+            <PasswordInput
+              autoComplete="current-password"
+              placeholder={tr("Нууц үг")}
+              value={password}
+              onChange={(e) => (setPassword(e.target.value), clearError())}
+              aria-invalid={invalid === "both"}
+              required
+            />
+          </Field>
+        </div>
         <div className="-mt-1 text-right">
           <Link href={phone ? `/forgot-password?phone=${phone}` : "/forgot-password"} className="text-sm font-semibold text-primary">
             {tr("Нууц үгээ мартсан уу?")}
