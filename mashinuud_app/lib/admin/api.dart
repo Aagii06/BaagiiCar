@@ -456,13 +456,13 @@ class AdminApi {
 
   // --- feedback -----------------------------------------------------------------
 
-  static Future<ListPage<Feedback>> feedbacks([String? status]) async => _page(
+  static Future<ListPage<FeedbackItem>> feedbacks([String? status]) async => _page(
       await _fetch('/api/base/feedbacks${listQuery(filter: [
             if (status != null) ['status', '=', status],
           ], sort: _newest, take: 200)}'),
-      Feedback.new);
+      FeedbackItem.new);
 
-  static Future<Feedback?> feedback(int id) async => _item(await _fetch('/api/base/feedbacks/$id'), Feedback.new);
+  static Future<FeedbackItem?> feedback(int id) async => _item(await _fetch('/api/base/feedbacks/$id'), FeedbackItem.new);
 
   // --- web chat messages --------------------------------------------------------
 

@@ -176,8 +176,8 @@ class Customer extends Rec {
   }
 }
 
-class Feedback extends Rec {
-  const Feedback(super.j);
+class FeedbackItem extends Rec {
+  const FeedbackItem(super.j);
   int? get customerId => i('customer_id');
   String? get name => s('name');
   String? get phonenumber => s('phonenumber');
