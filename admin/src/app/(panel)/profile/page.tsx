@@ -31,7 +31,7 @@ export default function ProfilePage() {
       <section className="mt-4 flex items-center gap-3 rounded-2xl bg-linear-to-br from-primary-soft via-orange-50 to-amber-100 p-4 text-foreground ring-1 ring-orange-200/70">
         <UserAvatar user={user} className="size-12 bg-primary text-white shadow-md shadow-primary/30" />
         <div className="min-w-0">
-          <p className="truncate font-bold">{userName(user)}</p>
+          <p className="truncate font-bold">{user?.firstname || userName(user)}</p>
           <p className="text-sm text-muted-foreground">
             {user?.phonenumber} · {roleLabel(user?.role)}
           </p>
