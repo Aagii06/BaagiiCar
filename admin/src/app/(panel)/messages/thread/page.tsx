@@ -6,7 +6,7 @@ import { useConfirm, type ConfirmOptions } from "@/components/common/Confirm";
 import { ChatSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { DetailHeader } from "@/components/layout/PageHeader";
-import { BADGE, ReplyForm, toThreads, type MessageStatus, type Thread } from "@/components/messages/thread";
+import { ReplyForm, StatusBadge, toThreads, type MessageStatus, type Thread } from "@/components/messages/thread";
 import { deleteRows, editMessageReply, getMessageThread, replyMessage, setMessageStatus } from "@/lib/api/admin";
 import type { Car } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
@@ -111,7 +111,7 @@ function ThreadView({ thread, onChanged }: { thread: Thread; onChanged: () => vo
               {last.phonenumber}
             </a>
           </div>
-          <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold", BADGE[status].className)}>{BADGE[status].label}</span>
+          <StatusBadge status={status} />
         </div>
         {car && (
           <button type="button" onClick={() => setPreview(car)} className="mt-3 flex w-full items-center gap-3 rounded-xl bg-muted p-2 text-left hover:bg-border">

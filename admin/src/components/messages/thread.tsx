@@ -8,12 +8,52 @@ import { tr } from "@/lib/i18n/translations";
 
 export type MessageStatus = Message["status"];
 
-export const BADGE: Record<MessageStatus, { label: string; className: string }> = {
-  new: { get label() { return tr("Шинэ"); }, className: "bg-primary text-white" },
-  seen: { get label() { return tr("Үзсэн"); }, className: "bg-amber-soft text-amber-ink" },
-  done: { get label() { return tr("Хариулсан"); }, className: "bg-success-soft text-success" },
-  deleted: { get label() { return tr("Устгагдсан"); }, className: "bg-destructive-soft text-destructive" },
+/**
+ * Each status's colours, used everywhere a chat's status shows: `className` for the badge, `dot` its bullet,
+ * `bar` the row's left stripe, `row` the row tint (new only), `tone` the filter chip.
+ */
+export const BADGE: Record<MessageStatus, { label: string; className: string; dot: string; bar: string; row?: string; tone: { on: string; off: string } }> = {
+  new: {
+    get label() { return tr("Шинэ"); },
+    className: "bg-primary text-white",
+    dot: "bg-white",
+    bar: "bg-primary",
+    row: "bg-primary-soft/60 hover:bg-primary-soft",
+    tone: { on: "bg-primary text-white", off: "bg-primary-soft text-primary hover:bg-primary/15" },
+  },
+  seen: {
+    get label() { return tr("Үзсэн"); },
+    className: "bg-amber-soft text-amber-ink",
+    dot: "bg-amber",
+    bar: "bg-amber",
+    tone: { on: "bg-amber text-amber-ink", off: "bg-amber-soft text-amber-ink hover:bg-amber/30" },
+  },
+  done: {
+    get label() { return tr("Хариулсан"); },
+    className: "bg-success-soft text-success",
+    dot: "bg-success",
+    bar: "bg-success",
+    tone: { on: "bg-success text-white", off: "bg-success-soft text-success hover:bg-success/15" },
+  },
+  deleted: {
+    get label() { return tr("Устгагдсан"); },
+    className: "bg-destructive-soft text-destructive",
+    dot: "bg-destructive",
+    bar: "bg-destructive",
+    tone: { on: "bg-destructive text-white", off: "bg-destructive-soft text-destructive hover:bg-destructive/15" },
+  },
 };
+
+/** Status pill with a coloured bullet. */
+export function StatusBadge({ status }: { status: MessageStatus }) {
+  const b = BADGE[status];
+  return (
+    <span className={cn("inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold", b.className)}>
+      <span className={cn("size-1.5 rounded-full", b.dot)} />
+      {b.label}
+    </span>
+  );
+}
 
 /**
  * One chat: everything a visitor wrote about one ad (or about nothing in particular), with the team's answers.
