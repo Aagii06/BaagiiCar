@@ -180,27 +180,20 @@ class ShellController extends ChangeNotifier {
 }
 
 /// Which half of the app is showing: the customer screens, or the admin panel (admins / dealers).
-/// Kept on the device, so a signed-in dealer lands back in the panel on the next start.
+/// The app always opens on the customer side; the admin half is entered from there (and asks for the PIN).
 class AppModeStore extends ChangeNotifier {
-  static const _key = 'baagii_car_admin_mode';
-  SharedPreferences? _prefs;
   bool _admin = false;
 
   bool get admin => _admin;
 
   void _load(SharedPreferences prefs) {
-    _prefs = prefs;
-    _admin = prefs.getBool(_key) ?? false;
+    // Older versions kept the admin half open across restarts.
+    prefs.remove('baagii_car_admin_mode');
   }
 
   void setAdmin(bool value) {
     if (_admin == value) return;
     _admin = value;
-    if (value) {
-      _prefs?.setBool(_key, true);
-    } else {
-      _prefs?.remove(_key);
-    }
     notifyListeners();
   }
 }
