@@ -34,8 +34,8 @@ class GatewayPage extends StatefulWidget {
 /// Нэг backend-ийн тохиргооны талбарууд
 class _ServerFields {
   _ServerFields([String url = '', String token = ''])
-      : url = TextEditingController(text: url),
-        token = TextEditingController(text: token);
+    : url = TextEditingController(text: url),
+      token = TextEditingController(text: token);
 
   final TextEditingController url;
   final TextEditingController token;
@@ -69,10 +69,13 @@ class _GatewayPageState extends State<GatewayPage> {
   }
 
   Future<void> _load() async {
-    final config = await _channel.invokeMapMethod<String, dynamic>('getConfig') ?? {};
+    final config =
+        await _channel.invokeMapMethod<String, dynamic>('getConfig') ?? {};
     final saved = (config['servers'] as List?) ?? [];
     setState(() {
-      _servers.addAll(saved.map((s) => _ServerFields(s['url'] ?? '', s['token'] ?? '')));
+      _servers.addAll(
+        saved.map((s) => _ServerFields(s['url'] ?? '', s['token'] ?? '')),
+      );
       if (_servers.isEmpty) _servers.add(_ServerFields());
     });
     await _channel.invokeMethod('requestPermissions');
@@ -84,7 +87,8 @@ class _GatewayPageState extends State<GatewayPage> {
     if (mounted && status != null) setState(() => _status = status);
   }
 
-  void _toast(String text) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  void _toast(String text) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 
   /// The start/stop or test send in flight — its button spins.
   String? _busy;
@@ -102,10 +106,14 @@ class _GatewayPageState extends State<GatewayPage> {
     if (_status['running'] == true) {
       await _channel.invokeMethod('stop');
     } else {
-      final filled = _servers.where((s) => s.url.text.trim().isNotEmpty).toList();
-      if (filled.isEmpty) return _toast('Дор хаяж нэг серверийн хаяг оруулна уу');
+      final filled = _servers
+          .where((s) => s.url.text.trim().isNotEmpty)
+          .toList();
+      if (filled.isEmpty)
+        return _toast('Дор хаяж нэг серверийн хаяг оруулна уу');
       for (final s in filled) {
-        if (!s.url.text.trim().startsWith('http') || s.token.text.trim().isEmpty) {
+        if (!s.url.text.trim().startsWith('http') ||
+            s.token.text.trim().isEmpty) {
           return _toast('Сервер бүрт хаяг (http...) болон token оруулна уу');
         }
       }
@@ -114,7 +122,10 @@ class _GatewayPageState extends State<GatewayPage> {
         return _toast('SMS илгээх зөвшөөрөл өгнө үү');
       }
       await _channel.invokeMethod('start', {
-        'servers': [for (final s in filled) {'url': s.url.text.trim(), 'token': s.token.text.trim()}],
+        'servers': [
+          for (final s in filled)
+            {'url': s.url.text.trim(), 'token': s.token.text.trim()},
+        ],
       });
     }
     await _refresh();
@@ -125,7 +136,9 @@ class _GatewayPageState extends State<GatewayPage> {
     if (phone.isEmpty) return _toast('Утасны дугаар оруулна уу');
     setState(() => _busy = 'test');
     try {
-      final error = await _channel.invokeMethod<String>('sendTest', {'phonenumber': phone});
+      final error = await _channel.invokeMethod<String>('sendTest', {
+        'phonenumber': phone,
+      });
       _toast(error == null ? 'Илгээлээ' : 'Алдаа: $error');
     } finally {
       if (mounted) setState(() => _busy = null);
@@ -136,15 +149,18 @@ class _GatewayPageState extends State<GatewayPage> {
   Widget build(BuildContext context) {
     final running = _status['running'] == true;
     final serverStatus = {
-      for (final s in (_status['servers'] as List?) ?? []) s['url'] as String: s as Map,
+      for (final s in (_status['servers'] as List?) ?? [])
+        s['url'] as String: s as Map,
     };
-    final online = serverStatus.values.where((s) => s['connected'] == true).length;
+    final online = serverStatus.values
+        .where((s) => s['connected'] == true)
+        .length;
     final log = (_status['log'] as List?)?.cast<String>() ?? [];
     final (color, label) = !running
         ? (Colors.grey, 'Унтраалттай')
         : online == serverStatus.length && online > 0
-            ? (Colors.green, 'Ажиллаж байна')
-            : (Colors.orange, 'Холбогдсон $online/${serverStatus.length}');
+        ? (Colors.green, 'Ажиллаж байна')
+        : (Colors.orange, 'Холбогдсон $online/${serverStatus.length}');
 
     return Scaffold(
       appBar: AppBar(
@@ -155,7 +171,9 @@ class _GatewayPageState extends State<GatewayPage> {
             tooltip: 'Илгээсэн SMS',
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const HistoryPage(channel: _channel)),
+              MaterialPageRoute(
+                builder: (_) => const HistoryPage(channel: _channel),
+              ),
             ),
           ),
         ],
@@ -167,7 +185,9 @@ class _GatewayPageState extends State<GatewayPage> {
             child: ListTile(
               leading: Icon(Icons.circle, color: color),
               title: Text(label),
-              subtitle: Text('Илгээсэн: ${_status['sentCount'] ?? 0} · Алдаа: ${_status['failedCount'] ?? 0}'),
+              subtitle: Text(
+                'Илгээсэн: ${_status['sentCount'] ?? 0} · Алдаа: ${_status['failedCount'] ?? 0}',
+              ),
             ),
           ),
           if (_status['smsPermission'] == false)
@@ -178,9 +198,11 @@ class _GatewayPageState extends State<GatewayPage> {
             ),
           if (_status['batteryUnrestricted'] == false)
             _Warning(
-              text: 'Батарейн хязгаарлалтаас чөлөөлөөгүй - дэлгэц унтрахад тасарч болно',
+              text:
+                  'Батарейн хязгаарлалтаас чөлөөлөөгүй - дэлгэц унтрахад тасарч болно',
               action: 'Чөлөөлөх',
-              onPressed: () => _channel.invokeMethod('requestBatteryUnrestricted'),
+              onPressed: () =>
+                  _channel.invokeMethod('requestBatteryUnrestricted'),
             ),
           const SizedBox(height: 8),
           for (final (i, server) in _servers.indexed) ...[
@@ -188,7 +210,11 @@ class _GatewayPageState extends State<GatewayPage> {
               index: i,
               fields: server,
               enabled: !running,
-              status: serverStatus[server.url.text.trim().replaceAll(RegExp(r'/+$'), '')],
+              status:
+                  serverStatus[server.url.text.trim().replaceAll(
+                    RegExp(r'/+$'),
+                    '',
+                  )],
               onRemove: _servers.length > 1
                   ? () => setState(() => _servers.removeAt(i).dispose())
                   : null,
@@ -208,10 +234,18 @@ class _GatewayPageState extends State<GatewayPage> {
           FilledButton.icon(
             onPressed: _busy != null ? null : _toggle,
             icon: _busy == 'toggle'
-                ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
                 : Icon(running ? Icons.stop : Icons.play_arrow),
             label: Text(running ? 'Зогсоох' : 'Эхлүүлэх'),
-            style: running ? FilledButton.styleFrom(backgroundColor: Colors.red) : null,
+            style: running
+                ? FilledButton.styleFrom(backgroundColor: Colors.red)
+                : null,
           ),
           const SizedBox(height: 24),
           Row(
@@ -231,7 +265,10 @@ class _GatewayPageState extends State<GatewayPage> {
               OutlinedButton(
                 onPressed: _busy != null ? null : _sendTest,
                 child: _busy == 'test'
-                    ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Илгээх'),
               ),
             ],
@@ -242,7 +279,10 @@ class _GatewayPageState extends State<GatewayPage> {
           for (final line in log)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Text(line, style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+              child: Text(
+                line,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+              ),
             ),
         ],
       ),
@@ -278,18 +318,28 @@ class _ServerCard extends StatelessWidget {
             Row(
               children: [
                 if (status != null) ...[
-                  Icon(Icons.circle, size: 12, color: connected ? Colors.green : Colors.orange),
+                  Icon(
+                    Icons.circle,
+                    size: 12,
+                    color: connected ? Colors.green : Colors.orange,
+                  ),
                   const SizedBox(width: 8),
                 ],
                 Expanded(
                   child: Text(
-                    status == null || connected ? 'Сервер ${index + 1}' : 'Сервер ${index + 1} · ${error ?? 'холбогдож байна...'}',
+                    status == null || connected
+                        ? 'Сервер ${index + 1}'
+                        : 'Сервер ${index + 1} · ${error ?? 'холбогдож байна...'}',
                     style: Theme.of(context).textTheme.titleSmall,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (enabled && onRemove != null)
-                  IconButton(onPressed: onRemove, icon: const Icon(Icons.delete_outline), tooltip: 'Устгах')
+                  IconButton(
+                    onPressed: onRemove,
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: 'Устгах',
+                  )
                 else
                   const SizedBox(height: 48),
               ],
@@ -331,7 +381,11 @@ class _ServerCard extends StatelessWidget {
 }
 
 class _Warning extends StatelessWidget {
-  const _Warning({required this.text, required this.action, required this.onPressed});
+  const _Warning({
+    required this.text,
+    required this.action,
+    required this.onPressed,
+  });
 
   final String text;
   final String action;
