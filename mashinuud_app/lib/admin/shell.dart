@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/admin/api.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 import 'package:mashinuud_app/admin/lock.dart';
 import 'package:mashinuud_app/admin/screens/lock_screen.dart';
 import 'package:mashinuud_app/admin/screens/car_form.dart';
@@ -113,11 +114,12 @@ class _AdminRootState extends State<AdminRoot> {
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: AdminApi.session,
+    // A new language remounts the screens below (keyed by it), so every tr() runs again.
+    listenable: Listenable.merge([AdminApi.session, adminLang]),
     builder: (context, _) {
       if (_checking) return const FullScreenLoader();
-      if (!AdminApi.session.signedIn) return const AdminLoginScreen();
-      return AdminShell(key: ValueKey(AdminApi.session.user!.id));
+      if (!AdminApi.session.signedIn) return AdminLoginScreen(key: ValueKey(adminLang.code));
+      return AdminShell(key: ValueKey('${AdminApi.session.user!.id}|${adminLang.code}'));
     },
   );
 }
