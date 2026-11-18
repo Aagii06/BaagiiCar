@@ -11,7 +11,7 @@ import { catalogImage } from "@/lib/api/config";
 import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_RENEW_DAYS, CAR_RESTORE_DAYS, CAR_STATUS, ROLES } from "@/lib/constants";
-import { carTitle, cn, daysUntil, formatPrice } from "@/lib/utils";
+import { carTitle, cn, daysUntil, formatMoney, formatPrice } from "@/lib/utils";
 import { ArchiveRestore, BadgeCheck, Check, Clock, Eye, EyeOff, Phone, RefreshCw, Star, Store, Trash2, Undo2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -32,7 +32,7 @@ export const TABS: ChipTab<Tab>[] = [
 ];
 
 /** One ad in an admin list, with its status actions. */
-export default function CarRow({ car, onChanged, showDealer }: { car: Car; onChanged: () => void; showDealer: boolean }) {
+export default function CarRow({ car, onChanged, showDealer, renewPrice }: { car: Car; onChanged: () => void; showDealer: boolean; /** Paid renewal price (dealers); undefined hides the paid button. */ renewPrice?: number }) {
   const toast = useToast();
   const confirm = useConfirm();
   const reject = useRejectCar();
@@ -192,6 +192,27 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
             {isAdmin && car.status === "active" && (
               <button onClick={() => run(() => markSold(car.id), tr("Зарагдсан гэж тэмдэглэлээ"), { title: tr("Зарагдсан гэж тэмдэглэх үү?"), message: tr("Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана."), confirmLabel: tr("Тэмдэглэх"), icon: BadgeCheck })} className="rounded-lg bg-muted px-3 py-1.5 text-xs font-bold">
                 {tr("Зарагдсан")}
+              </button>
+            )}
+            {/* Before the free renewal a dealer can pay for one from their balance. */}
+            {car.status === "active" && !isAdmin && renewIn > 0 && renewPrice !== undefined && (
+              <button
+                onClick={() =>
+                  run(() => renewCar(car.id, true), tr("Шинэчиллээ, жагсаалтын эхэнд гарлаа"), {
+                    title: tr("Төлбөртэй шинэчлэх үү?"),
+                    message: tr("Дансны үлдэгдлээс {price} хасагдаж, зар жагсаалтын эхэнд гарна. Үнэгүй шинэчлэл {n} хоногийн дараа.", {
+                      price: formatMoney(renewPrice),
+                      n: renewIn,
+                    }),
+                    confirmLabel: tr("Төлөөд шинэчлэх"),
+                    tone: "primary",
+                    icon: RefreshCw,
+                  })
+                }
+                className="flex items-center gap-1 rounded-lg bg-primary-soft px-3 py-1.5 text-xs font-bold text-primary"
+              >
+                <RefreshCw className="size-3.5" />
+                {tr("Шинэчлэх · {price}", { price: formatMoney(renewPrice) })}
               </button>
             )}
             {car.status === "active" && (isAdmin || !renewIn) && (

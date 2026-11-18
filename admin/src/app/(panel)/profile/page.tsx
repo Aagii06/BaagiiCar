@@ -9,7 +9,7 @@ import { useApi } from "@/lib/useApi";
 import { userName } from "@/lib/utils";
 import { tr } from "@/lib/i18n/translations";
 import { APP_CUSTOMER_URL, useInApp } from "@/lib/inApp";
-import { ArrowLeftRight, ChevronRight, KeyRound, LibraryBig, LogOut, MessageSquareText, Pencil, ShieldUser, Store, Users, type LucideIcon } from "lucide-react";
+import { ArrowLeftRight, ChevronRight, CreditCard, KeyRound, LibraryBig, LogOut, MessageSquareText, Pencil, ShieldUser, Store, Users, Wallet, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 /** Admin sections, moved out of the bottom nav to keep it at four tabs. Labels are Mongolian keys for tr(). */
@@ -19,6 +19,13 @@ const ADMIN_MENU: { href: string; label: string; desc: string; icon: LucideIcon;
   { href: "/users", label: "Admin & Dealer", desc: "Админ, дилерийн хэрэглэгчид", icon: ShieldUser, tone: "bg-violet-100 text-violet-600 ring-violet-200" },
   { href: "/customers", label: "Хэрэглэгч", desc: "Вэбээр бүртгүүлсэн хэрэглэгчид", icon: Users, tone: "bg-emerald-100 text-emerald-600 ring-emerald-200" },
   { href: "/feedbacks", label: "Санал хүсэлт", desc: "Вэбийн “Бидэнд бичих” маягтаар ирсэн захидал", icon: MessageSquareText, tone: "bg-rose-100 text-rose-600 ring-rose-200" },
+  { href: "/wallet", label: "Дилерийн данс", desc: "Үлдэгдэл, цэнэглэлтийн хүсэлт батлах", icon: Wallet, tone: "bg-teal-100 text-teal-600 ring-teal-200" },
+  { href: "/payment-settings", label: "Төлбөрийн тохиргоо", desc: "Шинэчлэх үнэ, банкны данс, QPay", icon: CreditCard, tone: "bg-indigo-100 text-indigo-600 ring-indigo-200" },
+];
+
+/** A dealer's own sections. */
+const DEALER_MENU: typeof ADMIN_MENU = [
+  { href: "/wallet", label: "Миний данс", desc: "Үлдэгдэл, данс цэнэглэх, гүйлгээний түүх", icon: Wallet, tone: "bg-teal-100 text-teal-600 ring-teal-200" },
 ];
 
 export default function ProfilePage() {
@@ -48,9 +55,9 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {user?.role === ROLES.admin && (
+      {(user?.role === ROLES.admin || user?.role === ROLES.dealer) && (
         <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl bg-card">
-          {ADMIN_MENU.map(({ href, label, desc, icon: Icon, tone }) => (
+          {(user.role === ROLES.admin ? ADMIN_MENU : DEALER_MENU).map(({ href, label, desc, icon: Icon, tone }) => (
             <li key={href}>
               <Link href={href} className="group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/60 active:bg-muted">
                 <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ring-1 ring-inset transition-transform group-hover:scale-105 ${tone}`}>
