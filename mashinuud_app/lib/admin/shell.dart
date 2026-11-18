@@ -160,7 +160,7 @@ class _AdminShellState extends State<AdminShell> {
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: FloatingActionButton(
           heroTag: 'admin-new-ad',
-          tooltip: 'Зар нэмэх',
+          tooltip: tr('Зар нэмэх'),
           backgroundColor: AppPalette.primary,
           foregroundColor: Colors.white,
           shape: const CircleBorder(),
@@ -182,15 +182,15 @@ class _AdminShellState extends State<AdminShell> {
           height: 64,
           child: Row(
             children: [
-              _tab(AdminNav.home, Icons.bar_chart_rounded, 'Самбар'),
-              _tab(AdminNav.cars, Icons.directions_car_outlined, 'Зарууд'),
+              _tab(AdminNav.home, Icons.bar_chart_rounded, tr('Самбар')),
+              _tab(AdminNav.cars, Icons.directions_car_outlined, tr('Зарууд')),
               const SizedBox(width: 72),
               _tab(
                 AdminNav.messages,
                 Icons.chat_bubble_outline_rounded,
-                'Мессеж',
+                tr('Мессеж'),
               ),
-              _tab(AdminNav.profile, Icons.person_outline_rounded, 'Профайл'),
+              _tab(AdminNav.profile, Icons.person_outline_rounded, tr('Профайл')),
             ],
           ),
         ),

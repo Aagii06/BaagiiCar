@@ -6,6 +6,7 @@ import 'package:mashinuud_app/admin/ui.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 const _pageSize = 10;
 
@@ -97,7 +98,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         return (rows: p.rows.map((m) => _Row(m.id, m.name, m.j, subtitle: names[m.brandId] ?? '—')).toList(), count: p.count);
       case 'bodyTypes':
         final all = (await AdminApi.bodyTypes())
-            .map((b) => _Row(b.id, b.name, b.j, subtitle: b.carCount != null ? '${b.carCount} зар' : null, image: catalogImage(b.image, 'bodyTypes'), hasImage: true))
+            .map((b) => _Row(b.id, b.name, b.j, subtitle: b.carCount != null ? tr('{carCount} зар', {'carCount': b.carCount}) : null, image: catalogImage(b.image, 'bodyTypes'), hasImage: true))
             .toList();
         return _local(all);
       default:
@@ -112,7 +113,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   _Row _brandRow(Brand b) => _Row(b.id, b.name, b.j,
-      subtitle: [b.country, if (b.carCount != null) '${b.carCount} зар'].whereType<String>().join(' · '), image: catalogImage(b.logo, 'brands'), hasImage: true);
+      subtitle: [b.country, if (b.carCount != null) tr('{carCount} зар', {'carCount': b.carCount})].whereType<String>().join(' · '), image: catalogImage(b.logo, 'brands'), hasImage: true);
 
   Future<void> _edit(_Row? row) async {
     if (_tab.value == 'models' && _brands.isEmpty) {
@@ -132,11 +133,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   Future<void> _remove(_Row row) async {
-    if (!await confirmSheet(context, title: '"${row.name}" устгах уу?', confirmLabel: 'Устгах', tone: Tone.danger, icon: Icons.delete_outline_rounded)) return;
+    if (!await confirmSheet(context, title: tr('"{name}" устгах уу?', {'name': row.name}), confirmLabel: tr('Устгах'), tone: Tone.danger, icon: Icons.delete_outline_rounded)) return;
     try {
       await AdminApi.deleteRows(_tab.target, [row.id]);
       if (!mounted) return;
-      toast(context, 'Устгалаа');
+      toast(context, tr('Устгалаа'));
       setState(() => _reload++);
     } catch (e) {
       if (mounted) toast(context, errorText(e), error: true);
@@ -145,11 +146,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   @override
   Widget build(BuildContext context) => AdminPage(
-        title: 'Каталог',
+        title: tr('Каталог'),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
-            child: ActionChip2(label: 'Нэмэх', icon: Icons.add_rounded, background: AppPalette.primary, foreground: Colors.white, onTap: () => _edit(null)),
+            child: ActionChip2(label: tr('Нэмэх'), icon: Icons.add_rounded, background: AppPalette.primary, foreground: Colors.white, onTap: () => _edit(null)),
           ),
         ],
         body: Column(children: [
@@ -168,7 +169,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SearchBox(
                 key: ValueKey(_searchKey),
-                hint: 'Хайх',
+                hint: tr('Хайх'),
                 onSearch: (v) => setState(() {
                   _q = v;
                   _take = _pageSize;
@@ -183,7 +184,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
               fetch: _fetch,
               loading: const Padding(padding: EdgeInsets.all(16), child: RowsSkeleton(count: 6)),
               builder: (context, page, refreshing) {
-                if (page.rows.isEmpty) return const EmptyView(title: 'Бичлэг алга', icon: Icons.library_books_outlined);
+                if (page.rows.isEmpty) return EmptyView(title: tr('Бичлэг алга'), icon: Icons.library_books_outlined);
                 final more = page.rows.length < page.count;
                 return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
                   CountLine('${page.count} ${_tab.unit}'),
@@ -218,8 +219,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
               if (r.subtitle != null && r.subtitle!.isNotEmpty) Text(r.subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
             ]),
           ),
-          IconButton(tooltip: 'Засах', icon: const Icon(Icons.edit_outlined, size: 18), onPressed: () => _edit(r)),
-          IconButton(tooltip: 'Устгах', icon: const Icon(Icons.delete_outline_rounded, size: 19, color: AppPalette.destructive), onPressed: () => _remove(r)),
+          IconButton(tooltip: tr('Засах'), icon: const Icon(Icons.edit_outlined, size: 18), onPressed: () => _edit(r)),
+          IconButton(tooltip: tr('Устгах'), icon: const Icon(Icons.delete_outline_rounded, size: 19, color: AppPalette.destructive), onPressed: () => _remove(r)),
         ]),
       );
 }
@@ -246,7 +247,7 @@ class _EditorState extends State<_Editor> {
     final body = <String, Object?>{};
     for (final f in widget.tab.fields) {
       final v = _values[f.key]!.trim();
-      if (f.required && v.isEmpty) return setState(() => _error = '${f.label} оруулна уу');
+      if (f.required && v.isEmpty) return setState(() => _error = tr('{label} оруулна уу', {'label': f.label}));
       body[f.key] = f.type == 'number' || f.type == 'brand' ? (v.isEmpty ? null : int.tryParse(v)) : (v.isEmpty ? null : v);
     }
     setState(() {
@@ -260,7 +261,7 @@ class _EditorState extends State<_Editor> {
         await AdminApi.createRow(widget.tab.target, body);
       }
       if (!mounted) return;
-      toast(context, widget.row != null ? 'Хадгаллаа' : 'Нэмлээ');
+      toast(context, widget.row != null ? tr('Хадгаллаа') : tr('Нэмлээ'));
       Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
@@ -276,20 +277,20 @@ class _EditorState extends State<_Editor> {
   Widget build(BuildContext context) => SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(widget.row != null ? 'Засах' : 'Нэмэх', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          Text(widget.row != null ? tr('Засах') : tr('Нэмэх'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 14),
           for (final f in widget.tab.fields) ...[
             FieldLabel(
               label: f.label + (f.required ? ' *' : ''),
               child: switch (f.type) {
                 'brand' => AdminSelect<String>(
-                    title: 'Үйлдвэр',
+                    title: tr('Үйлдвэр'),
                     value: _values[f.key]!.isEmpty ? null : _values[f.key],
                     searchable: true,
                     options: [for (final b in widget.brands) Option('${b.id}', b.name)],
                     onChanged: (v) => setState(() => _values[f.key] = v ?? ''),
                   ),
-                'image' => ImageUploadField(value: _values[f.key]!, folder: f.folder!, label: 'Зураг оруулах', onChanged: (v) => setState(() => _values[f.key] = v)),
+                'image' => ImageUploadField(value: _values[f.key]!, folder: f.folder!, label: tr('Зураг оруулах'), onChanged: (v) => setState(() => _values[f.key] = v)),
                 _ => TextFormField(
                     initialValue: _values[f.key],
                     keyboardType: f.type == 'number' ? TextInputType.number : TextInputType.text,
@@ -303,7 +304,7 @@ class _EditorState extends State<_Editor> {
           ],
           FormError(_error),
           const SizedBox(height: 12),
-          PrimaryButton(label: _busy ? 'Хадгалж байна…' : 'Хадгалах', busy: _busy, onTap: _dirty ? _submit : null),
+          PrimaryButton(label: _busy ? tr('Хадгалж байна…') : tr('Хадгалах'), busy: _busy, onTap: _dirty ? _submit : null),
         ]),
       );
 }

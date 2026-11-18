@@ -10,6 +10,7 @@ import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 /// Shared pieces of the admin half (admin/src/components/common/*).
 
@@ -70,7 +71,7 @@ Widget _sheetHead(IconData? icon, Tone tone, String title, String? message, Widg
     ]);
 
 Widget _sheetButtons(BuildContext ctx, String confirmLabel, Tone tone, VoidCallback onConfirm) => Row(children: [
-      Expanded(child: SoftButton(label: 'Болих', onTap: () => Navigator.pop(ctx))),
+      Expanded(child: SoftButton(label: tr('Болих'), onTap: () => Navigator.pop(ctx))),
       const SizedBox(width: 8),
       Expanded(
         child: FilledButton(
@@ -89,7 +90,7 @@ Widget _sheetButtons(BuildContext ctx, String confirmLabel, Tone tone, VoidCallb
 
 /// Asks before an action; resolves true on confirm.
 Future<bool> confirmSheet(BuildContext context,
-    {required String title, String? message, Widget? detail, String confirmLabel = 'Тийм', Tone tone = Tone.primary, IconData? icon}) async {
+    {required String title, String? message, Widget? detail, String confirmLabel = tr('Тийм'), Tone tone = Tone.primary, IconData? icon}) async {
   final ok = await _sheet<bool>(
     context,
     Builder(
@@ -105,7 +106,7 @@ Future<bool> confirmSheet(BuildContext context,
 
 /// Asks for a required line of text (e.g. a reject reason); null when cancelled.
 Future<String?> promptSheet(BuildContext context,
-    {required String title, String? message, Widget? detail, required String label, String? placeholder, String confirmLabel = 'Илгээх', Tone tone = Tone.primary, IconData? icon}) {
+    {required String title, String? message, Widget? detail, required String label, String? placeholder, String confirmLabel = tr('Илгээх'), Tone tone = Tone.primary, IconData? icon}) {
   final controller = TextEditingController();
   String? error;
   return _sheet<String>(
@@ -130,7 +131,7 @@ Future<String?> promptSheet(BuildContext context,
         const SizedBox(height: 16),
         _sheetButtons(ctx, confirmLabel, tone, () {
           final v = controller.text.trim();
-          if (v.isEmpty) return setState(() => error = '$label оруулна уу');
+          if (v.isEmpty) return setState(() => error = tr('{label} оруулна уу', {'label': label}));
           Navigator.pop(ctx, v);
         }),
       ]),
@@ -205,12 +206,12 @@ class Badge2 extends StatelessWidget {
 
 /// Car status → label + colours (admin/src/lib/constants.ts CAR_STATUS).
 ({String label, Color bg, Color fg}) carStatus(String s) => switch (s) {
-      'pending' => (label: 'Хүлээгдэж буй', bg: AppPalette.amberSoft, fg: AppPalette.amberInk),
-      'rejected' => (label: 'Буцаасан', bg: AppPalette.destructiveSoft, fg: AppPalette.destructive),
-      'sold' => (label: 'Зарагдсан', bg: AppPalette.dark, fg: Colors.white),
-      'hidden' => (label: 'Нуусан', bg: AppPalette.muted, fg: AppPalette.mutedForeground),
-      'deleted' => (label: 'Устгасан', bg: AppPalette.destructiveSoft, fg: AppPalette.destructive),
-      _ => (label: 'Идэвхтэй', bg: AppPalette.successSoft, fg: AppPalette.success),
+      'pending' => (label: tr('Хүлээгдэж буй'), bg: AppPalette.amberSoft, fg: AppPalette.amberInk),
+      'rejected' => (label: tr('Буцаасан'), bg: AppPalette.destructiveSoft, fg: AppPalette.destructive),
+      'sold' => (label: tr('Зарагдсан'), bg: AppPalette.dark, fg: Colors.white),
+      'hidden' => (label: tr('Нуусан'), bg: AppPalette.muted, fg: AppPalette.mutedForeground),
+      'deleted' => (label: tr('Устгасан'), bg: AppPalette.destructiveSoft, fg: AppPalette.destructive),
+      _ => (label: tr('Идэвхтэй'), bg: AppPalette.successSoft, fg: AppPalette.success),
     };
 
 class CarStatusBadge extends StatelessWidget {
@@ -347,13 +348,13 @@ class AdminSelect<T> extends StatelessWidget {
   final bool enabled;
   final bool searchable;
   final bool invalid;
-  const AdminSelect({
+  AdminSelect({
     super.key,
     this.title,
     required this.value,
     required this.options,
     required this.onChanged,
-    this.placeholder = 'Сонгох',
+    this.placeholder = tr('Сонгох'),
     this.enabled = true,
     this.searchable = false,
     this.invalid = false,
@@ -696,7 +697,7 @@ class _ImageUploadFieldState extends State<ImageUploadField> {
     setState(() => _uploading = true);
     try {
       final bytes = await file.readAsBytes();
-      if (bytes.length > 50 * 1024 * 1024) throw const ApiError(0, '50MB хүртэлх зураг сонгоно уу');
+      if (bytes.length > 50 * 1024 * 1024) throw ApiError(0, tr('50MB хүртэлх зураг сонгоно уу'));
       widget.onChanged(await AdminApi.uploadImage(widget.folder, file.name, bytes));
     } catch (e) {
       if (mounted) toast(context, errorText(e), error: true);
@@ -712,7 +713,7 @@ class _ImageUploadFieldState extends State<ImageUploadField> {
     final revert = TextButton.icon(
       onPressed: _uploading ? null : () => widget.onChanged(_initial),
       icon: const Icon(Icons.undo_rounded, size: 16),
-      label: const Text('Буцаах'),
+      label: Text(tr('Буцаах')),
       style: TextButton.styleFrom(foregroundColor: AppPalette.foreground, backgroundColor: AppPalette.muted),
     );
     final spinner = const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppPalette.primary));
@@ -785,9 +786,9 @@ class _ImageUploadFieldState extends State<ImageUploadField> {
                 child: _uploading ? spinner : const Icon(Icons.add_photo_alternate_outlined, color: AppPalette.primary),
               ),
               const SizedBox(height: 8),
-              Text(_uploading ? 'Оруулж байна…' : widget.label, style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(_uploading ? tr('Оруулж байна…') : widget.label, style: const TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 2),
-              const Text('Дарж зураг сонгоно', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+              Text(tr('Дарж зураг сонгоно'), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
             ]),
           ),
         ),
@@ -815,7 +816,7 @@ class _ImageUploadFieldState extends State<ImageUploadField> {
               TextButton.icon(
                 onPressed: _uploading ? null : _pick,
                 icon: const Icon(Icons.refresh_rounded, size: 16),
-                label: const Text('Солих'),
+                label: Text(tr('Солих')),
                 style: TextButton.styleFrom(foregroundColor: AppPalette.primary, backgroundColor: AppPalette.primarySoft),
               ),
               if (changed)
@@ -824,7 +825,7 @@ class _ImageUploadFieldState extends State<ImageUploadField> {
                 TextButton.icon(
                   onPressed: _uploading ? null : () => widget.onChanged(''),
                   icon: const Icon(Icons.delete_outline_rounded, size: 16),
-                  label: const Text('Устгах'),
+                  label: Text(tr('Устгах')),
                   style: TextButton.styleFrom(foregroundColor: AppPalette.destructive, backgroundColor: AppPalette.destructiveSoft),
                 ),
             ]),
@@ -933,7 +934,7 @@ class _OtpBodyState extends State<_OtpBody> {
 
   @override
   Widget build(BuildContext context) => Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        _sheetHead(widget.icon, Tone.primary, widget.title, '${widget.target} руу илгээсэн ${widget.length} оронтой кодыг оруулна уу', null),
+        _sheetHead(widget.icon, Tone.primary, widget.title, tr('{target} руу илгээсэн {widget} оронтой кодыг оруулна уу', {'target': widget.target, 'widget': widget.length}), null),
         const SizedBox(height: 18),
         Shake(
           trigger: _shakes,
@@ -956,11 +957,11 @@ class _OtpBodyState extends State<_OtpBody> {
         const SizedBox(height: 10),
         Center(
           child: _left > 0
-              ? Text('Дахин код авах: $_left сек', style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground))
-              : TextButton(onPressed: _resending ? null : _resend, child: const Text('Код дахин илгээх', style: TextStyle(fontWeight: FontWeight.w700))),
+              ? Text(tr('Дахин код авах: {_left} сек', {'_left': _left}), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground))
+              : TextButton(onPressed: _resending ? null : _resend, child: Text(tr('Код дахин илгээх'), style: TextStyle(fontWeight: FontWeight.w700))),
         ),
         const SizedBox(height: 12),
-        _sheetButtons(context, _busy ? 'Шалгаж байна…' : 'Баталгаажуулах', Tone.primary, _verify),
+        _sheetButtons(context, _busy ? tr('Шалгаж байна…') : tr('Баталгаажуулах'), Tone.primary, _verify),
       ]);
 }
 

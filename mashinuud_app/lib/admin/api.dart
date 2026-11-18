@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:mashinuud_app/admin/models.dart';
 import 'package:mashinuud_app/api/client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 /// Signed-in admin / dealer, kept on the device (like the panel's localStorage session).
 class AdminSession extends ChangeNotifier {
@@ -54,7 +55,7 @@ class AdminSession extends ChangeNotifier {
     final res = await apiFetch('/api/users/login', method: 'POST', body: {'phonenumber': phone, 'password': password});
     final data = res['data'] as Map<String, dynamic>;
     final user = AUser(data['loggedUser'] as Map<String, dynamic>);
-    if (!_canUsePanel(user)) throw const ApiError(0, 'Зөвхөн админ, дилер эрхтэй хэрэглэгч нэвтэрнэ');
+    if (!_canUsePanel(user)) throw ApiError(0, tr('Зөвхөн админ, дилер эрхтэй хэрэглэгч нэвтэрнэ'));
     _set(data['token'] as String, user);
   }
 

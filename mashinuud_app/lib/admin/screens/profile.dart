@@ -16,6 +16,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 /// Профайл tab: the signed-in user, the admin sections, switching to the customer side, sign-out.
 class AdminProfileTab extends StatelessWidget {
@@ -38,17 +39,17 @@ class AdminProfileTab extends StatelessWidget {
                 ),
               );
           final adminMenu = [
-            (Icons.library_books_outlined, 'Каталог', 'Үйлдвэр, загвар, төрөл, байршил', const Color(0xFFFEF3C7), const Color(0xFFD97706), const CatalogScreen() as Widget),
-            (Icons.storefront_outlined, 'Дилерүүд', 'Авто худалдааны төвүүдийг бүртгэх, засах', const Color(0xFFE0F2FE), const Color(0xFF0284C7), const DealersScreen()),
-            (Icons.admin_panel_settings_outlined, 'Admin & Dealer', 'Админ, дилерийн хэрэглэгчид', const Color(0xFFEDE9FE), const Color(0xFF7C3AED), const UsersScreen()),
-            (Icons.people_outline_rounded, 'Хэрэглэгч', 'Вэбээр бүртгүүлсэн хэрэглэгчид', const Color(0xFFD1FAE5), const Color(0xFF059669), const CustomersScreen()),
-            (Icons.forum_outlined, 'Санал хүсэлт', 'Вэбийн “Бидэнд бичих” маягтаар ирсэн захидал', const Color(0xFFFFE4E6), const Color(0xFFE11D48), const FeedbacksScreen()),
-            (Icons.account_balance_wallet_outlined, 'Дилерийн данс', 'Үлдэгдэл, цэнэглэлтийн хүсэлт батлах', const Color(0xFFCCFBF1), const Color(0xFF0D9488), const WalletScreen()),
-            (Icons.credit_card_outlined, 'Төлбөрийн тохиргоо', 'Шинэчлэх үнэ, банкны данс, QPay', const Color(0xFFE0E7FF), const Color(0xFF4F46E5), const PaymentSettingsScreen()),
+            (Icons.library_books_outlined, tr('Каталог'), tr('Үйлдвэр, загвар, төрөл, байршил'), const Color(0xFFFEF3C7), const Color(0xFFD97706), const CatalogScreen() as Widget),
+            (Icons.storefront_outlined, tr('Дилерүүд'), tr('Авто худалдааны төвүүдийг бүртгэх, засах'), const Color(0xFFE0F2FE), const Color(0xFF0284C7), const DealersScreen()),
+            (Icons.admin_panel_settings_outlined, 'Admin & Dealer', tr('Админ, дилерийн хэрэглэгчид'), const Color(0xFFEDE9FE), const Color(0xFF7C3AED), const UsersScreen()),
+            (Icons.people_outline_rounded, tr('Хэрэглэгч'), tr('Вэбээр бүртгүүлсэн хэрэглэгчид'), const Color(0xFFD1FAE5), const Color(0xFF059669), const CustomersScreen()),
+            (Icons.forum_outlined, tr('Санал хүсэлт'), tr('Вэбийн “Бидэнд бичих” маягтаар ирсэн захидал'), const Color(0xFFFFE4E6), const Color(0xFFE11D48), const FeedbacksScreen()),
+            (Icons.account_balance_wallet_outlined, tr('Дилерийн данс'), tr('Үлдэгдэл, цэнэглэлтийн хүсэлт батлах'), const Color(0xFFCCFBF1), const Color(0xFF0D9488), const WalletScreen()),
+            (Icons.credit_card_outlined, tr('Төлбөрийн тохиргоо'), tr('Шинэчлэх үнэ, банкны данс, QPay'), const Color(0xFFE0E7FF), const Color(0xFF4F46E5), const PaymentSettingsScreen()),
           ];
           // A dealer's own sections.
           final dealerMenu = [
-            (Icons.account_balance_wallet_outlined, 'Миний данс', 'Үлдэгдэл, данс цэнэглэх, гүйлгээний түүх', const Color(0xFFCCFBF1), const Color(0xFF0D9488), const WalletScreen() as Widget),
+            (Icons.account_balance_wallet_outlined, tr('Миний данс'), tr('Үлдэгдэл, данс цэнэглэх, гүйлгээний түүх'), const Color(0xFFCCFBF1), const Color(0xFF0D9488), const WalletScreen() as Widget),
           ];
           final menu = user.isAdmin ? adminMenu : dealerMenu;
           return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 100), children: [
@@ -68,9 +69,9 @@ class AdminProfileTab extends StatelessWidget {
                     Text('${user.phonenumber ?? ''} · ${Roles.label(user.role)}', style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
                   ]),
                 ),
-                iconBtn(Icons.edit_outlined, 'Профайл засах', const ProfileEditScreen()),
+                iconBtn(Icons.edit_outlined, tr('Профайл засах'), const ProfileEditScreen()),
                 const SizedBox(width: 8),
-                iconBtn(Icons.key_outlined, 'Нууц үг солих', const ChangePasswordScreen()),
+                iconBtn(Icons.key_outlined, tr('Нууц үг солих'), const ChangePasswordScreen()),
               ]),
             ),
             if (user.isAdmin || user.role == Roles.dealer) ...[
@@ -112,9 +113,9 @@ class AdminProfileTab extends StatelessWidget {
             const SizedBox(height: 16),
             const _LockSettings(),
             const SizedBox(height: 16),
-            _action('Хэрэглэгч рүү шилжих', Icons.swap_horiz_rounded, AppPalette.foreground, () => Stores.mode.setAdmin(false)),
+            _action(tr('Хэрэглэгч рүү шилжих'), Icons.swap_horiz_rounded, AppPalette.foreground, () => Stores.mode.setAdmin(false)),
             const SizedBox(height: 8),
-            _action('Гарах', Icons.logout_rounded, AppPalette.destructive, () {
+            _action(tr('Гарах'), Icons.logout_rounded, AppPalette.destructive, () {
               AdminApi.session.signOut();
             }),
           ]);
@@ -139,7 +140,7 @@ class AdminProfileTab extends StatelessWidget {
 class _LockSettings extends StatelessWidget {
   const _LockSettings();
 
-  String _label(int m) => m == 0 ? 'Шууд' : '$m минут';
+  String _label(int m) => m == 0 ? tr('Шууд') : tr('{m} минут', {'m': m});
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -167,13 +168,13 @@ class _LockSettings extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 6, 16, 6),
                   child: SwitchRow(
-                    label: 'Апп түгжих',
-                    hint: 'Админ хэсэг рүү ороход 4 оронтой PIN асууна',
+                    label: tr('Апп түгжих'),
+                    hint: tr('Админ хэсэг рүү ороход 4 оронтой PIN асууна'),
                     value: on,
                     onChanged: (v) async {
                       if (v) {
-                        if (await setPinSheet(context) && context.mounted) toast(context, 'PIN тохирууллаа');
-                      } else if (await confirmSheet(context, title: 'Апп түгжихийг унтраах уу?', message: 'Админ хэсэг рүү ороход PIN асуухаа болино.', confirmLabel: 'Унтраах', tone: Tone.danger, icon: Icons.lock_open_rounded)) {
+                        if (await setPinSheet(context) && context.mounted) toast(context, tr('PIN тохирууллаа'));
+                      } else if (await confirmSheet(context, title: tr('Апп түгжихийг унтраах уу?'), message: tr('Админ хэсэг рүү ороход PIN асуухаа болино.'), confirmLabel: tr('Унтраах'), tone: Tone.danger, icon: Icons.lock_open_rounded)) {
                         appLock.disable();
                       }
                     },
@@ -181,14 +182,14 @@ class _LockSettings extends StatelessWidget {
                 ),
                 if (on) ...[
                   const Divider(height: 1),
-                  row(Icons.timer_outlined, 'Ар талд байх хугацаа', value: _label(appLock.timeoutMinutes), onTap: () async {
+                  row(Icons.timer_outlined, tr('Ар талд байх хугацаа'), value: _label(appLock.timeoutMinutes), onTap: () async {
                     final picked = await pickOption<int>(context,
-                        title: 'Апп ар талд хэдэн минут байвал түгжих вэ?', options: [for (final m in AppLock.timeouts) Option(m, _label(m))], selected: appLock.timeoutMinutes);
+                        title: tr('Апп ар талд хэдэн минут байвал түгжих вэ?'), options: [for (final m in AppLock.timeouts) Option(m, _label(m))], selected: appLock.timeoutMinutes);
                     if (picked?.value != null) appLock.setTimeout(picked!.value!);
                   }),
                   const Divider(height: 1),
-                  row(Icons.pin_outlined, 'PIN солих', onTap: () async {
-                    if (await setPinSheet(context, verifyCurrent: true) && context.mounted) toast(context, 'PIN солигдлоо');
+                  row(Icons.pin_outlined, tr('PIN солих'), onTap: () async {
+                    if (await setPinSheet(context, verifyCurrent: true) && context.mounted) toast(context, tr('PIN солигдлоо'));
                   }),
                 ],
               ]),
@@ -262,12 +263,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   Future<void> _changePhone() => _send(() async {
         final phone = _phone.text;
-        if (phone.length != 8) throw 'Утасны дугаар 8 оронтой байна';
+        if (phone.length != 8) throw tr('Утасны дугаар 8 оронтой байна');
         final wait = await AdminApi.sendPhoneChangeCode(phone);
         if (!mounted) return;
         final ok = await otpSheet(context,
             icon: Icons.smartphone_rounded,
-            title: 'Утасны дугаар солих',
+            title: tr('Утасны дугаар солих'),
             target: phone,
             length: 4,
             resendIn: wait,
@@ -278,27 +279,27 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           _verifiedPhone = phone;
           _phoneVerified = true;
         });
-        await _afterVerify('Утасны дугаар солигдлоо');
+        await _afterVerify(tr('Утасны дугаар солигдлоо'));
       });
 
   Future<void> _verifyPhone() => _send(() async {
         final wait = await AdminApi.sendPhoneVerifyCode();
         if (!mounted) return;
         final ok = await otpSheet(context,
-            icon: Icons.smartphone_rounded, title: 'Утас баталгаажуулах', target: _verifiedPhone, length: 4, resendIn: wait, resend: AdminApi.sendPhoneVerifyCode, verify: AdminApi.verifyPhone);
+            icon: Icons.smartphone_rounded, title: tr('Утас баталгаажуулах'), target: _verifiedPhone, length: 4, resendIn: wait, resend: AdminApi.sendPhoneVerifyCode, verify: AdminApi.verifyPhone);
         if (!ok) return;
         setState(() => _phoneVerified = true);
-        await _afterVerify('Утас баталгаажлаа');
+        await _afterVerify(tr('Утас баталгаажлаа'));
       });
 
   Future<void> _changeEmail() => _send(() async {
         final email = _newEmail;
-        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) throw 'Имэйл хаяг буруу байна';
+        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) throw tr('Имэйл хаяг буруу байна');
         final wait = await AdminApi.sendEmailChangeCode(email);
         if (!mounted) return;
         final ok = await otpSheet(context,
             icon: Icons.mark_email_read_outlined,
-            title: 'Имэйл баталгаажуулах',
+            title: tr('Имэйл баталгаажуулах'),
             target: email,
             length: 6,
             resendIn: wait,
@@ -309,13 +310,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           _verifiedEmail = email;
           _email.text = email;
         });
-        await _afterVerify('Имэйл баталгаажиж шинэчлэгдлээ');
+        await _afterVerify(tr('Имэйл баталгаажиж шинэчлэгдлээ'));
       });
 
   Future<void> _submit() async {
     if (_busy || !_dirty) return;
-    if (_phoneChanged) return setState(() => _error = 'Шинэ дугаараа кодоор баталгаажуулна уу');
-    if (_emailChanged) return setState(() => _error = _newEmail.isNotEmpty ? 'Шинэ имэйлээ кодоор баталгаажуулна уу' : 'Имэйлийг хоосон болгох боломжгүй');
+    if (_phoneChanged) return setState(() => _error = tr('Шинэ дугаараа кодоор баталгаажуулна уу'));
+    if (_emailChanged) return setState(() => _error = _newEmail.isNotEmpty ? tr('Шинэ имэйлээ кодоор баталгаажуулна уу') : tr('Имэйлийг хоосон болгох боломжгүй'));
     setState(() {
       _busy = true;
       _error = null;
@@ -330,7 +331,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       });
       await AdminApi.session.refresh();
       if (!mounted) return;
-      toast(context, 'Хадгаллаа');
+      toast(context, tr('Хадгаллаа'));
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -344,7 +345,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   Widget _codeButton(VoidCallback onTap) => Padding(
         padding: const EdgeInsets.all(6),
-        child: ActionChip2(label: _sending ? '…' : 'Код авах', background: AppPalette.primarySoft, foreground: AppPalette.primary, onTap: _sending ? () {} : onTap),
+        child: ActionChip2(label: _sending ? '…' : tr('Код авах'), background: AppPalette.primarySoft, foreground: AppPalette.primary, onTap: _sending ? () {} : onTap),
       );
 
   @override
@@ -352,28 +353,28 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     const verified = Icon(Icons.verified_rounded, color: AppPalette.success, size: 20);
     final gap = const SizedBox(height: 14);
     return AdminPage(
-      title: 'Профайл засах',
-      actions: [BarButton(icon: Icons.save_outlined, tooltip: 'Хадгалах', busy: _busy, onTap: _dirty ? _submit : null)],
+      title: tr('Профайл засах'),
+      actions: [BarButton(icon: Icons.save_outlined, tooltip: tr('Хадгалах'), busy: _busy, onTap: _dirty ? _submit : null)],
       body: ListView(padding: const EdgeInsets.all(16), children: [
         Section(
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            ImageUploadField(value: _profile, folder: 'users', label: 'Зураг оруулах', hint: 'Дөрвөлжин зураг хамгийн сайн харагдана', round: true, onChanged: (v) => setState(() => _profile = v)),
+            ImageUploadField(value: _profile, folder: 'users', label: tr('Зураг оруулах'), hint: tr('Дөрвөлжин зураг хамгийн сайн харагдана'), round: true, onChanged: (v) => setState(() => _profile = v)),
             gap,
             Row(children: [
-              Expanded(child: FieldLabel(label: 'Овог', child: TextField(controller: _last, onChanged: (_) => setState(() {})))),
+              Expanded(child: FieldLabel(label: tr('Овог'), child: TextField(controller: _last, onChanged: (_) => setState(() {})))),
               const SizedBox(width: 10),
-              Expanded(child: FieldLabel(label: 'Нэр', child: TextField(controller: _first, onChanged: (_) => setState(() {})))),
+              Expanded(child: FieldLabel(label: tr('Нэр'), child: TextField(controller: _first, onChanged: (_) => setState(() {})))),
             ]),
             gap,
             FieldLabel(
-              label: 'Утасны дугаар *',
+              label: tr('Утасны дугаар *'),
               hint: _phoneChanged
-                  ? 'Шинэ дугаар руу SMS код илгээгдэнэ'
+                  ? tr('Шинэ дугаар руу SMS код илгээгдэнэ')
                   : _phoneVerified
                       ? null
                       : me.phoneVerifyDeadline != null
-                          ? 'Утсаа баталгаажуулна уу. ${me.phoneVerifyDeadline!.substring(0, 16)} хүртэл баталгаажуулаагүй бол бүртгэл блоклогдоно'
-                          : 'Утсаа SMS кодоор баталгаажуулна уу',
+                          ? tr('Утсаа баталгаажуулна уу. {substring} хүртэл баталгаажуулаагүй бол бүртгэл блоклогдоно', {'substring': me.phoneVerifyDeadline!.substring(0, 16)})
+                          : tr('Утсаа SMS кодоор баталгаажуулна уу'),
               child: PhoneField(
                 controller: _phone,
                 onChanged: (_) => setState(() {}),
@@ -381,16 +382,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ? (_phone.text.length == 8 ? _codeButton(_changePhone) : null)
                     : _phoneVerified
                         ? verified
-                        : IconButton(tooltip: 'Утас баталгаажуулах', icon: const Icon(Icons.gpp_maybe_outlined, color: AppPalette.primary), onPressed: _sending ? null : _verifyPhone),
+                        : IconButton(tooltip: tr('Утас баталгаажуулах'), icon: const Icon(Icons.gpp_maybe_outlined, color: AppPalette.primary), onPressed: _sending ? null : _verifyPhone),
               ),
             ),
             gap,
             FieldLabel(
-              label: 'И-мэйл',
+              label: tr('И-мэйл'),
               hint: _emailChanged
-                  ? 'Шинэ хаяг руу баталгаажуулах код илгээгдэнэ'
+                  ? tr('Шинэ хаяг руу баталгаажуулах код илгээгдэнэ')
                   : _verifiedEmail.isEmpty
-                      ? 'Имэйл нэмэхэд баталгаажуулах код илгээгдэнэ'
+                      ? tr('Имэйл нэмэхэд баталгаажуулах код илгээгдэнэ')
                       : null,
               child: TextField(
                 controller: _email,
@@ -403,19 +404,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             if (!me.isAdmin) ...[
               gap,
               FieldLabel(
-                label: 'Дилер',
-                hint: 'Таны зарууд энэ дилерт харьяалагдана. Солихыг админаас хүснэ үү',
+                label: tr('Дилер'),
+                hint: tr('Таны зарууд энэ дилерт харьяалагдана. Солихыг админаас хүснэ үү'),
                 child: AdminSelect<int>(
                   value: me.dealerId,
                   enabled: false,
-                  placeholder: me.dealerId == null ? '-- Сонгох --' : '#${me.dealerId} (идэвхгүй)',
+                  placeholder: me.dealerId == null ? tr('-- Сонгох --') : tr('#{dealerId} (идэвхгүй)', {'dealerId': me.dealerId}),
                   options: [for (final d in _dealers) Option(d.id, d.name)],
                   onChanged: (_) {},
                 ),
               ),
             ],
             gap,
-            Text('Эрх: ${Roles.label(me.role)}', style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+            Text(tr('Эрх: {role}', {'role': Roles.label(me.role)}), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
           ]),
         ),
         gap,
@@ -459,17 +460,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       final body = _body;
       final (wait, email) = await AdminApi.sendPasswordChangeCode(body);
       if (!mounted) return;
-      toast(context, 'Код илгээлээ');
+      toast(context, tr('Код илгээлээ'));
       final ok = await otpSheet(context,
           icon: Icons.key_outlined,
-          title: 'Баталгаажуулах код',
+          title: tr('Баталгаажуулах код'),
           target: email ?? AdminApi.session.user?.email ?? '',
           length: 6,
           resendIn: wait,
           resend: () async => (await AdminApi.sendPasswordChangeCode(body)).$1,
           verify: (code) => AdminApi.verifyPasswordChange(body, code));
       if (ok && mounted) {
-        toast(context, 'Нууц үг солигдлоо');
+        toast(context, tr('Нууц үг солигдлоо'));
         Navigator.of(context).pop();
       }
     } catch (e) {
@@ -485,26 +486,26 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final hasEmail = AdminApi.session.user?.email != null;
-    final currentError = _submitted && _current.text.isEmpty ? 'Одоогийн нууц үгээ оруулна уу' : null;
-    final newError = _submitted && _next.text.length < 6 ? 'Нууц үг 6-аас дээш тэмдэгттэй байна' : null;
-    final confirmError = _submitted && newError == null && _confirm.text != _next.text ? 'Нууц үг таарахгүй байна' : null;
+    final currentError = _submitted && _current.text.isEmpty ? tr('Одоогийн нууц үгээ оруулна уу') : null;
+    final newError = _submitted && _next.text.length < 6 ? tr('Нууц үг 6-аас дээш тэмдэгттэй байна') : null;
+    final confirmError = _submitted && newError == null && _confirm.text != _next.text ? tr('Нууц үг таарахгүй байна') : null;
     final dirty = _current.text.isNotEmpty || _next.text.isNotEmpty || _confirm.text.isNotEmpty;
     final gap = const SizedBox(height: 14);
     return AdminPage(
-      title: 'Нууц үг солих',
-      actions: [BarButton(icon: Icons.save_outlined, tooltip: 'Хадгалах', busy: _sending, onTap: hasEmail && dirty ? _submit : null)],
+      title: tr('Нууц үг солих'),
+      actions: [BarButton(icon: Icons.save_outlined, tooltip: tr('Хадгалах'), busy: _sending, onTap: hasEmail && dirty ? _submit : null)],
       body: ListView(padding: const EdgeInsets.all(16), children: [
         if (hasEmail)
-          const Text('Солихын өмнө бүртгэлтэй имэйл рүү тань баталгаажуулах код илгээнэ.', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))
+          Text(tr('Солихын өмнө бүртгэлтэй имэйл рүү тань баталгаажуулах код илгээнэ.'), style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))
         else
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(color: AppPalette.amberSoft, borderRadius: BorderRadius.circular(AppRadius.lg)),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Нууц үг солихын тулд эхлээд профайлдаа имэйл хаягаа нэмнэ үү.', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppPalette.amberInk)),
+              Text(tr('Нууц үг солихын тулд эхлээд профайлдаа имэйл хаягаа нэмнэ үү.'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppPalette.amberInk)),
               TextButton(
                 onPressed: () => Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const ProfileEditScreen())),
-                child: const Text('Имэйл нэмэх', style: TextStyle(fontWeight: FontWeight.w600)),
+                child: Text(tr('Имэйл нэмэх'), style: TextStyle(fontWeight: FontWeight.w600)),
               ),
             ]),
           ),
@@ -515,12 +516,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             trigger: _shakes,
             child: Section(
               child: Column(children: [
-                FieldLabel(label: 'Одоогийн нууц үг', error: currentError, child: PasswordField(controller: _current, enabled: hasEmail, invalid: currentError != null, onChanged: (_) => setState(() {}))),
+                FieldLabel(label: tr('Одоогийн нууц үг'), error: currentError, child: PasswordField(controller: _current, enabled: hasEmail, invalid: currentError != null, onChanged: (_) => setState(() {}))),
                 gap,
-                FieldLabel(label: 'Шинэ нууц үг', error: newError, hint: '6-аас дээш тэмдэгт', child: PasswordField(controller: _next, enabled: hasEmail, invalid: newError != null, onChanged: (_) => setState(() {}))),
+                FieldLabel(label: tr('Шинэ нууц үг'), error: newError, hint: tr('6-аас дээш тэмдэгт'), child: PasswordField(controller: _next, enabled: hasEmail, invalid: newError != null, onChanged: (_) => setState(() {}))),
                 gap,
                 FieldLabel(
-                  label: 'Шинэ нууц үг давтах',
+                  label: tr('Шинэ нууц үг давтах'),
                   error: confirmError,
                   child: PasswordField(controller: _confirm, enabled: hasEmail, invalid: confirmError != null, onChanged: (_) => setState(() {}), onSubmitted: (_) => _submit()),
                 ),

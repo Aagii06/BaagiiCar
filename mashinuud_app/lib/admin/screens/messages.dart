@@ -7,12 +7,13 @@ import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 ({String label, Color bg, Color fg}) _badge(String status) => switch (status) {
-      'seen' => (label: 'Үзсэн', bg: AppPalette.amberSoft, fg: AppPalette.amberInk),
-      'done' => (label: 'Хариулсан', bg: AppPalette.successSoft, fg: AppPalette.success),
-      'deleted' => (label: 'Устгагдсан', bg: AppPalette.destructiveSoft, fg: AppPalette.destructive),
-      _ => (label: 'Шинэ', bg: AppPalette.primary, fg: Colors.white),
+      'seen' => (label: tr('Үзсэн'), bg: AppPalette.amberSoft, fg: AppPalette.amberInk),
+      'done' => (label: tr('Хариулсан'), bg: AppPalette.successSoft, fg: AppPalette.success),
+      'deleted' => (label: tr('Устгагдсан'), bg: AppPalette.destructiveSoft, fg: AppPalette.destructive),
+      _ => (label: tr('Шинэ'), bg: AppPalette.primary, fg: Colors.white),
     };
 
 /// One chat: everything a visitor wrote about one ad, with the team's answers.
@@ -79,7 +80,7 @@ class _MessagesTabState extends State<MessagesTab> {
             final all = toThreads(rows);
             final threads = _tab == 'all' || deleted ? all : all.where((t) => t.status == _tab).toList();
             if (threads.isEmpty) {
-              return EmptyView(title: _tab == 'all' ? 'Мессеж олдсонгүй' : '${_tabs.firstWhere((t) => t.value == _tab).label} мессеж олдсонгүй', icon: Icons.chat_bubble_outline_rounded);
+              return EmptyView(title: _tab == 'all' ? tr('Мессеж олдсонгүй') : tr('{label} мессеж олдсонгүй', {'label': _tabs.firstWhere((t) => t.value == _tab).label}), icon: Icons.chat_bubble_outline_rounded);
             }
             return RefreshIndicator(
               color: AppPalette.primary,
@@ -98,7 +99,7 @@ class _MessagesTabState extends State<MessagesTab> {
     final last = t.last;
     final badge = _badge(t.status);
     final reply = last.replies.lastOrNull;
-    final preview = reply != null && (reply.createdAt ?? '').compareTo(last.createdAt ?? '') >= 0 ? 'Та: ${reply.reply}' : last.message;
+    final preview = reply != null && (reply.createdAt ?? '').compareTo(last.createdAt ?? '') >= 0 ? tr('Та: {reply}', {'reply': reply.reply}) : last.message;
     return InkWell(
       onTap: () async {
         await Navigator.of(context).push(MaterialPageRoute(builder: (_) => ThreadScreen(messageId: last.id)));
@@ -108,7 +109,7 @@ class _MessagesTabState extends State<MessagesTab> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Expanded(child: Text(last.name ?? (last.phonenumber.isEmpty ? 'Нэргүй' : last.phonenumber), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700))),
+            Expanded(child: Text(last.name ?? (last.phonenumber.isEmpty ? tr('Нэргүй') : last.phonenumber), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700))),
             Text(timeAgo(t.activeAt), style: const TextStyle(fontSize: 11, color: AppPalette.mutedForeground)),
           ]),
           const SizedBox(height: 2),
@@ -121,7 +122,7 @@ class _MessagesTabState extends State<MessagesTab> {
             Badge2(badge.label, background: badge.bg, foreground: badge.fg),
             const SizedBox(width: 8),
             if (t.car != null) Expanded(child: Text(t.car!.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))) else const Spacer(),
-            if (t.messages.length > 1) Text('${t.messages.length} мессеж', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground)),
+            if (t.messages.length > 1) Text(tr('{messages} мессеж', {'messages': t.messages.length}), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground)),
           ]),
         ]),
       ),
@@ -183,12 +184,12 @@ class _ThreadScreenState extends State<ThreadScreen> {
   Widget build(BuildContext context) => Loader<Thread?>(
         fetchKey: _reload,
         fetch: _fetch,
-        loading: const AdminPage(title: 'Мессеж', body: PageSkeleton()),
-        error: (context, e, retry) => AdminPage(title: 'Мессеж', body: ErrorView(message: errorText(e), onRetry: retry)),
+        loading: AdminPage(title: tr('Мессеж'), body: PageSkeleton()),
+        error: (context, e, retry) => AdminPage(title: tr('Мессеж'), body: ErrorView(message: errorText(e), onRetry: retry)),
         builder: (context, thread, _) {
-          if (thread == null) return const AdminPage(title: 'Мессеж', body: EmptyView(title: 'Мессеж олдсонгүй', icon: Icons.chat_bubble_outline_rounded));
+          if (thread == null) return AdminPage(title: tr('Мессеж'), body: EmptyView(title: tr('Мессеж олдсонгүй'), icon: Icons.chat_bubble_outline_rounded));
           final last = thread.last;
-          return AdminPage(title: last.name ?? (last.phonenumber.isEmpty ? 'Мессеж' : last.phonenumber), body: BusyOverlay(busy: _busy, child: _view(thread)));
+          return AdminPage(title: last.name ?? (last.phonenumber.isEmpty ? tr('Мессеж') : last.phonenumber), body: BusyOverlay(busy: _busy, child: _view(thread)));
         },
       );
 
@@ -214,7 +215,7 @@ class _ThreadScreenState extends State<ThreadScreen> {
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(last.name ?? 'Нэргүй', style: const TextStyle(fontWeight: FontWeight.w700)),
+                Text(last.name ?? tr('Нэргүй'), style: const TextStyle(fontWeight: FontWeight.w700)),
                 InkWell(
                   onTap: () => launchUrl(Uri.parse('tel:${last.phonenumber}')),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -254,14 +255,14 @@ class _ThreadScreenState extends State<ThreadScreen> {
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: line.incoming
-              ? _bubble(line.text, '${timeAgo(line.at)}${line.deleted ? ' · устгагдсан' : ''}', incoming: true, faded: line.deleted)
+              ? _bubble(line.text, '${timeAgo(line.at)}${line.deleted ? ' · ${tr('устгагдсан')}' : ''}', incoming: true, faded: line.deleted)
               : _editing == line.reply!.id
                   ? _replyForm(_edit, onCancel: () => setState(() => _editing = null), onSubmit: (text) async {
-                      if (await _run(() => AdminApi.editMessageReply(line.reply!.id, text), 'Хариуг засварлалаа')) setState(() => _editing = null);
+                      if (await _run(() => AdminApi.editMessageReply(line.reply!.id, text), tr('Хариуг засварлалаа'))) setState(() => _editing = null);
                     })
                   : _bubble(
                       line.text,
-                      '${timeAgo(line.at)}${line.reply!.updatedAt != null && line.reply!.updatedAt != line.reply!.createdAt ? ' · засварласан' : ''}',
+                      '${timeAgo(line.at)}${line.reply!.updatedAt != null && line.reply!.updatedAt != line.reply!.createdAt ? ' · ${tr('засварласан')}' : ''}',
                       incoming: false,
                       onEdit: deleted
                           ? null
@@ -276,25 +277,25 @@ class _ThreadScreenState extends State<ThreadScreen> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           if (!deleted && _editing == null) ...[
             _replyForm(_draft, onSubmit: (text) async {
-              if (await _run(() => AdminApi.replyMessage(last.id, text), 'Хариу илгээлээ')) _draft.clear();
+              if (await _run(() => AdminApi.replyMessage(last.id, text), tr('Хариу илгээлээ'))) _draft.clear();
             }),
             const SizedBox(height: 12),
           ],
           Row(children: [
             if (deleted)
-              ActionChip2(label: 'Сэргээх', icon: Icons.restore_rounded, onTap: () => setAll('new', 'Сэргээлээ'))
+              ActionChip2(label: tr('Сэргээх'), icon: Icons.restore_rounded, onTap: () => setAll('new', tr('Сэргээлээ')))
             else if (status == 'new' || status == 'seen')
-              ActionChip2(label: 'Хариулсан', icon: Icons.check_rounded, onTap: () => setAll('done', 'Хариулсан гэж тэмдэглэлээ'))
+              ActionChip2(label: tr('Хариулсан'), icon: Icons.check_rounded, onTap: () => setAll('done', tr('Хариулсан гэж тэмдэглэлээ')))
             else
-              ActionChip2(label: 'Уншаагүй болгох', icon: Icons.restore_rounded, onTap: () => setAll('new', 'Шинэ болголоо')),
+              ActionChip2(label: tr('Уншаагүй болгох'), icon: Icons.restore_rounded, onTap: () => setAll('new', tr('Шинэ болголоо'))),
             const Spacer(),
             if (!deleted)
               IconButton(
-                tooltip: 'Чат устгах',
+                tooltip: tr('Чат устгах'),
                 icon: const Icon(Icons.delete_outline_rounded, color: AppPalette.destructive),
                 onPressed: () async {
-                  if (!await confirmSheet(context, title: 'Чатыг устгах уу?', message: 'Энэ чатын бүх мессеж устгагдана.', confirmLabel: 'Устгах', tone: Tone.danger, icon: Icons.delete_outline_rounded)) return;
-                  if (await _run(() => AdminApi.deleteRows('messages', ids), 'Устгалаа') && mounted) Navigator.of(context).pop();
+                  if (!await confirmSheet(context, title: tr('Чатыг устгах уу?'), message: tr('Энэ чатын бүх мессеж устгагдана.'), confirmLabel: tr('Устгах'), tone: Tone.danger, icon: Icons.delete_outline_rounded)) return;
+                  if (await _run(() => AdminApi.deleteRows('messages', ids), tr('Устгалаа')) && mounted) Navigator.of(context).pop();
                 },
               ),
           ]),
@@ -332,12 +333,12 @@ class _ThreadScreenState extends State<ThreadScreen> {
       );
 
   Widget _replyForm(TextEditingController c, {VoidCallback? onCancel, required ValueChanged<String> onSubmit}) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        TextField(controller: c, minLines: 3, maxLines: 8, maxLength: 2000, decoration: const InputDecoration(hintText: 'Хариугаа бичнэ үү…', counterText: '')),
+        TextField(controller: c, minLines: 3, maxLines: 8, maxLength: 2000, decoration: InputDecoration(hintText: tr('Хариугаа бичнэ үү…'), counterText: '')),
         const SizedBox(height: 8),
         Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          if (onCancel != null) ...[ActionChip2(label: 'Болих', onTap: onCancel), const SizedBox(width: 8)],
+          if (onCancel != null) ...[ActionChip2(label: tr('Болих'), onTap: onCancel), const SizedBox(width: 8)],
           ActionChip2(
-            label: 'Илгээх',
+            label: tr('Илгээх'),
             icon: Icons.send_rounded,
             background: AppPalette.primary,
             foreground: Colors.white,

@@ -9,6 +9,7 @@ import 'package:mashinuud_app/admin/ui.dart';
 import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 typedef _Stats = ({int pending, int active, int sold, int featured, int total, int dealers, int users});
 
@@ -72,23 +73,23 @@ class _DashboardTabState extends State<DashboardTab> {
               builder: (context, s, _) => _tiles(context, s, admin),
             ),
             _ListBlock(
-              title: 'Сүүлийн 3 хоногт нэмэгдсэн',
+              title: tr('Сүүлийн 3 хоногт нэмэгдсэн'),
               fetchKey: key,
               fetch: () => AdminApi.recentCars(take: 5),
-              empty: 'Сүүлийн 3 хоногт зар нэмэгдээгүй',
+              empty: tr('Сүүлийн 3 хоногт зар нэмэгдээгүй'),
               onAll: () => adminNav.openCars(),
             ),
             if (admin)
               _ListBlock(
-                title: 'Онцлох зарууд',
+                title: tr('Онцлох зарууд'),
                 fetchKey: key,
                 fetch: () => AdminApi.featuredCars(5),
-                empty: 'Онцлох зар алга',
+                empty: tr('Онцлох зар алга'),
                 onAll: () => adminNav.openCars(statuses: ['featured']),
               )
             else ...[
-              _ListBlock(title: 'Хамгийн их хандалттай', fetchKey: key, fetch: () => AdminApi.topCars('view'), empty: 'Үзсэн зар алга', count: (c) => (Icons.visibility_outlined, c.viewCount)),
-              _ListBlock(title: 'Хамгийн их дугаар харсан', fetchKey: key, fetch: () => AdminApi.topCars('phone'), empty: 'Дугаар харсан зар алга', count: (c) => (Icons.phone_outlined, c.phoneViewCount)),
+              _ListBlock(title: tr('Хамгийн их хандалттай'), fetchKey: key, fetch: () => AdminApi.topCars('view'), empty: tr('Үзсэн зар алга'), count: (c) => (Icons.visibility_outlined, c.viewCount)),
+              _ListBlock(title: tr('Хамгийн их дугаар харсан'), fetchKey: key, fetch: () => AdminApi.topCars('phone'), empty: tr('Дугаар харсан зар алга'), count: (c) => (Icons.phone_outlined, c.phoneViewCount)),
             ],
           ]),
         );
@@ -150,23 +151,23 @@ class _DashboardTabState extends State<DashboardTab> {
       IntrinsicHeight(
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         if (admin) ...[
-          big('Нийт дилер', s.dealers, Icons.storefront_outlined, AppPalette.tintBlue, const Color(0xFF2F80ED), () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DealersScreen()))),
+          big(tr('Нийт дилер'), s.dealers, Icons.storefront_outlined, AppPalette.tintBlue, const Color(0xFF2F80ED), () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DealersScreen()))),
           gap,
-          big('Идэвхтэй хэрэглэгч', s.users, Icons.people_outline_rounded, AppPalette.tintMint, AppPalette.success, () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomersScreen()))),
+          big(tr('Идэвхтэй хэрэглэгч'), s.users, Icons.people_outline_rounded, AppPalette.tintMint, AppPalette.success, () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomersScreen()))),
           gap,
         ],
-        big('Нийт зар', s.total, Icons.directions_car_outlined, AppPalette.tintLavender, const Color(0xFF7B61FF), () => adminNav.openCars()),
+        big(tr('Нийт зар'), s.total, Icons.directions_car_outlined, AppPalette.tintLavender, const Color(0xFF7B61FF), () => adminNav.openCars()),
       ])),
       const SizedBox(height: 8),
       IntrinsicHeight(
           child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        small('Хүлээгдэж буй', s.pending, s.pending > 0 ? AppPalette.amberSoft : Colors.white, s.pending > 0 ? AppPalette.amberInk : AppPalette.foreground, () => adminNav.openCars(statuses: ['pending']), ring: s.pending > 0),
+        small(tr('Хүлээгдэж буй'), s.pending, s.pending > 0 ? AppPalette.amberSoft : Colors.white, s.pending > 0 ? AppPalette.amberInk : AppPalette.foreground, () => adminNav.openCars(statuses: ['pending']), ring: s.pending > 0),
         gap,
-        small('Идэвхтэй', s.active, AppPalette.primary, Colors.white, () => adminNav.openCars(statuses: ['active'])),
+        small(tr('Идэвхтэй'), s.active, AppPalette.primary, Colors.white, () => adminNav.openCars(statuses: ['active'])),
         gap,
-        small('Онцлох', s.featured, AppPalette.amber, AppPalette.dark, () => adminNav.openCars(statuses: ['featured'])),
+        small(tr('Онцлох'), s.featured, AppPalette.amber, AppPalette.dark, () => adminNav.openCars(statuses: ['featured'])),
         gap,
-        small('Зарагдсан', s.sold, AppPalette.dark, Colors.white, () => adminNav.openCars(statuses: ['sold'])),
+        small(tr('Зарагдсан'), s.sold, AppPalette.dark, Colors.white, () => adminNav.openCars(statuses: ['sold'])),
       ])),
     ]);
   }
@@ -195,7 +196,7 @@ class _ListBlock extends StatelessWidget {
             if (onAll != null)
               TextButton(
                 onPressed: onAll,
-                child: const Row(children: [Text('Бүгд', style: TextStyle(fontWeight: FontWeight.w600)), SizedBox(width: 4), Icon(Icons.arrow_forward_rounded, size: 16)]),
+                child: Row(children: [Text(tr('Бүгд'), style: TextStyle(fontWeight: FontWeight.w600)), SizedBox(width: 4), Icon(Icons.arrow_forward_rounded, size: 16)]),
               ),
           ]),
           const SizedBox(height: 6),

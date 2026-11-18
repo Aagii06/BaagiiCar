@@ -10,6 +10,7 @@ import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 /// "12,000₮", also for 0.
 String money(num v) => '${formatNumber(v)}₮';
@@ -29,9 +30,9 @@ class TxRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final income = tx.amount > 0;
     final (statusLabel, statusBg, statusFg) = switch (tx.status) {
-      'pending' => ('Хүлээгдэж буй', AppPalette.amberSoft, AppPalette.amberInk),
-      'rejected' => ('Буцаасан', AppPalette.destructiveSoft, AppPalette.destructive),
-      _ => ('Амжилттай', AppPalette.successSoft, AppPalette.success),
+      'pending' => (tr('Хүлээгдэж буй'), AppPalette.amberSoft, AppPalette.amberInk),
+      'rejected' => (tr('Буцаасан'), AppPalette.destructiveSoft, AppPalette.destructive),
+      _ => (tr('Амжилттай'), AppPalette.successSoft, AppPalette.success),
     };
     const muted = TextStyle(fontSize: 12, color: AppPalette.mutedForeground);
     return Padding(
@@ -69,9 +70,9 @@ class TxRow extends StatelessWidget {
           const SizedBox(height: 8),
           Wrap(spacing: 8, children: [
             if (onApprove != null)
-              ActionChip2(label: 'Орсон, батлах', icon: Icons.check_rounded, background: AppPalette.success, foreground: Colors.white, onTap: onApprove!),
+              ActionChip2(label: tr('Орсон, батлах'), icon: Icons.check_rounded, background: AppPalette.success, foreground: Colors.white, onTap: onApprove!),
             if (onReject != null)
-              ActionChip2(label: 'Буцаах', icon: Icons.undo_rounded, background: AppPalette.destructiveSoft, foreground: AppPalette.destructive, onTap: onReject!),
+              ActionChip2(label: tr('Буцаах'), icon: Icons.undo_rounded, background: AppPalette.destructiveSoft, foreground: AppPalette.destructive, onTap: onReject!),
           ]),
         ],
       ]),
@@ -125,7 +126,7 @@ class _DealerWalletState extends State<_DealerWallet> {
       builder: (_) => _QpaySheet(amount: _value),
     );
     if (paid == true && mounted) {
-      toast(context, 'Төлбөр орлоо, дансанд нэмэгдлээ');
+      toast(context, tr('Төлбөр орлоо, дансанд нэмэгдлээ'));
       setState(() {
         _amount.clear();
         _reload++;
@@ -139,7 +140,7 @@ class _DealerWalletState extends State<_DealerWallet> {
     try {
       await AdminApi.requestBankTopup(_value, _note.text.trim());
       if (!mounted) return;
-      toast(context, 'Хүсэлт илгээлээ. Админ шалгаад дансанд тань орно');
+      toast(context, tr('Хүсэлт илгээлээ. Админ шалгаад дансанд тань орно'));
       setState(() {
         _method = null;
         _amount.clear();
@@ -155,7 +156,7 @@ class _DealerWalletState extends State<_DealerWallet> {
 
   @override
   Widget build(BuildContext context) => AdminPage(
-        title: 'Миний данс',
+        title: tr('Миний данс'),
         body: Loader<(PaymentInfo, ListPage<WalletTx>)>(
           fetchKey: _reload,
           fetch: () async {
@@ -165,7 +166,7 @@ class _DealerWalletState extends State<_DealerWallet> {
           loading: const Padding(padding: EdgeInsets.all(16), child: RowsSkeleton(count: 5)),
           builder: (context, data, _) {
             final (info, history) = data;
-            if (info.dealerId == null) return const EmptyView(title: 'Та дилерт харьяалагдаагүй байна', description: 'Админд хандана уу', icon: Icons.storefront_outlined);
+            if (info.dealerId == null) return EmptyView(title: tr('Та дилерт харьяалагдаагүй байна'), description: tr('Админд хандана уу'), icon: Icons.storefront_outlined);
             final valid = _value >= 100;
             final bank = info.bank;
             return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 40), children: [
@@ -176,27 +177,27 @@ class _DealerWalletState extends State<_DealerWallet> {
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Row(children: [
+                  Row(children: [
                     Icon(Icons.account_balance_wallet_outlined, size: 16, color: Colors.white70),
                     SizedBox(width: 6),
-                    Text('Дансны үлдэгдэл', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white70)),
+                    Text(tr('Дансны үлдэгдэл'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white70)),
                   ]),
                   const SizedBox(height: 4),
                   Text(money(info.balance ?? 0), style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: Colors.white)),
                   const SizedBox(height: 8),
-                  Text('Зарыг ${info.renewDays} хоногт нэг удаа үнэгүй шинэчилнэ. Түүнээс өмнө шинэчлэхэд ${money(info.renewPrice)} дансаас хасагдана.',
+                  Text(tr('Зарыг {renewDays} хоногт нэг удаа үнэгүй шинэчилнэ. Түүнээс өмнө шинэчлэхэд {renewPrice} дансаас хасагдана.', {'renewDays': info.renewDays, 'renewPrice': money(info.renewPrice)}),
                       style: const TextStyle(fontSize: 12, color: Colors.white)),
                 ]),
               ),
               const SizedBox(height: 16),
               Section(
-                title: 'Данс цэнэглэх',
+                title: tr('Данс цэнэглэх'),
                 child: !info.qpay && bank == null
-                    ? const Text('Төлбөр хүлээн авах арга тохируулаагүй байна. Админд хандана уу', style: TextStyle(color: AppPalette.mutedForeground))
+                    ? Text(tr('Төлбөр хүлээн авах арга тохируулаагүй байна. Админд хандана уу'), style: TextStyle(color: AppPalette.mutedForeground))
                     : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         FieldLabel(
-                          label: 'Дүн (₮)',
-                          error: _amount.text.isNotEmpty && !valid ? 'Хамгийн багадаа 100₮' : null,
+                          label: tr('Дүн (₮)'),
+                          error: _amount.text.isNotEmpty && !valid ? tr('Хамгийн багадаа 100₮') : null,
                           child: TextField(
                             controller: _amount,
                             keyboardType: TextInputType.number,
@@ -222,7 +223,7 @@ class _DealerWalletState extends State<_DealerWallet> {
                               child: FilledButton.tonalIcon(
                                 onPressed: valid ? () => setState(() => _method = 'bank') : null,
                                 icon: const Icon(Icons.account_balance_outlined),
-                                label: const Text('Дансаар'),
+                                label: Text(tr('Дансаар')),
                               ),
                             ),
                         ]),
@@ -233,10 +234,10 @@ class _DealerWalletState extends State<_DealerWallet> {
                 _bankSection(bank),
               ],
               const SizedBox(height: 20),
-              const Text('Гүйлгээний түүх', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              Text(tr('Гүйлгээний түүх'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               if (history.rows.isEmpty)
-                const EmptyView(title: 'Гүйлгээ алга', icon: Icons.receipt_long_outlined)
+                EmptyView(title: tr('Гүйлгээ алга'), icon: Icons.receipt_long_outlined)
               else
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -249,16 +250,16 @@ class _DealerWalletState extends State<_DealerWallet> {
 
   Widget _bankSection(Map<String, dynamic> bank) {
     final rows = <(String, String, String)>[
-      ('Банк', '${bank['bank_name'] ?? ''}', '${bank['bank_name'] ?? ''}'),
-      ('Хүлээн авагч', '${bank['account_name'] ?? ''}', '${bank['account_name'] ?? ''}'),
-      ('Дансны дугаар', '${bank['account_number'] ?? ''}', '${bank['account_number'] ?? ''}'),
+      (tr('Банк'), '${bank['bank_name'] ?? ''}', '${bank['bank_name'] ?? ''}'),
+      (tr('Хүлээн авагч'), '${bank['account_name'] ?? ''}', '${bank['account_name'] ?? ''}'),
+      (tr('Дансны дугаар'), '${bank['account_number'] ?? ''}', '${bank['account_number'] ?? ''}'),
       if (bank['iban'] != null && '${bank['iban']}'.isNotEmpty) ('IBAN', '${bank['iban']}', '${bank['iban']}'),
-      ('Дүн', money(_value), '$_value'),
+      (tr('Дүн'), money(_value), '$_value'),
     ];
     return Section(
-      title: 'Дансаар шилжүүлэх',
+      title: tr('Дансаар шилжүүлэх'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text('Доорх данс руу ${money(_value)} шилжүүлээд «Шилжүүлсэн» товчийг дарна уу. Админ шалгаад дансанд тань оруулна.',
+        Text(tr('Доорх данс руу {_value} шилжүүлээд «Шилжүүлсэн» товчийг дарна уу. Админ шалгаад дансанд тань оруулна.', {'_value': money(_value)}),
             style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
         const SizedBox(height: 12),
         Container(
@@ -272,11 +273,11 @@ class _DealerWalletState extends State<_DealerWallet> {
                   SizedBox(width: 110, child: Text(rows[i].$1, style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground))),
                   Expanded(child: Text(rows[i].$2, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600))),
                   IconButton(
-                    tooltip: 'Хуулах',
+                    tooltip: tr('Хуулах'),
                     icon: const Icon(Icons.copy_rounded, size: 18, color: AppPalette.mutedForeground),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: rows[i].$3));
-                      toast(context, 'Хуулагдлаа');
+                      toast(context, tr('Хуулагдлаа'));
                     },
                   ),
                 ]),
@@ -286,15 +287,15 @@ class _DealerWalletState extends State<_DealerWallet> {
         ),
         const SizedBox(height: 12),
         FieldLabel(
-          label: 'Гүйлгээний утга / тайлбар',
-          hint: 'Шилжүүлэхдээ бичсэн утгаа оруулбал админ хурдан олно',
+          label: tr('Гүйлгээний утга / тайлбар'),
+          hint: tr('Шилжүүлэхдээ бичсэн утгаа оруулбал админ хурдан олно'),
           child: TextField(controller: _note, maxLength: 500, decoration: const InputDecoration(counterText: '')),
         ),
         const SizedBox(height: 12),
         FilledButton.icon(
           onPressed: _sending ? null : _sendBank,
           icon: _sending ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.check_rounded),
-          label: const Text('Шилжүүлсэн'),
+          label: Text(tr('Шилжүүлсэн')),
         ),
       ]),
     );
@@ -360,7 +361,7 @@ class _QpaySheetState extends State<_QpaySheet> {
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(children: [
-            const Expanded(child: Text('QPay-ээр төлөх', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
+            Expanded(child: Text(tr('QPay-ээр төлөх'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
             IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context)),
           ]),
           if (_error != null)
@@ -378,7 +379,7 @@ class _QpaySheetState extends State<_QpaySheet> {
               ),
             const SizedBox(height: 8),
             Text(money(inv.amount), textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppPalette.primary)),
-            const Text('Банкны аппаараа QR кодыг уншуулж эсвэл доороос аппаа сонгож төлнө үү',
+            Text(tr('Банкны аппаараа QR кодыг уншуулж эсвэл доороос аппаа сонгож төлнө үү'),
                 textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
             if (inv.urls.isNotEmpty) ...[
               const SizedBox(height: 16),
@@ -410,12 +411,12 @@ class _QpaySheetState extends State<_QpaySheet> {
             const SizedBox(height: 16),
             OutlinedButton(
               onPressed: _checking ? null : () => _check(),
-              child: _checking ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Төлбөр шалгах'),
+              child: _checking ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : Text(tr('Төлбөр шалгах')),
             ),
             if (_notYet)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 6),
-                child: Text('Төлбөр хараахан орж ирээгүй байна', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+                child: Text(tr('Төлбөр хараахан орж ирээгүй байна'), textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
               ),
           ],
         ]),
@@ -451,35 +452,35 @@ class _AdminWalletState extends State<_AdminWallet> {
 
   Future<void> _approve(WalletTx tx) async {
     if (!await confirmSheet(context,
-        title: 'Шилжүүлэг орсныг баталгаажуулах уу?',
-        message: '${tx.dealerName ?? ''} дилерийн дансанд ${money(tx.amount)} нэмэгдэнэ. Банкны хуулгаасаа шалгасан эсэхээ нягтална уу.',
-        confirmLabel: 'Батлах',
+        title: tr('Шилжүүлэг орсныг баталгаажуулах уу?'),
+        message: tr('{dealerName} дилерийн дансанд {amount} нэмэгдэнэ. Банкны хуулгаасаа шалгасан эсэхээ нягтална уу.', {'dealerName': tx.dealerName ?? '', 'amount': money(tx.amount)}),
+        confirmLabel: tr('Батлах'),
         tone: Tone.success,
         icon: Icons.check_rounded)) {
       return;
     }
-    await _act(() => AdminApi.approveTopup(tx.id), 'Баталгаажууллаа, дилерийн дансанд орлоо');
+    await _act(() => AdminApi.approveTopup(tx.id), tr('Баталгаажууллаа, дилерийн дансанд орлоо'));
   }
 
   Future<void> _reject(WalletTx tx) async {
-    final reason = await promptSheet(context, title: 'Хүсэлтийг буцаах уу?', label: 'Шалтгаан', placeholder: 'Жишээ нь: шилжүүлэг ороогүй', confirmLabel: 'Буцаах', tone: Tone.danger);
+    final reason = await promptSheet(context, title: tr('Хүсэлтийг буцаах уу?'), label: tr('Шалтгаан'), placeholder: tr('Жишээ нь: шилжүүлэг ороогүй'), confirmLabel: tr('Буцаах'), tone: Tone.danger);
     if (reason == null) return;
-    await _act(() => AdminApi.rejectTopup(tx.id, reason), 'Буцаалаа');
+    await _act(() => AdminApi.rejectTopup(tx.id, reason), tr('Буцаалаа'));
   }
 
   Future<void> _adjust(DealerBalance d) async {
     final raw = await promptSheet(context,
-        title: '${d.name} — данс засах',
-        message: 'Нэмэх бол эерэг (50000), хасах бол сөрөг (-50000) дүн бичнэ үү. Одоогийн үлдэгдэл ${money(d.balance)}.',
-        label: 'Дүн (₮)',
+        title: tr('{name} — данс засах', {'name': d.name}),
+        message: tr('Нэмэх бол эерэг (50000), хасах бол сөрөг (-50000) дүн бичнэ үү. Одоогийн үлдэгдэл {balance}.', {'balance': money(d.balance)}),
+        label: tr('Дүн (₮)'),
         placeholder: '50000',
-        confirmLabel: 'Үргэлжлүүлэх');
+        confirmLabel: tr('Үргэлжлүүлэх'));
     if (raw == null || !mounted) return;
     final amount = int.tryParse(raw.replaceAll(RegExp(r'[\s,₮]'), ''));
-    if (amount == null || amount == 0) return toast(context, 'Дүн буруу байна', error: true);
-    final note = await promptSheet(context, title: 'Тайлбар', label: 'Яагаад засаж байгаа вэ?', placeholder: 'Жишээ нь: бэлнээр төлсөн', confirmLabel: 'Хадгалах');
+    if (amount == null || amount == 0) return toast(context, tr('Дүн буруу байна'), error: true);
+    final note = await promptSheet(context, title: tr('Тайлбар'), label: tr('Яагаад засаж байгаа вэ?'), placeholder: tr('Жишээ нь: бэлнээр төлсөн'), confirmLabel: tr('Хадгалах'));
     if (note == null) return;
-    await _act(() => AdminApi.adjustBalance(d.id, amount, note), 'Хадгаллаа');
+    await _act(() => AdminApi.adjustBalance(d.id, amount, note), tr('Хадгаллаа'));
   }
 
   Future<(List<DealerBalance>, ListPage<WalletTx>?)> _fetch() async {
@@ -492,10 +493,10 @@ class _AdminWalletState extends State<_AdminWallet> {
 
   @override
   Widget build(BuildContext context) => AdminPage(
-        title: 'Дилерийн данс',
+        title: tr('Дилерийн данс'),
         actions: [
           IconButton(
-            tooltip: 'Төлбөрийн тохиргоо',
+            tooltip: tr('Төлбөрийн тохиргоо'),
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PaymentSettingsScreen())),
           ),
@@ -503,7 +504,7 @@ class _AdminWalletState extends State<_AdminWallet> {
         body: Column(children: [
           FilterBar(children: [
             ChipTabs<String>(
-              items: [ChipTab('pending', 'Хүсэлт', count: _pending), const ChipTab('dealers', 'Дилерүүд'), ChipTab('all', _dealer != null ? '${_dealer!.name} ✕' : 'Бүх гүйлгээ')],
+              items: [ChipTab('pending', tr('Хүсэлт'), count: _pending), ChipTab('dealers', tr('Дилерүүд')), ChipTab('all', _dealer != null ? '${_dealer!.name} ✕' : tr('Бүх гүйлгээ'))],
               isOn: (v) => v == _tab,
               onTap: (v) => setState(() {
                 if (v == 'all' && _tab == 'all') _dealer = null;
@@ -520,13 +521,13 @@ class _AdminWalletState extends State<_AdminWallet> {
               builder: (context, data, _) {
                 final (balances, txs) = data;
                 if (txs == null) {
-                  if (balances.isEmpty) return const EmptyView(title: 'Дилер алга', icon: Icons.storefront_outlined);
+                  if (balances.isEmpty) return EmptyView(title: tr('Дилер алга'), icon: Icons.storefront_outlined);
                   return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
                     RowList(children: [for (final d in balances) _dealerRow(d)]),
                   ]);
                 }
                 if (txs.rows.isEmpty) {
-                  return EmptyView(title: _tab == 'pending' ? 'Хүлээгдэж буй хүсэлт алга' : 'Гүйлгээ алга', icon: Icons.receipt_long_outlined);
+                  return EmptyView(title: _tab == 'pending' ? tr('Хүлээгдэж буй хүсэлт алга') : tr('Гүйлгээ алга'), icon: Icons.receipt_long_outlined);
                 }
                 return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
                   RowList(children: [
@@ -553,10 +554,10 @@ class _AdminWalletState extends State<_AdminWallet> {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(d.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
                 Text(money(d.balance), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: d.balance > 0 ? AppPalette.success : AppPalette.mutedForeground)),
-                if (d.pending > 0) Text('${d.pending} хүсэлт хүлээгдэж буй', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.amberInk)),
+                if (d.pending > 0) Text(tr('{pending} хүсэлт хүлээгдэж буй', {'pending': d.pending}), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.amberInk)),
               ]),
             ),
-            TextButton(onPressed: () => _adjust(d), child: const Text('Засах')),
+            TextButton(onPressed: () => _adjust(d), child: Text(tr('Засах'))),
           ]),
         ),
       );
@@ -633,7 +634,7 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
     }
   }
 
-  String? _required(bool on, TextEditingController c) => _submitted && on && c.text.trim().isEmpty ? 'Заавал бөглөнө' : null;
+  String? _required(bool on, TextEditingController c) => _submitted && on && c.text.trim().isEmpty ? tr('Заавал бөглөнө') : null;
 
   Future<void> _save() async {
     setState(() => _submitted = true);
@@ -652,7 +653,7 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
         _apply(saved);
         _submitted = false;
       });
-      toast(context, 'Хадгаллаа');
+      toast(context, tr('Хадгаллаа'));
     } catch (e) {
       if (mounted) toast(context, errorText(e), error: true);
     } finally {
@@ -679,34 +680,34 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
 
   @override
   Widget build(BuildContext context) => AdminPage(
-        title: 'Төлбөрийн тохиргоо',
-        actions: [if (_loaded) BarButton(icon: Icons.check_rounded, tooltip: 'Хадгалах', busy: _saving, onTap: _saving ? null : _save)],
+        title: tr('Төлбөрийн тохиргоо'),
+        actions: [if (_loaded) BarButton(icon: Icons.check_rounded, tooltip: tr('Хадгалах'), busy: _saving, onTap: _saving ? null : _save)],
         body: _loadError != null
             ? EmptyView(title: _loadError!, icon: Icons.error_outline_rounded)
             : !_loaded
                 ? const Center(child: CircularProgressIndicator())
                 : ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 40), children: [
                     Section(
-                      title: 'Зар шинэчлэх үнэ',
+                      title: tr('Зар шинэчлэх үнэ'),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                        const Text('Дилер зараа 7 хоног хүлээлгүй шинэчлэхэд дансаас нь хасагдах дүн. Админ үнэгүй шинэчилнэ.',
+                        Text(tr('Дилер зараа 7 хоног хүлээлгүй шинэчлэхэд дансаас нь хасагдах дүн. Админ үнэгүй шинэчилнэ.'),
                             style: TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
-                        _field('Үнэ (₮)', _price, digits: true),
+                        _field(tr('Үнэ (₮)'), _price, digits: true),
                       ]),
                     ),
                     const SizedBox(height: 16),
                     Section(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         SwitchRow(
-                          label: 'Дансаар шилжүүлэх',
-                          hint: 'Дилер энэ данс руу шилжүүлээд хүсэлт илгээнэ. Та баталгаажуулахад дансанд нь орно.',
+                          label: tr('Дансаар шилжүүлэх'),
+                          hint: tr('Дилер энэ данс руу шилжүүлээд хүсэлт илгээнэ. Та баталгаажуулахад дансанд нь орно.'),
                           value: _bankOn,
                           onChanged: (v) => setState(() => _bankOn = v),
                         ),
                         if (_bankOn) ...[
-                          _field('Банк', _bankName, error: _required(_bankOn, _bankName), placeholder: 'Жишээ нь: Хаан банк'),
-                          _field('Хүлээн авагчийн нэр', _accountName, error: _required(_bankOn, _accountName)),
-                          _field('Дансны дугаар', _accountNumber, error: _required(_bankOn, _accountNumber)),
+                          _field(tr('Банк'), _bankName, error: _required(_bankOn, _bankName), placeholder: tr('Жишээ нь: Хаан банк')),
+                          _field(tr('Хүлээн авагчийн нэр'), _accountName, error: _required(_bankOn, _accountName)),
+                          _field(tr('Дансны дугаар'), _accountNumber, error: _required(_bankOn, _accountNumber)),
                           _field('IBAN', _iban),
                         ],
                       ]),
@@ -716,22 +717,22 @@ class _PaymentSettingsScreenState extends State<PaymentSettingsScreen> {
                       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                         SwitchRow(
                           label: 'QPay',
-                          hint: 'Дилер QR кодоор эсвэл банкны аппаар төлөхөд дансанд нь автоматаар орно.',
+                          hint: tr('Дилер QR кодоор эсвэл банкны аппаар төлөхөд дансанд нь автоматаар орно.'),
                           value: _qpayOn,
                           onChanged: (v) => setState(() => _qpayOn = v),
                         ),
                         if (_qpayOn) ...[
-                          _field('Нэвтрэх нэр (username)', _username, error: _required(_qpayOn, _username)),
-                          _field('Нууц үг (password)', _password,
+                          _field(tr('Нэвтрэх нэр (username)'), _username, error: _required(_qpayOn, _username)),
+                          _field(tr('Нууц үг (password)'), _password,
                               obscure: true,
                               placeholder: _hasPassword ? '••••••••' : null,
-                              hint: _hasPassword ? 'Хоосон орхивол хадгалсан нууц үг хэвээр үлдэнэ' : null,
+                              hint: _hasPassword ? tr('Хоосон орхивол хадгалсан нууц үг хэвээр үлдэнэ') : null,
                               error: _hasPassword ? null : _required(_qpayOn, _password)),
-                          _field('Нэхэмжлэхийн код (invoice code)', _invoiceCode, error: _required(_qpayOn, _invoiceCode)),
+                          _field(tr('Нэхэмжлэхийн код (invoice code)'), _invoiceCode, error: _required(_qpayOn, _invoiceCode)),
                           const SizedBox(height: 8),
                           SwitchRow(
-                            label: 'Туршилтын орчин (sandbox)',
-                            hint: 'Асаалттай бол merchant-sandbox.qpay.mn руу холбогдоно. Жинхэнэ төлбөр авахдаа унтраана.',
+                            label: tr('Туршилтын орчин (sandbox)'),
+                            hint: tr('Асаалттай бол merchant-sandbox.qpay.mn руу холбогдоно. Жинхэнэ төлбөр авахдаа унтраана.'),
                             value: _sandbox,
                             onChanged: (v) => setState(() => _sandbox = v),
                           ),

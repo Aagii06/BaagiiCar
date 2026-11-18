@@ -34,7 +34,7 @@ class AdminLang extends ChangeNotifier {
 
 final adminLang = AdminLang();
 
-const _dictionaries = <String, Map<String, String>>{'en': adminEn, 'ru': adminRu};
+final _dictionaries = <String, Map<String, String>>{'en': adminEn, 'ru': adminRu};
 
 /// The admin text in the chosen language. Translating an already translated text returns it unchanged.
 String tr(String key, [Map<String, Object?>? vars]) {

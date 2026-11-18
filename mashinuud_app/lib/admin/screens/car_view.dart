@@ -9,21 +9,22 @@ import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 /// An ad's Үзүүлэлт as label / value pairs.
 List<(String, String?)> carSpecs(ACar c) => [
-      ('Үйлдвэрлэсэн он', c.manufacturedYear?.toString()),
-      ('Орж ирсэн он', c.importedYear?.toString()),
-      ('Гүйлт', c.mileage != null ? formatKm(c.mileage) : null),
-      ('Хөдөлгүүр', c.engineCapacity != null ? formatEngine(c.engineCapacity) : null),
-      ('Түлш', c.fuelType),
-      ('Хурдны хайрцаг', c.transmission),
-      ('Хүрд', c.steering),
-      ('Хөтлөгч', c.driveType),
-      ('Зориулалт', c.vehicleType),
-      ('Гадна өнгө', c.color),
-      ('Дотор өнгө', c.interiorColor),
-      ('Төрөл', c.bodyTypeName),
+      (tr('Үйлдвэрлэсэн он'), c.manufacturedYear?.toString()),
+      (tr('Орж ирсэн он'), c.importedYear?.toString()),
+      (tr('Гүйлт'), c.mileage != null ? formatKm(c.mileage) : null),
+      (tr('Хөдөлгүүр'), c.engineCapacity != null ? formatEngine(c.engineCapacity) : null),
+      (tr('Түлш'), c.fuelType),
+      (tr('Хурдны хайрцаг'), c.transmission),
+      (tr('Хүрд'), c.steering),
+      (tr('Хөтлөгч'), c.driveType),
+      (tr('Зориулалт'), c.vehicleType),
+      (tr('Гадна өнгө'), c.color),
+      (tr('Дотор өнгө'), c.interiorColor),
+      (tr('Төрөл'), c.bodyTypeName),
     ];
 
 class SpecsGrid extends StatelessWidget {
@@ -128,17 +129,17 @@ class _CarViewScreenState extends State<CarViewScreen> {
         child: Loader<(ACar?, List<String>)>(
           fetchKey: _reload,
           fetch: _fetch,
-          loading: const AdminPage(title: 'Зар', body: PageSkeleton()),
-          error: (context, e, retry) => AdminPage(title: 'Зар', body: ErrorView(message: errorText(e), onRetry: retry)),
+          loading: AdminPage(title: tr('Зар'), body: PageSkeleton()),
+          error: (context, e, retry) => AdminPage(title: tr('Зар'), body: ErrorView(message: errorText(e), onRetry: retry)),
           builder: (context, data, _) {
             final (car, photos) = data;
-            if (car == null) return const AdminPage(title: 'Зар', body: EmptyView(title: 'Зар олдсонгүй'));
+            if (car == null) return AdminPage(title: tr('Зар'), body: EmptyView(title: tr('Зар олдсонгүй')));
             return AdminPage(
-              title: car.name ?? 'Зар',
+              title: car.name ?? tr('Зар'),
               actions: [
                 if (car.status != 'deleted')
                   IconButton(
-                    tooltip: 'Засах',
+                    tooltip: tr('Засах'),
                     icon: const Icon(Icons.edit_outlined),
                     onPressed: () async {
                       final saved = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => CarEditScreen(carId: car.id)));
@@ -178,7 +179,7 @@ class _CarViewScreenState extends State<CarViewScreen> {
                     child: Row(children: [
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('Зарын эзэн', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+                          Text(tr('Зарын эзэн'), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
                           Text(car.dealerName ?? car.sellerName ?? '—', style: const TextStyle(fontWeight: FontWeight.w700)),
                         ]),
                       ),
@@ -192,10 +193,10 @@ class _CarViewScreenState extends State<CarViewScreen> {
                     ]),
                   ),
                   const SizedBox(height: 14),
-                  Section(title: 'Үзүүлэлт', child: SpecsGrid(car)),
+                  Section(title: tr('Үзүүлэлт'), child: SpecsGrid(car)),
                   if (car.description != null) ...[
                     const SizedBox(height: 14),
-                    Section(title: 'Тайлбар', child: Text(car.description!, style: const TextStyle(fontSize: 14, height: 1.5))),
+                    Section(title: tr('Тайлбар'), child: Text(car.description!, style: const TextStyle(fontSize: 14, height: 1.5))),
                   ],
                 ]),
               ),
@@ -222,14 +223,14 @@ class _CarViewScreenState extends State<CarViewScreen> {
     final s = car.status;
     final onWeb = s == 'active' || s == 'sold';
     final text = onWeb
-        ? 'Вэб сайт дээр нийтлэгдсэн'
+        ? tr('Вэб сайт дээр нийтлэгдсэн')
         : s == 'pending'
-            ? 'Батлагдаагүй тул вэб дээр харагдахгүй'
+            ? tr('Батлагдаагүй тул вэб дээр харагдахгүй')
             : s == 'rejected'
-                ? 'Буцаасан — эзэн нь засаж дахин илгээнэ'
+                ? tr('Буцаасан — эзэн нь засаж дахин илгээнэ')
                 : s == 'hidden'
-                    ? 'Түр нуусан тул вэб дээр харагдахгүй'
-                    : 'Вэб дээр харагдахгүй';
+                    ? tr('Түр нуусан тул вэб дээр харагдахгүй')
+                    : tr('Вэб дээр харагдахгүй');
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(color: s == 'pending' ? AppPalette.amberSoft : AppPalette.card, borderRadius: BorderRadius.circular(AppRadius.lg)),
@@ -242,51 +243,51 @@ class _CarViewScreenState extends State<CarViewScreen> {
           Wrap(spacing: 8, runSpacing: 8, children: [
             if (s == 'pending' && admin) ...[
               ActionChip2(
-                label: 'Буцаах',
+                label: tr('Буцаах'),
                 icon: Icons.undo_rounded,
                 background: AppPalette.destructiveSoft,
                 foreground: AppPalette.destructive,
                 onTap: () async {
                   final reason = await rejectReason(context);
-                  if (reason != null) _run(() => AdminApi.rejectCar(car.id, reason), 'Буцаалаа');
+                  if (reason != null) _run(() => AdminApi.rejectCar(car.id, reason), tr('Буцаалаа'));
                 },
               ),
               ActionChip2(
-                label: 'Батлах',
+                label: tr('Батлах'),
                 icon: Icons.check_rounded,
                 background: AppPalette.success,
                 foreground: Colors.white,
                 onTap: () async {
-                  if (await confirmSheet(context, title: 'Зарыг батлах уу?', message: 'Батласны дараа вэб дээр нийтлэгдэнэ.', confirmLabel: 'Батлах', tone: Tone.success, icon: Icons.check_rounded)) {
-                    _run(() => AdminApi.approveCar(car.id), 'Баталлаа, вэб дээр нийтлэгдлээ');
+                  if (await confirmSheet(context, title: tr('Зарыг батлах уу?'), message: tr('Батласны дараа вэб дээр нийтлэгдэнэ.'), confirmLabel: tr('Батлах'), tone: Tone.success, icon: Icons.check_rounded)) {
+                    _run(() => AdminApi.approveCar(car.id), tr('Баталлаа, вэб дээр нийтлэгдлээ'));
                   }
                 },
               ),
             ],
             if (s == 'active')
               ActionChip2(
-                label: 'Нуух',
+                label: tr('Нуух'),
                 icon: Icons.visibility_off_outlined,
                 onTap: () async {
                   if (await confirmSheet(context,
-                      title: 'Зарыг түр нуух уу?',
-                      message: 'Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно.',
-                      confirmLabel: 'Нуух',
+                      title: tr('Зарыг түр нуух уу?'),
+                      message: tr('Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно.'),
+                      confirmLabel: tr('Нуух'),
                       tone: Tone.amber,
                       icon: Icons.visibility_off_outlined)) {
-                    _run(() => AdminApi.setHidden(car.id, true), 'Нууллаа, вэб дээр харагдахгүй');
+                    _run(() => AdminApi.setHidden(car.id, true), tr('Нууллаа, вэб дээр харагдахгүй'));
                   }
                 },
               ),
             if (s == 'hidden')
               ActionChip2(
-                label: 'Нийтлэх',
+                label: tr('Нийтлэх'),
                 icon: Icons.visibility_outlined,
                 background: AppPalette.success,
                 foreground: Colors.white,
                 onTap: () async {
-                  if (await confirmSheet(context, title: 'Зарыг нийтлэх үү?', message: 'Нийтэлсэн зар вэб дээр харагдах боломжтой болно.', confirmLabel: 'Нийтлэх', tone: Tone.success, icon: Icons.visibility_outlined)) {
-                    _run(() => AdminApi.setHidden(car.id, false), 'Нийтэллээ, вэб дээр харагдана');
+                  if (await confirmSheet(context, title: tr('Зарыг нийтлэх үү?'), message: tr('Нийтэлсэн зар вэб дээр харагдах боломжтой болно.'), confirmLabel: tr('Нийтлэх'), tone: Tone.success, icon: Icons.visibility_outlined)) {
+                    _run(() => AdminApi.setHidden(car.id, false), tr('Нийтэллээ, вэб дээр харагдана'));
                   }
                 },
               ),

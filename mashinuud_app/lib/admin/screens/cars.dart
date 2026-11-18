@@ -8,6 +8,7 @@ import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 const carPageSize = 20;
 
@@ -76,16 +77,16 @@ class _CarsTabState extends State<CarsTab> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(children: [
-            Expanded(child: SearchBox(hint: 'Нэр, утас эсвэл #дугаар', onSearch: (v) => setState(() => _q = v))),
+            Expanded(child: SearchBox(hint: tr('Нэр, утас эсвэл #дугаар'), onSearch: (v) => setState(() => _q = v))),
             if (admin) ...[
               const SizedBox(width: 8),
               SizedBox(
                 width: 132,
                 child: AdminSelect<int>(
-                  title: 'Дилер',
+                  title: tr('Дилер'),
                   value: _dealerId,
-                  placeholder: 'Дилер',
-                  options: [const Option<int>(null, 'Бүгд'), for (final d in _dealers) Option(d.id, d.name)],
+                  placeholder: tr('Дилер'),
+                  options: [Option<int>(null, tr('Бүгд')), for (final d in _dealers) Option(d.id, d.name)],
                   onChanged: (v) => setState(() => _dealerId = v),
                 ),
               ),
@@ -153,7 +154,7 @@ class _CarListState extends State<CarList> {
     final page = _page;
     if (_error != null && page == null) return ErrorView(message: errorText(_error!), onRetry: _load);
     if (page == null) return const Padding(padding: EdgeInsets.all(16), child: RowsSkeleton(count: 5));
-    if (page.rows.isEmpty) return const EmptyView(title: 'Зар олдсонгүй');
+    if (page.rows.isEmpty) return EmptyView(title: tr('Зар олдсонгүй'));
     final more = page.rows.length < page.count;
     return RefreshIndicator(
       color: AppPalette.primary,
@@ -163,7 +164,7 @@ class _CarListState extends State<CarList> {
         itemCount: page.rows.length + 1 + (more ? 1 : 0),
         separatorBuilder: (_, i) => SizedBox(height: i == 0 ? 0 : 12),
         itemBuilder: (context, i) {
-          if (i == 0) return CountLine('${page.count} зар');
+          if (i == 0) return CountLine(tr('{count} зар', {'count': page.count}));
           if (i > page.rows.length) {
             return _loading
                 ? const Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator(strokeWidth: 2.4, color: AppPalette.primary)))
@@ -212,7 +213,7 @@ class _CarRowState extends State<CarRow> {
       );
 
   Future<void> _run(Future<void> Function() action, String done, {String? title, String? message, String? confirmLabel, Tone tone = Tone.primary, IconData? icon}) async {
-    if (title != null && !await confirmSheet(context, title: title, message: message, detail: _detail, confirmLabel: confirmLabel ?? 'Тийм', tone: tone, icon: icon)) return;
+    if (title != null && !await confirmSheet(context, title: title, message: message, detail: _detail, confirmLabel: confirmLabel ?? tr('Тийм'), tone: tone, icon: icon)) return;
     setState(() => _busy = true);
     try {
       await action();
@@ -235,17 +236,17 @@ class _CarRowState extends State<CarRow> {
       return;
     }
     if (!mounted) return;
-    await _run(() => AdminApi.renewCar(car.id, paid: true), 'Шинэчиллээ, жагсаалтын эхэнд гарлаа',
-        title: 'Төлбөртэй шинэчлэх үү?',
-        message: 'Дансны үлдэгдлээс ${formatNumber(price)}₮ хасагдаж, зар жагсаалтын эхэнд гарна. Үнэгүй шинэчлэл $renewIn хоногийн дараа.',
-        confirmLabel: 'Төлөөд шинэчлэх',
+    await _run(() => AdminApi.renewCar(car.id, paid: true), tr('Шинэчиллээ, жагсаалтын эхэнд гарлаа'),
+        title: tr('Төлбөртэй шинэчлэх үү?'),
+        message: tr('Дансны үлдэгдлээс {price}₮ хасагдаж, зар жагсаалтын эхэнд гарна. Үнэгүй шинэчлэл {renewIn} хоногийн дараа.', {'price': formatNumber(price), 'renewIn': renewIn}),
+        confirmLabel: tr('Төлөөд шинэчлэх'),
         icon: Icons.refresh_rounded);
   }
 
   Future<void> _reject() async {
     final reason = await rejectReason(context, detail: _detail);
     if (reason == null) return;
-    await _run(() => AdminApi.rejectCar(car.id, reason), 'Буцаалаа');
+    await _run(() => AdminApi.rejectCar(car.id, reason), tr('Буцаалаа'));
   }
 
   @override
@@ -258,46 +259,46 @@ class _CarRowState extends State<CarRow> {
     final actions = <Widget>[
       if (s == 'deleted' && purgeIn > 0)
         ActionChip2(
-          label: 'Сэргээх',
+          label: tr('Сэргээх'),
           icon: Icons.unarchive_outlined,
           background: AppPalette.success,
           foreground: Colors.white,
-          onTap: () => _run(() => AdminApi.restoreCar(car.id), 'Зарыг сэргээлээ',
-              title: 'Зарыг сэргээх үү?', message: 'Зар устгахаас өмнөх төлөвтөө буцна.', confirmLabel: 'Сэргээх', tone: Tone.success, icon: Icons.unarchive_outlined),
+          onTap: () => _run(() => AdminApi.restoreCar(car.id), tr('Зарыг сэргээлээ'),
+              title: tr('Зарыг сэргээх үү?'), message: tr('Зар устгахаас өмнөх төлөвтөө буцна.'), confirmLabel: tr('Сэргээх'), tone: Tone.success, icon: Icons.unarchive_outlined),
         ),
       if (s == 'pending' && admin) ...[
         ActionChip2(
-          label: 'Батлах',
+          label: tr('Батлах'),
           icon: Icons.check_rounded,
           background: AppPalette.success,
           foreground: Colors.white,
-          onTap: () => _run(() => AdminApi.approveCar(car.id), 'Баталлаа, вэб дээр нийтлэгдлээ',
-              title: 'Зарыг батлах уу?', message: 'Батласны дараа вэб дээр нийтлэгдэнэ.', confirmLabel: 'Батлах', tone: Tone.success, icon: Icons.check_rounded),
+          onTap: () => _run(() => AdminApi.approveCar(car.id), tr('Баталлаа, вэб дээр нийтлэгдлээ'),
+              title: tr('Зарыг батлах уу?'), message: tr('Батласны дараа вэб дээр нийтлэгдэнэ.'), confirmLabel: tr('Батлах'), tone: Tone.success, icon: Icons.check_rounded),
         ),
-        ActionChip2(label: 'Буцаах', icon: Icons.undo_rounded, background: AppPalette.destructiveSoft, foreground: AppPalette.destructive, onTap: _reject),
+        ActionChip2(label: tr('Буцаах'), icon: Icons.undo_rounded, background: AppPalette.destructiveSoft, foreground: AppPalette.destructive, onTap: _reject),
       ],
       if (admin && s == 'active') ...[
         ActionChip2(
-          label: 'Онцлох',
+          label: tr('Онцлох'),
           icon: featured ? Icons.star_rounded : Icons.star_border_rounded,
           background: featured ? AppPalette.amber : AppPalette.muted,
-          onTap: () => _run(() => AdminApi.setFeatured(car, !featured), featured ? 'Онцлохоос хаслаа' : 'Онцоллоо',
-              title: featured ? 'Онцлохоос хасах уу?' : 'Онцлох зар болгох уу?',
-              message: featured ? 'Нүүр хуудас болон хайлтын эхэнд гарахаа болино.' : 'Нүүр хуудсанд болон хайлтын эхэнд гарна.',
-              confirmLabel: featured ? 'Хасах' : 'Онцлох',
+          onTap: () => _run(() => AdminApi.setFeatured(car, !featured), featured ? tr('Онцлохоос хаслаа') : tr('Онцоллоо'),
+              title: featured ? tr('Онцлохоос хасах уу?') : tr('Онцлох зар болгох уу?'),
+              message: featured ? tr('Нүүр хуудас болон хайлтын эхэнд гарахаа болино.') : tr('Нүүр хуудсанд болон хайлтын эхэнд гарна.'),
+              confirmLabel: featured ? tr('Хасах') : tr('Онцлох'),
               tone: Tone.amber,
               icon: Icons.star_rounded),
         ),
         ActionChip2(
-          label: 'Зарагдсан',
-          onTap: () => _run(() => AdminApi.markSold(car.id), 'Зарагдсан гэж тэмдэглэлээ',
-              title: 'Зарагдсан гэж тэмдэглэх үү?', message: 'Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана.', confirmLabel: 'Тэмдэглэх', icon: Icons.verified_outlined),
+          label: tr('Зарагдсан'),
+          onTap: () => _run(() => AdminApi.markSold(car.id), tr('Зарагдсан гэж тэмдэглэлээ'),
+              title: tr('Зарагдсан гэж тэмдэглэх үү?'), message: tr('Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана.'), confirmLabel: tr('Тэмдэглэх'), icon: Icons.verified_outlined),
         ),
       ],
       // Before the free renewal a dealer can pay for one from their balance.
       if (s == 'active' && !admin && renewIn > 0)
         ActionChip2(
-          label: 'Төлбөртэй шинэчлэх',
+          label: tr('Төлбөртэй шинэчлэх'),
           icon: Icons.refresh_rounded,
           background: AppPalette.primarySoft,
           foreground: AppPalette.primary,
@@ -306,45 +307,45 @@ class _CarRowState extends State<CarRow> {
       // The admin can renew any time; a dealer once every CarConst.renewDays days.
       if (s == 'active' && (admin || renewIn == 0))
         ActionChip2(
-          label: 'Шинэчлэх',
+          label: tr('Шинэчлэх'),
           icon: Icons.refresh_rounded,
           background: AppPalette.success,
           foreground: Colors.white,
-          onTap: () => _run(() => AdminApi.renewCar(car.id), 'Шинэчиллээ, жагсаалтын эхэнд гарлаа',
-              title: 'Зарыг шинэчлэх үү?',
+          onTap: () => _run(() => AdminApi.renewCar(car.id), tr('Шинэчиллээ, жагсаалтын эхэнд гарлаа'),
+              title: tr('Зарыг шинэчлэх үү?'),
               message: admin
-                  ? 'Зар жагсаалтын эхэнд гарна.'
-                  : 'Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл ${CarConst.renewDays} хоногийн дараа.',
-              confirmLabel: 'Шинэчлэх',
+                  ? tr('Зар жагсаалтын эхэнд гарна.')
+                  : tr('Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл {renewDays} хоногийн дараа.', {'renewDays': CarConst.renewDays}),
+              confirmLabel: tr('Шинэчлэх'),
               tone: Tone.success,
               icon: Icons.refresh_rounded),
         ),
       if (s == 'active')
         ActionChip2(
-          label: 'Нуух',
+          label: tr('Нуух'),
           icon: Icons.visibility_off_outlined,
-          onTap: () => _run(() => AdminApi.setHidden(car.id, true), 'Нууллаа, вэб дээр харагдахгүй',
-              title: 'Зарыг түр нуух уу?', message: 'Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно.', confirmLabel: 'Нуух', tone: Tone.amber, icon: Icons.visibility_off_outlined),
+          onTap: () => _run(() => AdminApi.setHidden(car.id, true), tr('Нууллаа, вэб дээр харагдахгүй'),
+              title: tr('Зарыг түр нуух уу?'), message: tr('Вэб дээр харагдахаа болино. Дараа нь «Нийтлэх»-ээр буцааж нийтэлж болно.'), confirmLabel: tr('Нуух'), tone: Tone.amber, icon: Icons.visibility_off_outlined),
         ),
       if (s == 'hidden')
         ActionChip2(
-          label: 'Нийтлэх',
+          label: tr('Нийтлэх'),
           icon: Icons.visibility_outlined,
           background: AppPalette.success,
           foreground: Colors.white,
-          onTap: () => _run(() => AdminApi.setHidden(car.id, false), 'Нийтэллээ, вэб дээр харагдана',
-              title: 'Зарыг нийтлэх үү?', message: 'Нийтэлсэн зар вэб дээр харагдах боломжтой болно.', confirmLabel: 'Нийтлэх', tone: Tone.success, icon: Icons.visibility_outlined),
+          onTap: () => _run(() => AdminApi.setHidden(car.id, false), tr('Нийтэллээ, вэб дээр харагдана'),
+              title: tr('Зарыг нийтлэх үү?'), message: tr('Нийтэлсэн зар вэб дээр харагдах боломжтой болно.'), confirmLabel: tr('Нийтлэх'), tone: Tone.success, icon: Icons.visibility_outlined),
         ),
       // Dealers can't delete live or sold ads, only hide / edit them.
       if (s != 'deleted' && (admin || (s != 'active' && s != 'sold')))
         ActionChip2(
-          label: 'Устгах',
+          label: tr('Устгах'),
           background: AppPalette.destructiveSoft,
           foreground: AppPalette.destructive,
-          onTap: () => _run(() => AdminApi.deleteCar(car.id), 'Устгалаа',
-              title: 'Зарыг устгах уу?',
-              message: 'Устгасан зар вэб дээр харагдахгүй болно. ${CarConst.restoreDays} хоногийн дотор сэргээх боломжтой, дараа нь бүр мөсөн устна.',
-              confirmLabel: 'Устгах',
+          onTap: () => _run(() => AdminApi.deleteCar(car.id), tr('Устгалаа'),
+              title: tr('Зарыг устгах уу?'),
+              message: tr('Устгасан зар вэб дээр харагдахгүй болно. {restoreDays} хоногийн дотор сэргээх боломжтой, дараа нь бүр мөсөн устна.', {'restoreDays': CarConst.restoreDays}),
+              confirmLabel: tr('Устгах'),
               tone: Tone.danger,
               icon: Icons.delete_outline_rounded),
         ),
@@ -365,7 +366,7 @@ class _CarRowState extends State<CarRow> {
                   if (car.dealerName != null) DealerLogo(car.dealerLogo, size: 20) else const Icon(Icons.storefront_outlined, size: 16, color: Colors.white70),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(car.dealerName ?? 'Дилергүй',
+                    child: Text(car.dealerName ?? tr('Дилергүй'),
                         maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: car.dealerName == null ? Colors.white70 : Colors.white)),
                   ),
                 ]),
@@ -406,8 +407,8 @@ class _CarRowState extends State<CarRow> {
                           child: Text('↩ ${car.rejectReason}', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppPalette.destructive)),
                         ),
                       if (s == 'active' && !admin)
-                        _note(Icons.refresh_rounded, renewIn > 0 ? '$renewIn хоногийн дараа үнэгүй шинэчлэх боломжтой' : 'Үнэгүй шинэчлэх боломжтой', renewIn > 0 ? AppPalette.mutedForeground : AppPalette.success),
-                      if (s == 'deleted') _note(Icons.schedule_rounded, purgeIn > 0 ? '$purgeIn хоногийн дараа бүр мөсөн устна' : 'Удахгүй бүр мөсөн устна', AppPalette.destructive),
+                        _note(Icons.refresh_rounded, renewIn > 0 ? tr('{renewIn} хоногийн дараа үнэгүй шинэчлэх боломжтой', {'renewIn': renewIn}) : tr('Үнэгүй шинэчлэх боломжтой'), renewIn > 0 ? AppPalette.mutedForeground : AppPalette.success),
+                      if (s == 'deleted') _note(Icons.schedule_rounded, purgeIn > 0 ? tr('{purgeIn} хоногийн дараа бүр мөсөн устна', {'purgeIn': purgeIn}) : tr('Удахгүй бүр мөсөн устна'), AppPalette.destructive),
                     ]),
                   ),
                 ]),
@@ -436,12 +437,12 @@ class _CarRowState extends State<CarRow> {
 /// "Буцаах": asks for a reason; null when cancelled.
 Future<String?> rejectReason(BuildContext context, {Widget? detail}) => promptSheet(
       context,
-      title: 'Зарыг буцаах уу?',
-      message: 'Зарын эзэн тайлбарыг хараад засаж, дахин илгээнэ.',
+      title: tr('Зарыг буцаах уу?'),
+      message: tr('Зарын эзэн тайлбарыг хараад засаж, дахин илгээнэ.'),
       detail: detail,
-      label: 'Буцаах шалтгаан',
-      placeholder: 'Шалтгаанаа бичнэ үү',
-      confirmLabel: 'Буцаах',
+      label: tr('Буцаах шалтгаан'),
+      placeholder: tr('Шалтгаанаа бичнэ үү'),
+      confirmLabel: tr('Буцаах'),
       tone: Tone.danger,
       icon: Icons.undo_rounded,
     );

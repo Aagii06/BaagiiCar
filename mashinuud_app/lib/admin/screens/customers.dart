@@ -6,6 +6,7 @@ import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 class CustomerAvatar extends StatelessWidget {
   final Customer customer;
@@ -29,13 +30,13 @@ class _CustomersScreenState extends State<CustomersScreen> {
   int _reload = 0;
 
   Future<void> _remove(Customer c) async {
-    if (!await confirmSheet(context, title: 'Хэрэглэгчийг устгах уу?', message: '${c.displayName} — дахин нэвтэрч чадахгүй болно.', confirmLabel: 'Устгах', tone: Tone.danger, icon: Icons.delete_outline_rounded)) {
+    if (!await confirmSheet(context, title: tr('Хэрэглэгчийг устгах уу?'), message: tr('{displayName} — дахин нэвтэрч чадахгүй болно.', {'displayName': c.displayName}), confirmLabel: tr('Устгах'), tone: Tone.danger, icon: Icons.delete_outline_rounded)) {
       return;
     }
     try {
       await AdminApi.deleteRows('customers', [c.id]);
       if (!mounted) return;
-      toast(context, 'Устгалаа');
+      toast(context, tr('Устгалаа'));
       setState(() => _reload++);
     } catch (e) {
       if (mounted) toast(context, errorText(e), error: true);
@@ -44,12 +45,12 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   @override
   Widget build(BuildContext context) => AdminPage(
-        title: 'Хэрэглэгч',
+        title: tr('Хэрэглэгч'),
         body: Column(children: [
           FilterBar(children: [
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: SearchBox(hint: 'Нэр, утас эсвэл и-мэйл', onSearch: (v) => setState(() => _q = v))),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: SearchBox(hint: tr('Нэр, утас эсвэл и-мэйл'), onSearch: (v) => setState(() => _q = v))),
             ChipTabs<String>(
-              items: const [ChipTab('', 'Бүгд'), ChipTab('active', 'Идэвхтэй'), ChipTab('inactive', 'Идэвхгүй'), ChipTab('blocked', 'Блоклогдсон')],
+              items: [ChipTab('', tr('Бүгд')), ChipTab('active', tr('Идэвхтэй')), ChipTab('inactive', tr('Идэвхгүй')), ChipTab('blocked', tr('Блоклогдсон'))],
               isOn: (v) => v == _status,
               onTap: (v) => setState(() => _status = v),
             ),
@@ -60,9 +61,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
               fetch: () => AdminApi.customers(search: _q, status: _status.isEmpty ? null : _status),
               loading: const Padding(padding: EdgeInsets.all(16), child: RowsSkeleton(count: 6)),
               builder: (context, page, _) {
-                if (page.rows.isEmpty) return const EmptyView(title: 'Хэрэглэгч олдсонгүй', icon: Icons.people_outline_rounded);
+                if (page.rows.isEmpty) return EmptyView(title: tr('Хэрэглэгч олдсонгүй'), icon: Icons.people_outline_rounded);
                 return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
-                  CountLine('${page.count} хэрэглэгч'),
+                  CountLine(tr('{count} хэрэглэгч', {'count': page.count})),
                   RowList(children: [
                     for (final c in page.rows)
                       InkWell(
@@ -84,9 +85,9 @@ class _CustomersScreenState extends State<CustomersScreen> {
                             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                               if (c.lastLoginAt != null) Text(timeAgo(c.lastLoginAt), style: const TextStyle(fontSize: 10, color: AppPalette.mutedForeground)),
                               if (c.status != 'active')
-                                Text(c.status == 'blocked' ? 'Блоклогдсон' : 'Идэвхгүй', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppPalette.destructive)),
+                                Text(c.status == 'blocked' ? tr('Блоклогдсон') : tr('Идэвхгүй'), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppPalette.destructive)),
                             ]),
-                            IconButton(tooltip: 'Устгах', icon: const Icon(Icons.delete_outline_rounded, size: 19, color: AppPalette.destructive), onPressed: () => _remove(c)),
+                            IconButton(tooltip: tr('Устгах'), icon: const Icon(Icons.delete_outline_rounded, size: 19, color: AppPalette.destructive), onPressed: () => _remove(c)),
                           ]),
                         ),
                       ),
@@ -162,7 +163,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   Future<void> _submit() async {
     if (_busy || !_dirty) return;
     // They sign in with one of these, so at least one has to stay.
-    if (_phone.text.isEmpty && _email.text.trim().isEmpty) return setState(() => _error = 'Утас эсвэл и-мэйлийн аль нэгийг оруулна уу');
+    if (_phone.text.isEmpty && _email.text.trim().isEmpty) return setState(() => _error = tr('Утас эсвэл и-мэйлийн аль нэгийг оруулна уу'));
     setState(() {
       _busy = true;
       _error = null;
@@ -177,7 +178,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
         'status': _status,
       });
       if (!mounted) return;
-      toast(context, 'Хадгаллаа');
+      toast(context, tr('Хадгаллаа'));
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -191,14 +192,14 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
 
   Future<void> _remove() async {
     final c = _c!;
-    if (!await confirmSheet(context, title: 'Хэрэглэгчийг устгах уу?', message: '${c.displayName} — дахин нэвтэрч чадахгүй болно.', confirmLabel: 'Устгах', tone: Tone.danger, icon: Icons.delete_outline_rounded)) {
+    if (!await confirmSheet(context, title: tr('Хэрэглэгчийг устгах уу?'), message: tr('{displayName} — дахин нэвтэрч чадахгүй болно.', {'displayName': c.displayName}), confirmLabel: tr('Устгах'), tone: Tone.danger, icon: Icons.delete_outline_rounded)) {
       return;
     }
     setState(() => _removing = true);
     try {
       await AdminApi.deleteRows('customers', [c.id]);
       if (!mounted) return;
-      toast(context, 'Устгалаа');
+      toast(context, tr('Устгалаа'));
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) toast(context, errorText(e), error: true);
@@ -213,14 +214,14 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
     final gone = !_loading && _loadError == null && (c == null || c.status == 'deleted');
     const gap = SizedBox(height: 14);
     return AdminPage(
-      title: c?.displayName ?? 'Хэрэглэгч',
-      actions: [if (!_loading && _loadError == null && !gone) BarButton(icon: Icons.save_outlined, tooltip: 'Хадгалах', busy: _busy, onTap: _dirty ? _submit : null)],
+      title: c?.displayName ?? tr('Хэрэглэгч'),
+      actions: [if (!_loading && _loadError == null && !gone) BarButton(icon: Icons.save_outlined, tooltip: tr('Хадгалах'), busy: _busy, onTap: _dirty ? _submit : null)],
       body: _loading
           ? const PageSkeleton()
           : _loadError != null
               ? ErrorView(message: errorText(_loadError!), onRetry: _load)
               : gone
-                  ? const EmptyView(title: 'Хэрэглэгч олдсонгүй', icon: Icons.person_outline_rounded)
+                  ? EmptyView(title: tr('Хэрэглэгч олдсонгүй'), icon: Icons.person_outline_rounded)
                   : ListView(padding: const EdgeInsets.all(16), children: [
                       Section(
                         child: Row(children: [
@@ -228,8 +229,8 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text('Бүртгүүлсэн: ${c.createdAt?.substring(0, 10) ?? '—'}', style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
-                              Text('Сүүлд нэвтэрсэн: ${c.lastLoginAt != null ? timeAgo(c.lastLoginAt) : '—'}', style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+                              Text(tr('Бүртгүүлсэн: {substring}', {'substring': c.createdAt?.substring(0, 10) ?? '—'}), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+                              Text(tr('Сүүлд нэвтэрсэн: {lastLoginAt}', {'lastLoginAt': c.lastLoginAt != null ? timeAgo(c.lastLoginAt) : '—'}), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
                             ]),
                           ),
                         ]),
@@ -238,22 +239,22 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                       Section(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                           Row(children: [
-                            Expanded(child: FieldLabel(label: 'Овог', child: TextField(controller: _last, onChanged: (_) => setState(() {})))),
+                            Expanded(child: FieldLabel(label: tr('Овог'), child: TextField(controller: _last, onChanged: (_) => setState(() {})))),
                             const SizedBox(width: 10),
-                            Expanded(child: FieldLabel(label: 'Нэр', child: TextField(controller: _first, onChanged: (_) => setState(() {})))),
+                            Expanded(child: FieldLabel(label: tr('Нэр'), child: TextField(controller: _first, onChanged: (_) => setState(() {})))),
                           ]),
                           gap,
-                          FieldLabel(label: 'Утасны дугаар', child: PhoneField(controller: _phone, onChanged: (_) => setState(() {}))),
+                          FieldLabel(label: tr('Утасны дугаар'), child: PhoneField(controller: _phone, onChanged: (_) => setState(() {}))),
                           gap,
-                          FieldLabel(label: 'И-мэйл', child: TextField(controller: _email, keyboardType: TextInputType.emailAddress, autocorrect: false, onChanged: (_) => setState(() {}))),
+                          FieldLabel(label: tr('И-мэйл'), child: TextField(controller: _email, keyboardType: TextInputType.emailAddress, autocorrect: false, onChanged: (_) => setState(() {}))),
                           gap,
                           FieldLabel(
-                            label: 'Төлөв',
-                            hint: 'Идэвхгүй хэрэглэгч вэб дээр нэвтэрч чадахгүй',
+                            label: tr('Төлөв'),
+                            hint: tr('Идэвхгүй хэрэглэгч вэб дээр нэвтэрч чадахгүй'),
                             child: AdminSelect<String>(
-                              title: 'Төлөв',
+                              title: tr('Төлөв'),
                               value: _status,
-                              options: [const Option('active', 'Идэвхтэй'), const Option('inactive', 'Идэвхгүй'), if (c.status == 'blocked') const Option('blocked', 'Блоклогдсон')],
+                              options: [Option('active', tr('Идэвхтэй')), Option('inactive', tr('Идэвхгүй')), if (c.status == 'blocked') Option('blocked', tr('Блоклогдсон'))],
                               onChanged: (v) => setState(() => _status = v ?? _status),
                             ),
                           ),
@@ -262,9 +263,9 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                       gap,
                       FormError(_error),
                       const SizedBox(height: 12),
-                      PrimaryButton(label: _busy ? 'Хадгалж байна…' : 'Хадгалах', busy: _busy, onTap: _dirty ? _submit : null),
+                      PrimaryButton(label: _busy ? tr('Хадгалж байна…') : tr('Хадгалах'), busy: _busy, onTap: _dirty ? _submit : null),
                       const SizedBox(height: 10),
-                      SoftButton(label: _removing ? 'Устгаж байна…' : 'Устгах', background: AppPalette.destructiveSoft, color: AppPalette.destructive, onTap: _removing ? null : _remove),
+                      SoftButton(label: _removing ? tr('Устгаж байна…') : tr('Устгах'), background: AppPalette.destructiveSoft, color: AppPalette.destructive, onTap: _removing ? null : _remove),
                     ]),
     );
   }

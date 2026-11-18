@@ -3,6 +3,7 @@
 library;
 
 import 'dart:convert';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 int? _int(Object? v) => v == null ? null : (v is int ? v : (v is num ? v.toInt() : int.tryParse('$v')));
 String? _str(Object? v) => v == null ? null : '$v';
@@ -172,7 +173,7 @@ class Customer extends Rec {
 
   String get displayName {
     final n = [lastname, firstname].whereType<String>().join(' ');
-    return n.isNotEmpty ? n : (phonenumber ?? email ?? 'Нэргүй');
+    return n.isNotEmpty ? n : (phonenumber ?? email ?? tr('Нэргүй'));
   }
 }
 
@@ -244,9 +245,9 @@ class Roles {
   static const customer = 'CUSTOMER';
   static const list = [admin, dealer];
   static String label(String? role) => switch (role) {
-        admin => 'Админ',
-        dealer => 'Дилер',
-        customer => 'Хэрэглэгч',
+        admin => tr('Админ'),
+        dealer => tr('Дилер'),
+        customer => tr('Хэрэглэгч'),
         _ => role ?? '',
       };
 }

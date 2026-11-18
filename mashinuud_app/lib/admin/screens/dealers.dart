@@ -8,6 +8,7 @@ import 'package:mashinuud_app/admin/ui.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 /// Dealer registry: showrooms that ads and admin / dealer users belong to.
 class DealersScreen extends StatefulWidget {
@@ -27,16 +28,16 @@ class _DealersScreenState extends State<DealersScreen> {
 
   @override
   Widget build(BuildContext context) => AdminPage(
-        title: 'Дилерүүд',
+        title: tr('Дилерүүд'),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
-            child: ActionChip2(label: 'Бүртгэх', icon: Icons.add_rounded, background: AppPalette.primary, foreground: Colors.white, onTap: () => _open(const DealerFormScreen())),
+            child: ActionChip2(label: tr('Бүртгэх'), icon: Icons.add_rounded, background: AppPalette.primary, foreground: Colors.white, onTap: () => _open(const DealerFormScreen())),
           ),
         ],
         body: Column(children: [
           FilterBar(children: [
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: SearchBox(hint: 'Дилерийн нэр эсвэл утас', onSearch: (v) => setState(() => _q = v))),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: SearchBox(hint: tr('Дилерийн нэр эсвэл утас'), onSearch: (v) => setState(() => _q = v))),
           ]),
           Expanded(
             child: Loader<ListPage<Dealer>>(
@@ -44,7 +45,7 @@ class _DealersScreenState extends State<DealersScreen> {
               fetch: () => AdminApi.dealersList(_q),
               loading: const Padding(padding: EdgeInsets.all(16), child: RowsSkeleton(count: 6)),
               builder: (context, page, _) {
-                if (page.rows.isEmpty) return EmptyView(title: _q.isNotEmpty ? 'Дилер олдсонгүй' : 'Бүртгэлтэй дилер алга', icon: Icons.storefront_outlined);
+                if (page.rows.isEmpty) return EmptyView(title: _q.isNotEmpty ? tr('Дилер олдсонгүй') : tr('Бүртгэлтэй дилер алга'), icon: Icons.storefront_outlined);
                 return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
                   RowList(children: [
                     for (final d in page.rows)
@@ -61,7 +62,7 @@ class _DealersScreenState extends State<DealersScreen> {
                                 Text([d.phonenumber, d.address].whereType<String>().join(' · '), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
                               ]),
                             ),
-                            if (d.status != 'active') const Padding(padding: EdgeInsets.only(right: 8), child: Text('Идэвхгүй', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppPalette.destructive))),
+                            if (d.status != 'active') Padding(padding: EdgeInsets.only(right: 8), child: Text(tr('Идэвхгүй'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppPalette.destructive))),
                             // Nothing to show for a dealer without ads.
                             Opacity(
                               opacity: d.carCount == 0 ? 0.4 : 1,
@@ -74,7 +75,7 @@ class _DealersScreenState extends State<DealersScreen> {
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                     child: Row(children: [
-                                      const Text('Зарууд', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                                      Text(tr('Зарууд'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                                       if (d.carCount != null) ...[
                                         const SizedBox(width: 4),
                                         Container(
@@ -212,10 +213,10 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
   Future<void> _saveList(String field, List<String> values) async {
     final next = {..._items, field: values};
     if (_dealer != null) {
-      if (_name.text.trim().isEmpty) throw 'Дилерийн нэр оруулна уу';
+      if (_name.text.trim().isEmpty) throw tr('Дилерийн нэр оруулна уу');
       await AdminApi.updateRow('dealers', _dealer!.id, _body(next));
       if (!mounted) return;
-      toast(context, 'Хадгаллаа');
+      toast(context, tr('Хадгаллаа'));
     }
     setState(() {
       _items = next;
@@ -244,7 +245,7 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
 
   Future<void> _submit() async {
     if (_busy || !_dirty) return;
-    if (_name.text.trim().isEmpty) return setState(() => _error = 'Дилерийн нэр оруулна уу');
+    if (_name.text.trim().isEmpty) return setState(() => _error = tr('Дилерийн нэр оруулна уу'));
     for (final c in _lists) {
       final problem = c.check(_items[c.field]!);
       if (problem != null) return setState(() => _error = problem);
@@ -260,7 +261,7 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
         await AdminApi.createRow('dealers', _body(_items));
       }
       if (!mounted) return;
-      toast(context, 'Хадгаллаа');
+      toast(context, tr('Хадгаллаа'));
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -274,14 +275,14 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
 
   Future<void> _remove() async {
     final d = _dealer!;
-    if (!await confirmSheet(context, title: 'Дилерийг устгах уу?', message: '${d.name} — вэб дээр харагдахаа болино. Зарууд нь устгагдахгүй.', confirmLabel: 'Устгах', tone: Tone.danger, icon: Icons.delete_outline_rounded)) {
+    if (!await confirmSheet(context, title: tr('Дилерийг устгах уу?'), message: tr('{name} — вэб дээр харагдахаа болино. Зарууд нь устгагдахгүй.', {'name': d.name}), confirmLabel: tr('Устгах'), tone: Tone.danger, icon: Icons.delete_outline_rounded)) {
       return;
     }
     setState(() => _removing = true);
     try {
       await AdminApi.deleteRows('dealers', [d.id]);
       if (!mounted) return;
-      toast(context, 'Устгалаа');
+      toast(context, tr('Устгалаа'));
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) toast(context, errorText(e), error: true);
@@ -296,35 +297,35 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
     final formShown = !_loading && _loadError == null && !gone;
     const gap = SizedBox(height: 14);
     return AdminPage(
-      title: _isNew ? 'Шинэ дилер' : (_dealer?.name ?? 'Дилер'),
-      actions: [if (formShown) BarButton(icon: Icons.save_outlined, tooltip: _isNew ? 'Бүртгэх' : 'Хадгалах', busy: _busy, onTap: _dirty ? _submit : null)],
+      title: _isNew ? tr('Шинэ дилер') : (_dealer?.name ?? tr('Дилер')),
+      actions: [if (formShown) BarButton(icon: Icons.save_outlined, tooltip: _isNew ? tr('Бүртгэх') : tr('Хадгалах'), busy: _busy, onTap: _dirty ? _submit : null)],
       body: _loading
           ? const PageSkeleton()
           : _loadError != null
               ? ErrorView(message: errorText(_loadError!), onRetry: _load)
               : gone
-                  ? const EmptyView(title: 'Дилер олдсонгүй', icon: Icons.storefront_outlined)
+                  ? EmptyView(title: tr('Дилер олдсонгүй'), icon: Icons.storefront_outlined)
                   : ListView(padding: const EdgeInsets.all(16), children: [
                       Section(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                          FieldLabel(label: 'Нэр *', child: TextField(controller: _name, decoration: const InputDecoration(hintText: 'Дилерийн нэр'), onChanged: (_) => setState(() {}))),
+                          FieldLabel(label: tr('Нэр *'), child: TextField(controller: _name, decoration: InputDecoration(hintText: tr('Дилерийн нэр')), onChanged: (_) => setState(() {}))),
                           gap,
                           FieldLabel(
-                            label: 'Лого',
-                            child: ImageUploadField(value: _logo, folder: 'dealers', label: 'Лого оруулах', hint: 'Дөрвөлжин, тунгалаг дэвсгэртэй зураг хамгийн сайн харагдана', onChanged: (v) => setState(() => _logo = v)),
+                            label: tr('Лого'),
+                            child: ImageUploadField(value: _logo, folder: 'dealers', label: tr('Лого оруулах'), hint: tr('Дөрвөлжин, тунгалаг дэвсгэртэй зураг хамгийн сайн харагдана'), onChanged: (v) => setState(() => _logo = v)),
                           ),
                           gap,
                           FieldLabel(
-                            label: 'Төлөв',
+                            label: tr('Төлөв'),
                             child: AdminSelect<String>(
-                              title: 'Төлөв',
+                              title: tr('Төлөв'),
                               value: _status,
-                              options: const [Option('active', 'Идэвхтэй'), Option('inactive', 'Идэвхгүй')],
+                              options: [Option('active', tr('Идэвхтэй')), Option('inactive', tr('Идэвхгүй'))],
                               onChanged: (v) => setState(() => _status = v ?? _status),
                             ),
                           ),
                           gap,
-                          FieldLabel(label: 'Тайлбар', child: TextField(controller: _description, minLines: 4, maxLines: 8, maxLength: 2000, decoration: const InputDecoration(counterText: ''), onChanged: (_) => setState(() {}))),
+                          FieldLabel(label: tr('Тайлбар'), child: TextField(controller: _description, minLines: 4, maxLines: 8, maxLength: 2000, decoration: const InputDecoration(counterText: ''), onChanged: (_) => setState(() {}))),
                         ]),
                       ),
                       for (final c in _lists) ...[gap, _listSection(c)],
@@ -333,9 +334,9 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
                       if (_dealer != null) ...[
                         gap,
                         Row(children: [
-                          Expanded(child: SoftButton(label: 'Зарууд', background: AppPalette.card, onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DealerCarsScreen(dealer: _dealer!))))),
+                          Expanded(child: SoftButton(label: tr('Зарууд'), background: AppPalette.card, onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DealerCarsScreen(dealer: _dealer!))))),
                           const SizedBox(width: 8),
-                          Expanded(child: SoftButton(label: _removing ? 'Устгаж байна…' : 'Устгах', background: AppPalette.destructiveSoft, color: AppPalette.destructive, onTap: _removing ? null : _remove)),
+                          Expanded(child: SoftButton(label: _removing ? tr('Устгаж байна…') : tr('Устгах'), background: AppPalette.destructiveSoft, color: AppPalette.destructive, onTap: _removing ? null : _remove)),
                         ]),
                       ],
                     ]),
@@ -356,7 +357,7 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
           ),
           const SizedBox(width: 8),
           ActionChip2(
-            label: items.isEmpty ? 'Нэмэх' : 'Засах',
+            label: items.isEmpty ? tr('Нэмэх') : tr('Засах'),
             icon: items.isEmpty ? Icons.add_rounded : Icons.edit_outlined,
             background: AppPalette.primarySoft,
             foreground: AppPalette.primary,
@@ -377,12 +378,12 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
                 Expanded(
                   child: Text(items[i], style: TextStyle(fontWeight: several && i == 0 ? FontWeight.w700 : FontWeight.w500, color: several && i == 0 ? AppPalette.primary : AppPalette.foreground.withValues(alpha: 0.8))),
                 ),
-                if (several && i == 0) const Badge2('Үндсэн', background: AppPalette.primary, foreground: Colors.white),
+                if (several && i == 0) Badge2(tr('Үндсэн'), background: AppPalette.primary, foreground: Colors.white),
                 if (several && i > 0)
                   InkWell(
                     onTap: () => _makeMain(c.field, i),
                     borderRadius: BorderRadius.circular(8),
-                    child: const Tooltip(message: 'Үндсэн болгох', child: Padding(padding: EdgeInsets.all(4), child: Icon(Icons.star_border_rounded, size: 20, color: AppPalette.mutedForeground))),
+                    child: Tooltip(message: tr('Үндсэн болгох'), child: Padding(padding: EdgeInsets.all(4), child: Icon(Icons.star_border_rounded, size: 20, color: AppPalette.mutedForeground))),
                   ),
               ]),
             ),
@@ -465,7 +466,7 @@ class _ListSheetState extends State<_ListSheet> {
         padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Text(cfg.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-          Text('${cfg.hint}. Сумаар эрэмбэлнэ', style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+          Text(tr('{hint}. Сумаар эрэмбэлнэ', {'hint': cfg.hint}), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
           const SizedBox(height: 14),
           Flexible(
             child: ListView(shrinkWrap: true, children: [
@@ -505,9 +506,9 @@ class _ListSheetState extends State<_ListSheet> {
           FormError(_error),
           const SizedBox(height: 8),
           Row(children: [
-            Expanded(child: SoftButton(label: 'Болих', onTap: _busy ? null : () => Navigator.pop(context))),
+            Expanded(child: SoftButton(label: tr('Болих'), onTap: _busy ? null : () => Navigator.pop(context))),
             const SizedBox(width: 8),
-            Expanded(child: PrimaryButton(label: 'Хадгалах', busy: _busy, onTap: _dirty ? _save : null)),
+            Expanded(child: PrimaryButton(label: tr('Хадгалах'), busy: _busy, onTap: _dirty ? _save : null)),
           ]),
         ]),
       ),
@@ -623,13 +624,13 @@ class _AddressPickerState extends State<_AddressPicker> {
     List<Option<int>> opts(List<Location> l) => [for (final a in l) Option(a.id, a.name)];
     const gap = SizedBox(height: 8);
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      AdminSelect<int>(title: 'Аймаг / Нийслэл', placeholder: 'Аймаг / Нийслэл', value: _aimagId, options: opts(_aimags), onChanged: _pickAimag),
+      AdminSelect<int>(title: tr('Аймаг / Нийслэл'), placeholder: tr('Аймаг / Нийслэл'), value: _aimagId, options: opts(_aimags), onChanged: _pickAimag),
       gap,
-      AdminSelect<int>(title: 'Сум / Дүүрэг', placeholder: 'Сум / Дүүрэг', value: _soumId, enabled: _aimagId != null, options: opts(_soums), onChanged: _pickSoum),
+      AdminSelect<int>(title: tr('Сум / Дүүрэг'), placeholder: tr('Сум / Дүүрэг'), value: _soumId, enabled: _aimagId != null, options: opts(_soums), onChanged: _pickSoum),
       gap,
       AdminSelect<int>(
-        title: 'Баг / Хороо',
-        placeholder: 'Баг / Хороо',
+        title: tr('Баг / Хороо'),
+        placeholder: tr('Баг / Хороо'),
         value: _bagId,
         enabled: _soumId != null && _bags.isNotEmpty,
         options: opts(_bags),
@@ -644,14 +645,14 @@ class _AddressPickerState extends State<_AddressPicker> {
         minLines: 2,
         maxLines: 4,
         maxLength: 200,
-        decoration: const InputDecoration(hintText: 'Дэлгэрэнгүй хаяг (байр, орц, тоот…)', counterText: ''),
+        decoration: InputDecoration(hintText: tr('Дэлгэрэнгүй хаяг (байр, орц, тоот…)'), counterText: ''),
         onChanged: (_) {
           setState(() {});
           _emit();
         },
       ),
       // Until it's complete the row saves as empty, i.e. is dropped.
-      if (partial) const Padding(padding: EdgeInsets.only(top: 4, left: 4), child: Text('Аймаг/нийслэл, сум/дүүргээ заавал сонгоно уу', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground))),
+      if (partial) Padding(padding: EdgeInsets.only(top: 4, left: 4), child: Text(tr('Аймаг/нийслэл, сум/дүүргээ заавал сонгоно уу'), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground))),
     ]);
   }
 }

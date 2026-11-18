@@ -6,6 +6,7 @@ import 'package:mashinuud_app/admin/ui.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 const _pinLength = 4;
 
@@ -207,7 +208,7 @@ class _LockScreenState extends State<LockScreen> {
     if (appLock.unlock(pin)) return;
     if (!mounted) return;
     setState(() {
-      _error = 'PIN буруу байна. ${appLock.attemptsLeft} оролдлого үлдлээ';
+      _error = tr('PIN буруу байна. {attemptsLeft} оролдлого үлдлээ', {'attemptsLeft': appLock.attemptsLeft});
       _shake++;
     });
     HapticFeedback.heavyImpact();
@@ -216,10 +217,10 @@ class _LockScreenState extends State<LockScreen> {
   Future<void> _forgot() async {
     if (!await confirmSheet(
       context,
-      title: 'PIN мартсан уу?',
+      title: tr('PIN мартсан уу?'),
       message:
-          'Гараад нууц үгээрээ дахин нэвтэрнэ. Дараа нь профайлаас шинэ PIN тохируулна.',
-      confirmLabel: 'Гарах',
+          tr('Гараад нууц үгээрээ дахин нэвтэрнэ. Дараа нь профайлаас шинэ PIN тохируулна.'),
+      confirmLabel: tr('Гарах'),
       icon: Icons.lock_reset_rounded,
     )) {
       return;
@@ -253,7 +254,7 @@ class _LockScreenState extends State<LockScreen> {
                   ),
                   const SizedBox(height: 18),
                   PinPad(
-                    title: 'PIN кодоо оруулна уу',
+                    title: tr('PIN кодоо оруулна уу'),
                     error: _error,
                     shake: _shake,
                     onComplete: _submit,
@@ -264,8 +265,8 @@ class _LockScreenState extends State<LockScreen> {
                     children: [
                       TextButton(
                         onPressed: _forgot,
-                        child: const Text(
-                          'PIN мартсан',
+                        child: Text(
+                          tr('PIN мартсан'),
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
@@ -275,8 +276,8 @@ class _LockScreenState extends State<LockScreen> {
                         style: TextButton.styleFrom(
                           foregroundColor: AppPalette.mutedForeground,
                         ),
-                        child: const Text(
-                          'Хэрэглэгч рүү буцах',
+                        child: Text(
+                          tr('Хэрэглэгч рүү буцах'),
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
@@ -327,7 +328,7 @@ class _SetPinScreenState extends State<_SetPinScreen> {
   void _done(String pin) {
     switch (_step) {
       case 'current':
-        if (!appLock.check(pin)) return _fail('PIN буруу байна');
+        if (!appLock.check(pin)) return _fail(tr('PIN буруу байна'));
         setState(() {
           _step = 'new';
           _error = null;
@@ -336,7 +337,7 @@ class _SetPinScreenState extends State<_SetPinScreen> {
         if (RegExp(r'^(\d)\1{3}$').hasMatch(pin) ||
             '0123456789'.contains(pin) ||
             '9876543210'.contains(pin)) {
-          return _fail('Хялбар PIN байна. Өөр PIN сонгоно уу');
+          return _fail(tr('Хялбар PIN байна. Өөр PIN сонгоно уу'));
         }
         setState(() {
           _first = pin;
@@ -346,7 +347,7 @@ class _SetPinScreenState extends State<_SetPinScreen> {
       default:
         if (pin != _first) {
           setState(() => _step = 'new');
-          return _fail('PIN таарахгүй байна. Дахин оруулна уу');
+          return _fail(tr('PIN таарахгүй байна. Дахин оруулна уу'));
         }
         appLock.setPin(pin);
         Navigator.of(context).pop(true);
@@ -356,17 +357,17 @@ class _SetPinScreenState extends State<_SetPinScreen> {
   @override
   Widget build(BuildContext context) {
     final title = switch (_step) {
-      'current' => 'Одоогийн PIN',
-      'new' => 'Шинэ PIN',
-      _ => 'PIN давтах',
+      'current' => tr('Одоогийн PIN'),
+      'new' => tr('Шинэ PIN'),
+      _ => tr('PIN давтах'),
     };
     final subtitle = switch (_step) {
-      'current' => 'Одоогийн PIN кодоо оруулна уу',
-      'new' => '4 оронтой PIN код сонгоно уу',
-      _ => 'Баталгаажуулахын тулд дахин оруулна уу',
+      'current' => tr('Одоогийн PIN кодоо оруулна уу'),
+      'new' => tr('4 оронтой PIN код сонгоно уу'),
+      _ => tr('Баталгаажуулахын тулд дахин оруулна уу'),
     };
     return Scaffold(
-      appBar: AppBar(title: const Text('Апп түгжих PIN')),
+      appBar: AppBar(title: Text(tr('Апп түгжих PIN'))),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

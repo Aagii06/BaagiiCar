@@ -11,6 +11,7 @@ import 'package:mashinuud_app/api/client.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 const _maxPhotos = 12;
 
@@ -73,14 +74,14 @@ class _CarEditScreenState extends State<CarEditScreen> {
   }
 
   Future<void> _publish() async {
-    if (!await confirmSheet(context, title: 'Зарыг нийтлэх үү?', message: 'Нийтэлсэн зар вэб дээр харагдах боломжтой болно.', confirmLabel: 'Нийтлэх', tone: Tone.success, icon: Icons.visibility_outlined)) {
+    if (!await confirmSheet(context, title: tr('Зарыг нийтлэх үү?'), message: tr('Нийтэлсэн зар вэб дээр харагдах боломжтой болно.'), confirmLabel: tr('Нийтлэх'), tone: Tone.success, icon: Icons.visibility_outlined)) {
       return;
     }
     setState(() => _publishing = true);
     try {
       await AdminApi.setHidden(_car!.id, false);
       if (!mounted) return;
-      toast(context, 'Нийтэллээ, вэб дээр харагдана');
+      toast(context, tr('Нийтэллээ, вэб дээр харагдана'));
       _load();
     } catch (e) {
       if (mounted) toast(context, errorText(e), error: true);
@@ -95,10 +96,10 @@ class _CarEditScreenState extends State<CarEditScreen> {
     final picking = _isNew && admin && (_picked == null || _repicking);
     final dealer = admin ? _picked : _ownDealer;
     final title = picking
-        ? 'Шинэ зар · дилер сонгох'
+        ? tr('Шинэ зар · дилер сонгох')
         : _isNew
-            ? (dealer != null ? 'Шинэ зар · ${dealer.name}' : 'Шинэ зар')
-            : (_car?.name ?? 'Зар');
+            ? (dealer != null ? tr('Шинэ зар · {name}', {'name': dealer.name}) : tr('Шинэ зар'))
+            : (_car?.name ?? tr('Зар'));
     final car = _car;
 
     Widget body;
@@ -107,9 +108,9 @@ class _CarEditScreenState extends State<CarEditScreen> {
     } else if (_error != null) {
       body = ErrorView(message: errorText(_error!), onRetry: _load);
     } else if (_isNew && !admin && _ownDealer == null) {
-      body = const EmptyView(title: 'Таны бүртгэл дилерт харьяалагдаагүй байна', description: 'Зар нэмэхийн тулд админд хандаж дилерт харьяалуулна уу.', icon: Icons.storefront_outlined);
+      body = EmptyView(title: tr('Таны бүртгэл дилерт харьяалагдаагүй байна'), description: tr('Зар нэмэхийн тулд админд хандаж дилерт харьяалуулна уу.'), icon: Icons.storefront_outlined);
     } else if (!_isNew && (car == null || car.status == 'deleted')) {
-      body = const EmptyView(title: 'Зар олдсонгүй эсвэл устгагдсан');
+      body = EmptyView(title: tr('Зар олдсонгүй эсвэл устгагдсан'));
     } else {
       body = Stack(children: [
         // Stays mounted while the admin re-picks the dealer, so nothing typed is lost.
@@ -122,24 +123,24 @@ class _CarEditScreenState extends State<CarEditScreen> {
                   car: car,
                   photos: _photos,
                   dealer: dealer,
-                  leadingSteps: _isNew && admin ? const ['Дилер'] : const [],
+                  leadingSteps: _isNew && admin ? [tr('Дилер')] : const [],
                   onBackToLead: () => setState(() => _repicking = true),
                   onBusy: (b) => setState(() => _saving = b),
                   onDirty: (d) => _dirty != d ? setState(() => _dirty = d) : null,
                   onSaved: () {
                     final resubmitted = !_isNew && !admin && _resubmit.contains(car?.status);
-                    toast(context, resubmitted ? 'Хадгаллаа. Админ батлах хүртэл хүлээгдэнэ' : 'Хадгаллаа');
+                    toast(context, resubmitted ? tr('Хадгаллаа. Админ батлах хүртэл хүлээгдэнэ') : tr('Хадгаллаа'));
                     Navigator.of(context).pop(true);
                   },
                   banners: [
                     if (!admin && (car?.status == 'active' || car?.status == 'hidden'))
-                      _Banner(icon: Icons.schedule_rounded, text: 'Засварыг хадгалахад зар админ дахин батлах хүртэл вэб дээр харагдахгүй.'),
+                      _Banner(icon: Icons.schedule_rounded, text: tr('Засварыг хадгалахад зар админ дахин батлах хүртэл вэб дээр харагдахгүй.')),
                     if (car?.status == 'hidden')
                       _Banner(
                         icon: Icons.visibility_off_outlined,
-                        text: 'Энэ зар нуугдсан тул вэб дээр харагдахгүй байна.',
+                        text: tr('Энэ зар нуугдсан тул вэб дээр харагдахгүй байна.'),
                         action: ActionChip2(
-                          label: _publishing ? 'Нийтэлж байна…' : 'Нийтлэх',
+                          label: _publishing ? tr('Нийтэлж байна…') : tr('Нийтлэх'),
                           icon: Icons.visibility_outlined,
                           background: AppPalette.success,
                           foreground: Colors.white,
@@ -164,7 +165,7 @@ class _CarEditScreenState extends State<CarEditScreen> {
       actions: [
         if (!_isNew && car != null)
           IconButton(
-            tooltip: 'Зарыг харах',
+            tooltip: tr('Зарыг харах'),
             icon: const Icon(Icons.visibility_outlined),
             onPressed: () async {
               final changed = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => CarViewScreen(carId: car.id)));
@@ -172,7 +173,7 @@ class _CarEditScreenState extends State<CarEditScreen> {
             },
           ),
         if (!_isNew && car != null && car.status != 'deleted')
-          BarButton(icon: Icons.save_outlined, tooltip: 'Хадгалах', busy: _saving, onTap: _dirty ? () => _form.currentState?.submit() : null),
+          BarButton(icon: Icons.save_outlined, tooltip: tr('Хадгалах'), busy: _saving, onTap: _dirty ? () => _form.currentState?.submit() : null),
       ],
       body: KeyedSubtree(key: ValueKey(_formKey), child: body),
     );
@@ -233,23 +234,23 @@ class _DealerPickerState extends State<DealerPicker> {
                 ),
               );
           return ListView(padding: const EdgeInsets.all(16), children: [
-            const Stepper2(steps: ['Дилер', 'Мэдээлэл', 'Зураг', 'Нийтлэх'], current: 0),
+            Stepper2(steps: [tr('Дилер'), tr('Мэдээлэл'), tr('Зураг'), tr('Нийтлэх')], current: 0),
             const SizedBox(height: 18),
             if (mine != null) ...[
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(color: AppPalette.card, borderRadius: BorderRadius.circular(AppRadius.lg), border: Border.all(color: AppPalette.primary, width: 2)),
-                child: row(mine, sub: 'Миний дилер'),
+                child: row(mine, sub: tr('Миний дилер')),
               ),
               const SizedBox(height: 14),
             ],
             Section(
-              title: 'Дилер сонгох',
+              title: tr('Дилер сонгох'),
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                TextField(decoration: const InputDecoration(hintText: 'Дилерийн нэр эсвэл утас'), onChanged: (v) => setState(() => _q = v.trim())),
+                TextField(decoration: InputDecoration(hintText: tr('Дилерийн нэр эсвэл утас')), onChanged: (v) => setState(() => _q = v.trim())),
                 const SizedBox(height: 6),
                 if (rows.isEmpty)
-                  Padding(padding: const EdgeInsets.all(20), child: Text(dealers.isEmpty ? 'Идэвхтэй дилер алга' : 'Дилер олдсонгүй', textAlign: TextAlign.center, style: const TextStyle(color: AppPalette.mutedForeground)))
+                  Padding(padding: const EdgeInsets.all(20), child: Text(dealers.isEmpty ? tr('Идэвхтэй дилер алга') : tr('Дилер олдсонгүй'), textAlign: TextAlign.center, style: const TextStyle(color: AppPalette.mutedForeground)))
                 else
                   for (var i = 0; i < rows.length; i++) ...[if (i > 0) const Divider(height: 1), row(rows[i])],
               ]),
@@ -415,17 +416,17 @@ class _CarFormState extends State<CarForm> {
   /// New ad: location shows / saves as Улаанбаатар until another one is picked.
   String get _locationId {
     if (f['location_id']!.isNotEmpty || !_wizard) return f['location_id']!;
-    final ub = _locations.where((l) => _norm(l.name) == _norm('Улаанбаатар')).firstOrNull;
+    final ub = _locations.where((l) => _norm(l.name) == _norm(tr('Улаанбаатар'))).firstOrNull;
     return ub == null ? '' : '${ub.id}';
   }
 
   String? _detailsError() {
-    if (f['brand_id']!.isEmpty) return 'Үйлдвэр сонгоно уу';
-    if (f['manufactured_year']!.isEmpty) return 'Үйлдвэрлэсэн он оруулна уу';
-    if (f['imported_year']!.isEmpty) return 'Орж ирсэн он оруулна уу';
-    if (int.parse(f['imported_year']!) < int.parse(f['manufactured_year']!)) return 'Орж ирсэн он үйлдвэрлэсэн оноос өмнө байж болохгүй';
-    if (f['price']!.isEmpty) return 'Үнэ оруулна уу';
-    if (f['transmission']!.isEmpty) return 'Хурдны хайрцаг сонгоно уу';
+    if (f['brand_id']!.isEmpty) return tr('Үйлдвэр сонгоно уу');
+    if (f['manufactured_year']!.isEmpty) return tr('Үйлдвэрлэсэн он оруулна уу');
+    if (f['imported_year']!.isEmpty) return tr('Орж ирсэн он оруулна уу');
+    if (int.parse(f['imported_year']!) < int.parse(f['manufactured_year']!)) return tr('Орж ирсэн он үйлдвэрлэсэн оноос өмнө байж болохгүй');
+    if (f['price']!.isEmpty) return tr('Үнэ оруулна уу');
+    if (f['transmission']!.isEmpty) return tr('Хурдны хайрцаг сонгоно уу');
     return null;
   }
 
@@ -451,7 +452,7 @@ class _CarFormState extends State<CarForm> {
       final problem = _step == 0 ? _detailsError() : null;
       return problem != null ? _showError(problem) : _goTo(_step + 1);
     }
-    if (f['dealer_id']!.isEmpty && _admin) return _showError('Дилер сонгоно уу');
+    if (f['dealer_id']!.isEmpty && _admin) return _showError(tr('Дилер сонгоно уу'));
     final problem = _detailsError();
     if (problem != null) {
       if (_wizard) setState(() => _step = 0);
@@ -473,7 +474,7 @@ class _CarFormState extends State<CarForm> {
         builder: (ctx) => Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            const Text('Зарыг хэрхэн нийтлэх вэ?', textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            Text(tr('Зарыг хэрхэн нийтлэх вэ?'), textAlign: TextAlign.center, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
             for (final featured in [false, true]) ...[
               Material(
@@ -494,8 +495,8 @@ class _CarFormState extends State<CarForm> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(featured ? 'Онцлох зар' : 'Энгийн зар', style: const TextStyle(fontWeight: FontWeight.w700)),
-                          Text(featured ? 'Нүүр хуудсанд болон хайлтын эхэнд гарна' : 'Зарын жагсаалтад ердийнхөөрөө гарна',
+                          Text(featured ? tr('Онцлох зар') : tr('Энгийн зар'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                          Text(featured ? tr('Нүүр хуудсанд болон хайлтын эхэнд гарна') : tr('Зарын жагсаалтад ердийнхөөрөө гарна'),
                               style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
                         ]),
                       ),
@@ -505,7 +506,7 @@ class _CarFormState extends State<CarForm> {
               ),
               const SizedBox(height: 8),
             ],
-            SoftButton(label: 'Болих', onTap: () => Navigator.pop(ctx)),
+            SoftButton(label: tr('Болих'), onTap: () => Navigator.pop(ctx)),
           ]),
         ),
       );
@@ -568,7 +569,7 @@ class _CarFormState extends State<CarForm> {
     for (final x in files.take(room)) {
       final bytes = await x.readAsBytes();
       if (bytes.length > 50 * 1024 * 1024) {
-        if (mounted) toast(context, '«${x.name}» зураг 50MB-аас их байна', error: true);
+        if (mounted) toast(context, tr('«{name}» зураг 50MB-аас их байна', {'name': x.name}), error: true);
         continue;
       }
       added.add(PhotoItem.file(x.name, bytes));
@@ -623,8 +624,8 @@ class _CarFormState extends State<CarForm> {
       });
     }
     final name = [info['brand'], info['model'], info['manufactured_year']].where((v) => v != null && '$v'.isNotEmpty).join(' ');
-    if (brand == null) return '$name олдлоо. "${info['brand'] ?? '—'}" үйлдвэр каталогид алга, гараар сонгоно уу';
-    return '$name — бүртгэлийн мэдээлэл бөглөгдөж түгжигдлээ. Хурдны хайрцгийг сонгоно уу';
+    if (brand == null) return tr('{name} олдлоо. "{brand}" үйлдвэр каталогид алга, гараар сонгоно уу', {'name': name, 'brand': info['brand'] ?? '—'});
+    return tr('{name} — бүртгэлийн мэдээлэл бөглөгдөж түгжигдлээ. Хурдны хайрцгийг сонгоно уу', {'name': name});
   }
 
   List<Option<String>> _opts(List<String> list, String current) => [
@@ -637,7 +638,7 @@ class _CarFormState extends State<CarForm> {
         child: AdminSelect<String>(
           title: label.replaceAll(' *', ''),
           value: f[k]!.isEmpty ? null : f[k],
-          options: [const Option<String>(null, 'Сонгох'), ...options],
+          options: [Option<String>(null, tr('Сонгох')), ...options],
           enabled: enabled && !_isLocked(k),
           onChanged: (v) => _set(k, v ?? ''),
         ),
@@ -686,7 +687,7 @@ class _CarFormState extends State<CarForm> {
   Widget build(BuildContext context) {
     bool show(int n) => !_wizard || _step == n;
     final adDealer = _dealers.where((d) => '${d.id}' == f['dealer_id']).firstOrNull ?? (widget.dealer != null && '${widget.dealer!.id}' == f['dealer_id'] ? widget.dealer : null);
-    final steps = [...widget.leadingSteps, ..._formSteps, _admin ? 'Нийтлэх' : 'Илгээх'];
+    final steps = [...widget.leadingSteps, ..._formSteps, _admin ? tr('Нийтлэх') : tr('Илгээх')];
     final gap = const SizedBox(height: 14);
 
     return ListView(controller: _scroll, padding: const EdgeInsets.fromLTRB(16, 16, 16, 40), children: [
@@ -713,8 +714,8 @@ class _CarFormState extends State<CarForm> {
               const SizedBox(width: 12),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Бүртгэлээс татсан${_savedAutobox.plate != null ? ' · ${_savedAutobox.plate}' : ''}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                  const Text('Бүртгэлийн мэдээллийг засах боломжгүй', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+                  Text(tr('Бүртгэлээс татсан{plate}', {'plate': _savedAutobox.plate != null ? ' · ${_savedAutobox.plate}' : ''}), style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(tr('Бүртгэлийн мэдээллийг засах боломжгүй'), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
                 ]),
               ),
             ]),
@@ -727,14 +728,14 @@ class _CarFormState extends State<CarForm> {
       if (show(1)) ...[_photosSection(), gap],
       if (show(0)) ...[
         Section(
-          title: 'Үндсэн мэдээлэл',
+          title: tr('Үндсэн мэдээлэл'),
           child: Column(children: [
             FieldLabel(
-              label: 'Үйлдвэр *',
+              label: tr('Үйлдвэр *'),
               child: AdminSelect<String>(
-                title: 'Үйлдвэр',
+                title: tr('Үйлдвэр'),
                 value: f['brand_id']!.isEmpty ? null : f['brand_id'],
-                options: [const Option<String>(null, 'Сонгох'), for (final b in _brands) Option('${b.id}', b.name)],
+                options: [Option<String>(null, tr('Сонгох')), for (final b in _brands) Option('${b.id}', b.name)],
                 enabled: !_isLocked('brand_id'),
                 searchable: true,
                 onChanged: (v) {
@@ -749,66 +750,66 @@ class _CarFormState extends State<CarForm> {
               ),
             ),
             gap,
-            _select('car_model_id', 'Загвар', [for (final m in _models) Option('${m.id}', m.name)], enabled: f['brand_id']!.isNotEmpty),
+            _select('car_model_id', tr('Загвар'), [for (final m in _models) Option('${m.id}', m.name)], enabled: f['brand_id']!.isNotEmpty),
             gap,
             Row(children: [
-              Expanded(child: _select('manufactured_year', 'Үйлдвэрлэсэн он *', _years(f['manufactured_year']!))),
+              Expanded(child: _select('manufactured_year', tr('Үйлдвэрлэсэн он *'), _years(f['manufactured_year']!))),
               const SizedBox(width: 10),
-              Expanded(child: _select('imported_year', 'Орж ирсэн он *', _years(f['imported_year']!))),
+              Expanded(child: _select('imported_year', tr('Орж ирсэн он *'), _years(f['imported_year']!))),
             ]),
             gap,
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Expanded(
                 child: FieldLabel(
-                  label: 'Байршил',
+                  label: tr('Байршил'),
                   child: AdminSelect<String>(
-                    title: 'Байршил',
+                    title: tr('Байршил'),
                     value: _locationId.isEmpty ? null : _locationId,
-                    options: [const Option<String>(null, 'Сонгох'), for (final l in _locations) Option('${l.id}', l.name)],
+                    options: [Option<String>(null, tr('Сонгох')), for (final l in _locations) Option('${l.id}', l.name)],
                     onChanged: (v) => _set('location_id', v ?? ''),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
-              Expanded(child: _digits('mileage', 'Гүйлт (км)', placeholder: 'Гүйлт')),
+              Expanded(child: _digits('mileage', tr('Гүйлт (км)'), placeholder: tr('Гүйлт'))),
             ]),
             gap,
-            _select('plate_type', 'Улсын дугаар', _opts(CarConst.plateTypes, f['plate_type']!)),
+            _select('plate_type', tr('Улсын дугаар'), _opts(CarConst.plateTypes, f['plate_type']!)),
             gap,
-            _digits('price', 'Үнэ (₮) *', placeholder: 'Үнэ', hint: f['price']!.isEmpty ? null : priceHint(f['price']!)),
+            _digits('price', tr('Үнэ (₮) *'), placeholder: tr('Үнэ'), hint: f['price']!.isEmpty ? null : priceHint(f['price']!)),
           ]),
         ),
         gap,
         Section(
-          title: 'Техникийн үзүүлэлт',
+          title: tr('Техникийн үзүүлэлт'),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            _chips('fuel_type', 'Түлш', CarConst.fuelTypes),
+            _chips('fuel_type', tr('Түлш'), CarConst.fuelTypes),
             const SizedBox(height: 18),
-            _chips('transmission', 'Хурдны хайрцаг *', CarConst.transmissions),
+            _chips('transmission', tr('Хурдны хайрцаг *'), CarConst.transmissions),
             const SizedBox(height: 18),
-            _chips('drive_type', 'Хөтлөгч', CarConst.driveTypes),
+            _chips('drive_type', tr('Хөтлөгч'), CarConst.driveTypes),
             const SizedBox(height: 18),
-            _chips('steering', 'Хүрд', CarConst.steerings),
+            _chips('steering', tr('Хүрд'), CarConst.steerings),
             const SizedBox(height: 18),
-            Row(children: [Expanded(child: _digits('engine_capacity', 'Хөдөлгүүр (л)', placeholder: 'Багтаамж', decimal: true)), const Expanded(child: SizedBox())]),
+            Row(children: [Expanded(child: _digits('engine_capacity', tr('Хөдөлгүүр (л)'), placeholder: tr('Багтаамж'), decimal: true)), const Expanded(child: SizedBox())]),
           ]),
         ),
         gap,
         Section(
-          title: 'Бусад мэдээлэл',
+          title: tr('Бусад мэдээлэл'),
           child: Column(children: [
-            _select('body_type_id', 'Төрөл', [for (final b in _bodyTypes) Option('${b.id}', b.name)]),
+            _select('body_type_id', tr('Төрөл'), [for (final b in _bodyTypes) Option('${b.id}', b.name)]),
             gap,
-            _select('vehicle_type', 'Зориулалт', _opts(CarConst.vehicleTypes, f['vehicle_type']!), hint: 'Бүртгэлээс бөглөгдөнө'),
+            _select('vehicle_type', tr('Зориулалт'), _opts(CarConst.vehicleTypes, f['vehicle_type']!), hint: tr('Бүртгэлээс бөглөгдөнө')),
             gap,
             Row(children: [
-              Expanded(child: _select('color', 'Гадна өнгө', _opts(CarConst.exteriorColors, f['color']!))),
+              Expanded(child: _select('color', tr('Гадна өнгө'), _opts(CarConst.exteriorColors, f['color']!))),
               const SizedBox(width: 10),
-              Expanded(child: _select('interior_color', 'Дотор өнгө', _opts(CarConst.interiorColors, f['interior_color']!))),
+              Expanded(child: _select('interior_color', tr('Дотор өнгө'), _opts(CarConst.interiorColors, f['interior_color']!))),
             ]),
             gap,
             SwitchRow(
-              label: 'Лизинг боломжтой эсэх',
+              label: tr('Лизинг боломжтой эсэх'),
               value: _leasing,
               onChanged: (v) {
                 setState(() => _leasing = v);
@@ -821,16 +822,16 @@ class _CarFormState extends State<CarForm> {
       ],
       if (show(_lastStep)) ...[
         Section(
-          title: 'Тайлбар, холбоо барих',
+          title: tr('Тайлбар, холбоо барих'),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             FieldLabel(
-              label: 'Тайлбар',
+              label: tr('Тайлбар'),
               child: TextFormField(
                 initialValue: f['description'],
                 minLines: 5,
                 maxLines: 12,
                 maxLength: 5000,
-                decoration: const InputDecoration(hintText: 'Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…', counterText: ''),
+                decoration: InputDecoration(hintText: tr('Машины байдал, засвар үйлчилгээ, нэмэлт тоноглол…'), counterText: ''),
                 onChanged: (v) => _set('description', v),
               ),
             ),
@@ -842,11 +843,11 @@ class _CarFormState extends State<CarForm> {
       ],
       if (_admin && !_wizard) ...[
         Section(
-          title: 'Админ',
+          title: tr('Админ'),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             SwitchRow(
-              label: 'Онцлох зар',
-              hint: 'Нүүр хуудсанд болон хайлтын эхэнд гарна',
+              label: tr('Онцлох зар'),
+              hint: tr('Нүүр хуудсанд болон хайлтын эхэнд гарна'),
               value: _featured,
               onChanged: (v) {
                 setState(() => _featured = v);
@@ -854,7 +855,7 @@ class _CarFormState extends State<CarForm> {
               },
             ),
             gap,
-            _select('status', 'Төлөв', [
+            _select('status', tr('Төлөв'), [
               for (final s in ['pending', 'rejected', 'active', 'sold', 'hidden']) Option(s, carStatus(s).label),
             ]),
           ]),
@@ -868,26 +869,26 @@ class _CarFormState extends State<CarForm> {
           if (_step > 0 || (widget.leadingSteps.isNotEmpty && widget.onBackToLead != null)) ...[
             SizedBox(
               width: 110,
-              child: SoftButton(label: 'Буцах', icon: Icons.chevron_left_rounded, background: AppPalette.card, onTap: () => _step > 0 ? _goTo(_step - 1) : widget.onBackToLead?.call()),
+              child: SoftButton(label: tr('Буцах'), icon: Icons.chevron_left_rounded, background: AppPalette.card, onTap: () => _step > 0 ? _goTo(_step - 1) : widget.onBackToLead?.call()),
             ),
             const SizedBox(width: 8),
           ],
           Expanded(
             child: PrimaryButton(
               label: _busy
-                  ? 'Хадгалж байна…'
+                  ? tr('Хадгалж байна…')
                   : _step < _lastStep
-                      ? 'Дараах'
+                      ? tr('Дараах')
                       : _admin
-                          ? 'Зар нийтлэх'
-                          : 'Батлуулахаар илгээх',
+                          ? tr('Зар нийтлэх')
+                          : tr('Батлуулахаар илгээх'),
               busy: _busy,
               onTap: submit,
             ),
           ),
         ])
       else
-        PrimaryButton(label: _busy ? 'Хадгалж байна…' : 'Хадгалах', busy: _busy, onTap: dirty ? submit : null),
+        PrimaryButton(label: _busy ? tr('Хадгалж байна…') : tr('Хадгалах'), busy: _busy, onTap: dirty ? submit : null),
     ]);
   }
 
@@ -898,7 +899,7 @@ class _CarFormState extends State<CarForm> {
     final current = car?.dealerId != null && f['dealer_id'] == '${car!.dealerId}' && dealer == null;
     final name = dealer?.name ?? (current ? car.dealerName : null);
     return Section(
-      title: 'Дилер',
+      title: tr('Дилер'),
       child: Row(children: [
         if (dealer != null || current) DealerLogo(dealer?.logo ?? car!.dealerLogo, size: 48) else const _IconBox(Icons.storefront_outlined),
         const SizedBox(width: 12),
@@ -906,12 +907,12 @@ class _CarFormState extends State<CarForm> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             if (editable)
               AdminSelect<String>(
-                title: 'Дилер',
+                title: tr('Дилер'),
                 value: f['dealer_id']!.isEmpty ? null : f['dealer_id'],
                 searchable: true,
-                placeholder: '-- Сонгох --',
+                placeholder: tr('-- Сонгох --'),
                 options: [
-                  if (current) Option(f['dealer_id'], '${car.dealerName ?? '#${car.dealerId}'} (одоогийн)'),
+                  if (current) Option(f['dealer_id'], tr('{dealerId} (одоогийн)', {'dealerId': car.dealerName ?? '#${car.dealerId}'})),
                   for (final d in _dealers) Option('${d.id}', d.phonenumber != null ? '${d.name} · ${d.phonenumber}' : d.name),
                 ],
                 onChanged: (v) {
@@ -927,8 +928,8 @@ class _CarFormState extends State<CarForm> {
               Text(name ?? '—', style: const TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
             Text(
-              '${editable ? 'Зар энэ дилерийн хуудсанд харагдана' : car?.sellerRole == Roles.dealer ? 'Дилер өөрөө оруулсан тул солих боломжгүй' : 'Таны дилерийн нэр дээр нийтлэгдэнэ'}'
-              '${car != null ? ' · Оруулсан: ${car.sellerName ?? car.sellerPhone ?? '—'}' : ''}',
+              (editable ? tr('Зар энэ дилерийн хуудсанд харагдана') : car?.sellerRole == Roles.dealer ? tr('Дилер өөрөө оруулсан тул солих боломжгүй') : tr('Таны дилерийн нэр дээр нийтлэгдэнэ')) +
+                  (car != null ? ' · ${tr('Оруулсан')}: ${car.sellerName ?? car.sellerPhone ?? '—'}' : ''),
               style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground),
             ),
           ]),
@@ -938,7 +939,7 @@ class _CarFormState extends State<CarForm> {
   }
 
   Widget _photosSection() => Section(
-        title: 'Зураг',
+        title: tr('Зураг'),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           GridView.count(
             crossAxisCount: 3,
@@ -962,7 +963,7 @@ class _CarFormState extends State<CarForm> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(color: AppPalette.dark, borderRadius: BorderRadius.circular(6)),
-                          child: const Text('Нүүр', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                          child: Text(tr('Нүүр'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
                         ),
                       ),
                     Positioned(
@@ -989,17 +990,17 @@ class _CarFormState extends State<CarForm> {
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   child: Container(
                     decoration: BoxDecoration(border: Border.all(color: AppPalette.input, width: 2), borderRadius: BorderRadius.circular(AppRadius.md)),
-                    child: const Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.add_photo_alternate_outlined, color: AppPalette.mutedForeground),
                       SizedBox(height: 4),
-                      Text('Зураг нэмэх', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground)),
+                      Text(tr('Зураг нэмэх'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground)),
                     ]),
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 10),
-          const Text('JPG, PNG, WEBP · $_maxPhotos хүртэл зураг. Эхний зураг нүүр зураг болно.', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+          Text(tr('JPG, PNG, WEBP · {_maxPhotos} хүртэл зураг. Эхний зураг нүүр зураг болно.', {'_maxPhotos': _maxPhotos}), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
         ]),
       );
 
@@ -1031,15 +1032,15 @@ class RejectNote extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Row(children: [
+          Row(children: [
             Icon(Icons.undo_rounded, size: 16, color: AppPalette.destructive),
             SizedBox(width: 6),
-            Text('Буцаасан шалтгаан', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppPalette.destructive)),
+            Text(tr('Буцаасан шалтгаан'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppPalette.destructive)),
           ]),
           const SizedBox(height: 4),
           Text(reason, style: const TextStyle(fontSize: 14)),
           const SizedBox(height: 6),
-          const Text('Эзэн нь засаад хадгалахад дахин батлуулахаар илгээгдэнэ.', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+          Text(tr('Эзэн нь засаад хадгалахад дахин батлуулахаар илгээгдэнэ.'), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
         ]),
       );
 }
@@ -1088,11 +1089,11 @@ class _PlateLookupState extends State<_PlateLookup> {
 
   @override
   Widget build(BuildContext context) {
-    final error = _type == 'plate' ? 'Улсын дугаарын формат буруу байна (жш: 1234 УБА)' : 'Арлын дугаарын формат буруу байна';
+    final error = _type == 'plate' ? tr('Улсын дугаарын формат буруу байна (жш: 1234 УБА)') : tr('Арлын дугаарын формат буруу байна');
     return Section(
-      title: 'Машины мэдээлэл хайх',
+      title: tr('Машины мэдээлэл хайх'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        const Text('Бүртгэлээс үйлдвэр, загвар, он, хөдөлгүүр, гүйлт зэргийг автоматаар бөглөнө', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+        Text(tr('Бүртгэлээс үйлдвэр, загвар, он, хөдөлгүүр, гүйлт зэргийг автоматаар бөглөнө'), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
         const SizedBox(height: 10),
         Container(
           height: 50,
@@ -1101,7 +1102,7 @@ class _PlateLookupState extends State<_PlateLookup> {
           child: Row(children: [
             InkWell(
               onTap: () async {
-                final picked = await pickOption<String>(context, title: 'Хайх төрөл', options: const [Option('plate', 'Улсын дугаар'), Option('vin', 'Арлын дугаар')], selected: _type);
+                final picked = await pickOption<String>(context, title: tr('Хайх төрөл'), options: [Option('plate', tr('Улсын дугаар')), Option('vin', tr('Арлын дугаар'))], selected: _type);
                 if (picked?.value != null) {
                   setState(() {
                     _type = picked!.value!;
@@ -1114,7 +1115,7 @@ class _PlateLookupState extends State<_PlateLookup> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 alignment: Alignment.center,
                 child: Row(children: [
-                  Text(_type == 'plate' ? 'Улсын' : 'Арлын', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppPalette.primary)),
+                  Text(_type == 'plate' ? tr('Улсын') : tr('Арлын'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppPalette.primary)),
                   const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppPalette.primary),
                 ]),
               ),
@@ -1126,7 +1127,7 @@ class _PlateLookupState extends State<_PlateLookup> {
                 maxLength: 20,
                 style: const TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
                 decoration: InputDecoration(
-                  hintText: _type == 'plate' ? 'Улсын дугаар' : 'Арлын дугаар',
+                  hintText: _type == 'plate' ? tr('Улсын дугаар') : tr('Арлын дугаар'),
                   counterText: '',
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
@@ -1178,11 +1179,11 @@ class _PhonePicker extends StatelessWidget {
     final extra = current != null && phones.isNotEmpty && !phones.contains(current) ? current : null;
     final options = [...phones, ?extra];
     if (options.isEmpty) {
-      return FieldLabel(label: 'Холбогдох утас', hint: 'Худалдан авагч энэ дугаар руу залгана', child: PhoneField(initial: value, onChanged: onChanged));
+      return FieldLabel(label: tr('Холбогдох утас'), hint: tr('Худалдан авагч энэ дугаар руу залгана'), child: PhoneField(initial: value, onChanged: onChanged));
     }
     return FieldLabel(
-      label: 'Холбогдох утас',
-      hint: 'Дилерийн бүртгэлтэй дугааруудаас сонгоно. Худалдан авагч энэ дугаар руу залгана',
+      label: tr('Холбогдох утас'),
+      hint: tr('Дилерийн бүртгэлтэй дугааруудаас сонгоно. Худалдан авагч энэ дугаар руу залгана'),
       child: Container(
         decoration: BoxDecoration(border: Border.all(color: AppPalette.input), borderRadius: BorderRadius.circular(AppRadius.md)),
         clipBehavior: Clip.antiAlias,
@@ -1197,7 +1198,7 @@ class _PhonePicker extends StatelessWidget {
                   Icon(value == options[i] ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded, color: value == options[i] ? AppPalette.primary : AppPalette.input),
                   const SizedBox(width: 10),
                   Expanded(child: Text(options[i], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
-                  if (options[i] == extra) const Text('одоогийн', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+                  if (options[i] == extra) Text(tr('одоогийн'), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
                 ]),
               ),
             ),

@@ -6,6 +6,7 @@ import 'package:mashinuud_app/admin/ui.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/admin/i18n.dart';
 
 /// Admin & Dealer accounts; the last tab lists blocked ones.
 class UsersScreen extends StatefulWidget {
@@ -32,14 +33,14 @@ class _UsersScreenState extends State<UsersScreen> {
       actions: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
-          child: ActionChip2(label: 'Нэмэх', icon: Icons.add_rounded, background: AppPalette.primary, foreground: Colors.white, onTap: () => _open(null)),
+          child: ActionChip2(label: tr('Нэмэх'), icon: Icons.add_rounded, background: AppPalette.primary, foreground: Colors.white, onTap: () => _open(null)),
         ),
       ],
       body: Column(children: [
         FilterBar(children: [
-          Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: SearchBox(hint: 'Нэр эсвэл утас', onSearch: (v) => setState(() => _q = v))),
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: SearchBox(hint: tr('Нэр эсвэл утас'), onSearch: (v) => setState(() => _q = v))),
           ChipTabs<String>(
-            items: [const ChipTab('', 'Бүгд'), for (final r in Roles.list) ChipTab(r, Roles.label(r)), const ChipTab('blocked', 'Блоклогдсон')],
+            items: [ChipTab('', tr('Бүгд')), for (final r in Roles.list) ChipTab(r, Roles.label(r)), ChipTab('blocked', tr('Блоклогдсон'))],
             isOn: (v) => v == _role,
             onTap: (v) => setState(() => _role = v),
           ),
@@ -50,7 +51,7 @@ class _UsersScreenState extends State<UsersScreen> {
             fetch: () => AdminApi.users(search: _q, excludeId: AdminApi.session.user?.id, role: blocked || _role.isEmpty ? null : _role, status: blocked ? 'blocked' : null),
             loading: const Padding(padding: EdgeInsets.all(16), child: RowsSkeleton(count: 6)),
             builder: (context, page, _) {
-              if (page.rows.isEmpty) return const EmptyView(title: 'Хэрэглэгч олдсонгүй', icon: Icons.person_outline_rounded);
+              if (page.rows.isEmpty) return EmptyView(title: tr('Хэрэглэгч олдсонгүй'), icon: Icons.person_outline_rounded);
               return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
                 RowList(children: [
                   for (final u in page.rows)
@@ -72,7 +73,7 @@ class _UsersScreenState extends State<UsersScreen> {
                             if (u.status != 'active')
                               Padding(
                                 padding: const EdgeInsets.only(top: 4),
-                                child: Text(u.status == 'blocked' ? 'Блоклогдсон' : 'Идэвхгүй', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppPalette.destructive)),
+                                child: Text(u.status == 'blocked' ? tr('Блоклогдсон') : tr('Идэвхгүй'), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppPalette.destructive)),
                               ),
                           ]),
                         ]),
@@ -166,9 +167,9 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
   Future<void> _submit() async {
     if (_busy || !_dirty) return;
-    if (_password.text != _confirm.text) return setState(() => _error = 'Нууц үгийн давталт таарахгүй байна');
-    if (_isNew && _password.text.length < 6) return setState(() => _error = 'Нууц үг хамгийн багадаа 6 тэмдэгт байна');
-    if (_role == Roles.dealer && _dealerId == null) return setState(() => _error = 'Дилер эрхтэй хэрэглэгчид дилер сонгоно уу');
+    if (_password.text != _confirm.text) return setState(() => _error = tr('Нууц үгийн давталт таарахгүй байна'));
+    if (_isNew && _password.text.length < 6) return setState(() => _error = tr('Нууц үг хамгийн багадаа 6 тэмдэгт байна'));
+    if (_role == Roles.dealer && _dealerId == null) return setState(() => _error = tr('Дилер эрхтэй хэрэглэгчид дилер сонгоно уу'));
     setState(() {
       _busy = true;
       _error = null;
@@ -192,7 +193,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
         await AdminApi.createUser({...profile, 'password': _password.text, 'password_confirm': _confirm.text});
       }
       if (!mounted) return;
-      toast(context, 'Хадгаллаа');
+      toast(context, tr('Хадгаллаа'));
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -206,14 +207,14 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
   Future<void> _remove() async {
     final u = _user!;
-    if (!await confirmSheet(context, title: 'Хэрэглэгчийг устгах уу?', message: '${u.fullName} — түүний идэвхтэй зарууд мөн устгагдана.', confirmLabel: 'Устгах', tone: Tone.danger, icon: Icons.delete_outline_rounded)) {
+    if (!await confirmSheet(context, title: tr('Хэрэглэгчийг устгах уу?'), message: tr('{fullName} — түүний идэвхтэй зарууд мөн устгагдана.', {'fullName': u.fullName}), confirmLabel: tr('Устгах'), tone: Tone.danger, icon: Icons.delete_outline_rounded)) {
       return;
     }
     setState(() => _removing = true);
     try {
       await AdminApi.deleteRows('users', [u.id]);
       if (!mounted) return;
-      toast(context, 'Устгалаа');
+      toast(context, tr('Устгалаа'));
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) toast(context, errorText(e), error: true);
@@ -233,33 +234,33 @@ class _UserFormScreenState extends State<UserFormScreen> {
     String? phoneHint;
     if (u != null && u.role != Roles.admin && u.phoneVerifiedAt == null) {
       phoneHint = u.status == 'blocked'
-          ? 'Утсаа баталгаажуулаагүй · Төлөвийг идэвхтэй болговол дахин 7 хоног өгнө'
-          : 'Утсаа баталгаажуулаагүй${u.phoneVerifyDeadline != null ? ' · ${u.phoneVerifyDeadline!.substring(0, 16)}-д бүртгэл блоклогдоно' : ''}';
+          ? tr('Утсаа баталгаажуулаагүй · Төлөвийг идэвхтэй болговол дахин 7 хоног өгнө')
+          : tr('Утсаа баталгаажуулаагүй') + (u.phoneVerifyDeadline != null ? ' · ${tr('{date}-д бүртгэл блоклогдоно', {'date': u.phoneVerifyDeadline!.substring(0, 16)})}' : '');
     }
     final dealerKnown = _dealerId == null || _dealers.any((d) => d.id == _dealerId);
 
     return AdminPage(
-      title: _isNew ? 'Шинэ админ, дилер' : (u?.fullName ?? 'Admin & Dealer'),
-      actions: [if (!_loading && _loadError == null && !gone) BarButton(icon: Icons.save_outlined, tooltip: 'Хадгалах', busy: _busy, onTap: _dirty ? _submit : null)],
+      title: _isNew ? tr('Шинэ админ, дилер') : (u?.fullName ?? 'Admin & Dealer'),
+      actions: [if (!_loading && _loadError == null && !gone) BarButton(icon: Icons.save_outlined, tooltip: tr('Хадгалах'), busy: _busy, onTap: _dirty ? _submit : null)],
       body: _loading
           ? const PageSkeleton()
           : _loadError != null
               ? ErrorView(message: errorText(_loadError!), onRetry: _load)
               : gone
-                  ? const EmptyView(title: 'Хэрэглэгч олдсонгүй', icon: Icons.person_outline_rounded)
+                  ? EmptyView(title: tr('Хэрэглэгч олдсонгүй'), icon: Icons.person_outline_rounded)
                   : ListView(padding: const EdgeInsets.all(16), children: [
                       Section(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                          ImageUploadField(value: _profile, folder: 'users', label: 'Зураг оруулах', hint: 'Дөрвөлжин зураг хамгийн сайн харагдана', round: true, onChanged: (v) => setState(() => _profile = v)),
+                          ImageUploadField(value: _profile, folder: 'users', label: tr('Зураг оруулах'), hint: tr('Дөрвөлжин зураг хамгийн сайн харагдана'), round: true, onChanged: (v) => setState(() => _profile = v)),
                           gap,
                           Row(children: [
-                            Expanded(child: FieldLabel(label: 'Овог', child: TextField(controller: _last, onChanged: (_) => setState(() {})))),
+                            Expanded(child: FieldLabel(label: tr('Овог'), child: TextField(controller: _last, onChanged: (_) => setState(() {})))),
                             const SizedBox(width: 10),
-                            Expanded(child: FieldLabel(label: 'Нэр', child: TextField(controller: _first, onChanged: (_) => setState(() {})))),
+                            Expanded(child: FieldLabel(label: tr('Нэр'), child: TextField(controller: _first, onChanged: (_) => setState(() {})))),
                           ]),
                           gap,
                           FieldLabel(
-                            label: 'Утасны дугаар *',
+                            label: tr('Утасны дугаар *'),
                             hint: phoneHint,
                             child: PhoneField(
                               controller: _phone,
@@ -268,15 +269,15 @@ class _UserFormScreenState extends State<UserFormScreen> {
                             ),
                           ),
                           gap,
-                          FieldLabel(label: 'И-мэйл', child: TextField(controller: _email, keyboardType: TextInputType.emailAddress, autocorrect: false, onChanged: (_) => setState(() {}))),
+                          FieldLabel(label: tr('И-мэйл'), child: TextField(controller: _email, keyboardType: TextInputType.emailAddress, autocorrect: false, onChanged: (_) => setState(() {}))),
                           gap,
                           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Expanded(
                               child: FieldLabel(
-                                label: 'Эрх',
-                                hint: lockedOutOfAdmin ? 'Админ болгохдоо устгаад дахин админаар бүртгэнэ' : null,
+                                label: tr('Эрх'),
+                                hint: lockedOutOfAdmin ? tr('Админ болгохдоо устгаад дахин админаар бүртгэнэ') : null,
                                 child: AdminSelect<String>(
-                                  title: 'Эрх',
+                                  title: tr('Эрх'),
                                   value: _role,
                                   enabled: !isMe,
                                   options: [for (final r in Roles.list) if (!(lockedOutOfAdmin && r == Roles.admin)) Option(r, Roles.label(r))],
@@ -287,12 +288,12 @@ class _UserFormScreenState extends State<UserFormScreen> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: FieldLabel(
-                                label: 'Төлөв',
+                                label: tr('Төлөв'),
                                 child: AdminSelect<String>(
-                                  title: 'Төлөв',
+                                  title: tr('Төлөв'),
                                   value: _status,
                                   enabled: !isMe,
-                                  options: [const Option('active', 'Идэвхтэй'), const Option('inactive', 'Идэвхгүй'), if (u?.status == 'blocked') const Option('blocked', 'Блоклогдсон')],
+                                  options: [Option('active', tr('Идэвхтэй')), Option('inactive', tr('Идэвхгүй')), if (u?.status == 'blocked') Option('blocked', tr('Блоклогдсон'))],
                                   onChanged: (v) => setState(() => _status = v ?? _status),
                                 ),
                               ),
@@ -300,16 +301,16 @@ class _UserFormScreenState extends State<UserFormScreen> {
                           ]),
                           gap,
                           FieldLabel(
-                            label: _role == Roles.dealer ? 'Дилер *' : 'Дилер',
-                            hint: _role == Roles.dealer ? 'Энэ хэрэглэгчийн оруулсан зар уг дилерт харьяалагдана' : 'Админ аль дилерийнх болох',
+                            label: _role == Roles.dealer ? tr('Дилер *') : tr('Дилер'),
+                            hint: _role == Roles.dealer ? tr('Энэ хэрэглэгчийн оруулсан зар уг дилерт харьяалагдана') : tr('Админ аль дилерийнх болох'),
                             child: AdminSelect<int>(
-                              title: 'Дилер',
+                              title: tr('Дилер'),
                               value: _dealerId,
-                              placeholder: '-- Сонгох --',
+                              placeholder: tr('-- Сонгох --'),
                               searchable: true,
                               options: [
-                                const Option<int>(null, '-- Сонгох --'),
-                                if (!dealerKnown) Option(_dealerId, '#$_dealerId (идэвхгүй)'),
+                                Option<int>(null, tr('-- Сонгох --')),
+                                if (!dealerKnown) Option(_dealerId, tr('#{_dealerId} (идэвхгүй)', {'_dealerId': _dealerId})),
                                 for (final d in _dealers) Option(d.id, d.name),
                               ],
                               onChanged: (v) => setState(() => _dealerId = v),
@@ -319,23 +320,23 @@ class _UserFormScreenState extends State<UserFormScreen> {
                       ),
                       gap,
                       Section(
-                        title: u != null ? 'Нууц үг солих' : 'Нууц үг *',
+                        title: u != null ? tr('Нууц үг солих') : tr('Нууц үг *'),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                          FieldLabel(label: 'Нууц үг', hint: u != null ? 'Хоосон орхивол өөрчлөгдөхгүй' : null, child: PasswordField(controller: _password, onChanged: (_) => setState(() {}))),
+                          FieldLabel(label: tr('Нууц үг'), hint: u != null ? tr('Хоосон орхивол өөрчлөгдөхгүй') : null, child: PasswordField(controller: _password, onChanged: (_) => setState(() {}))),
                           gap,
-                          FieldLabel(label: 'Нууц үг давтах', child: PasswordField(controller: _confirm, onChanged: (_) => setState(() {}))),
+                          FieldLabel(label: tr('Нууц үг давтах'), child: PasswordField(controller: _confirm, onChanged: (_) => setState(() {}))),
                         ]),
                       ),
                       gap,
                       FormError(_error),
                       const SizedBox(height: 12),
-                      PrimaryButton(label: _busy ? 'Хадгалж байна…' : 'Хадгалах', busy: _busy, onTap: _dirty ? _submit : null),
+                      PrimaryButton(label: _busy ? tr('Хадгалж байна…') : tr('Хадгалах'), busy: _busy, onTap: _dirty ? _submit : null),
                       if (u != null) ...[
                         const SizedBox(height: 10),
                         Row(children: [
                           Expanded(
                             child: SoftButton(
-                              label: 'Зарууд',
+                              label: tr('Зарууд'),
                               background: AppPalette.card,
                               onTap: () {
                                 adminNav.openCars();
@@ -345,7 +346,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                           ),
                           if (!isMe) ...[
                             const SizedBox(width: 8),
-                            Expanded(child: SoftButton(label: _removing ? 'Устгаж байна…' : 'Устгах', background: AppPalette.destructiveSoft, color: AppPalette.destructive, onTap: _removing ? null : _remove)),
+                            Expanded(child: SoftButton(label: _removing ? tr('Устгаж байна…') : tr('Устгах'), background: AppPalette.destructiveSoft, color: AppPalette.destructive, onTap: _removing ? null : _remove)),
                           ],
                         ]),
                       ],
