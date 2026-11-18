@@ -7,6 +7,7 @@ import LoadMore from "@/components/common/LoadMore";
 import { CarRowsSkeleton, EmptyState, ErrorState } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listCars, listDealers, type CarStatusFilter } from "@/lib/api/admin";
+import { getPaymentInfo } from "@/lib/api/payments";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
@@ -34,6 +35,8 @@ function CarsInner() {
   const dealers = useApi(() => (isAdmin ? listDealers().then((r) => r.rows) : Promise.resolve([])), String(isAdmin));
   // Admins see every dealer's ads (Бүгд) unless one is picked in the URL.
   const dealerId = isAdmin ? Number(sp.get("dealer")) || undefined : undefined;
+  // A dealer may pay to renew before the free renewal: the price for that button.
+  const payment = useApi(() => (isAdmin ? Promise.resolve(null) : getPaymentInfo().catch(() => null)), String(isAdmin));
   const [take, setTake] = useState(PAGE_SIZE);
 
   const setParam = (patch: Record<string, string>) => {
@@ -99,7 +102,7 @@ function CarsInner() {
           <p className="mb-2 text-xs font-semibold text-muted-foreground">{tr("{n} зар", { n: cars.data.count })}</p>
           <div className="space-y-3">
             {cars.data.rows.map((car) => (
-              <CarRow key={car.id} car={car} onChanged={cars.reload} showDealer={isAdmin && !dealerId} />
+              <CarRow key={car.id} car={car} onChanged={cars.reload} showDealer={isAdmin && !dealerId} renewPrice={payment.data?.renew_price} />
             ))}
           </div>
           {cars.data.rows.length < cars.data.count &&

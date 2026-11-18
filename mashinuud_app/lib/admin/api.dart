@@ -329,7 +329,8 @@ class AdminApi {
   static Future<void> approveCar(int id) => _fetch('/api/cars/approve', method: 'POST', body: {'id': id});
   static Future<void> rejectCar(int id, String reason) => _fetch('/api/cars/reject', method: 'POST', body: {'id': id, 'reason': reason});
   static Future<void> setHidden(int id, bool hidden) => _fetch('/api/cars/set-hidden', method: 'POST', body: {'id': id, 'hidden': hidden});
-  static Future<void> renewCar(int id) => _fetch('/api/cars/renew', method: 'POST', body: {'id': id});
+  /// `paid`: a dealer renewing before the free renewal pays from their balance.
+  static Future<void> renewCar(int id, {bool paid = false}) => _fetch('/api/cars/renew', method: 'POST', body: {'id': id, 'paid': paid});
   static Future<void> restoreCar(int id) => _fetch('/api/cars/restore', method: 'POST', body: {'id': id});
   static Future<void> markSold(int id) => _fetch('/api/cars/mark-sold', method: 'POST', body: {'id': id});
   static Future<void> deleteCar(int id) => deleteRows('cars', [id]);
@@ -522,7 +523,26 @@ class PhotoItem {
   const PhotoItem.file(this.filename, this.bytes)
       : id = null,
         url = null;
-}
 
-/// Brand logos, body-type icons, profile photos and dealer logos: the DB keeps only the file name.
-String? catalogImage(String? name, String folder) => uploadUrl(name, folder: folder);
+  // --- dealer wallet / payment settings (backend api/payments) -----------------------
+  static Future<PaymentInfo> paymentInfo() async => PaymentInfo((await _fetch('/api/payments/info'))['data'] as Map<String, dynamic>);
+  static Future<Map<String, dynamic>> paymentSettings() async => (await _fetch('/api/payments/settings'))['data'] as Map<String, dynamic>;
+  static Future<Map<String, dynamic>> savePaymentSettings(Map<String, Object?> body) async =>
+      (await _fetch('/api/payments/settings', method: 'PUT', body: body))['data'] as Map<String, dynamic>;
+  static Future<ListPage<WalletTx>> transactions({int? dealerId, String? status, int limit = 50}) async {
+    final q = {if (dealerId != null) 'dealer_id': '$dealerId', if (status != null) 'status': status, 'limit': '$limit'};
+    return _page(await _fetch('/api/payments/transactions?${Uri(queryParameters: q).query}'), WalletTx.new);
+  }
+
+  static Future<List<DealerBalance>> dealerBalances() async =>
+      (((await _fetch('/api/payments/balances'))['data'] as List?) ?? []).cast<Map<String, dynamic>>().map(DealerBalance.new).toList();
+  static Future<QpayInvoice> createTopupInvoice(int amount) async =>
+      QpayInvoice((await _fetch('/api/payments/topup/qpay', method: 'POST', body: {'amount': amount}))['data'] as Map<String, dynamic>);
+  static Future<bool> checkTopupInvoice(int id) async =>
+      ((await _fetch('/api/payments/topup/qpay/check', method: 'POST', body: {'id': id}))['data']?['paid']) == true;
+  static Future<void> requestBankTopup(int amount, String note) => _fetch('/api/payments/topup/bank', method: 'POST', body: {'amount': amount, 'note': note});
+  static Future<void> approveTopup(int id) => _fetch('/api/payments/transactions/approve', method: 'POST', body: {'id': id});
+  static Future<void> rejectTopup(int id, String reason) => _fetch('/api/payments/transactions/reject', method: 'POST', body: {'id': id, 'reason': reason});
+  static Future<void> adjustBalance(int dealerId, int amount, String note) =>
+      _fetch('/api/payments/adjust', method: 'POST', body: {'dealer_id': dealerId, 'amount': amount, 'note': note});
+}

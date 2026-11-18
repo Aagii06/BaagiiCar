@@ -45,7 +45,6 @@ export interface Transaction {
   status: TxStatus;
   car_id: number | null;
   car_code: string | null;
-  car_name: string | null;
   note: string | null;
   reject_reason: string | null;
   created_by_name: string | null;
@@ -86,7 +85,7 @@ export async function savePaymentSettings(body: PaymentSettingsInput) {
 
 export async function listTransactions(query: { dealer_id?: number; status?: TxStatus; limit?: number; offset?: number } = {}) {
   const params = new URLSearchParams();
-  for (const [k, v] of Object.entries(query)) if (v !== undefined && v !== "") params.set(k, String(v));
+  for (const [k, v] of Object.entries(query)) if (v !== undefined) params.set(k, String(v));
   const qs = params.toString();
   return (await apiFetch<ApiItemResponse<{ rows: Transaction[]; count: number }>>(`/api/payments/transactions${qs ? `?${qs}` : ""}`)).data;
 }

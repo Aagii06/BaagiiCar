@@ -277,3 +277,51 @@ int daysUntil(String? value, int days) {
   final left = date.add(Duration(days: days)).difference(DateTime.now());
   return left.isNegative ? 0 : (left.inSeconds / 86400).ceil();
 }
+
+// --- payments (backend api/payments) ---------------------------------------------
+
+double _num(Object? v) => v is num ? v.toDouble() : double.tryParse('$v') ?? 0;
+
+/// Renew price, ways to pay, and the signed-in dealer's balance (null for admins).
+class PaymentInfo extends Rec {
+  const PaymentInfo(super.j);
+  double get renewPrice => _num(j['renew_price']);
+  int get renewDays => i('renew_days') ?? CarConst.renewDays;
+  bool get qpay => b('qpay');
+  int? get dealerId => i('dealer_id');
+  double? get balance => j['balance'] == null ? null : _num(j['balance']);
+  Map<String, dynamic>? get bank => j['bank'] as Map<String, dynamic>?;
+}
+
+/// One wallet transaction: money in (+) or out (-).
+class WalletTx extends Rec {
+  const WalletTx(super.j);
+  int get dealerId => i('dealer_id') ?? 0;
+  String? get dealerName => s('dealer_name');
+  String get type => s('type') ?? 'topup';
+  String get method => s('method') ?? '';
+  double get amount => _num(j['amount']);
+  String get status => s('status') ?? 'done';
+  String? get carCode => s('car_code');
+  String? get note => s('note');
+  String? get rejectReason => s('reject_reason');
+  String? get createdByName => s('created_by_name');
+  String? get createdAt => s('created_at');
+}
+
+/// A dealer's balance and bank top-ups waiting for the admin.
+class DealerBalance extends Rec {
+  const DealerBalance(super.j);
+  String get name => s('name') ?? '';
+  String? get logo => s('logo');
+  double get balance => _num(j['balance']);
+  int get pending => i('pending') ?? 0;
+}
+
+/// QPay invoice that tops up a dealer's balance.
+class QpayInvoice extends Rec {
+  const QpayInvoice(super.j);
+  double get amount => _num(j['amount']);
+  String? get qrImage => s('qr_image');
+  List<Map<String, dynamic>> get urls => ((j['urls'] as List?) ?? []).cast<Map<String, dynamic>>();
+}

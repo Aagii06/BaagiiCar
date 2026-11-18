@@ -139,7 +139,7 @@ module.exports.transactions = handle("dealerTransactions", async (req, res) => {
   const userIds = [...new Set(rows.map((r) => r.created_by).filter(Boolean))];
   const [dealerRows, carRows, userRows] = await Promise.all([
     dealers.findAll({ where: { id: dealerIds }, attributes: ["id", "name", "logo"], raw: true }),
-    carIds.length ? cars.findAll({ where: { id: carIds }, attributes: ["id", "code", "name"], raw: true }) : [],
+    carIds.length ? cars.findAll({ where: { id: carIds }, attributes: ["id", "code"], raw: true }) : [],
     userIds.length ? users.findAll({ where: { id: userIds }, attributes: ["id", "firstname", "lastname", "phonenumber"], raw: true }) : [],
   ]);
   const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]));
@@ -152,7 +152,6 @@ module.exports.transactions = handle("dealerTransactions", async (req, res) => {
       dealer_name: d[r.dealer_id]?.name ?? null,
       dealer_logo: d[r.dealer_id]?.logo ?? null,
       car_code: c[r.car_id]?.code ?? null,
-      car_name: c[r.car_id]?.name ?? null,
       created_by_name: u[r.created_by] ? [u[r.created_by].firstname, u[r.created_by].phonenumber].filter(Boolean).join(" · ") : null,
     })),
   });
