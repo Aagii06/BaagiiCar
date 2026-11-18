@@ -20,8 +20,9 @@ class AppLang extends ChangeNotifier {
 
   void load(SharedPreferences prefs) {
     _prefs = prefs;
-    final saved = prefs.getString(_key);
-    if (saved != null && codes.contains(saved)) _code = saved;
+    // Одоогоор зөвхөн монгол хэл: хадгалсан сонголтыг уншихгүй. Хэл солих товчийг буцааж нээхдээ сэргээнэ.
+    // final saved = prefs.getString(_key);
+    // if (saved != null && codes.contains(saved)) _code = saved;
   }
 
   void set(String code) {

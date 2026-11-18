@@ -1,7 +1,7 @@
 "use client";
 
 import { ADMIN_URL } from "@/lib/api/config";
-import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
+// Хэл солих товч (одоогоор унтраасан): import { LANGUAGE_SWITCHING } from "@/lib/i18n/config";
 import type { MessageKey } from "@/lib/i18n/messages";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import AccountMenu from "./AccountMenu";
 import DealersMenu from "./DealersMenu";
-import LanguageSwitcher from "./LanguageSwitcher";
+// Хэл солих товч (одоогоор унтраасан): import LanguageSwitcher from "./LanguageSwitcher";
 import LocationPicker from "./LocationPicker";
 import Logo from "./Logo";
 
@@ -121,7 +121,8 @@ export default function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          {LANGUAGE_SWITCHING && <LanguageSwitcher />}
+          {/* Хэл солих товч: одоогоор зөвхөн монгол хэл. Буцааж нээхдээ lib/i18n/config.ts LANGUAGE_SWITCHING-г true болгоод энийг сэргээнэ.
+          {LANGUAGE_SWITCHING && <LanguageSwitcher />} */}
           <Link href="/saved" aria-label={t("Хадгалсан")} className="grid size-11 place-items-center rounded-xl bg-muted hover:bg-border">
             <Heart className="size-[18px]" />
           </Link>

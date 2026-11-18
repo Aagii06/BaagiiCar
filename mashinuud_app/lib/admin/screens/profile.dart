@@ -112,8 +112,9 @@ class AdminProfileTab extends StatelessWidget {
             ],
             const SizedBox(height: 16),
             const _LockSettings(),
-            const SizedBox(height: 16),
-            const Panel(child: LanguagePicker()),
+            // Хэл солих товч (одоогоор зөвхөн монгол хэл):
+            // const SizedBox(height: 16),
+            // const Panel(child: LanguagePicker()),
             const SizedBox(height: 16),
             _action(tr('Хэрэглэгч рүү шилжих'), Icons.swap_horiz_rounded, AppPalette.foreground, () => Stores.mode.setAdmin(false)),
             const SizedBox(height: 8),

@@ -48,7 +48,7 @@ class _SignIn extends StatelessWidget {
           ),
           Expanded(
             child: TabBarView(children: [
-              ListView(padding: const EdgeInsets.all(16), children: const [Panel(child: PhoneCodeForm()), SizedBox(height: 12), Panel(child: LanguagePicker())]),
+              ListView(padding: const EdgeInsets.all(16), children: const [Panel(child: PhoneCodeForm()) /* Хэл солих товч (одоогоор зөвхөн монгол хэл): , SizedBox(height: 12), Panel(child: LanguagePicker()) */]),
               ListView(padding: const EdgeInsets.all(16), children: [
                 Panel(
                   child: adminSignedIn
@@ -152,8 +152,9 @@ class _AccountState extends State<_Account> {
           ]),
         ),
         const SizedBox(height: 12),
-        const Panel(child: LanguagePicker()),
-        const SizedBox(height: 12),
+        // Хэл солих товч (одоогоор зөвхөн монгол хэл):
+        // const Panel(child: LanguagePicker()),
+        // const SizedBox(height: 12),
         Material(
           color: AppPalette.card,
           borderRadius: BorderRadius.circular(AppRadius.xl),
