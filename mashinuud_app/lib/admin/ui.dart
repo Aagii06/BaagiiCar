@@ -348,7 +348,7 @@ class AdminSelect<T> extends StatelessWidget {
   final bool enabled;
   final bool searchable;
   final bool invalid;
-  AdminSelect({
+  const AdminSelect({
     super.key,
     this.title,
     required this.value,

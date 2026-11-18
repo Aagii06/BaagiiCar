@@ -43,7 +43,7 @@ class SpecsGrid extends StatelessWidget {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(label, style: const TextStyle(fontSize: 11, color: AppPalette.mutedForeground)),
                   const SizedBox(height: 2),
-                  Text(value == null || value.isEmpty ? '—' : value, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                  Text(value == null || value.isEmpty ? '—' : trValue(value), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                 ]),
               ),
           ]);

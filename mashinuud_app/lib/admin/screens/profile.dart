@@ -113,6 +113,8 @@ class AdminProfileTab extends StatelessWidget {
             const SizedBox(height: 16),
             const _LockSettings(),
             const SizedBox(height: 16),
+            const _LanguagePicker(),
+            const SizedBox(height: 16),
             _action(tr('Хэрэглэгч рүү шилжих'), Icons.swap_horiz_rounded, AppPalette.foreground, () => Stores.mode.setAdmin(false)),
             const SizedBox(height: 8),
             _action(tr('Гарах'), Icons.logout_rounded, AppPalette.destructive, () {
@@ -137,6 +139,27 @@ class AdminProfileTab extends StatelessWidget {
 }
 
 /// "Апп түгжих": a 4-digit PIN asked when entering the admin half and after the chosen time in the background.
+/// MN / EN / RU for the admin side; the screens remount in the chosen language (shell.dart).
+class _LanguagePicker extends StatelessWidget {
+  const _LanguagePicker();
+  @override
+  Widget build(BuildContext context) => Section(
+        title: 'Хэл',
+        child: Row(children: [
+          for (final code in AdminLang.codes) ...[
+            if (code != AdminLang.codes.first) const SizedBox(width: 8),
+            Expanded(
+              child: ChoiceChip(
+                label: SizedBox(width: double.infinity, child: Text(AdminLang.labels[code]!, textAlign: TextAlign.center)),
+                selected: adminLang.code == code,
+                onSelected: (_) => adminLang.set(code),
+              ),
+            ),
+          ],
+        ]),
+      );
+}
+
 class _LockSettings extends StatelessWidget {
   const _LockSettings();
 
