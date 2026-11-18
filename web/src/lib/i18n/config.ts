@@ -3,8 +3,8 @@ export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = "mn";
 
-/** Off: everyone gets Mongolian and the header hides the language picker. */
-export const LANGUAGE_SWITCHING = false;
+/** On: the header shows the language picker; a visitor gets their saved choice, else their browser language (pickLocale). */
+export const LANGUAGE_SWITCHING = true;
 
 /** Cookie holding the visitor's chosen language; read by I18nProvider. */
 export const LOCALE_COOKIE = "lang";
