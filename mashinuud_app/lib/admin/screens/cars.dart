@@ -226,6 +226,22 @@ class _CarRowState extends State<CarRow> {
     }
   }
 
+  Future<void> _paidRenew(int renewIn) async {
+    double price;
+    try {
+      price = (await AdminApi.paymentInfo()).renewPrice;
+    } catch (e) {
+      if (mounted) toast(context, errorText(e), error: true);
+      return;
+    }
+    if (!mounted) return;
+    await _run(() => AdminApi.renewCar(car.id, paid: true), 'Шинэчиллээ, жагсаалтын эхэнд гарлаа',
+        title: 'Төлбөртэй шинэчлэх үү?',
+        message: 'Дансны үлдэгдлээс ${formatNumber(price)}₮ хасагдаж, зар жагсаалтын эхэнд гарна. Үнэгүй шинэчлэл $renewIn хоногийн дараа.',
+        confirmLabel: 'Төлөөд шинэчлэх',
+        icon: Icons.refresh_rounded);
+  }
+
   Future<void> _reject() async {
     final reason = await rejectReason(context, detail: _detail);
     if (reason == null) return;
@@ -278,6 +294,15 @@ class _CarRowState extends State<CarRow> {
               title: 'Зарагдсан гэж тэмдэглэх үү?', message: 'Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана.', confirmLabel: 'Тэмдэглэх', icon: Icons.verified_outlined),
         ),
       ],
+      // Before the free renewal a dealer can pay for one from their balance.
+      if (s == 'active' && !admin && renewIn > 0)
+        ActionChip2(
+          label: 'Төлбөртэй шинэчлэх',
+          icon: Icons.refresh_rounded,
+          background: AppPalette.primarySoft,
+          foreground: AppPalette.primary,
+          onTap: () => _paidRenew(renewIn),
+        ),
       // The admin can renew any time; a dealer once every CarConst.renewDays days.
       if (s == 'active' && (admin || renewIn == 0))
         ActionChip2(

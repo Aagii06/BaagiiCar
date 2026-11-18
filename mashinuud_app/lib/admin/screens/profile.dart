@@ -10,6 +10,7 @@ import 'package:mashinuud_app/admin/screens/customers.dart';
 import 'package:mashinuud_app/admin/screens/dealers.dart';
 import 'package:mashinuud_app/admin/screens/feedbacks.dart';
 import 'package:mashinuud_app/admin/screens/users.dart';
+import 'package:mashinuud_app/admin/screens/wallet.dart';
 import 'package:mashinuud_app/admin/ui.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/state/stores.dart';
@@ -36,13 +37,20 @@ class AdminProfileTab extends StatelessWidget {
                   child: Tooltip(message: tip, child: SizedBox(width: 40, height: 40, child: Icon(icon, size: 18, color: AppPalette.primary))),
                 ),
               );
-          final menu = [
+          final adminMenu = [
             (Icons.library_books_outlined, 'Каталог', 'Үйлдвэр, загвар, төрөл, байршил', const Color(0xFFFEF3C7), const Color(0xFFD97706), const CatalogScreen() as Widget),
             (Icons.storefront_outlined, 'Дилерүүд', 'Авто худалдааны төвүүдийг бүртгэх, засах', const Color(0xFFE0F2FE), const Color(0xFF0284C7), const DealersScreen()),
             (Icons.admin_panel_settings_outlined, 'Admin & Dealer', 'Админ, дилерийн хэрэглэгчид', const Color(0xFFEDE9FE), const Color(0xFF7C3AED), const UsersScreen()),
             (Icons.people_outline_rounded, 'Хэрэглэгч', 'Вэбээр бүртгүүлсэн хэрэглэгчид', const Color(0xFFD1FAE5), const Color(0xFF059669), const CustomersScreen()),
             (Icons.forum_outlined, 'Санал хүсэлт', 'Вэбийн “Бидэнд бичих” маягтаар ирсэн захидал', const Color(0xFFFFE4E6), const Color(0xFFE11D48), const FeedbacksScreen()),
+            (Icons.account_balance_wallet_outlined, 'Дилерийн данс', 'Үлдэгдэл, цэнэглэлтийн хүсэлт батлах', const Color(0xFFCCFBF1), const Color(0xFF0D9488), const WalletScreen()),
+            (Icons.credit_card_outlined, 'Төлбөрийн тохиргоо', 'Шинэчлэх үнэ, банкны данс, QPay', const Color(0xFFE0E7FF), const Color(0xFF4F46E5), const PaymentSettingsScreen()),
           ];
+          // A dealer's own sections.
+          final dealerMenu = [
+            (Icons.account_balance_wallet_outlined, 'Миний данс', 'Үлдэгдэл, данс цэнэглэх, гүйлгээний түүх', const Color(0xFFCCFBF1), const Color(0xFF0D9488), const WalletScreen() as Widget),
+          ];
+          final menu = user.isAdmin ? adminMenu : dealerMenu;
           return ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 100), children: [
             Container(
               padding: const EdgeInsets.all(16),
@@ -65,7 +73,7 @@ class AdminProfileTab extends StatelessWidget {
                 iconBtn(Icons.key_outlined, 'Нууц үг солих', const ChangePasswordScreen()),
               ]),
             ),
-            if (user.isAdmin) ...[
+            if (user.isAdmin || user.role == Roles.dealer) ...[
               const SizedBox(height: 16),
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppRadius.lg),

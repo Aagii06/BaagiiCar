@@ -509,20 +509,6 @@ class AdminApi {
   static Future<void> setMessageStatus(int id, String status) => updateRow('messages', id, {'status': status});
   static Future<void> replyMessage(int id, String reply) => _fetch('/api/messages/reply', method: 'POST', body: {'id': id, 'reply': reply});
   static Future<void> editMessageReply(int replyId, String reply) => _fetch('/api/messages/reply-edit', method: 'POST', body: {'reply_id': replyId, 'reply': reply});
-}
-
-/// A photo in the car editor: one already on the server (kept by [id]) or a new file.
-class PhotoItem {
-  final int? id;
-  final String? url;
-  final String? filename;
-  final Uint8List? bytes;
-  const PhotoItem.existing(this.id, this.url)
-      : filename = null,
-        bytes = null;
-  const PhotoItem.file(this.filename, this.bytes)
-      : id = null,
-        url = null;
 
   // --- dealer wallet / payment settings (backend api/payments) -----------------------
   static Future<PaymentInfo> paymentInfo() async => PaymentInfo((await _fetch('/api/payments/info'))['data'] as Map<String, dynamic>);
@@ -546,3 +532,21 @@ class PhotoItem {
   static Future<void> adjustBalance(int dealerId, int amount, String note) =>
       _fetch('/api/payments/adjust', method: 'POST', body: {'dealer_id': dealerId, 'amount': amount, 'note': note});
 }
+
+/// A photo in the car editor: one already on the server (kept by [id]) or a new file.
+class PhotoItem {
+  final int? id;
+  final String? url;
+  final String? filename;
+  final Uint8List? bytes;
+  const PhotoItem.existing(this.id, this.url)
+      : filename = null,
+        bytes = null;
+  const PhotoItem.file(this.filename, this.bytes)
+      : id = null,
+        url = null;
+
+}
+
+/// Brand logos, body-type icons, profile photos and dealer logos: the DB keeps only the file name.
+String? catalogImage(String? name, String folder) => uploadUrl(name, folder: folder);
