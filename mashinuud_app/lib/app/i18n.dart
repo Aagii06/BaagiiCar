@@ -1,16 +1,16 @@
-/// Admin-side translations, the same way as the admin web (admin/src/lib/i18n): keys are the Mongolian
+/// App translations (customer and admin sides), the same way as the web (src/lib/i18n): keys are the Mongolian
 /// text itself, so Mongolian needs no dictionary and a missing translation falls back to Mongolian.
-/// `{name}` marks a variable. Changing the language remounts the admin tree (shell.dart), so every
+/// `{name}` marks a variable. Changing the language remounts the screens (main.dart, admin/shell.dart), so every
 /// `tr()` runs again.
 library;
 
 import 'package:flutter/foundation.dart';
-import 'package:mashinuud_app/admin/i18n_en.dart';
-import 'package:mashinuud_app/admin/i18n_ru.dart';
+import 'package:mashinuud_app/app/i18n_en.dart';
+import 'package:mashinuud_app/app/i18n_ru.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AdminLang extends ChangeNotifier {
-  static const _key = 'baagii_car_admin_lang';
+class AppLang extends ChangeNotifier {
+  static const _key = 'baagii_car_lang';
   static const codes = ['mn', 'en', 'ru'];
   static const labels = {'mn': 'Монгол', 'en': 'English', 'ru': 'Русский'};
   SharedPreferences? _prefs;
@@ -32,13 +32,13 @@ class AdminLang extends ChangeNotifier {
   }
 }
 
-final adminLang = AdminLang();
+final appLang = AppLang();
 
-final _dictionaries = <String, Map<String, String>>{'en': adminEn, 'ru': adminRu};
+final _dictionaries = <String, Map<String, String>>{'en': appEn, 'ru': appRu};
 
 /// The admin text in the chosen language. Translating an already translated text returns it unchanged.
 String tr(String key, [Map<String, Object?>? vars]) {
-  var s = _dictionaries[adminLang.code]?[key] ?? key;
+  var s = _dictionaries[appLang.code]?[key] ?? key;
   if (vars != null) {
     vars.forEach((k, v) => s = s.replaceAll('{$k}', '${v ?? ''}'));
   }

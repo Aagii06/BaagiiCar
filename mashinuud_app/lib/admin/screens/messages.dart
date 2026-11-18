@@ -7,7 +7,7 @@ import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:mashinuud_app/admin/i18n.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 ({String label, Color bg, Color fg}) _badge(String status) => switch (status) {
       'seen' => (label: tr('Үзсэн'), bg: AppPalette.amberSoft, fg: AppPalette.amberInk),

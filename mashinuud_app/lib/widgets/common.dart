@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Loads [fetch] and rebuilds with the result; [fetchKey] changing refetches (stale data stays on screen meanwhile).
 class Loader<T> extends StatefulWidget {
@@ -186,7 +187,7 @@ class ErrorView extends StatelessWidget {
             Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
             if (onRetry != null) ...[
               const SizedBox(height: 14),
-              OutlineAction(label: 'Дахин оролдох', onTap: onRetry!),
+              OutlineAction(label: tr('Дахин оролдох'), onTap: onRetry!),
             ],
           ],
         ),
@@ -277,10 +278,10 @@ class ViewAll extends StatelessWidget {
   Widget build(BuildContext context) => InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Text('БҮГД', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1)),
+            Text(tr('БҮГД'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1)),
             SizedBox(width: 4),
             Icon(Icons.arrow_forward_rounded, size: 16),
           ]),
@@ -508,4 +509,30 @@ class _ShakeState extends State<Shake> with SingleTickerProviderStateMixin {
           return Transform.translate(offset: Offset(math.sin(t * math.pi * 6) * 8 * (1 - t), 0), child: child);
         },
       );
+}
+
+/// MN / EN / RU for the whole app (customer and admin sides). The screens remount in the chosen
+/// language (main.dart, admin/shell.dart); pages opened on top are closed first.
+class LanguagePicker extends StatelessWidget {
+  const LanguagePicker({super.key});
+  @override
+  Widget build(BuildContext context) => Row(children: [
+        const Icon(Icons.language_rounded, size: 20, color: AppPalette.mutedForeground),
+        const SizedBox(width: 10),
+        for (final code in AppLang.codes) ...[
+          if (code != AppLang.codes.first) const SizedBox(width: 6),
+          Expanded(
+            child: ChoiceChip(
+              showCheckmark: false,
+              label: SizedBox(width: double.infinity, child: Text(AppLang.labels[code]!, textAlign: TextAlign.center)),
+              selected: appLang.code == code,
+              selectedColor: AppPalette.primarySoft,
+              onSelected: (_) {
+                Navigator.of(context).popUntil((r) => r.isFirst);
+                appLang.set(code);
+              },
+            ),
+          ),
+        ],
+      ]);
 }

@@ -10,6 +10,7 @@ import 'package:mashinuud_app/screens/car_chat.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Unread team answers across all threads, for the profile badge.
 Future<int> unreadTotal() async {
@@ -23,7 +24,7 @@ class Thread {
   final Car? car;
   final List<MyMessage> messages;
   Thread(this.carId, this.car, this.messages);
-  String get title => car?.titleWithYear ?? 'Ерөнхий асуулт';
+  String get title => car?.titleWithYear ?? tr('Ерөнхий асуулт');
 }
 
 Future<List<Thread>> _loadThreads() async {
@@ -44,8 +45,8 @@ class _Status extends StatelessWidget {
   const _Status({required this.done});
   @override
   Widget build(BuildContext context) => done
-      ? const Pill('Холбогдсон', background: AppPalette.successSoft, color: AppPalette.success)
-      : const Pill('Хүлээгдэж байна', background: AppPalette.amberSoft, color: AppPalette.amberInk);
+      ? Pill(tr('Холбогдсон'), background: AppPalette.successSoft, color: AppPalette.success)
+      : Pill(tr('Хүлээгдэж байна'), background: AppPalette.amberSoft, color: AppPalette.amberInk);
 }
 
 /// Conversations list; tapping one opens it to keep writing.
@@ -60,7 +61,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Мессеж')),
+        appBar: AppBar(title: Text(tr('Мессеж'))),
         body: Loader<List<Thread>>(
           key: _loader,
           fetch: _loadThreads,
@@ -74,9 +75,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
           },
           builder: (context, threads, _) {
             if (threads.isEmpty) {
-              return const Padding(
+              return Padding(
                 padding: EdgeInsets.all(16),
-                child: EmptyView(title: 'Мессеж олдсонгүй', description: 'Зар дээрх чат товчоор асуултаа илгээгээрэй.', icon: Icons.chat_bubble_outline_rounded),
+                child: EmptyView(title: tr('Мессеж олдсонгүй'), description: tr('Зар дээрх чат товчоор асуултаа илгээгээрэй.'), icon: Icons.chat_bubble_outline_rounded),
               );
             }
             return RefreshIndicator(
@@ -115,7 +116,7 @@ class _ThreadTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final last = thread.messages.last;
-    final preview = last.allReplies.isNotEmpty ? 'Хариу: ${last.allReplies.last.reply}' : last.message;
+    final preview = last.allReplies.isNotEmpty ? tr('Хариу: {reply}', {'reply': last.allReplies.last.reply}) : last.message;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -255,7 +256,7 @@ class _ThreadScreenState extends State<ThreadScreen> {
   Widget build(BuildContext context) {
     final t = _thread;
     return Scaffold(
-      appBar: AppBar(title: const Text('Мессеж')),
+      appBar: AppBar(title: Text(tr('Мессеж'))),
       body: _error != null
           ? Padding(padding: const EdgeInsets.all(16), child: ErrorView(message: '$_error', onRetry: _load))
           : t == null
@@ -285,22 +286,22 @@ class _ThreadScreenState extends State<ThreadScreen> {
                   Expanded(
                     child: ListView(controller: _scroll, padding: const EdgeInsets.all(16), children: [
                       if (t.messages.isEmpty)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.symmetric(vertical: 24),
-                          child: Center(child: Text('Асуултаа бичээд илгээнэ үү.', style: TextStyle(color: AppPalette.mutedForeground))),
+                          child: Center(child: Text(tr('Асуултаа бичээд илгээнэ үү.'), style: TextStyle(color: AppPalette.mutedForeground))),
                         ),
                       for (final m in t.messages) ...[
                         ChatBubble(
                           text: m.message,
                           mine: true,
-                          caption: m.allReplies.isEmpty ? '${timeAgo(m.createdAt)} · ${m.status == 'done' ? 'Холбогдсон' : 'Хүлээгдэж байна'}' : timeAgo(m.createdAt),
+                          caption: m.allReplies.isEmpty ? tr('{createdAt} · {done}', {'createdAt': timeAgo(m.createdAt), 'done': m.status == 'done' ? 'Холбогдсон' : 'Хүлээгдэж байна'}) : timeAgo(m.createdAt),
                         ),
                         for (final reply in m.allReplies)
                           ChatBubble(text: reply.reply, mine: false, caption: '${t.car?.dealerName ?? 'Cardealer'} · ${timeAgo(reply.createdAt)}'),
                       ],
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(top: 4),
-                        child: Center(child: Text('Ажлын цагаар утсаар эргэн холбогдоно', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground))),
+                        child: Center(child: Text(tr('Ажлын цагаар утсаар эргэн холбогдоно'), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground))),
                       ),
                     ]),
                   ),

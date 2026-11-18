@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/l10n/app_localizations.dart';
 import 'package:mashinuud_app/admin/lock.dart';
@@ -32,9 +33,10 @@ class MyApp extends StatelessWidget {
       title: 'Cardealer',
       theme: AppTheme.light,
       // Admins / dealers get the admin panel; everyone else the customer screens.
+      // A new language remounts the customer screens (the admin side does it in admin/shell.dart).
       home: ListenableBuilder(
-        listenable: Stores.mode,
-        builder: (context, _) => Stores.mode.admin ? const AdminRoot() : const Shell(),
+        listenable: Listenable.merge([Stores.mode, appLang]),
+        builder: (context, _) => Stores.mode.admin ? const AdminRoot() : Shell(key: ValueKey(appLang.code)),
       ),
     );
   }

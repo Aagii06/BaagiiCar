@@ -6,7 +6,7 @@ import 'package:mashinuud_app/admin/ui.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
-import 'package:mashinuud_app/admin/i18n.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Admin & Dealer accounts; the last tab lists blocked ones.
 class UsersScreen extends StatefulWidget {

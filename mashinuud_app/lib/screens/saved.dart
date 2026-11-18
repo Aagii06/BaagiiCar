@@ -4,6 +4,7 @@ import 'package:mashinuud_app/api/models.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// "Хадгалсан": ads hearted on this device. Fetched as on arrival; un-hearted cards just hide.
 class SavedScreen extends StatelessWidget {
@@ -13,7 +14,7 @@ class SavedScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ids = Stores.favorites.ids.toList();
     return Scaffold(
-      appBar: AppBar(title: const Text('Хадгалсан')),
+      appBar: AppBar(title: Text(tr('Хадгалсан'))),
       body: Loader<List<Car>>(
         fetch: () => Api.getCarsByIds(ids),
         loading: const Padding(padding: EdgeInsets.all(16), child: CarCardSkeleton(count: 3)),
@@ -24,11 +25,11 @@ class SavedScreen extends StatelessWidget {
             return ListView(padding: const EdgeInsets.all(16), children: [
               if (rows.isEmpty)
                 EmptyView(
-                  title: 'Хадгалсан зар алга',
-                  description: 'Таалагдсан машиныхаа ♡ дээр дарж хадгална уу.',
+                  title: tr('Хадгалсан зар алга'),
+                  description: tr('Таалагдсан машиныхаа ♡ дээр дарж хадгална уу.'),
                   icon: Icons.favorite_border_rounded,
                   action: PrimaryButton(
-                    label: 'Машин хайх',
+                    label: tr('Машин хайх'),
                     height: 44,
                     onTap: () {
                       Navigator.of(context).popUntil((r) => r.isFirst);

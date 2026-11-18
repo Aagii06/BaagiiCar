@@ -9,6 +9,7 @@ import 'package:mashinuud_app/screens/car_detail.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/phone.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 void openCar(BuildContext context, Car car) =>
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => CarDetailScreen(carId: car.id, preview: car)));
@@ -62,7 +63,7 @@ class FavoriteButton extends StatelessWidget {
             return SquareIconButton(
               icon: on ? Icons.favorite_rounded : Icons.favorite_border_rounded,
               color: on ? AppPalette.destructive : null,
-              tooltip: on ? 'Хадгалснаас хасах' : 'Хадгалах',
+              tooltip: on ? tr('Хадгалснаас хасах') : tr('Хадгалах'),
               size: size,
               onTap: () => Stores.favorites.toggle(carId),
             );
@@ -96,7 +97,7 @@ class CompareButton extends StatelessWidget {
           return SquareIconButton(
             icon: Icons.compare_arrows_rounded,
             size: size,
-            tooltip: on ? 'Харьцуулалтаас хасах' : (blocked ? 'Хамгийн ихдээ ${AppConstants.compareMax} машин' : 'Харьцуулалтад нэмэх'),
+            tooltip: on ? tr('Харьцуулалтаас хасах') : (blocked ? tr('Хамгийн ихдээ {compareMax} машин', {'compareMax': AppConstants.compareMax}) : tr('Харьцуулалтад нэмэх')),
             color: on ? Colors.white : null,
             background: on ? AppPalette.dark : null,
             borderColor: on ? AppPalette.dark : null,
@@ -114,7 +115,7 @@ class ChatButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SquareIconButton(
         icon: Icons.chat_bubble_outline_rounded,
-        tooltip: 'Зарлагчтай холбогдох',
+        tooltip: tr('Зарлагчтай холбогдох'),
         size: size,
         color: AppPalette.primary,
         borderColor: AppPalette.primary,
@@ -147,12 +148,12 @@ class CarCard extends StatelessWidget {
                 child: Stack(children: [
                   AspectRatio(aspectRatio: 4 / 3, child: CarImage(car)),
                   if (car.sold)
-                    const Positioned(left: 6, top: 6, child: Pill('Зарагдсан', background: AppPalette.dark, color: Colors.white))
+                    Positioned(left: 6, top: 6, child: Pill(tr('Зарагдсан'), background: AppPalette.dark, color: Colors.white))
                   else if (featuredBadge && car.isFeatured)
-                    const Positioned(
+                    Positioned(
                       left: 6,
                       top: 6,
-                      child: Pill('Онцлох', background: Colors.white, color: AppPalette.success, icon: Icons.verified_rounded),
+                      child: Pill(tr('Онцлох'), background: Colors.white, color: AppPalette.success, icon: Icons.verified_rounded),
                     ),
                 ]),
               ),
@@ -216,12 +217,12 @@ class MileageStrip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(color: AppPalette.muted, borderRadius: BorderRadius.circular(AppRadius.md)),
         child: Row(children: [
-          const Text('Гүйлт', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppPalette.mutedForeground)),
+          Text(tr('Гүйлт'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppPalette.mutedForeground)),
           const Spacer(),
           if (car.mileage != null)
             Text.rich(TextSpan(children: [
               TextSpan(text: formatNumber(car.mileage), style: displayStyle(15, weight: FontWeight.w600)),
-              const TextSpan(text: ' км', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppPalette.mutedForeground)),
+              TextSpan(text: tr(' км'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppPalette.mutedForeground)),
             ]))
           else
             const Text('—', style: TextStyle(color: AppPalette.mutedForeground)),
@@ -250,10 +251,10 @@ class CarWideCard extends StatelessWidget {
               Stack(children: [
                 AspectRatio(aspectRatio: 16 / 9, child: CarImage(car)),
                 if (car.isFeatured)
-                  const Positioned(
+                  Positioned(
                     left: 8,
                     top: 8,
-                    child: Pill('Онцлох', background: Colors.white, color: AppPalette.success, icon: Icons.verified_rounded),
+                    child: Pill(tr('Онцлох'), background: Colors.white, color: AppPalette.success, icon: Icons.verified_rounded),
                   ),
               ]),
               const SizedBox(height: 14),
@@ -281,7 +282,7 @@ class CarWideCard extends StatelessWidget {
               const SizedBox(height: 16),
               Row(children: [
                 Expanded(
-                  child: PrimaryButton(label: 'Дэлгэрэнгүй', height: 44, onTap: () => openCar(context, car)),
+                  child: PrimaryButton(label: tr('Дэлгэрэнгүй'), height: 44, onTap: () => openCar(context, car)),
                 ),
                 const SizedBox(width: 8),
                 if ((car.contactPhone ?? '').isNotEmpty) ...[

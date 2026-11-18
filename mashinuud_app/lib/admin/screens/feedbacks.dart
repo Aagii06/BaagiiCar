@@ -7,7 +7,7 @@ import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:mashinuud_app/admin/i18n.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Messages from the web site's "Бидэнд бичих" form.
 class FeedbacksScreen extends StatefulWidget {

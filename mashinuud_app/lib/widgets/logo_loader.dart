@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Full-screen loader (admin SplashScreen.tsx): the logo in a white disc, an orange arc spinning around it,
 /// a faint amber arc turning the other way, and the logo gently breathing.
@@ -36,7 +37,7 @@ class _LogoLoaderState extends State<LogoLoader> with TickerProviderStateMixin {
     final s = widget.size;
     final reduce = MediaQuery.of(context).disableAnimations;
     return Semantics(
-      label: 'Ачаалж байна',
+      label: tr('Ачаалж байна'),
       child: SizedBox(
         width: s,
         height: s,

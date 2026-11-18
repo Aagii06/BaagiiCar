@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 class Option<T> {
   final T? value;
@@ -69,7 +70,7 @@ class _OptionSheetState<T> extends State<_OptionSheet<T>> {
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(widget.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                child: Text(tr(widget.title), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               ),
             ),
             if (widget.searchable)
@@ -77,7 +78,7 @@ class _OptionSheetState<T> extends State<_OptionSheet<T>> {
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
                 child: TextField(
                   onChanged: (v) => setState(() => _q = v),
-                  decoration: const InputDecoration(hintText: 'Хайх', prefixIcon: Icon(Icons.search_rounded, size: 20)),
+                  decoration: InputDecoration(hintText: tr('Хайх'), prefixIcon: Icon(Icons.search_rounded, size: 20)),
                 ),
               ),
             Flexible(
@@ -92,7 +93,7 @@ class _OptionSheetState<T> extends State<_OptionSheet<T>> {
                         return ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                           title: Text(
-                            o.label,
+                            tr(o.label),
                             style: TextStyle(fontWeight: on ? FontWeight.w700 : FontWeight.w500, color: on ? AppPalette.primary : null),
                           ),
                           trailing: on ? const Icon(Icons.check_rounded, color: AppPalette.primary) : null,
@@ -101,16 +102,16 @@ class _OptionSheetState<T> extends State<_OptionSheet<T>> {
                       },
                     ),
                   if (rows.isEmpty)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(vertical: 32),
                       child: Center(
-                        child: Text('Олдсонгүй', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
+                        child: Text(tr('Олдсонгүй'), style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
                       ),
                     ),
                   if (hidden > 0)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                      child: Text('Өөр $hidden байна, хайж олно уу', style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
+                      child: Text(tr('Өөр {hidden} байна, хайж олно уу', {'hidden': hidden}), style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
                     ),
                 ],
               ),
@@ -155,7 +156,7 @@ class SelectField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final current = options.where((o) => o.value == value && o.value != null).firstOrNull;
-    final text = current?.label ?? placeholder;
+    final text = tr(current?.label ?? placeholder);
     final on = enabled && !loading;
     // Options still coming: pulsing bars in place of the value and the arrow.
     final trailing = loading

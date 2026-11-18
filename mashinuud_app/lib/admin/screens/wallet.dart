@@ -10,7 +10,7 @@ import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:mashinuud_app/admin/i18n.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// "12,000₮", also for 0.
 String money(num v) => '${formatNumber(v)}₮';

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:mashinuud_app/app/constant.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 class ApiError implements Exception {
   final int status;
@@ -56,11 +57,11 @@ Future<Map<String, dynamic>> apiFetch(String path, {String method = 'GET', Objec
     response = await request.close().timeout(const Duration(seconds: 20));
     text = await response.transform(utf8.decoder).join();
   } on SocketException {
-    throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
+    throw ApiError(0, tr('Сервертэй холбогдож чадсангүй'));
   } on TimeoutException {
-    throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
+    throw ApiError(0, tr('Сервертэй холбогдож чадсангүй'));
   } on HttpException {
-    throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
+    throw ApiError(0, tr('Сервертэй холбогдож чадсангүй'));
   }
 
   return _answer(response.statusCode, text);
@@ -118,11 +119,11 @@ Future<Map<String, dynamic>> apiUpload(String path, {Map<String, String> fields 
     response = await request.close().timeout(const Duration(seconds: 120));
     text = await response.transform(utf8.decoder).join();
   } on SocketException {
-    throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
+    throw ApiError(0, tr('Сервертэй холбогдож чадсангүй'));
   } on TimeoutException {
-    throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
+    throw ApiError(0, tr('Сервертэй холбогдож чадсангүй'));
   } on HttpException {
-    throw const ApiError(0, 'Сервертэй холбогдож чадсангүй');
+    throw ApiError(0, tr('Сервертэй холбогдож чадсангүй'));
   }
   return _answer(response.statusCode, text);
 }
@@ -138,12 +139,12 @@ Map<String, dynamic> _answer(int status, String text) {
     final errors = data?['errors'];
     final first = errors is List && errors.isNotEmpty && errors.first is Map ? (errors.first as Map)['message'] : null;
     final fallback = status == 401
-        ? 'Нэвтэрнэ үү'
+        ? tr('Нэвтэрнэ үү')
         : status == 404
-            ? 'Хүсэлт олдсонгүй'
+            ? tr('Хүсэлт олдсонгүй')
             : status >= 500
-                ? 'Серверийн алдаа ($status)'
-                : 'Хүсэлт амжилтгүй боллоо';
+                ? tr('Серверийн алдаа ({status})', {'status': status})
+                : tr('Хүсэлт амжилтгүй боллоо');
     throw ApiError(status, (data?['message'] as String?)?.isNotEmpty == true ? data!['message'] as String : (first?.toString() ?? fallback), data?['data']);
   }
   return data;

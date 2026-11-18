@@ -10,6 +10,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Question about an ad (or a general one when [car] is null), as a bottom sheet:
 /// not signed in → phone → 4-digit code first; signed in → straight to the message box.
@@ -70,7 +71,7 @@ class _CarChatSheetState extends State<_CarChatSheet> {
       await Api.sendMessage(token: auth.token!, message: text, carId: widget.car?.id);
       if (first) {
         _lines.add(_Line(false,
-            'Баярлалаа! Мессежийг хүлээн авлаа. Манай ажилтан ажлын цагаар ${auth.user?.phonenumber ?? ''} дугаарт холбогдоно.'));
+            tr('Баярлалаа! Мессежийг хүлээн авлаа. Манай ажилтан ажлын цагаар {phonenumber} дугаарт холбогдоно.', {'phonenumber': auth.user?.phonenumber ?? ''})));
       }
     } on ApiError catch (e) {
       _lines.removeLast();
@@ -112,11 +113,11 @@ class _CarChatSheetState extends State<_CarChatSheet> {
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(car?.titleWithYear ?? 'Бидэнтэй чатлах', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
-              const Text('Ажлын цагаар утсаар эргэн холбогдоно', style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+              Text(car?.titleWithYear ?? tr('Бидэнтэй чатлах'), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
+              Text(tr('Ажлын цагаар утсаар эргэн холбогдоно'), style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
             ]),
           ),
-          IconButton(tooltip: 'Хаах', onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
+          IconButton(tooltip: tr('Хаах'), onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
         ]),
       ),
       Expanded(
@@ -133,9 +134,9 @@ class _CarChatSheetState extends State<_CarChatSheet> {
                   padding: const EdgeInsets.all(16),
                   children: [
                     if (_lines.isEmpty)
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: Text('Асуултаа бичээд илгээнэ үү.', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))),
+                        child: Center(child: Text(tr('Асуултаа бичээд илгээнэ үү.'), style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))),
                       ),
                     for (final l in _lines) ChatBubble(text: l.text, mine: l.mine),
                   ],
@@ -213,14 +214,14 @@ class Composer extends StatelessWidget {
                 maxLines: 4,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => onSend(),
-                decoration: const InputDecoration(hintText: 'Мессеж бичих…', counterText: ''),
+                decoration: InputDecoration(hintText: tr('Мессеж бичих…'), counterText: ''),
               ),
             ),
             const SizedBox(width: 8),
             ListenableBuilder(
               listenable: controller,
               builder: (context, _) => IconButton.filled(
-                tooltip: 'Илгээх',
+                tooltip: tr('Илгээх'),
                 onPressed: busy || controller.text.trim().isEmpty ? null : onSend,
                 style: IconButton.styleFrom(
                   backgroundColor: AppPalette.primary,
@@ -294,11 +295,11 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
   void _edited() => setState(() => _error = null);
 
   void _requestCode() => _run(() async {
-        if (_phone.text.length != 8) throw const ApiError(0, '8 оронтой утасны дугаар оруулна уу');
+        if (_phone.text.length != 8) throw ApiError(0, tr('8 оронтой утасны дугаар оруулна уу'));
         // Mongolian numbers start with 5–9 (mobile and landline).
-        if (!RegExp(r'^[5-9]\d{7}$').hasMatch(_phone.text)) throw const ApiError(0, 'Утасны дугаар буруу байна');
+        if (!RegExp(r'^[5-9]\d{7}$').hasMatch(_phone.text)) throw ApiError(0, tr('Утасны дугаар буруу байна'));
         final token = Stores.auth.token;
-        if (widget.change && _phone.text == Stores.auth.user?.phonenumber) throw const ApiError(0, 'Одоогийн дугаараас өөр дугаар оруулна уу');
+        if (widget.change && _phone.text == Stores.auth.user?.phonenumber) throw ApiError(0, tr('Одоогийн дугаараас өөр дугаар оруулна уу'));
         final wait = widget.change && token != null ? await Api.sendPhoneChangeCode(token, _phone.text) : await Api.sendLoginCode(_phone.text);
         _code.clear();
         setState(() {
@@ -330,7 +331,7 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
   Widget build(BuildContext context) {
     if (!_codeStep) {
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text(widget.change ? 'Шинэ дугаараа оруулна уу. Шинэ дугаар руу SMS код илгээнэ.' : 'Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.',
+        Text(widget.change ? tr('Шинэ дугаараа оруулна уу. Шинэ дугаар руу SMS код илгээнэ.') : tr('Утасны дугаараа оруулна уу. Бид 4 оронтой код илгээнэ.'),
             style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
         const SizedBox(height: 12),
         Shake(
@@ -341,7 +342,7 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
             keyboardType: TextInputType.phone,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
             decoration: InputDecoration(
-              hintText: widget.change ? 'Шинэ дугаар' : 'Утасны дугаар',
+              hintText: widget.change ? tr('Шинэ дугаар') : tr('Утасны дугаар'),
               prefixIcon: const Icon(Icons.phone_iphone_rounded, size: 20),
               errorText: _error,
             ),
@@ -350,10 +351,10 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
           ),
         ),
         const SizedBox(height: 12),
-        PrimaryButton(label: 'Код авах', busy: _busy, onTap: _phone.text.isNotEmpty ? _requestCode : null),
+        PrimaryButton(label: tr('Код авах'), busy: _busy, onTap: _phone.text.isNotEmpty ? _requestCode : null),
         if (!widget.change) ...[
           const SizedBox(height: 10),
-          const Text('Бүртгэлгүй дугаар бол автоматаар бүртгэгдэнэ.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+          Text(tr('Бүртгэлгүй дугаар бол автоматаар бүртгэгдэнэ.'), textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
         ],
         if (AppConstants.contactPhone.isNotEmpty)
           TextButton.icon(
@@ -365,7 +366,7 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
       ]);
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text('${_phone.text} дугаар руу илгээсэн 4 оронтой кодыг оруулна уу.', style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
+      Text(tr('{text} дугаар руу илгээсэн 4 оронтой кодыг оруулна уу.', {'text': _phone.text}), style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
       const SizedBox(height: 12),
       Shake(
         trigger: _shakes,
@@ -385,7 +386,7 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
         ),
       ),
       const SizedBox(height: 12),
-      PrimaryButton(label: 'Баталгаажуулах', busy: _busy, onTap: _code.text.length == 4 ? _verify : null),
+      PrimaryButton(label: tr('Баталгаажуулах'), busy: _busy, onTap: _code.text.length == 4 ? _verify : null),
       const SizedBox(height: 6),
       Row(children: [
         TextButton(
@@ -394,13 +395,13 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
             _error = null;
           }),
           style: TextButton.styleFrom(foregroundColor: AppPalette.mutedForeground),
-          child: const Text('← Дугаар солих'),
+          child: Text(tr('← Дугаар солих')),
         ),
         const Spacer(),
         TextButton(
           onPressed: _busy || _cooldown > 0 ? null : _requestCode,
           style: TextButton.styleFrom(foregroundColor: AppPalette.primary),
-          child: Text(_cooldown > 0 ? 'Код дахин авах ($_cooldown)' : 'Код дахин авах'),
+          child: Text(_cooldown > 0 ? tr('Код дахин авах ({_cooldown})', {'_cooldown': _cooldown}) : tr('Код дахин авах')),
         ),
       ]),
     ]);

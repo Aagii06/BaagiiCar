@@ -3,7 +3,7 @@
 library;
 
 import 'dart:convert';
-import 'package:mashinuud_app/admin/i18n.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 int? _int(Object? v) => v == null ? null : (v is int ? v : (v is num ? v.toInt() : int.tryParse('$v')));
 String? _str(Object? v) => v == null ? null : '$v';

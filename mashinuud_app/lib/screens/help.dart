@@ -5,6 +5,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/screens/leasing.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 const _faq = [
   ('sell', 'Машинаа зарах боломжтой юу?', 'Зарыг манай админ оруулдаг. Машинаа зарах бол утсаар эсвэл чатаар бидэнтэй холбогдоно уу.'),
@@ -47,23 +48,24 @@ class _HelpScreenState extends State<HelpScreen> {
   @override
   Widget build(BuildContext context) {
     final q = _query.trim().toLowerCase();
-    final faq = q.isEmpty ? _faq : _faq.where((f) => '${f.$2}${f.$3}'.toLowerCase().contains(q)).toList();
+    final all = [for (final (id, question, answer) in _faq) (id, tr(question), tr(answer))];
+    final faq = q.isEmpty ? all : all.where((f) => '${f.$2}${f.$3}'.toLowerCase().contains(q)).toList();
     void push(Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
     final topics = [
-      (Icons.search_rounded, AppPalette.tintBlue, AppPalette.primary, 'Машин хайх', 'Шүүлтүүр ашиглан тохирох машинаа олох.', () {
+      (Icons.search_rounded, AppPalette.tintBlue, AppPalette.primary, tr('Машин хайх'), tr('Шүүлтүүр ашиглан тохирох машинаа олох.'), () {
         Navigator.of(context).popUntil((r) => r.isFirst);
         Stores.shell.openCars();
       }),
-      (Icons.verified_user_outlined, AppPalette.tintMint, AppPalette.success, 'Аюулгүй худалдаа', 'Залилангаас сэргийлэх зөвлөмж.', () {
+      (Icons.verified_user_outlined, AppPalette.tintMint, AppPalette.success, tr('Аюулгүй худалдаа'), tr('Залилангаас сэргийлэх зөвлөмж.'), () {
         setState(() => _open = 'safety');
         _jump(_faqKey);
       }),
-      (Icons.credit_card_rounded, AppPalette.tintPeach, AppPalette.amberInk, 'Төлбөр, лизинг', 'Зээл, лизингийн нөхцөл, тооцоолуур.', () => push(const LeasingScreen())),
-      (Icons.phone_outlined, AppPalette.tintLavender, const Color(0xFF5B3FAE), 'Холбоо барих', 'Утас, чатаар бидэнтэй холбогдох.', () => _jump(_contactKey)),
+      (Icons.credit_card_rounded, AppPalette.tintPeach, AppPalette.amberInk, tr('Төлбөр, лизинг'), tr('Зээл, лизингийн нөхцөл, тооцоолуур.'), () => push(const LeasingScreen())),
+      (Icons.phone_outlined, AppPalette.tintLavender, const Color(0xFF5B3FAE), tr('Холбоо барих'), tr('Утас, чатаар бидэнтэй холбогдох.'), () => _jump(_contactKey)),
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Тусламж')),
+      appBar: AppBar(title: Text(tr('Тусламж'))),
       body: ListView(controller: _scroll, padding: const EdgeInsets.fromLTRB(16, 16, 16, 32), children: [
         Container(
           padding: const EdgeInsets.fromLTRB(20, 40, 20, 40),
@@ -72,10 +74,10 @@ class _HelpScreenState extends State<HelpScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(color: AppPalette.dark2, borderRadius: BorderRadius.circular(99)),
-              child: const Text('ТУСЛАМЖИЙН ТӨВ', style: TextStyle(color: AppPalette.primary, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.9)),
+              child: Text(tr('ТУСЛАМЖИЙН ТӨВ'), style: TextStyle(color: AppPalette.primary, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.9)),
             ),
             const SizedBox(height: 18),
-            Text('БИД ТАНД ЮУГААР ТУСЛАХ ВЭ?', textAlign: TextAlign.center, style: displayStyle(28, color: Colors.white, height: 1.15)),
+            Text(tr('БИД ТАНД ЮУГААР ТУСЛАХ ВЭ?'), textAlign: TextAlign.center, style: displayStyle(28, color: Colors.white, height: 1.15)),
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
@@ -87,8 +89,8 @@ class _HelpScreenState extends State<HelpScreen> {
                   child: TextField(
                     onChanged: (v) => setState(() => _query = v),
                     onSubmitted: (_) => _jump(_faqKey),
-                    decoration: const InputDecoration(
-                      hintText: 'Асуултаа бичнэ үү',
+                    decoration: InputDecoration(
+                      hintText: tr('Асуултаа бичнэ үү'),
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
                       focusedBorder: InputBorder.none,
@@ -104,7 +106,7 @@ class _HelpScreenState extends State<HelpScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                     textStyle: const TextStyle(fontWeight: FontWeight.w700),
                   ),
-                  child: const Text('Хайх'),
+                  child: Text(tr('Хайх')),
                 ),
               ]),
             ),
@@ -143,7 +145,7 @@ class _HelpScreenState extends State<HelpScreen> {
             ),
           ),
         const SizedBox(height: 20),
-        Text('ТҮГЭЭМЭЛ АСУУЛТУУД', key: _faqKey, style: displayStyle(24)),
+        Text(tr('ТҮГЭЭМЭЛ АСУУЛТУУД'), key: _faqKey, style: displayStyle(24)),
         const SizedBox(height: 16),
         for (final (id, question, answer) in faq)
           Padding(
@@ -181,7 +183,7 @@ class _HelpScreenState extends State<HelpScreen> {
             ),
           ),
         if (faq.isEmpty)
-          const Panel(child: Text('Тохирох асуулт олдсонгүй. Доорх маягтаар бидэнд бичээрэй.', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))),
+          Panel(child: Text(tr('Тохирох асуулт олдсонгүй. Доорх маягтаар бидэнд бичээрэй.'), style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground))),
         const SizedBox(height: 20),
         _ContactForm(key: _contactKey, leasingCarId: widget.leasingCarId),
       ]),
@@ -202,6 +204,7 @@ class _ContactFormState extends State<_ContactForm> {
   late final _phone = TextEditingController(text: Stores.auth.user?.phonenumber ?? '');
   final _email = TextEditingController();
   late final _message = TextEditingController(
+    // Prefilled message to the staff: stays in Mongolian. no-tr
     text: widget.leasingCarId == null ? '' : 'Лизингийн хүсэлт${widget.leasingCarId! > 0 ? ' — зар #${widget.leasingCarId}' : ''}\n',
   );
   bool _sending = false;
@@ -255,35 +258,35 @@ class _ContactFormState extends State<_ContactForm> {
     void changed(String _) => setState(() => _sent = false);
     return Panel(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Бидэнд бичих', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        Text(tr('Бидэнд бичих'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
-        const Text('Тусламж хэрэгтэй бол бидэнд хандана уу.', style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
+        Text(tr('Тусламж хэрэгтэй бол бидэнд хандана уу.'), style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
         const SizedBox(height: 18),
-        _field('Нэр', TextField(controller: _name, textCapitalization: TextCapitalization.words, onChanged: changed)),
+        _field(tr('Нэр'), TextField(controller: _name, textCapitalization: TextCapitalization.words, onChanged: changed)),
         _field(
-          'Утас',
+          tr('Утас'),
           TextField(
             controller: _phone,
             keyboardType: TextInputType.phone,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
-            decoration: const InputDecoration(hintText: 'Утасны дугаар'),
+            decoration: InputDecoration(hintText: tr('Утасны дугаар')),
             onChanged: changed,
           ),
         ),
         _field(
-          'И-мэйл',
+          tr('И-мэйл'),
           TextField(
             controller: _email,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
-            decoration: const InputDecoration(hintText: 'И-мэйл хаяг'),
+            decoration: InputDecoration(hintText: tr('И-мэйл хаяг')),
             onChanged: changed,
           ),
         ),
-        _field('Асуулт', TextField(controller: _message, minLines: 4, maxLines: 8, maxLength: 2000, decoration: const InputDecoration(counterText: ''), onChanged: changed)),
+        _field(tr('Асуулт'), TextField(controller: _message, minLines: 4, maxLines: 8, maxLength: 2000, decoration: const InputDecoration(counterText: ''), onChanged: changed)),
         if (_error != null) _Notice(_error!, color: AppPalette.destructive, background: AppPalette.destructiveSoft),
-        if (_sent) const _Notice('Илгээлээ. Бид удахгүй холбогдоно.', color: AppPalette.success, background: AppPalette.successSoft, icon: Icons.verified_rounded),
-        PrimaryButton(label: 'Илгээх', busy: _sending, onTap: _canSend ? _send : null),
+        if (_sent) _Notice(tr('Илгээлээ. Бид удахгүй холбогдоно.'), color: AppPalette.success, background: AppPalette.successSoft, icon: Icons.verified_rounded),
+        PrimaryButton(label: tr('Илгээх'), busy: _sending, onTap: _canSend ? _send : null),
       ]),
     );
   }

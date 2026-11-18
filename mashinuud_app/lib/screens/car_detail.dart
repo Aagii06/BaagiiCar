@@ -15,6 +15,7 @@ import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/dealer_avatar.dart';
 import 'package:mashinuud_app/widgets/phone.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// An ad's page (website `/cars/<id>`): edge-to-edge photos, summary, specs, leasing, similar ads,
 /// and an action bar in place of the tab bar.
@@ -36,23 +37,23 @@ class CarDetailScreen extends StatelessWidget {
     return Loader<Car?>(
       fetchKey: token,
       fetch: () => Api.getCar(carId, token: token),
-      loading: Scaffold(appBar: AppBar(title: const Text('Дэлгэрэнгүй')), body: const _DetailSkeleton()),
+      loading: Scaffold(appBar: AppBar(title: Text(tr('Дэлгэрэнгүй'))), body: const _DetailSkeleton()),
       error: (context, e, retry) => Scaffold(
-        appBar: AppBar(title: const Text('Дэлгэрэнгүй')),
+        appBar: AppBar(title: Text(tr('Дэлгэрэнгүй'))),
         body: Padding(padding: const EdgeInsets.all(16), child: ErrorView(message: '$e', onRetry: retry)),
       ),
       builder: (context, car, _) {
         if (car == null || car.status == 'deleted') {
           return Scaffold(
-            appBar: AppBar(title: const Text('Дэлгэрэнгүй')),
-            body: const Padding(
+            appBar: AppBar(title: Text(tr('Дэлгэрэнгүй'))),
+            body: Padding(
               padding: EdgeInsets.all(16),
-              child: EmptyView(title: 'Зар олдсонгүй', description: 'Зар устгагдсан эсвэл хаяг буруу байна.'),
+              child: EmptyView(title: tr('Зар олдсонгүй'), description: tr('Зар устгагдсан эсвэл хаяг буруу байна.')),
             ),
           );
         }
         return Scaffold(
-          appBar: AppBar(title: const Text('Дэлгэрэнгүй')),
+          appBar: AppBar(title: Text(tr('Дэлгэрэнгүй'))),
           body: ListView(
             padding: const EdgeInsets.only(bottom: 24),
             children: [
@@ -67,7 +68,7 @@ class CarDetailScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Panel(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        const Text('Тайлбар', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                        Text(tr('Тайлбар'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 12),
                         Text(car.description!.trim(), style: TextStyle(fontSize: 15, height: 1.75, color: AppPalette.foreground.withValues(alpha: 0.8))),
                       ]),
@@ -251,9 +252,9 @@ class _Summary extends StatelessWidget {
     return Panel(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Wrap(spacing: 8, runSpacing: 8, children: [
-          if (car.sold) const Pill('Зарагдсан', background: AppPalette.dark, color: Colors.white),
-          if (car.isFeatured) const Pill('Онцлох', background: AppPalette.successSoft, color: AppPalette.success),
-          const Pill('Лизинг боломжтой', background: AppPalette.amberSoft, color: AppPalette.amberInk),
+          if (car.sold) Pill(tr('Зарагдсан'), background: AppPalette.dark, color: Colors.white),
+          if (car.isFeatured) Pill(tr('Онцлох'), background: AppPalette.successSoft, color: AppPalette.success),
+          Pill(tr('Лизинг боломжтой'), background: AppPalette.amberSoft, color: AppPalette.amberInk),
         ]),
         const SizedBox(height: 16),
         Text(car.titleWithYear.toUpperCase(), style: displayStyle(28, height: 1.15)),
@@ -275,7 +276,7 @@ class _Summary extends StatelessWidget {
         const Divider(height: 1),
         const SizedBox(height: 16),
         Row(children: [
-          const Text('Хуваалцах', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground)),
+          Text(tr('Хуваалцах'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground)),
           const Spacer(),
           _ShareButtons(car: car),
         ]),
@@ -302,8 +303,8 @@ class _Seller extends StatelessWidget {
           ),
         );
     final views = Row(mainAxisSize: MainAxisSize.min, children: [
-      stat(Icons.visibility_outlined, 'Зар үзсэн', car.viewCount),
-      stat(Icons.phone_outlined, 'Дугаар харсан', car.phoneViewCount),
+      stat(Icons.visibility_outlined, tr('Зар үзсэн'), car.viewCount),
+      stat(Icons.phone_outlined, tr('Дугаар харсан'), car.phoneViewCount),
     ]);
     final dealer = car.dealerId != null && (car.dealerName ?? '').isNotEmpty;
     final avatar = Container(
@@ -322,9 +323,9 @@ class _Seller extends StatelessWidget {
     );
     final info = Expanded(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(dealer ? car.dealerName! : ((car.sellerName ?? '').isNotEmpty ? car.sellerName! : 'Зарлагч'),
+        Text(dealer ? car.dealerName! : ((car.sellerName ?? '').isNotEmpty ? car.sellerName! : tr('Зарлагч')),
             maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
-        Text(dealer ? 'Дилер' : 'Зарлагч', style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+        Text(dealer ? tr('Дилер') : tr('Зарлагч'), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
       ]),
     );
     final row = Row(children: [avatar, const SizedBox(width: 12), info, views]);
@@ -365,9 +366,9 @@ class _ShareButtons extends StatelessWidget {
           () => open('https://twitter.com/intent/tweet?url=$u&text=$text')),
       button('Telegram', const Icon(Icons.send_rounded, size: 17, color: Color(0xFF229ED9)), const Color(0xFF229ED9),
           () => open('https://t.me/share/url?url=$u&text=$text')),
-      button('Холбоос хуулах', const Icon(Icons.link_rounded, size: 18), AppPalette.foreground, () {
+      button(tr('Холбоос хуулах'), const Icon(Icons.link_rounded, size: 18), AppPalette.foreground, () {
         Clipboard.setData(ClipboardData(text: url));
-        showToast(context, 'Холбоос хуулагдлаа');
+        showToast(context, tr('Холбоос хуулагдлаа'));
       }),
     ]);
   }
@@ -382,22 +383,22 @@ class _Specs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final specs = <(String, String?)>[
-      ('Үйлдвэрлэсэн он', car.manufacturedYear?.toString()),
-      ('Орж ирсэн он', car.importedYear?.toString()),
-      ('Гүйлт', car.mileage != null ? formatKm(car.mileage) : null),
-      ('Хөдөлгүүр', toNumber(car.engineCapacity) != 0 ? formatEngine(car.engineCapacity) : null),
-      ('Түлш', car.fuelType),
-      ('Хурдны хайрцаг', car.transmission),
-      ('Хүрд', car.steering),
-      ('Хөтлөгч', car.driveType),
-      ('Ангилал', car.vehicleType),
-      ('Гадна өнгө', car.color),
-      ('Дотор өнгө', car.interiorColor),
-      ('Төрөл', car.bodyTypeName),
+      (tr('Үйлдвэрлэсэн он'), car.manufacturedYear?.toString()),
+      (tr('Орж ирсэн он'), car.importedYear?.toString()),
+      (tr('Гүйлт'), car.mileage != null ? formatKm(car.mileage) : null),
+      (tr('Хөдөлгүүр'), toNumber(car.engineCapacity) != 0 ? formatEngine(car.engineCapacity) : null),
+      (tr('Түлш'), car.fuelType),
+      (tr('Хурдны хайрцаг'), car.transmission),
+      (tr('Хүрд'), car.steering),
+      (tr('Хөтлөгч'), car.driveType),
+      (tr('Ангилал'), car.vehicleType),
+      (tr('Гадна өнгө'), car.color),
+      (tr('Дотор өнгө'), car.interiorColor),
+      (tr('Төрөл'), car.bodyTypeName),
     ];
     return Panel(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Үзүүлэлт', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        Text(tr('Үзүүлэлт'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
         const SizedBox(height: 14),
         GridView.count(
           crossAxisCount: 2,
@@ -414,7 +415,7 @@ class _Specs extends StatelessWidget {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
                   Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppPalette.mutedForeground)),
                   const SizedBox(height: 3),
-                  Text((value ?? '').isEmpty ? '—' : value!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text((value ?? '').isEmpty ? '—' : trValue(value), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
                 ]),
               ),
           ],
@@ -445,7 +446,7 @@ class _Similar extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(top: 40),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('ТӨСТЭЙ МАШИНУУД', style: displayStyle(24)),
+              Text(tr('ТӨСТЭЙ МАШИНУУД'), style: displayStyle(24)),
               const SizedBox(height: 16),
               CarList(cars: cars),
             ]),
@@ -478,7 +479,7 @@ class _ActionBar extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(child: PhoneButton(car: car, phone: phone)),
             ] else
-              Expanded(child: PrimaryButton(label: 'Чатлах', icon: Icons.chat_bubble_outline_rounded, onTap: () => openCarChat(context, car))),
+              Expanded(child: PrimaryButton(label: tr('Чатлах'), icon: Icons.chat_bubble_outline_rounded, onTap: () => openCarChat(context, car))),
           ]),
         ),
       ),

@@ -9,6 +9,7 @@ import 'package:mashinuud_app/screens/saved.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/app_bar.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// "Профайл" tab: phone-code sign-in, or the user card with messages / saved / compare / help and sign-out.
 class ProfileScreen extends StatelessWidget {
@@ -16,7 +17,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: const TabAppBar(title: 'Профайл'),
+        appBar: TabAppBar(title: tr('Профайл')),
         body: ListenableBuilder(
           listenable: Listenable.merge([Stores.auth, AdminApi.session]),
           builder: (context, _) {
@@ -38,29 +39,29 @@ class _SignIn extends StatelessWidget {
   Widget build(BuildContext context) => DefaultTabController(
         length: 2,
         child: Column(children: [
-          const TabBar(
+          TabBar(
             labelColor: AppPalette.primary,
             indicatorColor: AppPalette.primary,
             unselectedLabelColor: AppPalette.mutedForeground,
             labelStyle: TextStyle(fontWeight: FontWeight.w700),
-            tabs: [Tab(text: 'Хэрэглэгч'), Tab(text: 'Админ / Дилер')],
+            tabs: [Tab(text: tr('Хэрэглэгч')), Tab(text: tr('Админ / Дилер'))],
           ),
           Expanded(
             child: TabBarView(children: [
-              ListView(padding: const EdgeInsets.all(16), children: const [Panel(child: PhoneCodeForm())]),
+              ListView(padding: const EdgeInsets.all(16), children: const [Panel(child: PhoneCodeForm()), SizedBox(height: 12), Panel(child: LanguagePicker())]),
               ListView(padding: const EdgeInsets.all(16), children: [
                 Panel(
                   child: adminSignedIn
                       ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                           const Icon(Icons.admin_panel_settings_outlined, size: 40, color: AppPalette.primary),
                           const SizedBox(height: 12),
-                          Text('${AdminApi.session.user?.firstname ?? AdminApi.session.user?.phonenumber ?? ''} — та админ хэсэгт нэвтэрсэн байна.',
+                          Text(tr('{phonenumber} — та админ хэсэгт нэвтэрсэн байна.', {'phonenumber': AdminApi.session.user?.firstname ?? AdminApi.session.user?.phonenumber ?? ''}),
                               textAlign: TextAlign.center, style: const TextStyle(color: AppPalette.mutedForeground)),
                           const SizedBox(height: 16),
-                          PrimaryButton(label: 'Админ хэсэг рүү шилжих', onTap: () => Stores.mode.setAdmin(true)),
+                          PrimaryButton(label: tr('Админ хэсэг рүү шилжих'), onTap: () => Stores.mode.setAdmin(true)),
                         ])
-                      : const Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                          Text('Админ болон дилер утасны дугаар, нууц үгээрээ нэвтэрнэ.', style: TextStyle(color: AppPalette.mutedForeground)),
+                      : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                          Text(tr('Админ болон дилер утасны дугаар, нууц үгээрээ нэвтэрнэ.'), style: TextStyle(color: AppPalette.mutedForeground)),
                           SizedBox(height: 16),
                           AdminLoginForm(),
                         ]),
@@ -129,13 +130,13 @@ class _AccountState extends State<_Account> {
           builder: (context, _) => Panel(
             padding: EdgeInsets.zero,
             child: Column(children: [
-              _Link(icon: Icons.chat_bubble_outline_rounded, label: 'Мессеж', count: _unread, alert: true, onTap: () => push(const MessagesScreen())),
+              _Link(icon: Icons.chat_bubble_outline_rounded, label: tr('Мессеж'), count: _unread, alert: true, onTap: () => push(const MessagesScreen())),
               const Divider(height: 1),
-              _Link(icon: Icons.favorite_border_rounded, label: 'Хадгалсан', count: Stores.favorites.ids.length, onTap: () => push(const SavedScreen())),
+              _Link(icon: Icons.favorite_border_rounded, label: tr('Хадгалсан'), count: Stores.favorites.ids.length, onTap: () => push(const SavedScreen())),
               const Divider(height: 1),
-              _Link(icon: Icons.compare_arrows_rounded, label: 'Харьцуулалт', count: Stores.compare.ids.length, onTap: () => Stores.shell.go(ShellController.compare)),
+              _Link(icon: Icons.compare_arrows_rounded, label: tr('Харьцуулалт'), count: Stores.compare.ids.length, onTap: () => Stores.shell.go(ShellController.compare)),
               const Divider(height: 1),
-              _Link(icon: Icons.support_rounded, label: 'Тусламж', onTap: () => push(const HelpScreen())),
+              _Link(icon: Icons.support_rounded, label: tr('Тусламж'), onTap: () => push(const HelpScreen())),
             ]),
           ),
         ),
@@ -143,13 +144,15 @@ class _AccountState extends State<_Account> {
         Panel(
           padding: EdgeInsets.zero,
           child: Column(children: [
-            _Link(icon: Icons.phone_iphone_rounded, label: 'Утасны дугаар солих', onTap: () => _changePhone(context)),
+            _Link(icon: Icons.phone_iphone_rounded, label: tr('Утасны дугаар солих'), onTap: () => _changePhone(context)),
             if (user.isStaff) ...[
               const Divider(height: 1),
-              _Link(icon: Icons.admin_panel_settings_outlined, label: 'Админ хэсэг рүү шилжих', onTap: () => Stores.mode.setAdmin(true)),
+              _Link(icon: Icons.admin_panel_settings_outlined, label: tr('Админ хэсэг рүү шилжих'), onTap: () => Stores.mode.setAdmin(true)),
             ],
           ]),
         ),
+        const SizedBox(height: 12),
+        const Panel(child: LanguagePicker()),
         const SizedBox(height: 12),
         Material(
           color: AppPalette.card,
@@ -157,12 +160,12 @@ class _AccountState extends State<_Account> {
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: Stores.auth.signOut,
-            child: const SizedBox(
+            child: SizedBox(
               height: 56,
               child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Icon(Icons.logout_rounded, size: 18, color: AppPalette.destructive),
                 SizedBox(width: 8),
-                Text('Гарах', style: TextStyle(fontWeight: FontWeight.w600, color: AppPalette.destructive)),
+                Text(tr('Гарах'), style: TextStyle(fontWeight: FontWeight.w600, color: AppPalette.destructive)),
               ]),
             ),
           ),
@@ -182,7 +185,7 @@ Future<void> _changePhone(BuildContext context) => showModalBottomSheet(
       builder: (sheet) => Padding(
         padding: EdgeInsets.fromLTRB(16, 20, 16, 16 + MediaQuery.viewInsetsOf(sheet).bottom),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          const Text('Утасны дугаар солих', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          Text(tr('Утасны дугаар солих'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           PhoneCodeForm(autofocus: true, change: true, onDone: () => Navigator.of(sheet).pop()),
         ]),

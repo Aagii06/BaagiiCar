@@ -7,6 +7,7 @@ import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/dealer_avatar.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 class DealerLogo extends StatelessWidget {
   final Dealer dealer;
@@ -28,7 +29,7 @@ class DealersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: const TabAppBar(title: 'Дилерүүд'),
+        appBar: TabAppBar(title: tr('Дилерүүд')),
         body: Loader<List<Dealer>>(
           fetch: Api.getDealers,
           loading: Pulse(
@@ -54,7 +55,7 @@ class DealersScreen extends StatelessWidget {
             ]),
           ),
           builder: (context, dealers, _) => ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 96), children: [
-            if (dealers.isEmpty) const EmptyView(title: 'Бүртгэлтэй дилер алга'),
+            if (dealers.isEmpty) EmptyView(title: tr('Бүртгэлтэй дилер алга')),
             for (final d in dealers)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -73,7 +74,7 @@ class DealersScreen extends StatelessWidget {
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(d.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                             const SizedBox(height: 2),
-                            Text('${d.carCount} зар', style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
+                            Text(tr('{carCount} зар', {'carCount': d.carCount}), style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
                           ]),
                         ),
                         const Icon(Icons.chevron_right_rounded, color: AppPalette.mutedForeground),
@@ -101,7 +102,7 @@ class _DealerScreenState extends State<DealerScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Дилерүүд')),
+        appBar: AppBar(title: Text(tr('Дилерүүд'))),
         body: ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 32), children: [
           Loader<Dealer>(
             fetch: () => Api.getDealer(widget.dealerId),
@@ -132,7 +133,7 @@ class _DealerScreenState extends State<DealerScreen> {
             fetch: () => Api.getDealerCars(widget.dealerId, take: _take),
             loading: const CarCardSkeleton(count: 3),
             builder: (context, page, refreshing) => Column(children: [
-              if (page.rows.isEmpty) const EmptyView(title: 'Энэ дилерт одоогоор зар алга') else CarList(cars: page.rows),
+              if (page.rows.isEmpty) EmptyView(title: tr('Энэ дилерт одоогоор зар алга')) else CarList(cars: page.rows),
               if (page.count > page.rows.length)
                 SizedBox(
                   width: double.infinity,
@@ -147,7 +148,7 @@ class _DealerScreenState extends State<DealerScreen> {
                     ),
                     child: refreshing
                         ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.2, color: AppPalette.primary))
-                        : Text('Цааш үзэх  ${page.rows.length} / ${page.count}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                        : Text(tr('Цааш үзэх  {rows} / {count}', {'rows': page.rows.length, 'count': page.count}), style: const TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),
             ]),

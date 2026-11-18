@@ -2,6 +2,7 @@
 library;
 
 import 'dart:convert';
+import 'package:mashinuud_app/app/i18n.dart';
 
 int? _int(Object? v) => v == null ? null : (v is int ? v : int.tryParse('$v'));
 String? _str(Object? v) => v?.toString();
@@ -123,7 +124,7 @@ class Car {
   /// "Toyota Prius"
   String get title {
     final t = [brandName, modelName].whereType<String>().where((s) => s.isNotEmpty).join(' ');
-    return t.isNotEmpty ? t : (name ?? 'Машин');
+    return t.isNotEmpty ? t : (name ?? tr('Машин'));
   }
 
   /// "Toyota Prius 2015"

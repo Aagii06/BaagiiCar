@@ -6,6 +6,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/screens/help.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Dark "Зээлийн тооцоолуур" card: adjust the down payment (default 30%), pick a term, see the monthly payment.
 class LeasingCalculator extends StatefulWidget {
@@ -38,12 +39,12 @@ class _LeasingCalculatorState extends State<LeasingCalculator> {
     return Panel(
       color: AppPalette.dark,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Зээлийн тооцоолуур', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+        Text(tr('Зээлийн тооцоолуур'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
         const SizedBox(height: 12),
         Row(children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Урьдчилгаа', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
+              Text(tr('Урьдчилгаа'), style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
               const SizedBox(height: 2),
               Text(amount > 0 && valid ? formatPrice(down) : '—', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
             ]),
@@ -52,7 +53,7 @@ class _LeasingCalculatorState extends State<LeasingCalculator> {
             TextButton(
               onPressed: () => setState(() => _down.text = _defaultDown),
               style: TextButton.styleFrom(foregroundColor: Colors.white.withValues(alpha: 0.6), textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-              child: Text('$_defaultDown% болгох'),
+              child: Text(tr('{_defaultDown}% болгох', {'_defaultDown': _defaultDown})),
             ),
           const SizedBox(width: 4),
           Container(
@@ -103,7 +104,7 @@ class _LeasingCalculatorState extends State<LeasingCalculator> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Center(
-                        child: Text('$m сар', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: m == _months ? AppPalette.dark : Colors.white)),
+                        child: Text(tr('{m} сар', {'m': m}), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: m == _months ? AppPalette.dark : Colors.white)),
                       ),
                     ),
                   ),
@@ -113,12 +114,12 @@ class _LeasingCalculatorState extends State<LeasingCalculator> {
         ]),
         const SizedBox(height: 20),
         Row(children: [
-          Expanded(child: Text('Сарын төлбөр ($_months сар)', style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14))),
+          Expanded(child: Text(tr('Сарын төлбөр ({_months} сар)', {'_months': _months}), style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14))),
           Text(amount > 0 && valid ? formatPrice(monthly) : '—', style: const TextStyle(color: AppPalette.primary, fontSize: 20, fontWeight: FontWeight.w700)),
         ]),
         const SizedBox(height: 8),
         Text(
-          'Жишиг тооцоо: сарын ${(Leasing.monthlyRate * 100).toStringAsFixed(1)}% хүүтэй. Бодит нөхцөл банк, лизингийн компаниас хамаарна.',
+          tr('Жишиг тооцоо: сарын {toStringAsFixed}% хүүтэй. Бодит нөхцөл банк, лизингийн компаниас хамаарна.', {'toStringAsFixed': (Leasing.monthlyRate * 100).toStringAsFixed(1)}),
           style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11, height: 1.4),
         ),
         const SizedBox(height: 16),
@@ -133,7 +134,7 @@ class _LeasingCalculatorState extends State<LeasingCalculator> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
               textStyle: const TextStyle(fontWeight: FontWeight.w700),
             ),
-            child: const Text('Зээлийн хүсэлт илгээх'),
+            child: Text(tr('Зээлийн хүсэлт илгээх')),
           ),
         ),
       ]),
@@ -161,14 +162,14 @@ class _LeasingScreenState extends State<LeasingScreen> {
   Widget build(BuildContext context) {
     final price = toNumber(_price.text);
     return Scaffold(
-      appBar: AppBar(title: const Text('Лизинг')),
+      appBar: AppBar(title: Text(tr('Лизинг'))),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        const Text('Машины үнээ оруулаад сарын төлбөрөө тооцоолоорой. Тодорхой зар дээрх тооцоолуур тухайн машины үнээр шууд бодно.',
+        Text(tr('Машины үнээ оруулаад сарын төлбөрөө тооцоолоорой. Тодорхой зар дээрх тооцоолуур тухайн машины үнээр шууд бодно.'),
             style: TextStyle(fontSize: 14, height: 1.6, color: AppPalette.mutedForeground)),
         const SizedBox(height: 16),
         Panel(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Машины үнэ (₮)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+            Text(tr('Машины үнэ (₮)'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             TextField(
               controller: _price,
@@ -182,9 +183,9 @@ class _LeasingScreenState extends State<LeasingScreen> {
             ],
             const SizedBox(height: 18),
             for (final line in [
-              'Урьдчилгаа: үнийн ${(Leasing.downPaymentRate * 100).round()}%',
-              'Хугацаа: ${Leasing.terms.join(', ')} сар',
-              'Жишиг хүү: сарын ${(Leasing.monthlyRate * 100).toStringAsFixed(1)}% — бодит хүү банк, лизингийн компаниас хамаарна',
+              tr('Урьдчилгаа: үнийн {downPaymentRate}%', {'downPaymentRate': (Leasing.downPaymentRate * 100).round()}),
+              tr('Хугацаа: {terms} сар', {'terms': Leasing.terms.join(', ')}),
+              tr('Жишиг хүү: сарын {toStringAsFixed}% — бодит хүү банк, лизингийн компаниас хамаарна', {'toStringAsFixed': (Leasing.monthlyRate * 100).toStringAsFixed(1)}),
             ])
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -192,7 +193,7 @@ class _LeasingScreenState extends State<LeasingScreen> {
               ),
             const SizedBox(height: 8),
             OutlineAction(
-              label: 'Машин сонгох',
+              label: tr('Машин сонгох'),
               onTap: () {
                 Navigator.of(context).popUntil((r) => r.isFirst);
                 Stores.shell.openCars();

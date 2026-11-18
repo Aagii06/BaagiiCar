@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/app_bar.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// AI assistant behind the round button — full screen; the AI itself is not connected yet.
 class AiChatScreen extends StatelessWidget {
@@ -27,16 +28,16 @@ class AiChatScreen extends StatelessWidget {
                       _ring(const Icon(Icons.smart_toy_outlined, color: AppPalette.primary)),
                     ]),
                     const SizedBox(height: 12),
-                    const Text('AI туслах', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                    Text(tr('AI туслах'), style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 4),
-                    Text('Машин сонголт, ерөнхий асуултад хариулна', style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
+                    Text(tr('Машин сонголт, ерөнхий асуултад хариулна'), style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
                   ]),
                 ),
                 Positioned(
                   right: 4,
                   top: 4,
                   child: IconButton(
-                    tooltip: 'Хаах',
+                    tooltip: tr('Хаах'),
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close_rounded, color: Colors.white),
                   ),
@@ -45,15 +46,15 @@ class AiChatScreen extends StatelessWidget {
             ),
           ),
           // The AI thread will live here once it is connected (messages.type = "ai").
-          const Expanded(
+          Expanded(
             child: Padding(
               padding: EdgeInsets.all(24),
               child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                 CircleAvatar(radius: 28, backgroundColor: AppPalette.primarySoft, child: Icon(Icons.smart_toy_outlined, color: AppPalette.primary, size: 28)),
                 SizedBox(height: 14),
-                Text('AI чат хүлээгдэж байна', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                Text(tr('AI чат хүлээгдэж байна'), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 SizedBox(height: 6),
-                Text('Зарын тухай асуултаа зар дээрх чат товчоор илгээгээрэй.',
+                Text(tr('Зарын тухай асуултаа зар дээрх чат товчоор илгээгээрэй.'),
                     textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
               ]),
             ),

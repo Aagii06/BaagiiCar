@@ -1,6 +1,8 @@
 /// Number / price / time formatting — mirrors web/src/lib/utils.ts.
 library;
 
+import 'package:mashinuud_app/app/i18n.dart';
+
 double toNumber(Object? value) {
   if (value == null) return 0;
   if (value is num) return value.toDouble();
@@ -22,17 +24,17 @@ String formatNumber(Object? value) {
 /// "45,000,000₮"
 String formatPrice(Object? value) {
   final n = toNumber(value);
-  return n != 0 ? '${formatNumber(n)}₮' : 'Үнэ тохирно';
+  return n != 0 ? '${formatNumber(n)}₮' : tr('Үнэ тохирно');
 }
 
 /// "45.5 сая₮" — compact price for cards.
 String formatPriceShort(Object? value) {
   final n = toNumber(value);
-  if (n == 0) return 'Үнэ тохирно';
+  if (n == 0) return tr('Үнэ тохирно');
   if (n >= 1000000) {
     final m = double.parse((n / 1000000).toStringAsFixed(1));
     final text = m == m.roundToDouble() ? formatNumber(m) : m.toString();
-    return '$text сая₮';
+    return tr('{text} сая₮', {'text': text});
   }
   return formatPrice(n);
 }
@@ -40,10 +42,10 @@ String formatPriceShort(Object? value) {
 String formatEngine(Object? value) {
   final n = toNumber(value);
   if (n == 0) return '—';
-  return '${n == n.roundToDouble() ? n.toInt() : n} л';
+  return tr('{n} л', {'n': n == n.roundToDouble() ? n.toInt() : n});
 }
 
-String formatKm(Object? value) => '${formatNumber(value)} км';
+String formatKm(Object? value) => tr('{value} км', {'value': formatNumber(value)});
 
 /// "2 цагийн өмнө" from the backend's "YYYY-MM-DD HH:mm:ss" (+08:00).
 String timeAgo(String? value) {
@@ -51,12 +53,12 @@ String timeAgo(String? value) {
   final date = DateTime.tryParse('${value.replaceFirst(' ', 'T')}+08:00');
   if (date == null) return '';
   final minutes = DateTime.now().difference(date).inMinutes.clamp(0, 1 << 31);
-  if (minutes < 1) return 'саяхан';
-  if (minutes < 60) return '$minutes минутын өмнө';
+  if (minutes < 1) return tr('саяхан');
+  if (minutes < 60) return tr('{minutes} минутын өмнө', {'minutes': minutes});
   final hours = (minutes / 60).round();
-  if (hours < 24) return '$hours цагийн өмнө';
+  if (hours < 24) return tr('{hours} цагийн өмнө', {'hours': hours});
   final days = (hours / 24).round();
-  if (days < 30) return '$days өдрийн өмнө';
+  if (days < 30) return tr('{days} өдрийн өмнө', {'days': days});
   return value.substring(0, 10);
 }
 

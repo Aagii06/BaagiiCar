@@ -10,6 +10,7 @@ import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/dealer_avatar.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 const _mln = 1000000;
 
@@ -176,7 +177,7 @@ class _CarsScreenState extends State<CarsScreen> {
     final more = (_result?.count ?? 0) > rows.length;
 
     return Scaffold(
-      appBar: const TabAppBar(title: 'Машин хайх'),
+      appBar: TabAppBar(title: tr('Машин хайх')),
       body: RefreshIndicator(
         color: AppPalette.primary,
         onRefresh: _load,
@@ -184,7 +185,7 @@ class _CarsScreenState extends State<CarsScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
           children: [
             if (_dealers == null || _dealers!.isNotEmpty) ...[
-              const _RowLabel('Дилерүүд'),
+              _RowLabel(tr('Дилерүүд')),
               _TileRow(
                 loading: _dealers == null,
                 children: [
@@ -201,7 +202,7 @@ class _CarsScreenState extends State<CarsScreen> {
               ),
               const SizedBox(height: 14),
             ],
-            const _RowLabel('Үйлдвэр'),
+            _RowLabel(tr('Үйлдвэр')),
             _TileRow(
               loading: _brands == null,
               children: [
@@ -231,7 +232,7 @@ class _CarsScreenState extends State<CarsScreen> {
                       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                         const Icon(Icons.tune_rounded, size: 18),
                         const SizedBox(width: 8),
-                        const Text('Шүүлтүүр', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                        Text(tr('Шүүлтүүр'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                         if (_filterCount > 0) ...[
                           const SizedBox(width: 6),
                           CircleAvatar(
@@ -249,7 +250,7 @@ class _CarsScreenState extends State<CarsScreen> {
               SizedBox(
                 width: 170,
                 child: SelectField<CarSort>(
-                  label: 'Эрэмбэлэх',
+                  label: tr('Эрэмбэлэх'),
                   value: _search.sort,
                   placeholder: CarSort.newest.label,
                   options: [for (final s in CarSort.values.skip(1)) Option(s, s.label)],
@@ -258,14 +259,14 @@ class _CarsScreenState extends State<CarsScreen> {
               ),
             ]),
             const SizedBox(height: 14),
-            Text(_result != null ? '${_result!.count} зар олдлоо' : ' ', style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
+            Text(_result != null ? tr('{count} зар олдлоо', {'count': _result!.count}) : ' ', style: const TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
             const SizedBox(height: 10),
             if (_error != null)
               ErrorView(message: '$_error', onRetry: _load)
             else if (_result == null)
               const CarCardSkeleton()
             else if (rows.isEmpty)
-              const EmptyView(title: 'Тохирох зар олдсонгүй', description: 'Шүүлтүүрээ өөрчлөөд дахин оролдоно уу.')
+              EmptyView(title: tr('Тохирох зар олдсонгүй'), description: tr('Шүүлтүүрээ өөрчлөөд дахин оролдоно уу.'))
             else
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 150),
@@ -297,7 +298,7 @@ class _CarsScreenState extends State<CarsScreen> {
                         child: _loadingMore
                             ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.2, color: AppPalette.primary))
                             : Text.rich(TextSpan(children: [
-                                const TextSpan(text: 'Цааш үзэх  ', style: TextStyle(fontWeight: FontWeight.w700)),
+                                TextSpan(text: tr('Цааш үзэх  '), style: TextStyle(fontWeight: FontWeight.w700)),
                                 TextSpan(text: '${rows.length} / ${_result?.count}', style: const TextStyle(color: AppPalette.mutedForeground)),
                               ])),
                       ),
@@ -446,12 +447,12 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Scaffold(
       backgroundColor: AppPalette.muted,
       appBar: AppBar(
-        title: const Text('Шүүлтүүр'),
+        title: Text(tr('Шүүлтүүр')),
         actions: [
           if (_hasFilters)
             TextButton(
               onPressed: () => setState(() => _d = CarSearch(sort: _d.sort, featuredFirst: true)),
-              child: const Text('Цэвэрлэх', style: TextStyle(color: AppPalette.primary, fontWeight: FontWeight.w600)),
+              child: Text(tr('Цэвэрлэх'), style: TextStyle(color: AppPalette.primary, fontWeight: FontWeight.w600)),
             ),
           const SizedBox(width: 4),
         ],
@@ -464,10 +465,10 @@ class _FiltersScreenState extends State<FiltersScreen> {
               // Hidden only once loaded with no dealers; spins while loading, like the brand list.
               if (_dealers == null || _dealers!.isNotEmpty)
                 _group(
-                  'Дилер',
+                  tr('Дилер'),
                   SelectField<int>(
-                    label: 'Дилер',
-                    placeholder: 'Бүх дилер',
+                    label: tr('Дилер'),
+                    placeholder: tr('Бүх дилер'),
                     value: _d.dealerId,
                     loading: _dealers == null,
                     options: [for (final d in _dealers ?? <Dealer>[]) Option(d.id, d.name)],
@@ -477,10 +478,10 @@ class _FiltersScreenState extends State<FiltersScreen> {
                   ),
                   first: true,
                 ),
-              _group('Үйлдвэр, загвар', Column(children: [
+              _group(tr('Үйлдвэр, загвар'), Column(children: [
                 SelectField<int>(
-                  label: 'Үйлдвэр',
-                  placeholder: 'Бүх үйлдвэр',
+                  label: tr('Үйлдвэр'),
+                  placeholder: tr('Бүх үйлдвэр'),
                   value: _d.brandIds.firstOrNull,
                   options: [for (final b in widget.brands) Option(b.id, b.name)],
                   onChanged: (v) {
@@ -493,8 +494,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
                 ),
                 const SizedBox(height: 10),
                 SelectField<int>(
-                  label: 'Загвар',
-                  placeholder: 'Бүх загвар',
+                  label: tr('Загвар'),
+                  placeholder: tr('Бүх загвар'),
                   value: _d.modelId,
                   enabled: _d.brandIds.isNotEmpty,
                   loading: _modelsLoading,
@@ -504,7 +505,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
               ]), first: _dealers?.isEmpty ?? false),
               if (widget.bodyTypes.isNotEmpty)
                 _group(
-                  'Төрөл',
+                  tr('Төрөл'),
                   GridView.count(
                     crossAxisCount: 2,
                     shrinkWrap: true,
@@ -526,7 +527,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
                   ),
                 ),
               _group(
-                'Үнэ (сая ₮)',
+                tr('Үнэ (сая ₮)'),
                 _range(
                   options: _prices,
                   from: _d.priceMin == null ? null : _d.priceMin! ~/ _mln,
@@ -534,11 +535,11 @@ class _FiltersScreenState extends State<FiltersScreen> {
                   onChanged: (a, b) => setState(() => _d = _copy(_d, priceMin: a == null ? null : a * _mln, priceMax: b == null ? null : b * _mln)),
                 ),
               ),
-              _group('Үйлдвэрлэсэн он', _range(options: _years, from: _d.yearFrom, to: _d.yearTo, onChanged: (a, b) => setState(() => _d = _copy(_d, yearFrom: a, yearTo: b)))),
-              _group('Орж ирсэн он',
+              _group(tr('Үйлдвэрлэсэн он'), _range(options: _years, from: _d.yearFrom, to: _d.yearTo, onChanged: (a, b) => setState(() => _d = _copy(_d, yearFrom: a, yearTo: b)))),
+              _group(tr('Орж ирсэн он'),
                   _range(options: _years, from: _d.importedFrom, to: _d.importedTo, onChanged: (a, b) => setState(() => _d = _copy(_d, importedFrom: a, importedTo: b)))),
               _group(
-                'Түлш',
+                tr('Түлш'),
                 Column(children: [
                   for (final f in fuelTypes)
                     InkWell(
@@ -551,14 +552,14 @@ class _FiltersScreenState extends State<FiltersScreen> {
                         child: Row(children: [
                           _Check(on: _d.fuelTypes.contains(f)),
                           const SizedBox(width: 12),
-                          Text(f, style: const TextStyle(fontSize: 15)),
+                          Text(trValue(f), style: const TextStyle(fontSize: 15)),
                         ]),
                       ),
                     ),
                 ]),
               ),
               _group(
-                'Хүрд',
+                tr('Хүрд'),
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(color: AppPalette.muted, borderRadius: BorderRadius.circular(AppRadius.md)),
@@ -576,7 +577,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
                               boxShadow: _d.steering == s ? [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 4)] : null,
                             ),
                             alignment: Alignment.center,
-                            child: Text(s ?? 'Бүгд', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _d.steering == s ? null : AppPalette.foreground.withValues(alpha: 0.7))),
+                            child: Text(s == null ? tr('Бүгд') : trValue(s), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _d.steering == s ? null : AppPalette.foreground.withValues(alpha: 0.7))),
                           ),
                         ),
                       ),
@@ -590,7 +591,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: PrimaryButton(label: 'Хайх', icon: Icons.search_rounded, onTap: () => Navigator.pop(context, _copy(_d))),
+          child: PrimaryButton(label: tr('Хайх'), icon: Icons.search_rounded, onTap: () => Navigator.pop(context, _copy(_d))),
         ),
       ),
     );
@@ -610,8 +611,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
   Widget _range({required List<int> options, int? from, int? to, required void Function(int?, int?) onChanged}) => Row(children: [
         Expanded(
           child: SelectField<int>(
-            label: 'Доод',
-            placeholder: 'Доод',
+            label: tr('Доод'),
+            placeholder: tr('Доод'),
             value: from,
             options: [for (final v in options.where((v) => to == null || v <= to)) Option(v, '$v')],
             onChanged: (v) => onChanged(v, to),
@@ -620,8 +621,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
         const SizedBox(width: 8),
         Expanded(
           child: SelectField<int>(
-            label: 'Дээд',
-            placeholder: 'Дээд',
+            label: tr('Дээд'),
+            placeholder: tr('Дээд'),
             value: to,
             options: [for (final v in options.where((v) => from == null || v >= from)) Option(v, '$v')],
             onChanged: (v) => onChanged(from, v),

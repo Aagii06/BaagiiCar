@@ -9,6 +9,7 @@ import 'package:mashinuud_app/screens/home.dart';
 import 'package:mashinuud_app/screens/profile.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Bottom navigation (Нүүр · Дилерүүд · Хайх · Харьцуулалт · Профайл) with the AI button and the compare bar on top.
 class Shell extends StatelessWidget {
@@ -32,7 +33,7 @@ class Shell extends StatelessWidget {
           if (shell.tab != ShellController.compare) const Positioned(left: 16, right: 88, bottom: 16, child: CompareBar()),
         ]),
         floatingActionButton: FloatingActionButton(
-          tooltip: 'AI туслах',
+          tooltip: tr('AI туслах'),
           backgroundColor: AppPalette.primary,
           foregroundColor: Colors.white,
           shape: const CircleBorder(),
@@ -44,12 +45,12 @@ class Shell extends StatelessWidget {
           child: NavigationBar(
             selectedIndex: shell.tab,
             onDestinationSelected: shell.go,
-            destinations: const [
-              NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Нүүр'),
-              NavigationDestination(icon: Icon(Icons.storefront_outlined), selectedIcon: Icon(Icons.storefront_rounded), label: 'Дилерүүд'),
-              NavigationDestination(icon: Icon(Icons.search_rounded), label: 'Хайх'),
-              NavigationDestination(icon: Icon(Icons.compare_arrows_rounded), label: 'Харьцуулалт'),
-              NavigationDestination(icon: Icon(Icons.person_outline_rounded), selectedIcon: Icon(Icons.person_rounded), label: 'Профайл'),
+            destinations: [
+              NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: tr('Нүүр')),
+              NavigationDestination(icon: Icon(Icons.storefront_outlined), selectedIcon: Icon(Icons.storefront_rounded), label: tr('Дилерүүд')),
+              NavigationDestination(icon: Icon(Icons.search_rounded), label: tr('Хайх')),
+              NavigationDestination(icon: Icon(Icons.compare_arrows_rounded), label: tr('Харьцуулалт')),
+              NavigationDestination(icon: Icon(Icons.person_outline_rounded), selectedIcon: Icon(Icons.person_rounded), label: tr('Профайл')),
             ],
           ),
         ),
@@ -87,7 +88,7 @@ class CompareBar extends StatelessWidget {
                   onPressed: () => Stores.shell.go(ShellController.compare),
                   iconAlignment: IconAlignment.end,
                   icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                  label: const Text('Харьцуулалт'),
+                  label: Text(tr('Харьцуулалт')),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppPalette.primary,
                     minimumSize: const Size(0, 36),
@@ -97,7 +98,7 @@ class CompareBar extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Цэвэрлэх',
+                  tooltip: tr('Цэвэрлэх'),
                   onPressed: Stores.compare.clear,
                   icon: const Icon(Icons.close_rounded, size: 18, color: Colors.white70),
                 ),

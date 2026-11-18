@@ -6,6 +6,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// "9911 2233" for 8-digit numbers.
 String _spaced(String phone) => RegExp(r'^\d{8}$').hasMatch(phone) ? '${phone.substring(0, 4)} ${phone.substring(4)}' : phone;
@@ -64,7 +65,7 @@ class _PhoneButtonState extends State<PhoneButton> {
     if (widget.style == PhoneButtonStyle.icon) {
       return SquareIconButton(
         icon: Icons.phone_outlined,
-        tooltip: 'Дугаар харах',
+        tooltip: tr('Дугаар харах'),
         size: widget.size,
         color: AppPalette.primary,
         borderColor: AppPalette.primary,
@@ -72,7 +73,7 @@ class _PhoneButtonState extends State<PhoneButton> {
         onTap: _show,
       );
     }
-    return PrimaryButton(label: 'Дугаар харах', icon: Icons.phone_rounded, height: widget.size, busy: _busy, onTap: _show);
+    return PrimaryButton(label: tr('Дугаар харах'), icon: Icons.phone_rounded, height: widget.size, busy: _busy, onTap: _show);
   }
 }
 
@@ -109,7 +110,7 @@ class _PhoneSheetState extends State<_PhoneSheet> {
         ),
         const SizedBox(height: 12),
         Text(
-          (widget.seller ?? '').isNotEmpty ? widget.seller! : 'Утасны дугаар',
+          (widget.seller ?? '').isNotEmpty ? widget.seller! : tr('Утасны дугаар'),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground),
@@ -122,14 +123,14 @@ class _PhoneSheetState extends State<_PhoneSheet> {
         ),
         const SizedBox(height: 12),
         Tooltip(
-          message: 'Дугаар харсан',
+          message: tr('Дугаар харсан'),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(color: AppPalette.muted, borderRadius: BorderRadius.circular(99)),
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               const Icon(Icons.visibility_outlined, size: 15, color: AppPalette.mutedForeground),
               const SizedBox(width: 6),
-              Text('${widget.count}', semanticsLabel: 'Дугаар харсан ${widget.count}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground)),
+              Text('${widget.count}', semanticsLabel: tr('Дугаар харсан {count}', {'count': widget.count}), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground)),
             ]),
           ),
         ),
@@ -144,7 +145,7 @@ class _PhoneSheetState extends State<_PhoneSheet> {
                   setState(() => _copied = true);
                 },
                 icon: Icon(_copied ? Icons.check_rounded : Icons.copy_rounded, size: 18),
-                label: Text(_copied ? 'Хуулсан' : 'Хуулах'),
+                label: Text(_copied ? tr('Хуулсан') : tr('Хуулах')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppPalette.foreground,
                   side: const BorderSide(color: AppPalette.border),
@@ -155,7 +156,7 @@ class _PhoneSheetState extends State<_PhoneSheet> {
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(child: PrimaryButton(label: 'Залгах', icon: Icons.phone_rounded, onTap: call)),
+          Expanded(child: PrimaryButton(label: tr('Залгах'), icon: Icons.phone_rounded, onTap: call)),
         ]),
       ]),
     );

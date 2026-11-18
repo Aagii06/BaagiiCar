@@ -8,7 +8,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/app_bar.dart';
 import 'package:mashinuud_app/widgets/common.dart';
-import 'package:mashinuud_app/admin/i18n.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 final _phoneRe = RegExp(r'^[5-9]\d{7}$');
 

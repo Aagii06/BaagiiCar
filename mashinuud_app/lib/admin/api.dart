@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:mashinuud_app/admin/models.dart';
 import 'package:mashinuud_app/api/client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mashinuud_app/admin/i18n.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Signed-in admin / dealer, kept on the device (like the panel's localStorage session).
 class AdminSession extends ChangeNotifier {

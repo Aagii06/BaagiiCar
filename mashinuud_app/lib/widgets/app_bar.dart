@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/screens/saved.dart';
 import 'package:mashinuud_app/state/stores.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Orange mark + "CARDEALER" wordmark.
 class Logo extends StatelessWidget {
@@ -47,7 +48,7 @@ class SavedAction extends StatelessWidget {
   const SavedAction({super.key});
   @override
   Widget build(BuildContext context) => IconButton(
-        tooltip: 'Хадгалсан',
+        tooltip: tr('Хадгалсан'),
         icon: const Icon(Icons.favorite_border_rounded),
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SavedScreen())),
       );
@@ -63,7 +64,7 @@ class AdminAction extends StatelessWidget {
         builder: (context, _) => Stores.auth.user?.isStaff != true
             ? const SizedBox.shrink()
             : IconButton(
-                tooltip: 'Админ самбар',
+                tooltip: tr('Админ самбар'),
                 icon: const Icon(Icons.dashboard_outlined),
                 onPressed: () => Stores.mode.setAdmin(true),
               ),

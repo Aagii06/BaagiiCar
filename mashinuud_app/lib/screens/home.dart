@@ -13,6 +13,7 @@ import 'package:mashinuud_app/widgets/app_bar.dart';
 import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 const _mln = 1000000;
 const _gutter = EdgeInsets.symmetric(horizontal: 16);
@@ -167,12 +168,12 @@ class _HeroState extends State<_Hero> {
                   key: ValueKey(_index),
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(s.kicker.toUpperCase(), style: kickerStyle(color: AppPalette.foreground.withValues(alpha: 0.7))),
+                    Text(tr(s.kicker).toUpperCase(), style: kickerStyle(color: AppPalette.foreground.withValues(alpha: 0.7))),
                     const SizedBox(height: 12),
-                    Text(s.light.toUpperCase(), style: displayStyle(44, weight: FontWeight.w300, height: 0.98)),
-                    Text(s.bold.toUpperCase(), style: displayStyle(44, color: AppPalette.primary, height: 0.98)),
+                    Text(tr(s.light).toUpperCase(), style: displayStyle(44, weight: FontWeight.w300, height: 0.98)),
+                    Text(tr(s.bold).toUpperCase(), style: displayStyle(44, color: AppPalette.primary, height: 0.98)),
                     const SizedBox(height: 14),
-                    Text(s.text, style: TextStyle(fontSize: 15, height: 1.6, color: AppPalette.foreground.withValues(alpha: 0.8))),
+                    Text(tr(s.text), style: TextStyle(fontSize: 15, height: 1.6, color: AppPalette.foreground.withValues(alpha: 0.8))),
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: () => s.open(context, widget.bodyTypes),
@@ -182,7 +183,7 @@ class _HeroState extends State<_Hero> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
                         textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 1.1),
                       ),
-                      child: Text(s.cta.toUpperCase()),
+                      child: Text(tr(s.cta).toUpperCase()),
                     ),
                   ],
                 ),
@@ -286,7 +287,7 @@ class _HeroSearchState extends State<_HeroSearch> {
         child: Column(children: [
           SelectField<int>(
             labelled: true,
-            label: 'Үйлдвэр',
+            label: tr('Үйлдвэр'),
             value: _brand,
             options: [for (final b in _brands) Option(b.id, b.name)],
             onChanged: _pickBrand,
@@ -294,7 +295,7 @@ class _HeroSearchState extends State<_HeroSearch> {
           divider(),
           SelectField<int>(
             labelled: true,
-            label: 'Загвар',
+            label: tr('Загвар'),
             value: _model,
             enabled: _brand != null,
             loading: _modelsLoading,
@@ -304,7 +305,7 @@ class _HeroSearchState extends State<_HeroSearch> {
           divider(),
           SelectField<int>(
             labelled: true,
-            label: 'Он',
+            label: tr('Он'),
             value: _yearFrom,
             options: [for (final y in _years) Option(y, '$y – $year')],
             onChanged: (v) => setState(() => _yearFrom = v),
@@ -312,10 +313,10 @@ class _HeroSearchState extends State<_HeroSearch> {
           divider(),
           SelectField<int>(
             labelled: true,
-            label: 'Үнэ',
+            label: tr('Үнэ'),
             value: _priceMax,
-            placeholder: 'Хязгааргүй',
-            options: [for (final p in _prices) Option(p, '$p сая ₮ хүртэл')],
+            placeholder: tr('Хязгааргүй'),
+            options: [for (final p in _prices) Option(p, tr('{p} сая ₮ хүртэл', {'p': p}))],
             onChanged: (v) => setState(() => _priceMax = v),
           ),
           Padding(
@@ -326,7 +327,7 @@ class _HeroSearchState extends State<_HeroSearch> {
               child: FilledButton.icon(
                 onPressed: _submit,
                 icon: const Icon(Icons.search_rounded),
-                label: Text('ХАЙХ', style: displayStyle(18, weight: FontWeight.w600, color: Colors.white)),
+                label: Text(tr('ХАЙХ'), style: displayStyle(18, weight: FontWeight.w600, color: Colors.white)),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppPalette.primary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
@@ -349,10 +350,10 @@ class _QuickLinks extends StatelessWidget {
   Widget build(BuildContext context) {
     void push(Widget page) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
     final items = [
-      (Icons.search_rounded, AppPalette.tintBlue, const Color(0xFF2B7BD8), 'Машин хайх', () => Stores.shell.openCars()),
-      (Icons.support_rounded, AppPalette.tintPeach, AppPalette.primary, 'Тусламж', () => push(const HelpScreen())),
-      (Icons.credit_card_rounded, AppPalette.tintLavender, const Color(0xFF6B4FD8), 'Лизинг', () => push(const LeasingScreen())),
-      (Icons.favorite_border_rounded, AppPalette.tintRose, AppPalette.destructive, 'Хадгалсан', () => push(const SavedScreen())),
+      (Icons.search_rounded, AppPalette.tintBlue, const Color(0xFF2B7BD8), tr('Машин хайх'), () => Stores.shell.openCars()),
+      (Icons.support_rounded, AppPalette.tintPeach, AppPalette.primary, tr('Тусламж'), () => push(const HelpScreen())),
+      (Icons.credit_card_rounded, AppPalette.tintLavender, const Color(0xFF6B4FD8), tr('Лизинг'), () => push(const LeasingScreen())),
+      (Icons.favorite_border_rounded, AppPalette.tintRose, AppPalette.destructive, tr('Хадгалсан'), () => push(const SavedScreen())),
     ];
     return GridView.count(
       crossAxisCount: 2,
@@ -395,13 +396,13 @@ class _Featured extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: _gutter,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SectionTitle(kicker: 'Онцлох', light: 'Онцлох', bold: 'машинууд', action: ViewAll(onTap: () => Stores.shell.openCars())),
+          SectionTitle(kicker: tr('Онцлох'), light: tr('Онцлох'), bold: tr('машинууд'), action: ViewAll(onTap: () => Stores.shell.openCars())),
           const SizedBox(height: 16),
           Loader<List<Car>>(
             fetch: () => Api.featuredCars(6),
             loading: const CarCardSkeleton(count: 3),
             builder: (context, cars, _) =>
-                cars.isEmpty ? const EmptyView(title: 'Одоогоор зар алга') : CarList(cars: cars, featuredBadge: true),
+                cars.isEmpty ? EmptyView(title: tr('Одоогоор зар алга')) : CarList(cars: cars, featuredBadge: true),
           ),
         ]),
       );
@@ -415,7 +416,7 @@ class _BrandGrid extends StatelessWidget {
         loading: Padding(
           padding: _gutter,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            SectionTitle(kicker: 'Бүх үйлдвэр', light: 'Машины', bold: 'үйлдвэр', action: ViewAll(onTap: () => Stores.shell.openCars())),
+            SectionTitle(kicker: tr('Бүх үйлдвэр'), light: tr('Машины'), bold: tr('үйлдвэр'), action: ViewAll(onTap: () => Stores.shell.openCars())),
             const SizedBox(height: 16),
             Pulse(
               child: GridView.count(
@@ -436,7 +437,7 @@ class _BrandGrid extends StatelessWidget {
           return Padding(
             padding: _gutter,
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SectionTitle(kicker: 'Бүх үйлдвэр', light: 'Машины', bold: 'үйлдвэр', action: ViewAll(onTap: () => Stores.shell.openCars())),
+              SectionTitle(kicker: tr('Бүх үйлдвэр'), light: tr('Машины'), bold: tr('үйлдвэр'), action: ViewAll(onTap: () => Stores.shell.openCars())),
               const SizedBox(height: 16),
               GridView.count(
                 crossAxisCount: 4,
@@ -485,7 +486,7 @@ class _BodyTypes extends StatelessWidget {
     return Padding(
       padding: _gutter,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const SectionTitle(kicker: 'Төрөл', light: 'Төрлөөр', bold: 'хайх'),
+        SectionTitle(kicker: tr('Төрөл'), light: tr('Төрлөөр'), bold: tr('хайх')),
         const SizedBox(height: 16),
         GridView.count(
           crossAxisCount: 2,
@@ -499,7 +500,7 @@ class _BodyTypes extends StatelessWidget {
               _TintTile(
                 color: _tints[i % _tints.length],
                 title: items[i].name,
-                subtitle: '${items[i].carCount} машин',
+                subtitle: tr('{carCount} машин', {'carCount': items[i].carCount}),
                 image: uploadUrl(items[i].image, folder: 'bodyTypes'),
                 onTap: () => Stores.shell.openCars(CarSearch(bodyTypeIds: [items[i].id])),
               ),
@@ -519,13 +520,13 @@ class _Budgets extends StatelessWidget {
     (100, 0, AppPalette.tintMint),
   ];
 
-  static String _label(int min, int max) => min == 0 ? '$max сая хүртэл' : (max == 0 ? '$min сая +' : '$min – $max сая');
+  static String _label(int min, int max) => min == 0 ? tr('{max} сая хүртэл', {'max': max}) : (max == 0 ? tr('{min} сая +', {'min': min}) : tr('{min} – {max} сая', {'min': min, 'max': max}));
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: _gutter,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const SectionTitle(light: 'Төсвөөрөө', bold: 'сонго'),
+          SectionTitle(light: tr('Төсвөөрөө'), bold: tr('сонго')),
           const SizedBox(height: 16),
           Loader<List<int>>(
             fetch: () => Future.wait([
@@ -556,7 +557,7 @@ class _Budgets extends StatelessWidget {
                   _TintTile(
                     color: _bands[i].$3,
                     title: _label(_bands[i].$1, _bands[i].$2),
-                    subtitle: '${counts[i]} машин',
+                    subtitle: tr('{i} машин', {'i': counts[i]}),
                     onTap: () => Stores.shell.openCars(CarSearch(
                       priceMin: _bands[i].$1 > 0 ? _bands[i].$1 * _mln : null,
                       priceMax: _bands[i].$2 > 0 ? _bands[i].$2 * _mln : null,
@@ -617,19 +618,19 @@ class _Banner extends StatelessWidget {
         ),
         padding: const EdgeInsets.fromLTRB(16, 40, 16, 40),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('МАШИН АВАХ', style: kickerStyle()),
+          Text(tr('МАШИН АВАХ'), style: kickerStyle()),
           const SizedBox(height: 12),
-          Text('МӨРӨӨДӨХ БИШ,', style: displayStyle(44, weight: FontWeight.w300, height: 0.98)),
-          Text('ЖОЛООД', style: displayStyle(44, color: AppPalette.primary, height: 0.98)),
+          Text(tr('МӨРӨӨДӨХ БИШ,'), style: displayStyle(44, weight: FontWeight.w300, height: 0.98)),
+          Text(tr('ЖОЛООД'), style: displayStyle(44, color: AppPalette.primary, height: 0.98)),
           const SizedBox(height: 18),
-          Text('Зарыг шүүж, тохирохоо сонгоод зарлагчтай шууд холбогдоорой.',
+          Text(tr('Зарыг шүүж, тохирохоо сонгоод зарлагчтай шууд холбогдоорой.'),
               style: TextStyle(fontSize: 15, height: 1.7, color: AppPalette.foreground.withValues(alpha: 0.7))),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: () => Stores.shell.openCars(),
             iconAlignment: IconAlignment.end,
             icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-            label: const Text('МАШИН ХАЙХ'),
+            label: Text(tr('МАШИН ХАЙХ')),
             style: FilledButton.styleFrom(
               backgroundColor: AppPalette.dark,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -651,9 +652,9 @@ class _Banner extends StatelessWidget {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(n, style: displayStyle(36, color: AppPalette.primary)),
                 const SizedBox(height: 14),
-                Text(title.toUpperCase(), style: displayStyle(18, weight: FontWeight.w600)),
+                Text(tr(title).toUpperCase(), style: displayStyle(18, weight: FontWeight.w600)),
                 const SizedBox(height: 6),
-                Text(text, style: const TextStyle(fontSize: 13, height: 1.5, color: AppPalette.mutedForeground)),
+                Text(tr(text), style: const TextStyle(fontSize: 13, height: 1.5, color: AppPalette.mutedForeground)),
               ]),
             ),
         ]),

@@ -1,5 +1,6 @@
 import 'package:mashinuud_app/api/client.dart';
 import 'package:mashinuud_app/api/models.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Every call the app makes — the same endpoints as the website (web/src/lib/api/*).
 class Api {
@@ -224,9 +225,11 @@ enum CarSort {
     {'selector': 'id', 'desc': true},
   ]);
 
-  final String label;
+  /// Mongolian; [label] shows it in the chosen language.
+  final String labelMn;
   final List<Map<String, Object>> order;
-  const CarSort(this.label, this.order);
+  const CarSort(this.labelMn, this.order);
+  String get label => tr(labelMn);
 }
 
 /// Search filters for `/cars`; prices in MNT.

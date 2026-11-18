@@ -11,6 +11,7 @@ import 'package:mashinuud_app/widgets/app_bar.dart';
 import 'package:mashinuud_app/widgets/car.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
+import 'package:mashinuud_app/app/i18n.dart';
 
 /// Which end of a numeric row is better; the best cell is green, the worst red.
 enum _Best { min, max }
@@ -120,7 +121,7 @@ class _CompareScreenState extends State<CompareScreen> {
     );
 
     return Scaffold(
-      appBar: const TabAppBar(title: 'Харьцуулалт'),
+      appBar: TabAppBar(title: tr('Харьцуулалт')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
         children: [
@@ -137,8 +138,8 @@ class _CompareScreenState extends State<CompareScreen> {
                           child: Checkbox(value: _diffOnly, activeColor: AppPalette.primary, onChanged: (v) => setState(() => _diffOnly = v ?? false)),
                         ),
                         const SizedBox(width: 8),
-                        const Flexible(
-                          child: Text('Зөвхөн ялгааг харуулах', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                        Flexible(
+                          child: Text(tr('Зөвхөн ялгааг харуулах'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ),
@@ -151,7 +152,7 @@ class _CompareScreenState extends State<CompareScreen> {
                     setState(() => _diffOnly = false);
                   },
                   avatar: const Icon(Icons.close_rounded, size: 15),
-                  label: const Text('Цэвэрлэх'),
+                  label: Text(tr('Цэвэрлэх')),
                   labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground),
                   backgroundColor: AppPalette.muted,
                   side: BorderSide.none,
@@ -162,10 +163,10 @@ class _CompareScreenState extends State<CompareScreen> {
             const SizedBox(height: 12),
           ],
           if (cars.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 12),
               child: Text(
-                'Машины карт дээрх харьцуулах товчийг дарж 4 хүртэл машин нэмнэ үү.',
+                tr('Машины карт дээрх харьцуулах товчийг дарж 4 хүртэл машин нэмнэ үү.'),
                 style: TextStyle(fontSize: 13, color: AppPalette.mutedForeground),
               ),
             ),
@@ -252,13 +253,13 @@ class _CompareScreenState extends State<CompareScreen> {
                                     child: InkWell(
                                       borderRadius: BorderRadius.circular(AppRadius.md),
                                       onTap: () => showComparePicker(context),
-                                      child: const Column(
+                                      child: Column(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Icon(Icons.add_rounded, size: 28, color: AppPalette.mutedForeground),
                                           SizedBox(height: 6),
                                           Text(
-                                            'Машин нэмэх',
+                                            tr('Машин нэмэх'),
                                             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground),
                                           ),
                                         ],
@@ -282,7 +283,7 @@ class _CompareScreenState extends State<CompareScreen> {
                                 children: [
                                   cell(
                                     Text(
-                                      r.label,
+                                      tr(r.label),
                                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppPalette.mutedForeground),
                                     ),
                                     width: labelW,
@@ -302,7 +303,7 @@ class _CompareScreenState extends State<CompareScreen> {
                                             children: [
                                               Flexible(
                                                 child: Text(
-                                                  v,
+                                                  trValue(v),
                                                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color),
                                                 ),
                                               ),
@@ -322,9 +323,9 @@ class _CompareScreenState extends State<CompareScreen> {
                           },
                         ),
                       if (diff && visible.isEmpty)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-                          child: Text('Ялгаатай үзүүлэлт алга', style: TextStyle(color: AppPalette.mutedForeground)),
+                          child: Text(tr('Ялгаатай үзүүлэлт алга'), style: TextStyle(color: AppPalette.mutedForeground)),
                         ),
                     ],
                   ),
@@ -399,7 +400,7 @@ class _ComparePickerState extends State<_ComparePicker> {
 
   String _bandLabel(int i) {
     final (min, max) = _bands[i];
-    return min == 0 ? '$max сая хүртэл' : (max == 0 ? '$min сая +' : '$min – $max сая');
+    return min == 0 ? tr('{max} сая хүртэл', {'max': max}) : (max == 0 ? tr('{min} сая +', {'min': min}) : tr('{min} – {max} сая', {'min': min, 'max': max}));
   }
 
   @override
@@ -423,14 +424,14 @@ class _ComparePickerState extends State<_ComparePicker> {
           padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
           child: Row(
             children: [
-              const Text('Машин нэмэх', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              Text(tr('Машин нэмэх'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
               const SizedBox(width: 10),
               ListenableBuilder(
                 listenable: Stores.compare,
                 builder: (_, _) => Text('${Stores.compare.ids.length} / ${AppConstants.compareMax}', style: const TextStyle(color: AppPalette.mutedForeground)),
               ),
               const Spacer(),
-              IconButton(tooltip: 'Хаах', onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
+              IconButton(tooltip: tr('Хаах'), onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded)),
             ],
           ),
         ),
@@ -440,7 +441,7 @@ class _ComparePickerState extends State<_ComparePicker> {
             children: [
               TextField(
                 controller: _query,
-                decoration: const InputDecoration(hintText: 'Үйлдвэр, загвараар хайх', prefixIcon: Icon(Icons.search_rounded, size: 20)),
+                decoration: InputDecoration(hintText: tr('Үйлдвэр, загвараар хайх'), prefixIcon: Icon(Icons.search_rounded, size: 20)),
                 onChanged: (v) {
                   _debounce?.cancel();
                   _debounce = Timer(const Duration(milliseconds: 300), () => _filter(() => _text = v.trim()));
@@ -451,8 +452,8 @@ class _ComparePickerState extends State<_ComparePicker> {
                 children: [
                   Expanded(
                     child: SelectField<int>(
-                      label: 'Үйлдвэр',
-                      placeholder: 'Бүх үйлдвэр',
+                      label: tr('Үйлдвэр'),
+                      placeholder: tr('Бүх үйлдвэр'),
                       value: _brand,
                       options: [for (final b in _brands) Option(b.id, b.name)],
                       onChanged: (v) {
@@ -468,8 +469,8 @@ class _ComparePickerState extends State<_ComparePicker> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: SelectField<int>(
-                      label: 'Загвар',
-                      placeholder: 'Бүх загвар',
+                      label: tr('Загвар'),
+                      placeholder: tr('Бүх загвар'),
                       value: _model,
                       enabled: _brand != null,
                       options: [for (final m in _models) Option(m.id, m.name)],
@@ -483,8 +484,8 @@ class _ComparePickerState extends State<_ComparePicker> {
                 children: [
                   Expanded(
                     child: SelectField<int>(
-                      label: 'Дилер',
-                      placeholder: 'Бүх дилер',
+                      label: tr('Дилер'),
+                      placeholder: tr('Бүх дилер'),
                       value: _dealer,
                       options: [for (final d in _dealers) Option(d.id, d.name)],
                       onChanged: (v) => _filter(() => _dealer = v),
@@ -493,8 +494,8 @@ class _ComparePickerState extends State<_ComparePicker> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: SelectField<int>(
-                      label: 'Үнэ',
-                      placeholder: 'Бүх үнэ',
+                      label: tr('Үнэ'),
+                      placeholder: tr('Бүх үнэ'),
                       value: _band,
                       options: [for (var i = 0; i < _bands.length; i++) Option(i, _bandLabel(i))],
                       onChanged: (v) => _filter(() => _band = v),
@@ -511,7 +512,7 @@ class _ComparePickerState extends State<_ComparePicker> {
                       _models = [];
                     }),
                     style: TextButton.styleFrom(foregroundColor: AppPalette.mutedForeground, padding: EdgeInsets.zero, minimumSize: const Size(0, 32)),
-                    child: const Text('Цэвэрлэх', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    child: Text(tr('Цэвэрлэх'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
                 ),
             ],
@@ -525,8 +526,8 @@ class _ComparePickerState extends State<_ComparePicker> {
             loading: const RowsSkeleton(count: 6, thumbWidth: 80, thumbHeight: 56, rowPadding: EdgeInsets.fromLTRB(16, 16, 16, 0)),
             builder: (context, page, refreshing) {
               if (page.rows.isEmpty) {
-                return const Center(
-                  child: Text('Тохирох зар олдсонгүй', style: TextStyle(color: AppPalette.mutedForeground)),
+                return Center(
+                  child: Text(tr('Тохирох зар олдсонгүй'), style: TextStyle(color: AppPalette.mutedForeground)),
                 );
               }
               final more = page.count > page.rows.length;
@@ -551,7 +552,7 @@ class _ComparePickerState extends State<_ComparePicker> {
                             ),
                             child: refreshing
                                 ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.2, color: AppPalette.primary))
-                                : const Text('Цааш үзэх', style: TextStyle(fontWeight: FontWeight.w700)),
+                                : Text(tr('Цааш үзэх'), style: TextStyle(fontWeight: FontWeight.w700)),
                           ),
                         ),
                       );
@@ -597,11 +598,11 @@ class _ComparePickerState extends State<_ComparePicker> {
                                       style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground),
                                       children: [
                                         if (c.isFeatured)
-                                          const WidgetSpan(
+                                          WidgetSpan(
                                             alignment: PlaceholderAlignment.middle,
                                             child: Padding(
                                               padding: EdgeInsets.only(right: 6),
-                                              child: Pill('Онцлох', background: AppPalette.successSoft, color: AppPalette.success),
+                                              child: Pill(tr('Онцлох'), background: AppPalette.successSoft, color: AppPalette.success),
                                             ),
                                           ),
                                         TextSpan(
