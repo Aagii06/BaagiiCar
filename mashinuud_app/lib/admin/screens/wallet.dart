@@ -43,10 +43,10 @@ class TxRow extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               if (showDealer)
                 Text(tx.dealerName ?? '#${tx.dealerId}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppPalette.primary)),
-              Text('${_txType[tx.type] ?? tx.type}${tx.carCode != null ? ' · #${tx.carCode}' : ''}',
+              Text('${tr(_txType[tx.type] ?? tx.type)}${tx.carCode != null ? ' · #${tx.carCode}' : ''}',
                   maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
               Text(
-                [_txMethod[tx.method] ?? tx.method, if (tx.createdAt != null) tx.createdAt!.substring(0, tx.createdAt!.length.clamp(0, 16)), ?tx.createdByName].join(' · '),
+                [tr(_txMethod[tx.method] ?? tx.method), if (tx.createdAt != null) tx.createdAt!.substring(0, tx.createdAt!.length.clamp(0, 16)), ?tx.createdByName].join(' · '),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: muted,

@@ -187,7 +187,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 if (page.rows.isEmpty) return EmptyView(title: tr('Бичлэг алга'), icon: Icons.library_books_outlined);
                 final more = page.rows.length < page.count;
                 return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
-                  CountLine('${page.count} ${_tab.unit}'),
+                  CountLine('${page.count} ${tr(_tab.unit)}'),
                   RowList(children: [for (final r in page.rows) _row(r)]),
                   if (more)
                     refreshing
@@ -247,7 +247,7 @@ class _EditorState extends State<_Editor> {
     final body = <String, Object?>{};
     for (final f in widget.tab.fields) {
       final v = _values[f.key]!.trim();
-      if (f.required && v.isEmpty) return setState(() => _error = tr('{label} оруулна уу', {'label': f.label}));
+      if (f.required && v.isEmpty) return setState(() => _error = tr('{label} оруулна уу', {'label': tr(f.label)}));
       body[f.key] = f.type == 'number' || f.type == 'brand' ? (v.isEmpty ? null : int.tryParse(v)) : (v.isEmpty ? null : v);
     }
     setState(() {
@@ -281,7 +281,7 @@ class _EditorState extends State<_Editor> {
           const SizedBox(height: 14),
           for (final f in widget.tab.fields) ...[
             FieldLabel(
-              label: f.label + (f.required ? ' *' : ''),
+              label: tr(f.label) + (f.required ? ' *' : ''),
               child: switch (f.type) {
                 'brand' => AdminSelect<String>(
                     title: tr('Үйлдвэр'),
@@ -295,7 +295,7 @@ class _EditorState extends State<_Editor> {
                     initialValue: _values[f.key],
                     keyboardType: f.type == 'number' ? TextInputType.number : TextInputType.text,
                     inputFormatters: f.type == 'number' ? [FilteringTextInputFormatter.digitsOnly] : null,
-                    decoration: InputDecoration(hintText: f.placeholder),
+                    decoration: InputDecoration(hintText: f.placeholder == null ? null : tr(f.placeholder!)),
                     onChanged: (v) => setState(() => _values[f.key] = v),
                   ),
               },

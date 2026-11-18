@@ -351,8 +351,8 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(c.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-              Text(c.hint, style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+              Text(tr(c.title), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              Text(tr(c.hint), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
             ]),
           ),
           const SizedBox(width: 8),
@@ -366,7 +366,7 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
         ]),
         const SizedBox(height: 12),
         if (items.isEmpty)
-          Text(c.empty, style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground))
+          Text(tr(c.empty), style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground))
         else
           for (var i = 0; i < items.length; i++)
             Container(
@@ -465,8 +465,8 @@ class _ListSheetState extends State<_ListSheet> {
       child: Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(cfg.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-          Text(tr('{hint}. Сумаар эрэмбэлнэ', {'hint': cfg.hint}), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+          Text(tr(cfg.title), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          Text(tr('{hint}. Сумаар эрэмбэлнэ', {'hint': tr(cfg.hint)}), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
           const SizedBox(height: 14),
           Flexible(
             child: ListView(shrinkWrap: true, children: [
@@ -491,7 +491,7 @@ class _ListSheetState extends State<_ListSheet> {
                 OutlinedButton.icon(
                   onPressed: incomplete ? null : () => setState(() => _draft = [..._draft, (key: _nextKey++, value: '')]),
                   icon: const Icon(Icons.add_rounded, size: 18),
-                  label: Text(cfg.addLabel),
+                  label: Text(tr(cfg.addLabel)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppPalette.primary,
                     minimumSize: const Size.fromHeight(46),

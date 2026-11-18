@@ -20,7 +20,7 @@ void toast(BuildContext context, String message, {bool error = false}) {
   final m = ScaffoldMessenger.maybeOf(context);
   m?.hideCurrentSnackBar();
   m?.showSnackBar(SnackBar(
-    content: Text(message, style: const TextStyle(fontWeight: FontWeight.w600)),
+    content: Text(tr(message), style: const TextStyle(fontWeight: FontWeight.w600)),
     backgroundColor: error ? AppPalette.destructive : AppPalette.dark,
     duration: const Duration(seconds: 3),
   ));
@@ -62,10 +62,10 @@ Widget _sheetHead(IconData? icon, Tone tone, String title, String? message, Widg
           child: Icon(icon, color: tone == Tone.amber ? AppPalette.amberInk : toneColor(tone), size: 26),
         ),
       const SizedBox(height: 12),
-      Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+      Text(tr(title), textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
       if (message != null) ...[
         const SizedBox(height: 6),
-        Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
+        Text(tr(message), textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground)),
       ],
       if (detail != null) ...[const SizedBox(height: 14), detail],
     ]);
@@ -83,14 +83,14 @@ Widget _sheetButtons(BuildContext ctx, String confirmLabel, Tone tone, VoidCallb
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
             textStyle: const TextStyle(fontWeight: FontWeight.w700),
           ),
-          child: Text(confirmLabel),
+          child: Text(tr(confirmLabel)),
         ),
       ),
     ]);
 
 /// Asks before an action; resolves true on confirm.
 Future<bool> confirmSheet(BuildContext context,
-    {required String title, String? message, Widget? detail, String confirmLabel = tr('Тийм'), Tone tone = Tone.primary, IconData? icon}) async {
+    {required String title, String? message, Widget? detail, String confirmLabel = 'Тийм', Tone tone = Tone.primary, IconData? icon}) async {
   final ok = await _sheet<bool>(
     context,
     Builder(
@@ -106,7 +106,7 @@ Future<bool> confirmSheet(BuildContext context,
 
 /// Asks for a required line of text (e.g. a reject reason); null when cancelled.
 Future<String?> promptSheet(BuildContext context,
-    {required String title, String? message, Widget? detail, required String label, String? placeholder, String confirmLabel = tr('Илгээх'), Tone tone = Tone.primary, IconData? icon}) {
+    {required String title, String? message, Widget? detail, required String label, String? placeholder, String confirmLabel = 'Илгээх', Tone tone = Tone.primary, IconData? icon}) {
   final controller = TextEditingController();
   String? error;
   return _sheet<String>(
@@ -159,7 +159,7 @@ class SoftButton extends StatelessWidget {
         ),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
           if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: 6)],
-          Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+          Flexible(child: Text(tr(label), overflow: TextOverflow.ellipsis)),
         ]),
       );
 }
@@ -183,7 +183,7 @@ class ActionChip2 extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               if (icon != null) ...[Icon(icon, size: 15, color: foreground), const SizedBox(width: 4)],
-              Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: foreground)),
+              Text(tr(label), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: foreground)),
             ]),
           ),
         ),
@@ -200,7 +200,7 @@ class Badge2 extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(99)),
-        child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: foreground)),
+        child: Text(tr(label), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: foreground)),
       );
 }
 
@@ -260,7 +260,7 @@ class ChipTabs<T> extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       child: Row(children: [
-                        Text(it.label,
+                        Text(tr(it.label),
                             style: TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w600,
@@ -297,7 +297,7 @@ class Section extends StatelessWidget {
         padding: padding,
         decoration: BoxDecoration(color: AppPalette.card, borderRadius: BorderRadius.circular(AppRadius.lg)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          if (title != null) ...[Text(title!, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)), const SizedBox(height: 14)],
+          if (title != null) ...[Text(tr(title!), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)), const SizedBox(height: 14)],
           child,
         ]),
       );
@@ -312,12 +312,12 @@ class FieldLabel extends StatelessWidget {
   const FieldLabel({super.key, required this.label, this.hint, this.error, required this.child});
   @override
   Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+        Padding(padding: const EdgeInsets.only(bottom: 6), child: Text(tr(label), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
         child,
         if (error != null)
-          Padding(padding: const EdgeInsets.only(top: 4), child: Text(error!, style: const TextStyle(fontSize: 12, color: AppPalette.destructive, fontWeight: FontWeight.w500)))
+          Padding(padding: const EdgeInsets.only(top: 4), child: Text(tr(error!), style: const TextStyle(fontSize: 12, color: AppPalette.destructive, fontWeight: FontWeight.w500)))
         else if (hint != null)
-          Padding(padding: const EdgeInsets.only(top: 4), child: Text(hint!, style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground))),
+          Padding(padding: const EdgeInsets.only(top: 4), child: Text(tr(hint!), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground))),
       ]);
 }
 
@@ -333,7 +333,7 @@ class FormError extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(color: AppPalette.destructiveSoft, borderRadius: BorderRadius.circular(AppRadius.md)),
-                child: Text(message!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppPalette.destructive)),
+                child: Text(tr(message!), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppPalette.destructive)),
               ),
       );
 }
@@ -354,7 +354,7 @@ class AdminSelect<T> extends StatelessWidget {
     required this.value,
     required this.options,
     required this.onChanged,
-    this.placeholder = tr('Сонгох'),
+    this.placeholder = 'Сонгох',
     this.enabled = true,
     this.searchable = false,
     this.invalid = false,
@@ -373,14 +373,14 @@ class AdminSelect<T> extends StatelessWidget {
             ? null
             : () async {
                 FocusScope.of(context).unfocus();
-                final picked = await pickOption<T>(context, title: title ?? placeholder, options: options, selected: value, searchable: searchable || options.length > 12);
+                final picked = await pickOption<T>(context, title: tr(title ?? placeholder), options: [for (final o in options) Option(o.value, tr(o.label))], selected: value, searchable: searchable || options.length > 12);
                 if (picked != null) onChanged(picked.value);
               },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           child: Row(children: [
             Expanded(
-              child: Text(current?.label ?? placeholder,
+              child: Text(tr(current?.label ?? placeholder),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 15, color: current == null || !enabled ? AppPalette.mutedForeground : AppPalette.foreground)),
@@ -467,8 +467,8 @@ class SwitchRow extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-                if (hint != null) Text(hint!, style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+                Text(tr(label), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                if (hint != null) Text(tr(hint!), style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
               ]),
             ),
           ]),
@@ -546,7 +546,7 @@ class AdminPage extends StatelessWidget {
   const AdminPage({super.key, required this.title, this.actions = const [], required this.body, this.bottom});
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(title, overflow: TextOverflow.ellipsis), actions: [...actions, const SizedBox(width: 6)]),
+        appBar: AppBar(title: Text(tr(title), overflow: TextOverflow.ellipsis), actions: [...actions, const SizedBox(width: 6)]),
         body: body,
         bottomNavigationBar: bottom,
       );
@@ -989,7 +989,7 @@ class Stepper2 extends StatelessWidget {
                     : Text('${i + 1}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: i == current ? Colors.white : AppPalette.mutedForeground)),
               ),
               const SizedBox(height: 4),
-              Text(steps[i], style: TextStyle(fontSize: 11, fontWeight: i == current ? FontWeight.w700 : FontWeight.w500, color: i <= current ? AppPalette.foreground : AppPalette.mutedForeground)),
+              Text(tr(steps[i]), style: TextStyle(fontSize: 11, fontWeight: i == current ? FontWeight.w700 : FontWeight.w500, color: i <= current ? AppPalette.foreground : AppPalette.mutedForeground)),
             ]),
           ),
         ],

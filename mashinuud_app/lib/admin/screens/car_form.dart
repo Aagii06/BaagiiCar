@@ -649,7 +649,7 @@ class _CarFormState extends State<CarForm> {
         child: Wrap(spacing: 8, runSpacing: 8, children: [
           for (final o in options)
             ChoiceChip(
-              label: Text(o),
+              label: Text(trValue(o)),
               selected: f[k] == o,
               showCheckmark: false,
               onSelected: _isLocked(k) ? null : (_) => _set(k, f[k] == o ? '' : o),
