@@ -8,6 +8,10 @@ Router.use("/favorites", require("./favorites/router"));
 Router.use("/subscriptions", require("./subscriptions/router"));
 Router.use("/dealers", require("./dealers/router"));
 Router.use("/feedbacks", require("./feedbacks/router"));
+// QPay төлбөр орсны мэдэгдэл (api/payments/controller.js qpayCallback)
+const { qpayCallback } = require("../api/payments/controller");
+Router.get("/qpay/callback/:no", qpayCallback);
+Router.post("/qpay/callback/:no", qpayCallback);
 // Вэбийн хэрэглэгчийн нэвтрэлт (утас + код)
 Router.use("/auth", require("./auth/router"));
 

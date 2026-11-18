@@ -117,7 +117,8 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
               </span>
             </p>
             {car.status === "rejected" && car.reject_reason && <p className="mt-1 line-clamp-2 text-xs text-destructive">↩ {car.reject_reason}</p>}
-            {car.status === "active" && (
+            {/* The admin can renew any time, so the 7-day countdown is only for dealers. */}
+            {car.status === "active" && !isAdmin && (
               <p className={cn("mt-1 flex items-center gap-1 text-xs font-semibold", renewIn ? "text-muted-foreground" : "text-success")}>
                 <RefreshCw className="size-3.5" />
                 {renewIn ? tr("{n} хоногийн дараа үнэгүй шинэчлэх боломжтой", { n: renewIn }) : tr("Үнэгүй шинэчлэх боломжтой")}
@@ -193,12 +194,14 @@ export default function CarRow({ car, onChanged, showDealer }: { car: Car; onCha
                 {tr("Зарагдсан")}
               </button>
             )}
-            {car.status === "active" && !renewIn && (
+            {car.status === "active" && (isAdmin || !renewIn) && (
               <button
                 onClick={() =>
                   run(() => renewCar(car.id), tr("Шинэчиллээ, жагсаалтын эхэнд гарлаа"), {
                     title: tr("Зарыг шинэчлэх үү?"),
-                    message: tr("Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл {n} хоногийн дараа.", { n: CAR_RENEW_DAYS }),
+                    message: isAdmin
+                      ? tr("Зар жагсаалтын эхэнд гарна.")
+                      : tr("Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл {n} хоногийн дараа.", { n: CAR_RENEW_DAYS }),
                     confirmLabel: tr("Шинэчлэх"),
                     tone: "success",
                     icon: RefreshCw,

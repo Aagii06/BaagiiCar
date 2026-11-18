@@ -303,6 +303,7 @@ export const en: Dict = {
   "Тэмдэглэх": "Mark",
   "Шинэчиллээ, жагсаалтын эхэнд гарлаа": "Renewed, now at the top of the list",
   "Зарыг шинэчлэх үү?": "Renew this ad?",
+  "Зар жагсаалтын эхэнд гарна.": "The ad moves to the top of the list.",
   "Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл {n} хоногийн дараа.": "The ad moves to the top of the list. The next free renewal is in {n} days.",
   "Шинэчлэх": "Renew",
   "Зарыг устгах уу?": "Delete this ad?",

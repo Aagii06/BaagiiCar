@@ -16,6 +16,7 @@ const { saveLog } = require("../../utils/logHelper");
 const { purgeDeadline } = require("../../helper/carPurgeHelper");
 const moment = require("moment");
 const { roles, carStatuses, nonPublicCarStatuses, carRenewDays, carRestoreDays } = require("../../config/constants");
+const { charge, renewPrice } = require("../../helper/walletHelper");
 
 // Дилер засахад дахин батлуулах ("pending") төлөвүүд
 const resubmitStatuses = [carStatuses.active, carStatuses.hidden, carStatuses.rejected];
@@ -444,42 +445,60 @@ module.exports.markSold = async (req, res) => {
   }
 };
 
-// Идэвхтэй зарыг шинэчилж жагсаалтын эхэнд гаргах: сүүлд нийтэлсэн / шинэчилснээс хойш carRenewDays хоногийн дараа үнэгүй.
-// Админ бүх зарыг, дилер өөрийн дилерийн зарыг.
+// Идэвхтэй зарыг шинэчилж жагсаалтын эхэнд гаргах.
+// Админ бүх зарыг хэдийд ч шууд шинэчилнэ. Дилер өөрийн дилерийн зарыг сүүлд нийтэлсэн / шинэчилснээс хойш
+// carRenewDays хоногт нэг удаа үнэгүй шинэчилнэ. Түүнээс өмнө бол `paid: true` илгээж дилерийн дансны
+// үлдэгдлээс renew_price (админы төлбөрийн тохиргоо) хасагдаж шинэчлэгдэнэ (helper/walletHelper.js).
 module.exports.renew = async (req, res) => {
   let result = { success: false, data: null, message: "Амжилттай" };
-  const { id, by, at } = req.body;
+  const { id, by, at, paid } = req.body;
   try {
     const { car, error } = await findOwnCar(id, req.loggedUser);
     if (error) return res.status(200).json({ ...result, message: error });
     if (car.status !== carStatuses.active)
       return res.status(200).json({ ...result, message: "Зөвхөн идэвхтэй зарыг шинэчлэх боломжтой" });
 
+    const isAdmin = req.loggedUser?.role === roles.admin;
     const renewableAt = moment(car.renewed_at || car.created_at, "YYYY-MM-DD HH:mm:ss").add(carRenewDays, "days");
     const now = moment(at, "YYYY-MM-DD HH:mm:ss");
-    if (now.isBefore(renewableAt)) {
+    const free = isAdmin || !now.isBefore(renewableAt);
+    const price = free ? 0 : await renewPrice();
+
+    if (!free && !paid) {
       const days = Math.ceil(renewableAt.diff(now, "hours", true) / 24);
-      return res
-        .status(200)
-        .json({ ...result, message: `${days} хоногийн дараа үнэгүй шинэчлэх боломжтой`, data: { renewable_at: renewableAt.format("YYYY-MM-DD HH:mm:ss") } });
+      return res.status(200).json({
+        ...result,
+        message: `${days} хоногийн дараа үнэгүй шинэчлэх боломжтой`,
+        data: { renewable_at: renewableAt.format("YYYY-MM-DD HH:mm:ss"), renew_price: price },
+      });
     }
 
-    await cars.update({ renewed_at: at, updated_by: by, updated_at: at }, { where: { id } });
+    const update = (transaction) =>
+      cars.update({ renewed_at: at, updated_by: by, updated_at: at }, { where: { id }, transaction });
+    let balance = null;
+    if (free) await update();
+    else {
+      if (!car.dealer_id) return res.status(200).json({ ...result, message: "Зар дилерт харьяалагдаагүй байна" });
+      balance = await charge(
+        { dealerId: car.dealer_id, amount: price, type: "renew", carId: id, note: `#${car.code ?? id}`, by, at },
+        update,
+      );
+    }
     await saveLog({
       object_name: "cars",
       object_id: id,
       log_action: "renewed",
-      log_action_mn: "Шинэчилсэн (эхэнд гаргасан)",
+      log_action_mn: free ? "Шинэчилсэн (эхэнд гаргасан)" : `Төлбөртэй шинэчилсэн (₮${price})`,
       created_by: by,
       created_at: at,
     });
 
     result.success = true;
-    result.data = { id, renewed_at: at };
+    result.data = { id, renewed_at: at, paid: !free, price, balance };
     return res.status(200).json(result);
   } catch (error) {
     console.log(error);
-    result.message = "Алдаа";
+    result.message = typeof error === "string" ? error : "Алдаа";
     return res.status(200).json(result);
   }
 };

@@ -17,6 +17,11 @@ export function formatPrice(value: string | number | null | undefined) {
   return n ? `${Math.round(n).toLocaleString("en-US")}₮` : tr("Үнэ тохирно");
 }
 
+/** An amount of money that may be 0 (a balance, a fee): "12,000₮", "0₮". */
+export function formatMoney(value: string | number | null | undefined) {
+  return `${Math.round(toNumber(value)).toLocaleString("en-US")}₮`;
+}
+
 /** "45.5 сая₮" — compact price for cards. */
 export function formatPriceShort(value: string | number | null | undefined) {
   const n = toNumber(value);

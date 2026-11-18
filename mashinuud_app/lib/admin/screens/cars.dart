@@ -278,7 +278,8 @@ class _CarRowState extends State<CarRow> {
               title: 'Зарагдсан гэж тэмдэглэх үү?', message: 'Зар вэб дээр «Зарагдсан» тэмдэгтэй харагдана.', confirmLabel: 'Тэмдэглэх', icon: Icons.verified_outlined),
         ),
       ],
-      if (s == 'active' && renewIn == 0)
+      // The admin can renew any time; a dealer once every CarConst.renewDays days.
+      if (s == 'active' && (admin || renewIn == 0))
         ActionChip2(
           label: 'Шинэчлэх',
           icon: Icons.refresh_rounded,
@@ -286,7 +287,9 @@ class _CarRowState extends State<CarRow> {
           foreground: Colors.white,
           onTap: () => _run(() => AdminApi.renewCar(car.id), 'Шинэчиллээ, жагсаалтын эхэнд гарлаа',
               title: 'Зарыг шинэчлэх үү?',
-              message: 'Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл ${CarConst.renewDays} хоногийн дараа.',
+              message: admin
+                  ? 'Зар жагсаалтын эхэнд гарна.'
+                  : 'Зар жагсаалтын эхэнд гарна. Дараагийн үнэгүй шинэчлэл ${CarConst.renewDays} хоногийн дараа.',
               confirmLabel: 'Шинэчлэх',
               tone: Tone.success,
               icon: Icons.refresh_rounded),
@@ -377,7 +380,7 @@ class _CarRowState extends State<CarRow> {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text('↩ ${car.rejectReason}', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppPalette.destructive)),
                         ),
-                      if (s == 'active')
+                      if (s == 'active' && !admin)
                         _note(Icons.refresh_rounded, renewIn > 0 ? '$renewIn хоногийн дараа үнэгүй шинэчлэх боломжтой' : 'Үнэгүй шинэчлэх боломжтой', renewIn > 0 ? AppPalette.mutedForeground : AppPalette.success),
                       if (s == 'deleted') _note(Icons.schedule_rounded, purgeIn > 0 ? '$purgeIn хоногийн дараа бүр мөсөн устна' : 'Удахгүй бүр мөсөн устна', AppPalette.destructive),
                     ]),

@@ -323,8 +323,8 @@ export async function setHidden(id: number, hidden: boolean) {
 }
 
 /** Move an active ad back to the top of the list; free once every CAR_RENEW_DAYS days. */
-export async function renewCar(id: number) {
-  await apiFetch("/api/cars/renew", { method: "POST", body: { id } });
+export async function renewCar(id: number, paid = false) {
+  await apiFetch("/api/cars/renew", { method: "POST", body: { id, paid } });
 }
 
 /** Bring a deleted ad back (to its status before deletion) within CAR_RESTORE_DAYS days. */
