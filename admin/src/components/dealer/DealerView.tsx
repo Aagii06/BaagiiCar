@@ -17,7 +17,7 @@ type DealerLists = Record<DealerListField, string[]>;
  * Dealer details. Name / logo / status / description are edited behind the header's pencil (`?edit=1`);
  * phones, emails and addresses are added right here in a modal that saves at once.
  */
-export default function DealerView({ dealer, onChanged }: { dealer: Dealer; onChanged?: () => void }) {
+export default function DealerView({ dealer, onChanged, wallet }: { dealer: Dealer; onChanged?: () => void; /** Shown right under the name card (as in the app). */ wallet?: React.ReactNode }) {
   const toast = useToast();
   const active = dealer.status === "active";
   const [lists, setLists] = useState<DealerLists>(() => ({
@@ -71,6 +71,8 @@ export default function DealerView({ dealer, onChanged }: { dealer: Dealer; onCh
           </div>
         )}
       </section>
+
+      {wallet}
 
       {DEALER_LIST_FIELDS.map((field) => (
         <DealerListSection key={field} field={field} items={lists[field]} onEdit={() => setEditing(field)} onMakeMain={(i) => makeMain(field, i)} />

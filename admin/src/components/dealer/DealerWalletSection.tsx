@@ -98,7 +98,7 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
   const history = rows.filter((t) => t.status !== "pending");
 
   return (
-    <div className="mt-4">
+    <div>
       <section className="flex items-center gap-3 rounded-2xl bg-linear-to-br from-primary to-orange-500 p-5 text-white shadow-md shadow-primary/30">
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2 text-sm font-semibold text-white/80">

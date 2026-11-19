@@ -303,9 +303,11 @@ class _DealerWalletState extends State<_DealerWallet> {
 }
 
 /// QPay invoice for a top-up: the QR and bank-app links; polls until paid, then pops `true`.
+/// [dealerId]: an admin billing that dealer (the QR / link is then passed on to them).
 class _QpaySheet extends StatefulWidget {
   final int amount;
-  const _QpaySheet({required this.amount});
+  final int? dealerId;
+  const _QpaySheet({required this.amount, this.dealerId});
   @override
   State<_QpaySheet> createState() => _QpaySheetState();
 }
@@ -320,7 +322,7 @@ class _QpaySheetState extends State<_QpaySheet> {
   @override
   void initState() {
     super.initState();
-    AdminApi.createTopupInvoice(widget.amount).then((inv) {
+    AdminApi.createTopupInvoice(widget.amount, dealerId: widget.dealerId).then((inv) {
       if (!mounted) return;
       setState(() => _invoice = inv);
       _timer = Timer.periodic(const Duration(seconds: 4), (_) => _check(silent: true));
@@ -381,6 +383,25 @@ class _QpaySheetState extends State<_QpaySheet> {
             Text(money(inv.amount), textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppPalette.primary)),
             Text(tr('Банкны аппаараа QR кодыг уншуулж эсвэл доороос аппаа сонгож төлнө үү'),
                 textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: AppPalette.mutedForeground)),
+            // The admin sends this to the dealer (chat / SMS); it opens the same invoice.
+            if (inv.shortUrl != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+                decoration: BoxDecoration(color: AppPalette.muted.withValues(alpha: 0.6), borderRadius: BorderRadius.circular(AppRadius.md)),
+                child: Row(children: [
+                  Expanded(child: Text(inv.shortUrl!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500))),
+                  TextButton.icon(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: inv.shortUrl!));
+                      toast(context, tr('Хуулсан'));
+                    },
+                    icon: const Icon(Icons.copy_rounded, size: 16),
+                    label: Text(tr('Холбоос хуулах'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  ),
+                ]),
+              ),
+            ],
             if (inv.urls.isNotEmpty) ...[
               const SizedBox(height: 16),
               GridView.count(
@@ -485,19 +506,45 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
     await _act(() => AdminApi.adjustBalance(widget.dealerId, amount, note), tr('Хадгаллаа'));
   }
 
-  Future<(double, List<WalletTx>)> _fetch() async {
-    final r = await Future.wait([AdminApi.dealerBalances(), AdminApi.transactions(dealerId: widget.dealerId, limit: 100)]);
+  /// Bills the dealer through QPay: the sheet shows the QR / link and closes once it's paid.
+  Future<void> _qpay() async {
+    final raw = await promptSheet(context,
+        title: tr('{name} — QPay нэхэмжлэх', {'name': widget.dealerName}),
+        message: tr('Төлөгдмөгц дилерийн дансанд автоматаар орно.'),
+        label: tr('Дүн (₮)'),
+        placeholder: '50,000',
+        confirmLabel: tr('Нэхэмжлэх үүсгэх'),
+        icon: Icons.qr_code_2_rounded,
+        money: true);
+    if (raw == null || !mounted) return;
+    final amount = int.tryParse(raw);
+    if (amount == null || amount < 100) return toast(context, tr('Дүн буруу байна'), error: true);
+    final paid = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppPalette.card,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => _QpaySheet(amount: amount, dealerId: widget.dealerId),
+    );
+    if (paid == true && mounted) {
+      toast(context, tr('Төлбөр орлоо, дилерийн дансанд нэмэгдлээ'));
+      setState(() => _reload++);
+    }
+  }
+
+  Future<(double, List<WalletTx>, bool)> _fetch() async {
+    final r = await Future.wait([AdminApi.dealerBalances(), AdminApi.transactions(dealerId: widget.dealerId, limit: 100), AdminApi.paymentInfo()]);
     final balance = (r[0] as List<DealerBalance>).where((d) => d.id == widget.dealerId).firstOrNull?.balance ?? 0;
-    return (balance, (r[1] as ListPage<WalletTx>).rows);
+    return (balance, (r[1] as ListPage<WalletTx>).rows, (r[2] as PaymentInfo).qpay);
   }
 
   @override
-  Widget build(BuildContext context) => Loader<(double, List<WalletTx>)>(
+  Widget build(BuildContext context) => Loader<(double, List<WalletTx>, bool)>(
         fetchKey: '${widget.dealerId}|$_reload',
         fetch: _fetch,
         loading: const RowsSkeleton(count: 3),
         builder: (context, data, _) {
-          final (balance, txs) = data;
+          final (balance, txs, qpayOn) = data;
           final pending = txs.where((t) => t.status == 'pending').toList();
           final history = txs.where((t) => t.status != 'pending').toList();
           Widget title(String text) => Padding(padding: const EdgeInsets.fromLTRB(4, 16, 4, 8), child: Text(text, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)));
@@ -520,7 +567,16 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
                     Text(money(balance), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
                   ]),
                 ),
-                ActionChip2(label: tr('Засах'), icon: Icons.edit_outlined, background: Colors.white, foreground: AppPalette.primary, onTap: () => _adjust(balance)),
+                // Same width for both chips; stretch alone would need a bounded width inside the Row.
+                IntrinsicWidth(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
+                    ActionChip2(label: tr('Засах'), icon: Icons.edit_outlined, background: Colors.white, foreground: AppPalette.primary, onTap: () => _adjust(balance)),
+                    if (qpayOn) ...[
+                      const SizedBox(height: 8),
+                      ActionChip2(label: 'QPay', icon: Icons.qr_code_2_rounded, background: Colors.white24, foreground: Colors.white, onTap: _qpay),
+                    ],
+                  ]),
+                ),
               ]),
             ),
             if (pending.isNotEmpty) ...[

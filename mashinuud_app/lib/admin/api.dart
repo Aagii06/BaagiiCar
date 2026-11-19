@@ -523,8 +523,9 @@ class AdminApi {
 
   static Future<List<DealerBalance>> dealerBalances() async =>
       (((await _fetch('/api/payments/balances'))['data'] as List?) ?? []).cast<Map<String, dynamic>>().map(DealerBalance.new).toList();
-  static Future<QpayInvoice> createTopupInvoice(int amount) async =>
-      QpayInvoice((await _fetch('/api/payments/topup/qpay', method: 'POST', body: {'amount': amount}))['data'] as Map<String, dynamic>);
+  /// A dealer tops up their own balance; an admin passes [dealerId] to bill that dealer.
+  static Future<QpayInvoice> createTopupInvoice(int amount, {int? dealerId}) async => QpayInvoice(
+      (await _fetch('/api/payments/topup/qpay', method: 'POST', body: {'amount': amount, if (dealerId != null) 'dealer_id': dealerId}))['data'] as Map<String, dynamic>);
   static Future<bool> checkTopupInvoice(int id) async =>
       ((await _fetch('/api/payments/topup/qpay/check', method: 'POST', body: {'id': id}))['data']?['paid']) == true;
   static Future<void> requestBankTopup(int amount, String note) => _fetch('/api/payments/topup/bank', method: 'POST', body: {'amount': amount, 'note': note});

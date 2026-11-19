@@ -324,5 +324,6 @@ class QpayInvoice extends Rec {
   const QpayInvoice(super.j);
   double get amount => _num(j['amount']);
   String? get qrImage => s('qr_image');
+  String? get shortUrl => s('short_url');
   List<Map<String, dynamic>> get urls => ((j['urls'] as List?) ?? []).cast<Map<String, dynamic>>();
 }
