@@ -60,8 +60,20 @@ export default function AddressPicker({ value, onChange, index }: { value: strin
   const line = complete ? [aimag, soum, bag, detail.trim()].filter(Boolean).join(SEP) : "";
   const partial = !complete && Boolean(aimagId || detail.trim());
 
+  // A new (empty) row starts on Улаанбаатар, as most branches are there.
+  const startedEmpty = useRef(value === "");
   useEffect(() => {
-    getAreas(null).then(setAimags, () => setAimags([]));
+    getAreas(null).then(
+      (list) => {
+        setAimags(list);
+        if (!startedEmpty.current) return;
+        startedEmpty.current = false;
+        const ub = list.find((a) => a.name.replace(/\s+/g, "").toLowerCase() === "улаанбаатар");
+        if (ub) pickAimag(ub.id);
+      },
+      () => setAimags([])
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on mount
   }, []);
 
   useEffect(() => {

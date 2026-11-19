@@ -723,14 +723,17 @@ class _AddressPickerState extends State<_AddressPicker> {
     try {
       final aimags = await AdminApi.areas(null);
       final parts = widget.value.isEmpty ? <String>[] : widget.value.split(_sep);
-      final aimag = aimags.where((a) => parts.isNotEmpty && a.name == parts[0]).firstOrNull;
+      // A new (empty) row starts on Улаанбаатар, as most branches are there.
+      final aimag = parts.isEmpty
+          ? aimags.where((a) => a.name.replaceAll(RegExp(r'\s+'), '').toLowerCase() == 'улаанбаатар').firstOrNull
+          : aimags.where((a) => a.name == parts[0]).firstOrNull;
       var soums = <Location>[], bags = <Location>[];
       Location? soum, bag;
       var rest = parts;
       if (aimag != null) {
         soums = await AdminApi.areas(aimag.id);
         soum = soums.where((s) => parts.length > 1 && s.name == parts[1]).firstOrNull;
-        rest = parts.sublist(1);
+        rest = parts.isEmpty ? parts : parts.sublist(1);
         if (soum != null) {
           bags = await AdminApi.areas(soum.id);
           bag = bags.where((b) => parts.length > 2 && b.name == parts[2]).firstOrNull;
