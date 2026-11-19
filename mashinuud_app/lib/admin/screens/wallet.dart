@@ -80,11 +80,11 @@ class TxRow extends StatelessWidget {
   }
 }
 
-/// Admins: dealers' balances and bank top-ups to confirm. Dealers: their own balance, top-up and history.
+/// A dealer's own balance, top-up and history. Admins see each dealer's on the dealer's page (DealerWalletSection).
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
   @override
-  Widget build(BuildContext context) => AdminApi.session.isAdmin ? const _AdminWallet() : const _DealerWallet();
+  Widget build(BuildContext context) => const _DealerWallet();
 }
 
 // --- dealer --------------------------------------------------------------------
@@ -425,19 +425,19 @@ class _QpaySheetState extends State<_QpaySheet> {
   }
 }
 
-// --- admin ---------------------------------------------------------------------
+// --- admin: one dealer's balance (shown on the dealer's detail page) --------------
 
-class _AdminWallet extends StatefulWidget {
-  const _AdminWallet();
+/// Admins: a dealer's balance, manual adjustment, bank top-ups to confirm and transaction history.
+class DealerWalletSection extends StatefulWidget {
+  final int dealerId;
+  final String dealerName;
+  const DealerWalletSection({super.key, required this.dealerId, required this.dealerName});
   @override
-  State<_AdminWallet> createState() => _AdminWalletState();
+  State<DealerWalletSection> createState() => _DealerWalletSectionState();
 }
 
-class _AdminWalletState extends State<_AdminWallet> {
-  String _tab = 'pending';
-  DealerBalance? _dealer;
+class _DealerWalletSectionState extends State<DealerWalletSection> {
   int _reload = 0;
-  int _pending = 0;
 
   Future<void> _act(Future<void> Function() action, String done) async {
     try {
@@ -453,7 +453,7 @@ class _AdminWalletState extends State<_AdminWallet> {
   Future<void> _approve(WalletTx tx) async {
     if (!await confirmSheet(context,
         title: tr('Шилжүүлэг орсныг баталгаажуулах уу?'),
-        message: tr('{dealerName} дилерийн дансанд {amount} нэмэгдэнэ. Банкны хуулгаасаа шалгасан эсэхээ нягтална уу.', {'dealerName': tx.dealerName ?? '', 'amount': money(tx.amount)}),
+        message: tr('{dealerName} дилерийн дансанд {amount} нэмэгдэнэ. Банкны хуулгаасаа шалгасан эсэхээ нягтална уу.', {'dealerName': widget.dealerName, 'amount': money(tx.amount)}),
         confirmLabel: tr('Батлах'),
         tone: Tone.success,
         icon: Icons.check_rounded)) {
@@ -468,10 +468,10 @@ class _AdminWalletState extends State<_AdminWallet> {
     await _act(() => AdminApi.rejectTopup(tx.id, reason), tr('Буцаалаа'));
   }
 
-  Future<void> _adjust(DealerBalance d) async {
+  Future<void> _adjust(double balance) async {
     final raw = await promptSheet(context,
-        title: tr('{name} — данс засах', {'name': d.name}),
-        message: tr('Нэмэх бол эерэг (50000), хасах бол сөрөг (-50000) дүн бичнэ үү. Одоогийн үлдэгдэл {balance}.', {'balance': money(d.balance)}),
+        title: tr('{name} — данс засах', {'name': widget.dealerName}),
+        message: tr('Нэмэх бол эерэг (50000), хасах бол сөрөг (-50000) дүн бичнэ үү. Одоогийн үлдэгдэл {balance}.', {'balance': money(balance)}),
         label: tr('Дүн (₮)'),
         placeholder: '50000',
         confirmLabel: tr('Үргэлжлүүлэх'));
@@ -480,86 +480,58 @@ class _AdminWalletState extends State<_AdminWallet> {
     if (amount == null || amount == 0) return toast(context, tr('Дүн буруу байна'), error: true);
     final note = await promptSheet(context, title: tr('Тайлбар'), label: tr('Яагаад засаж байгаа вэ?'), placeholder: tr('Жишээ нь: бэлнээр төлсөн'), confirmLabel: tr('Хадгалах'));
     if (note == null) return;
-    await _act(() => AdminApi.adjustBalance(d.id, amount, note), tr('Хадгаллаа'));
+    await _act(() => AdminApi.adjustBalance(widget.dealerId, amount, note), tr('Хадгаллаа'));
   }
 
-  Future<(List<DealerBalance>, ListPage<WalletTx>?)> _fetch() async {
-    final balances = await AdminApi.dealerBalances();
-    final pending = balances.fold<int>(0, (s, d) => s + d.pending);
-    if (mounted && pending != _pending) setState(() => _pending = pending);
-    if (_tab == 'dealers') return (balances, null);
-    return (balances, await AdminApi.transactions(status: _tab == 'pending' ? 'pending' : null, dealerId: _dealer?.id, limit: 100));
+  Future<(double, List<WalletTx>)> _fetch() async {
+    final r = await Future.wait([AdminApi.dealerBalances(), AdminApi.transactions(dealerId: widget.dealerId, limit: 100)]);
+    final balance = (r[0] as List<DealerBalance>).where((d) => d.id == widget.dealerId).firstOrNull?.balance ?? 0;
+    return (balance, (r[1] as ListPage<WalletTx>).rows);
   }
 
   @override
-  Widget build(BuildContext context) => AdminPage(
-        title: tr('Дилерийн данс'),
-        actions: [
-          IconButton(
-            tooltip: tr('Төлбөрийн тохиргоо'),
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PaymentSettingsScreen())),
-          ),
-        ],
-        body: Column(children: [
-          FilterBar(children: [
-            ChipTabs<String>(
-              items: [ChipTab('pending', tr('Хүсэлт'), count: _pending), ChipTab('dealers', tr('Дилерүүд')), ChipTab('all', _dealer != null ? '${_dealer!.name} ✕' : tr('Бүх гүйлгээ'))],
-              isOn: (v) => v == _tab,
-              onTap: (v) => setState(() {
-                if (v == 'all' && _tab == 'all') _dealer = null;
-                if (v != 'all') _dealer = null;
-                _tab = v;
-              }),
-            ),
-          ]),
-          Expanded(
-            child: Loader<(List<DealerBalance>, ListPage<WalletTx>?)>(
-              fetchKey: '$_tab|${_dealer?.id}|$_reload',
-              fetch: _fetch,
-              loading: const Padding(padding: EdgeInsets.all(16), child: RowsSkeleton(count: 6)),
-              builder: (context, data, _) {
-                final (balances, txs) = data;
-                if (txs == null) {
-                  if (balances.isEmpty) return EmptyView(title: tr('Дилер алга'), icon: Icons.storefront_outlined);
-                  return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
-                    RowList(children: [for (final d in balances) _dealerRow(d)]),
-                  ]);
-                }
-                if (txs.rows.isEmpty) {
-                  return EmptyView(title: _tab == 'pending' ? tr('Хүлээгдэж буй хүсэлт алга') : tr('Гүйлгээ алга'), icon: Icons.receipt_long_outlined);
-                }
-                return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
-                  RowList(children: [
-                    for (final tx in txs.rows) TxRow(tx: tx, showDealer: true, onApprove: () => _approve(tx), onReject: () => _reject(tx)),
+  Widget build(BuildContext context) => Loader<(double, List<WalletTx>)>(
+        fetchKey: '${widget.dealerId}|$_reload',
+        fetch: _fetch,
+        loading: const RowsSkeleton(count: 3),
+        builder: (context, data, _) {
+          final (balance, txs) = data;
+          final pending = txs.where((t) => t.status == 'pending').toList();
+          final history = txs.where((t) => t.status != 'pending').toList();
+          Widget title(String text) => Padding(padding: const EdgeInsets.fromLTRB(4, 16, 4, 8), child: Text(text, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)));
+          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [AppPalette.primary, Color(0xFFF97316)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+              ),
+              child: Row(children: [
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      const Icon(Icons.account_balance_wallet_outlined, size: 16, color: Colors.white70),
+                      const SizedBox(width: 6),
+                      Text(tr('Дансны үлдэгдэл'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white70)),
+                    ]),
+                    const SizedBox(height: 4),
+                    Text(money(balance), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
                   ]),
-                ]);
-              },
-            ),
-          ),
-        ]),
-      );
-
-  Widget _dealerRow(DealerBalance d) => InkWell(
-        onTap: () => setState(() {
-          _dealer = d;
-          _tab = 'all';
-        }),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
-          child: Row(children: [
-            DealerLogo(d.logo, size: 40),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(d.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
-                Text(money(d.balance), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: d.balance > 0 ? AppPalette.success : AppPalette.mutedForeground)),
-                if (d.pending > 0) Text(tr('{pending} хүсэлт хүлээгдэж буй', {'pending': d.pending}), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.amberInk)),
+                ),
+                ActionChip2(label: tr('Засах'), icon: Icons.edit_outlined, background: Colors.white, foreground: AppPalette.primary, onTap: () => _adjust(balance)),
               ]),
             ),
-            TextButton(onPressed: () => _adjust(d), child: Text(tr('Засах'))),
-          ]),
-        ),
+            if (pending.isNotEmpty) ...[
+              title(tr('{pending} хүсэлт хүлээгдэж буй', {'pending': pending.length})),
+              RowList(children: [for (final tx in pending) TxRow(tx: tx, onApprove: () => _approve(tx), onReject: () => _reject(tx))]),
+            ],
+            title(tr('Гүйлгээний түүх')),
+            if (history.isEmpty)
+              Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Text(tr('Гүйлгээ алга'), style: const TextStyle(color: AppPalette.mutedForeground)))
+            else
+              RowList(children: [for (final tx in history) TxRow(tx: tx)]),
+          ]);
+        },
       );
 }
 

@@ -44,7 +44,6 @@ class AdminProfileTab extends StatelessWidget {
             (Icons.admin_panel_settings_outlined, 'Admin & Dealer', tr('Админ, дилерийн хэрэглэгчид'), const Color(0xFFEDE9FE), const Color(0xFF7C3AED), const UsersScreen()),
             (Icons.people_outline_rounded, tr('Хэрэглэгч'), tr('Вэбээр бүртгүүлсэн хэрэглэгчид'), const Color(0xFFD1FAE5), const Color(0xFF059669), const CustomersScreen()),
             (Icons.forum_outlined, tr('Санал хүсэлт'), tr('Вэбийн “Бидэнд бичих” маягтаар ирсэн захидал'), const Color(0xFFFFE4E6), const Color(0xFFE11D48), const FeedbacksScreen()),
-            (Icons.account_balance_wallet_outlined, tr('Дилерийн данс'), tr('Үлдэгдэл, цэнэглэлтийн хүсэлт батлах'), const Color(0xFFCCFBF1), const Color(0xFF0D9488), const WalletScreen()),
             (Icons.credit_card_outlined, tr('Төлбөрийн тохиргоо'), tr('Шинэчлэх үнэ, банкны данс, QPay'), const Color(0xFFE0E7FF), const Color(0xFF4F46E5), const PaymentSettingsScreen()),
           ];
           // A dealer's own sections.

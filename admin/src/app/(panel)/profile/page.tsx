@@ -19,7 +19,6 @@ const ADMIN_MENU: { href: string; label: string; desc: string; icon: LucideIcon;
   { href: "/users", label: "Admin & Dealer", desc: "Админ, дилерийн хэрэглэгчид", icon: ShieldUser, tone: "bg-violet-100 text-violet-600 ring-violet-200" },
   { href: "/customers", label: "Хэрэглэгч", desc: "Вэбээр бүртгүүлсэн хэрэглэгчид", icon: Users, tone: "bg-emerald-100 text-emerald-600 ring-emerald-200" },
   { href: "/feedbacks", label: "Санал хүсэлт", desc: "Вэбийн “Бидэнд бичих” маягтаар ирсэн захидал", icon: MessageSquareText, tone: "bg-rose-100 text-rose-600 ring-rose-200" },
-  { href: "/wallet", label: "Дилерийн данс", desc: "Үлдэгдэл, цэнэглэлтийн хүсэлт батлах", icon: Wallet, tone: "bg-teal-100 text-teal-600 ring-teal-200" },
   { href: "/payment-settings", label: "Төлбөрийн тохиргоо", desc: "Шинэчлэх үнэ, банкны данс, QPay", icon: CreditCard, tone: "bg-indigo-100 text-indigo-600 ring-indigo-200" },
 ];
 

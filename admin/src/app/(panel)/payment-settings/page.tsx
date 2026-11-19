@@ -80,7 +80,7 @@ function SettingsForm({ settings }: { settings: PaymentSettings }) {
     <form onSubmit={onSubmit} noValidate className="space-y-4">
       <DetailHeader
         title={tr("Төлбөрийн тохиргоо")}
-        back="/wallet"
+        back="/profile"
         aside={
           <button
             type="submit"

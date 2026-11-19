@@ -1,6 +1,7 @@
 "use client";
 
 import DealerForm, { DEALER_FORM_ID } from "@/components/dealer/DealerForm";
+import DealerWalletSection from "@/components/dealer/DealerWalletSection";
 import { EmptyState, ErrorState, FormSkeleton } from "@/components/common/States";
 import { DetailHeader } from "@/components/layout/PageHeader";
 import { getDealer } from "@/lib/api/admin";
@@ -58,7 +59,10 @@ function DealerDetail() {
       ) : !data.data || data.data.status === "deleted" ? (
         <EmptyState title={tr("Дилер олдсонгүй")} />
       ) : (
-        <DealerForm key={data.data.id} dealer={data.data} listHref={listHref} onBusyChange={setSaving} onDirtyChange={setDirty} />
+        <>
+          <DealerForm key={data.data.id} dealer={data.data} listHref={listHref} onBusyChange={setSaving} onDirtyChange={setDirty} />
+          <DealerWalletSection dealerId={data.data.id} dealerName={data.data.name} />
+        </>
       )}
     </>
   );

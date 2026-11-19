@@ -34,10 +34,19 @@ import { Suspense, useCallback, useState } from "react";
 
 const QUICK_AMOUNTS = [10000, 20000, 50000, 100000];
 
-/** Admins: dealers' balances and bank top-ups to confirm. Dealers: their own balance, top-up, history. */
+/** A dealer's own balance, top-up, history. Admins see each dealer's on the dealer's page; /wallet sends them to /dealers. */
 export default function WalletPage() {
   const isAdmin = useAuth().user?.role === ROLES.admin;
-  return <Suspense fallback={<ListSkeleton />}>{isAdmin ? <AdminWallet /> : <DealerWallet />}</Suspense>;
+  const router = useRouter();
+  useEffect(() => {
+    if (isAdmin) router.replace("/dealers");
+  }, [isAdmin, router]);
+  if (isAdmin) return <ListSkeleton />;
+  return (
+    <Suspense fallback={<ListSkeleton />}>
+      <DealerWallet />
+    </Suspense>
+  );
 }
 
 // --- dealer ----------------------------------------------------------------
@@ -238,163 +247,6 @@ function DealerWallet() {
         <div className="divide-y divide-border overflow-hidden rounded-2xl bg-card">
           {history.data.rows.map((tx) => (
             <TransactionRow key={tx.id} tx={tx} />
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
-
-// --- admin -----------------------------------------------------------------
-
-type AdminTab = "pending" | "dealers" | "all";
-
-function AdminWallet() {
-  const { back } = useBackTo("/profile");
-  const toast = useToast();
-  const confirm = useConfirm();
-  const prompt = usePrompt();
-  const [tab, setTab] = useState<AdminTab>("pending");
-  const [dealer, setDealer] = useState<DealerBalance | null>(null);
-  const [version, setVersion] = useState(0);
-  const status: TxStatus | undefined = tab === "pending" ? "pending" : undefined;
-
-  const balances = useApi(getDealerBalances, String(version));
-  const txs = useApi(
-    () => listTransactions({ status, dealer_id: dealer?.id, limit: 100 }),
-    `${tab}:${dealer?.id ?? ""}:${version}`,
-  );
-  const pendingCount = balances.data?.reduce((sum, d) => sum + d.pending, 0);
-  const refresh = () => setVersion((v) => v + 1);
-
-  const approve = async (tx: Transaction) => {
-    const ok = await confirm({
-      title: tr("Шилжүүлэг орсныг баталгаажуулах уу?"),
-      message: tr("{dealer} дилерийн дансанд {amount} нэмэгдэнэ. Банкны хуулгаасаа шалгасан эсэхээ нягтална уу.", {
-        dealer: tx.dealer_name ?? "",
-        amount: formatMoney(tx.amount),
-      }),
-      confirmLabel: tr("Батлах"),
-      tone: "success",
-      icon: Check,
-    });
-    if (!ok) return;
-    try {
-      await approveTopup(tx.id);
-      toast(tr("Баталгаажууллаа, дилерийн дансанд орлоо"));
-      refresh();
-    } catch (err) {
-      toast(errorMessage(err), "error");
-    }
-  };
-
-  const reject = async (tx: Transaction) => {
-    const reason = await prompt({ title: tr("Хүсэлтийг буцаах уу?"), label: tr("Шалтгаан"), placeholder: tr("Жишээ нь: шилжүүлэг ороогүй"), confirmLabel: tr("Буцаах"), tone: "danger" });
-    if (!reason) return;
-    try {
-      await rejectTopup(tx.id, reason);
-      toast(tr("Буцаалаа"));
-      refresh();
-    } catch (err) {
-      toast(errorMessage(err), "error");
-    }
-  };
-
-  const adjust = async (d: DealerBalance) => {
-    const raw = await prompt({
-      title: tr("{dealer} — данс засах", { dealer: d.name }),
-      message: tr("Нэмэх бол эерэг (50000), хасах бол сөрөг (-50000) дүн бичнэ үү. Одоогийн үлдэгдэл {balance}.", { balance: formatMoney(d.balance) }),
-      label: tr("Дүн (₮)"),
-      placeholder: "50000",
-      confirmLabel: tr("Үргэлжлүүлэх"),
-    });
-    if (!raw) return;
-    const amount = Number(raw.replace(/[\s,₮]/g, ""));
-    if (!Number.isInteger(amount) || amount === 0) return toast(tr("Дүн буруу байна"), "error");
-    const note = await prompt({ title: tr("Тайлбар"), label: tr("Яагаад засаж байгаа вэ?"), placeholder: tr("Жишээ нь: бэлнээр төлсөн"), confirmLabel: tr("Хадгалах") });
-    if (!note) return;
-    try {
-      await adjustBalance(d.id, amount, note);
-      toast(tr("Хадгаллаа"));
-      refresh();
-    } catch (err) {
-      toast(errorMessage(err), "error");
-    }
-  };
-
-  const tabs = [
-    { value: "pending" as const, label: tr("Хүсэлт"), count: pendingCount },
-    { value: "dealers" as const, label: tr("Дилерүүд") },
-    { value: "all" as const, label: tr("Бүх гүйлгээ") },
-  ];
-
-  return (
-    <>
-      <PageHeader
-        title={tr("Дилерийн данс")}
-        back={back}
-        aside={
-          <Link href="/payment-settings" aria-label={tr("Төлбөрийн тохиргоо")} title={tr("Төлбөрийн тохиргоо")} className="grid size-10 place-items-center rounded-xl bg-muted hover:bg-muted/70">
-            <Settings className="size-5" />
-          </Link>
-        }
-      >
-        <ChipTabs
-          items={tabs}
-          value={tab}
-          onChange={(v) => {
-            setTab(v);
-            setDealer(null);
-          }}
-        />
-        {dealer && tab === "all" && (
-          <button type="button" onClick={() => setDealer(null)} className="rounded-full bg-primary-soft px-3 py-1 text-xs font-bold text-primary">
-            {dealer.name} ✕
-          </button>
-        )}
-      </PageHeader>
-
-      {tab === "dealers" ? (
-        balances.loading && !balances.data ? (
-          <ListSkeleton />
-        ) : balances.error ? (
-          <ErrorState message={balances.error.message} onRetry={balances.reload} />
-        ) : !balances.data?.length ? (
-          <EmptyState title={tr("Дилер алга")} />
-        ) : (
-          <div className="divide-y divide-border overflow-hidden rounded-2xl bg-card">
-            {balances.data.map((d) => (
-              <div key={d.id} className="flex items-center gap-3 px-4 py-3">
-                <Img src={catalogImage(d.logo, "dealers")} className="size-10 shrink-0 rounded-xl bg-muted object-contain" fallback={<Store className="size-5 text-muted-foreground" />} />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDealer(d);
-                    setTab("all");
-                  }}
-                  className="min-w-0 flex-1 text-left"
-                >
-                  <p className="truncate font-bold">{d.name}</p>
-                  <p className={cn("text-sm font-semibold", d.balance > 0 ? "text-success" : "text-muted-foreground")}>{formatMoney(d.balance)}</p>
-                  {d.pending > 0 && <p className="text-xs font-semibold text-amber-ink">{tr("{n} хүсэлт хүлээгдэж буй", { n: d.pending })}</p>}
-                </button>
-                <button type="button" onClick={() => adjust(d)} className="shrink-0 rounded-lg bg-muted px-3 py-1.5 text-xs font-bold">
-                  {tr("Засах")}
-                </button>
-              </div>
-            ))}
-          </div>
-        )
-      ) : txs.loading && !txs.data ? (
-        <ListSkeleton />
-      ) : txs.error ? (
-        <ErrorState message={txs.error.message} onRetry={txs.reload} />
-      ) : !txs.data?.rows.length ? (
-        <EmptyState title={tab === "pending" ? tr("Хүлээгдэж буй хүсэлт алга") : tr("Гүйлгээ алга")} />
-      ) : (
-        <div className="divide-y divide-border overflow-hidden rounded-2xl bg-card">
-          {txs.data.rows.map((tx) => (
-            <TransactionRow key={tx.id} tx={tx} showDealer onApprove={() => approve(tx)} onReject={() => reject(tx)} />
           ))}
         </div>
       )}

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mashinuud_app/admin/api.dart';
 import 'package:mashinuud_app/admin/models.dart';
 import 'package:mashinuud_app/admin/screens/cars.dart';
+import 'package:mashinuud_app/admin/screens/wallet.dart';
 import 'package:mashinuud_app/admin/ui.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
@@ -328,6 +329,7 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
                           FieldLabel(label: tr('Тайлбар'), child: TextField(controller: _description, minLines: 4, maxLines: 8, maxLength: 2000, decoration: const InputDecoration(counterText: ''), onChanged: (_) => setState(() {}))),
                         ]),
                       ),
+                      if (_dealer != null) ...[gap, DealerWalletSection(dealerId: _dealer!.id, dealerName: _dealer!.name)],
                       for (final c in _lists) ...[gap, _listSection(c)],
                       gap,
                       FormError(_error),
