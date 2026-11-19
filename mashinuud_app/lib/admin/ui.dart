@@ -553,18 +553,49 @@ class UserAvatar extends StatelessWidget {
 }
 
 /// Dealer logo in a white rounded square.
+/// Two letters for a dealer avatar: first letters of the first two words ("Baagii Car" → "BC"), else the first two letters.
+String dealerInitials(String? name) {
+  final parts = (name ?? '').trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+  if (parts.isEmpty) return '?';
+  final letters = parts.length > 1 ? parts[0].characters.first + parts[1].characters.first : parts[0].characters.take(2).toString();
+  return letters.toUpperCase();
+}
+
+/// Dealer logo on white; with no logo (or one that fails to load) and a [name], its first two letters instead.
 class DealerLogo extends StatelessWidget {
   final String? logo;
   final double size;
-  const DealerLogo(this.logo, {super.key, this.size = 44});
-  @override
-  Widget build(BuildContext context) => Container(
+  final String? name;
+  const DealerLogo(this.logo, {super.key, this.size = 44, this.name});
+
+  Widget _initials() => Container(
         width: size,
         height: size,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppPalette.border), borderRadius: BorderRadius.circular(AppRadius.md)),
-        child: ClipRRect(borderRadius: BorderRadius.circular(6), child: NetImage(catalogImage(logo, 'dealers'), fit: BoxFit.contain, background: Colors.white)),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [AppPalette.primary, Color(0xFFF97316)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        child: Text(dealerInitials(name), style: TextStyle(fontSize: size * 0.38, height: 1, fontWeight: FontWeight.w800, color: Colors.white)),
       );
+
+  @override
+  Widget build(BuildContext context) {
+    final url = catalogImage(logo, 'dealers');
+    if (url == null && name != null) return _initials();
+    return Container(
+      width: size,
+      height: size,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppPalette.border), borderRadius: BorderRadius.circular(AppRadius.md)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: name == null
+            ? NetImage(url, fit: BoxFit.contain, background: Colors.white)
+            : Image.network(url!, fit: BoxFit.contain, gaplessPlayback: true, errorBuilder: (_, _, _) => FittedBox(child: _initials())),
+      ),
+    );
+  }
 }
 
 /// Car photo thumbnail on its tint.

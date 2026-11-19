@@ -221,7 +221,7 @@ class _DealerPickerState extends State<DealerPicker> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Row(children: [
-                    DealerLogo(d.logo),
+                    DealerLogo(d.logo, name: d.name),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -901,7 +901,7 @@ class _CarFormState extends State<CarForm> {
     return Section(
       title: tr('Дилер'),
       child: Row(children: [
-        if (dealer != null || current) DealerLogo(dealer?.logo ?? car!.dealerLogo, size: 48) else const _IconBox(Icons.storefront_outlined),
+        if (dealer != null || current) DealerLogo(dealer?.logo ?? car!.dealerLogo, size: 48, name: name) else const _IconBox(Icons.storefront_outlined),
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [

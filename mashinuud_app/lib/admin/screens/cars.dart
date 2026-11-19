@@ -363,7 +363,7 @@ class _CarRowState extends State<CarRow> {
                 color: const Color(0xFF64748B),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Row(children: [
-                  if (car.dealerName != null) DealerLogo(car.dealerLogo, size: 20) else const Icon(Icons.storefront_outlined, size: 16, color: Colors.white70),
+                  if (car.dealerName != null) DealerLogo(car.dealerLogo, size: 20, name: car.dealerName) else const Icon(Icons.storefront_outlined, size: 16, color: Colors.white70),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(car.dealerName ?? tr('Дилергүй'),
@@ -462,7 +462,7 @@ class _DealerCarsScreenState extends State<DealerCarsScreen> {
         appBar: AppBar(
           titleSpacing: 0,
           title: Row(children: [
-            DealerLogo(widget.dealer.logo, size: 32),
+            DealerLogo(widget.dealer.logo, size: 32, name: widget.dealer.name),
             const SizedBox(width: 10),
             Expanded(child: Text(widget.dealer.name, overflow: TextOverflow.ellipsis)),
           ]),

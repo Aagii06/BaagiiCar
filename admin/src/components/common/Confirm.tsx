@@ -68,6 +68,8 @@ type Open =
   | (PromptOptions & {
       input: boolean;
       resolve: (value: string | null) => void;
+      /** New per dialog: keys the sheet so a prompt opened right after another starts empty and focused. */
+      id: number;
     })
   | null;
 
@@ -82,11 +84,12 @@ const ConfirmContext = createContext<{
  */
 export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState<Open>(null);
+  const nextId = useRef(0);
 
   const prompt = useCallback(
     (options: PromptOptions) =>
       new Promise<string | null>((resolve) =>
-        setOpen({ ...options, input: true, resolve }),
+        setOpen({ ...options, input: true, resolve, id: ++nextId.current }),
       ),
     [],
   );
@@ -97,6 +100,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
           ...options,
           input: false,
           resolve: (v) => resolve(v !== null),
+          id: ++nextId.current,
         }),
       ),
     [],
@@ -112,7 +116,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   return (
     <ConfirmContext.Provider value={{ confirm, prompt }}>
       {children}
-      {open && <Sheet options={open} onClose={close} />}
+      {open && <Sheet key={open.id} options={open} onClose={close} />}
     </ConfirmContext.Provider>
   );
 }

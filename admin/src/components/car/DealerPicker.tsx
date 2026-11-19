@@ -5,6 +5,7 @@ import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
 import { catalogImage } from "@/lib/api/config";
 import type { Dealer } from "@/lib/api/types";
+import { cn, dealerInitials } from "@/lib/utils";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useApi } from "@/lib/useApi";
 import { getDealers } from "@/lib/api/cars";
@@ -15,7 +16,19 @@ import { tr } from "@/lib/i18n/translations";
 export function DealerAvatar({ dealer, className = "size-11" }: { dealer: Pick<Dealer, "name" | "logo">; className?: string }) {
   const logo = catalogImage(dealer.logo, "dealers");
   return (
-    <Img src={logo} className={`${className} shrink-0 rounded-xl border border-border bg-white object-contain p-1`} />
+    <Img
+      src={logo}
+      className={cn("shrink-0 rounded-xl border border-border bg-white object-contain p-1", className)}
+      // No logo (or it fails to load): the name's first two letters, sized to the avatar.
+      fallback={
+        <span
+          aria-label={dealer.name}
+          className={cn("@container grid shrink-0 place-items-center rounded-xl bg-linear-to-br from-primary to-orange-500 font-display font-bold text-white", className)}
+        >
+          <span className="text-[38cqw] leading-none">{dealerInitials(dealer.name)}</span>
+        </span>
+      }
+    />
   );
 }
 

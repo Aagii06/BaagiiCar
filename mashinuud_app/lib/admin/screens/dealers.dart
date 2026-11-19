@@ -61,7 +61,7 @@ class _DealersScreenState extends State<DealersScreen> {
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
                           child: Row(children: [
-                            DealerLogo(d.logo, size: 40),
+                            DealerLogo(d.logo, size: 40, name: d.name),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

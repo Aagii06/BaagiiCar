@@ -63,6 +63,14 @@ export function daysUntil(value: string | null | undefined, days: number) {
   return left > 0 ? Math.ceil(left / 86_400_000) : 0;
 }
 
+/** Two letters for a dealer avatar: first letters of the first two words ("Baagii Car" → "BC"), else the first two letters ("Toyota" → "TO"). */
+export function dealerInitials(name: string | null | undefined) {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  const letters = parts.length > 1 ? parts[0][0] + parts[1][0] : Array.from(parts[0]).slice(0, 2).join("");
+  return letters.toUpperCase();
+}
+
 export function initials(name: string | null | undefined) {
   const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return "?";
