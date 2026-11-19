@@ -10,6 +10,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
 import 'package:mashinuud_app/app/i18n.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Dealer registry: showrooms that ads and admin / dealer users belong to.
 class DealersScreen extends StatefulWidget {
@@ -51,7 +52,7 @@ class _DealersScreenState extends State<DealersScreen> {
                   RowList(children: [
                     for (final d in page.rows)
                       InkWell(
-                        onTap: () => _open(DealerFormScreen(dealerId: d.id)),
+                        onTap: () => _open(DealerViewScreen(dealerId: d.id)),
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
                           child: Row(children: [
@@ -137,6 +138,133 @@ final _lists = [
       max: _maxContacts, lower: true, rowError: (v) => _emailRe.hasMatch(v.trim()) ? null : 'И-мэйл формат буруу байна'),
   const _ListCfg('addresses', 'Хаяг, салбар', 'Салбар бүрийн хаягийг аймаг, сум, багаас сонгож нэмнэ', 'Хаяг нэмэх', 'Хаяг нэмээгүй байна', 'Ижил хаяг давхардсан байна'),
 ];
+
+/// Read-only dealer details; the app bar's pencil opens [DealerFormScreen].
+class DealerViewScreen extends StatefulWidget {
+  final int dealerId;
+  const DealerViewScreen({super.key, required this.dealerId});
+  @override
+  State<DealerViewScreen> createState() => _DealerViewScreenState();
+}
+
+class _DealerViewScreenState extends State<DealerViewScreen> {
+  bool _loading = true;
+  Object? _loadError;
+  Dealer? _dealer;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = _dealer == null;
+      _loadError = null;
+    });
+    try {
+      _dealer = await AdminApi.dealer(widget.dealerId);
+    } catch (e) {
+      _loadError = e;
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _edit() async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => DealerFormScreen(dealerId: widget.dealerId)));
+    if (!mounted) return;
+    await _load();
+    // Deleted from the edit screen: nothing left to show here.
+    if (mounted && _loadError == null && (_dealer == null || _dealer!.status == 'deleted')) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final d = _dealer;
+    final gone = !_loading && _loadError == null && (d == null || d.status == 'deleted');
+    const gap = SizedBox(height: 14);
+    return AdminPage(
+      title: d?.name ?? tr('Дилер'),
+      actions: [if (!_loading && _loadError == null && !gone) BarButton(icon: Icons.edit_outlined, tooltip: tr('Засах'), onTap: _edit)],
+      body: _loading
+          ? const PageSkeleton()
+          : _loadError != null
+              ? ErrorView(message: errorText(_loadError!), onRetry: _load)
+              : gone
+                  ? EmptyView(title: tr('Дилер олдсонгүй'), icon: Icons.storefront_outlined)
+                  : RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView(padding: const EdgeInsets.all(16), children: [
+                        Section(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                            Row(children: [
+                              DealerLogo(d!.logo, size: 64),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  Text(d.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                                  const SizedBox(height: 4),
+                                  d.status == 'active'
+                                      ? Badge2(tr('Идэвхтэй'), background: AppPalette.successSoft, foreground: AppPalette.success)
+                                      : Badge2(tr('Идэвхгүй'), background: AppPalette.destructiveSoft, foreground: AppPalette.destructive),
+                                ]),
+                              ),
+                            ]),
+                            if ((d.description ?? '').trim().isNotEmpty) ...[
+                              gap,
+                              Text(tr('Тайлбар'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppPalette.mutedForeground)),
+                              const SizedBox(height: 4),
+                              Text(d.description!, style: const TextStyle(fontSize: 14, height: 1.5)),
+                            ],
+                          ]),
+                        ),
+                        gap,
+                        DealerWalletSection(dealerId: d.id, dealerName: d.name),
+                        for (final c in _lists) ...[gap, _listSection(c, d.list(c.field))],
+                        gap,
+                        SoftButton(label: tr('Зарууд'), background: AppPalette.card, onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DealerCarsScreen(dealer: d)))),
+                      ]),
+                    ),
+    );
+  }
+
+  Widget _listSection(_ListCfg c, List<String> items) {
+    final several = items.length > 1;
+    return Section(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text(tr(c.title), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 12),
+        if (items.isEmpty)
+          Text(tr(c.empty), style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground))
+        else
+          for (var i = 0; i < items.length; i++)
+            Container(
+              margin: const EdgeInsets.only(bottom: 4),
+              decoration: BoxDecoration(color: several && i == 0 ? AppPalette.primarySoft : AppPalette.muted.withValues(alpha: 0.6), borderRadius: BorderRadius.circular(AppRadius.md)),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                onTap: c.field == 'phonenumbers'
+                    ? () => launchUrl(Uri.parse('tel:${items[i]}'))
+                    : c.field == 'emails'
+                        ? () => launchUrl(Uri.parse('mailto:${items[i]}'))
+                        : null,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Row(children: [
+                    if (several && i == 0) const Padding(padding: EdgeInsets.only(right: 8), child: Icon(Icons.star_rounded, size: 18, color: AppPalette.primary)),
+                    Expanded(
+                      child: Text(items[i], style: TextStyle(fontWeight: several && i == 0 ? FontWeight.w700 : FontWeight.w500, color: several && i == 0 ? AppPalette.primary : AppPalette.foreground.withValues(alpha: 0.8))),
+                    ),
+                    if (several && i == 0) Badge2(tr('Үндсэн'), background: AppPalette.primary, foreground: Colors.white),
+                  ]),
+                ),
+              ),
+            ),
+      ]),
+    );
+  }
+}
 
 /// Create (no [dealerId]) / edit a dealer.
 class DealerFormScreen extends StatefulWidget {
@@ -329,17 +457,12 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
                           FieldLabel(label: tr('Тайлбар'), child: TextField(controller: _description, minLines: 4, maxLines: 8, maxLength: 2000, decoration: const InputDecoration(counterText: ''), onChanged: (_) => setState(() {}))),
                         ]),
                       ),
-                      if (_dealer != null) ...[gap, DealerWalletSection(dealerId: _dealer!.id, dealerName: _dealer!.name)],
                       for (final c in _lists) ...[gap, _listSection(c)],
                       gap,
                       FormError(_error),
                       if (_dealer != null) ...[
                         gap,
-                        Row(children: [
-                          Expanded(child: SoftButton(label: tr('Зарууд'), background: AppPalette.card, onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => DealerCarsScreen(dealer: _dealer!))))),
-                          const SizedBox(width: 8),
-                          Expanded(child: SoftButton(label: _removing ? tr('Устгаж байна…') : tr('Устгах'), background: AppPalette.destructiveSoft, color: AppPalette.destructive, onTap: _removing ? null : _remove)),
-                        ]),
+                        SoftButton(label: _removing ? tr('Устгаж байна…') : tr('Устгах'), background: AppPalette.destructiveSoft, color: AppPalette.destructive, onTap: _removing ? null : _remove),
                       ],
                     ]),
     );

@@ -19,15 +19,20 @@ export const DEALER_FORM_ID = "dealer-form";
 
 type DealerLists = Record<DealerListField, string[]>;
 
-/** Create / edit a dealer. `listHref`: the list to return to after save / delete (keeps `?from=`). */
+/**
+ * Create / edit a dealer. `listHref`: the list to return to after delete (keeps `?from=`);
+ * `savedHref`: where a save goes (defaults to `listHref`).
+ */
 export default function DealerForm({
   dealer,
   listHref,
+  savedHref = listHref,
   onBusyChange,
   onDirtyChange,
 }: {
   dealer: Dealer | null;
   listHref: string;
+  savedHref?: string;
   onBusyChange: (busy: boolean) => void;
   /** Whether anything changed, so the header's save button stays off until then. */
   onDirtyChange: (dirty: boolean) => void;
@@ -100,7 +105,7 @@ export default function DealerForm({
       if (dealer) await updateDealer(dealer.id, bodyOf(lists));
       else await createDealer(bodyOf(lists));
       toast(tr("Хадгаллаа"));
-      router.push(listHref);
+      router.push(savedHref);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);

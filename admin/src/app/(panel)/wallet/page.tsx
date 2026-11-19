@@ -1,36 +1,21 @@
 "use client";
 
-import ChipTabs from "@/components/common/ChipTabs";
-import { useConfirm, usePrompt } from "@/components/common/Confirm";
 import { Field, inputClass } from "@/components/common/Field";
-import Img from "@/components/common/Img";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import QpayPanel from "@/components/payment/QpayPanel";
 import TransactionRow from "@/components/payment/TransactionRow";
-import { catalogImage } from "@/lib/api/config";
-import {
-  adjustBalance,
-  approveTopup,
-  getDealerBalances,
-  getPaymentInfo,
-  listTransactions,
-  rejectTopup,
-  requestBankTopup,
-  type DealerBalance,
-  type Transaction,
-  type TxStatus,
-} from "@/lib/api/payments";
+import { getPaymentInfo, listTransactions, requestBankTopup } from "@/lib/api/payments";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { ROLES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { useBackTo } from "@/lib/useBackTo";
 import { cn, formatMoney } from "@/lib/utils";
 import { tr } from "@/lib/i18n/translations";
-import { Check, Copy, Landmark, Loader2, QrCode, Settings, Store, Wallet } from "lucide-react";
-import Link from "next/link";
-import { Suspense, useCallback, useState } from "react";
+import { Check, Copy, Landmark, Loader2, QrCode, Wallet } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 const QUICK_AMOUNTS = [10000, 20000, 50000, 100000];
 
