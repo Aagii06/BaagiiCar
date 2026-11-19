@@ -53,11 +53,12 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
       title: tr("{dealer} — данс засах", { dealer: dealerName }),
       message: tr("Нэмэх бол эерэг (50000), хасах бол сөрөг (-50000) дүн бичнэ үү. Одоогийн үлдэгдэл {balance}.", { balance: formatMoney(balance) }),
       label: tr("Дүн (₮)"),
-      placeholder: "50000",
+      placeholder: "50,000",
       confirmLabel: tr("Үргэлжлүүлэх"),
+      money: "signed",
     });
     if (!raw) return;
-    const amount = Number(raw.replace(/[\s,₮]/g, ""));
+    const amount = Number(raw);
     if (!Number.isInteger(amount) || amount === 0) return toast(tr("Дүн буруу байна"), "error");
     const note = await prompt({ title: tr("Тайлбар"), label: tr("Яагаад засаж байгаа вэ?"), placeholder: tr("Жишээ нь: бэлнээр төлсөн"), confirmLabel: tr("Хадгалах") });
     if (note) await run(() => adjustBalance(dealerId, amount, note), tr("Хадгаллаа"));
