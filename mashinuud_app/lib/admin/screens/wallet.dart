@@ -473,10 +473,12 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
         title: tr('{name} — данс засах', {'name': widget.dealerName}),
         message: tr('Нэмэх бол эерэг (50000), хасах бол сөрөг (-50000) дүн бичнэ үү. Одоогийн үлдэгдэл {balance}.', {'balance': money(balance)}),
         label: tr('Дүн (₮)'),
-        placeholder: '50000',
-        confirmLabel: tr('Үргэлжлүүлэх'));
+        placeholder: '50,000',
+        confirmLabel: tr('Үргэлжлүүлэх'),
+        money: true,
+        signed: true);
     if (raw == null || !mounted) return;
-    final amount = int.tryParse(raw.replaceAll(RegExp(r'[\s,₮]'), ''));
+    final amount = int.tryParse(raw);
     if (amount == null || amount == 0) return toast(context, tr('Дүн буруу байна'), error: true);
     final note = await promptSheet(context, title: tr('Тайлбар'), label: tr('Яагаад засаж байгаа вэ?'), placeholder: tr('Жишээ нь: бэлнээр төлсөн'), confirmLabel: tr('Хадгалах'));
     if (note == null) return;

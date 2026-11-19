@@ -104,9 +104,36 @@ Future<bool> confirmSheet(BuildContext context,
   return ok == true;
 }
 
+/// Money mask: digits only (plus a leading "-" when [signed]), thousands grouped while typing: "-50000" → "-50,000".
+class MoneyInputFormatter extends TextInputFormatter {
+  final bool signed;
+  const MoneyInputFormatter({this.signed = false});
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final raw = newValue.text;
+    final negative = signed && raw.trim().startsWith('-');
+    var digits = raw.replaceAll(RegExp(r'\D'), '').replaceFirst(RegExp(r'^0+(?=\d)'), '');
+    if (digits.length > 12) digits = digits.substring(0, 12);
+    final grouped = digits.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',');
+    final text = (negative ? '-' : '') + grouped;
+    return TextEditingValue(text: text, selection: TextSelection.collapsed(offset: text.length));
+  }
+}
+
 /// Asks for a required line of text (e.g. a reject reason); null when cancelled.
+/// [money]: a one-line ₮ field with [MoneyInputFormatter] instead; resolves the bare number ("50000" / "-50000").
 Future<String?> promptSheet(BuildContext context,
-    {required String title, String? message, Widget? detail, required String label, String? placeholder, String confirmLabel = 'Илгээх', Tone tone = Tone.primary, IconData? icon}) {
+    {required String title,
+    String? message,
+    Widget? detail,
+    required String label,
+    String? placeholder,
+    String confirmLabel = 'Илгээх',
+    Tone tone = Tone.primary,
+    IconData? icon,
+    bool money = false,
+    bool signed = false}) {
   final controller = TextEditingController();
   String? error;
   return _sheet<String>(
@@ -118,20 +145,37 @@ Future<String?> promptSheet(BuildContext context,
         FieldLabel(
           label: label,
           error: error,
-          child: TextField(
-            controller: controller,
-            autofocus: true,
-            minLines: 3,
-            maxLines: 6,
-            maxLength: 500,
-            decoration: InputDecoration(hintText: placeholder, counterText: '', errorText: error == null ? null : ''),
-            onChanged: (_) => error == null ? null : setState(() => error = null),
-          ),
+          child: money
+              ? TextField(
+                  controller: controller,
+                  autofocus: true,
+                  textAlign: TextAlign.right,
+                  keyboardType: signed ? const TextInputType.numberWithOptions(signed: true) : TextInputType.number,
+                  inputFormatters: [MoneyInputFormatter(signed: signed)],
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]),
+                  decoration: InputDecoration(
+                    hintText: placeholder,
+                    hintStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: AppPalette.mutedForeground),
+                    suffixText: ' ₮',
+                    suffixStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppPalette.mutedForeground),
+                    errorText: error == null ? null : '',
+                  ),
+                  onChanged: (_) => error == null ? null : setState(() => error = null),
+                )
+              : TextField(
+                  controller: controller,
+                  autofocus: true,
+                  minLines: 3,
+                  maxLines: 6,
+                  maxLength: 500,
+                  decoration: InputDecoration(hintText: placeholder, counterText: '', errorText: error == null ? null : ''),
+                  onChanged: (_) => error == null ? null : setState(() => error = null),
+                ),
         ),
         const SizedBox(height: 16),
         _sheetButtons(ctx, confirmLabel, tone, () {
-          final v = controller.text.trim();
-          if (v.isEmpty) return setState(() => error = tr('{label} оруулна уу', {'label': label}));
+          final v = money ? controller.text.replaceAll(',', '') : controller.text.trim();
+          if (money ? !RegExp(r'\d').hasMatch(v) : v.isEmpty) return setState(() => error = tr('{label} оруулна уу', {'label': label}));
           Navigator.pop(ctx, v);
         }),
       ]),
