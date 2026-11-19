@@ -206,29 +206,7 @@ class _DealerViewScreenState extends State<DealerViewScreen> {
                   : RefreshIndicator(
                       onRefresh: _load,
                       child: ListView(padding: const EdgeInsets.all(16), children: [
-                        Section(
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                            Row(children: [
-                              DealerLogo(d!.logo, size: 64),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  Text(d.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                                  const SizedBox(height: 4),
-                                  d.status == 'active'
-                                      ? Badge2(tr('Идэвхтэй'), background: AppPalette.successSoft, foreground: AppPalette.success)
-                                      : Badge2(tr('Идэвхгүй'), background: AppPalette.destructiveSoft, foreground: AppPalette.destructive),
-                                ]),
-                              ),
-                            ]),
-                            if ((d.description ?? '').trim().isNotEmpty) ...[
-                              gap,
-                              Text(tr('Тайлбар'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppPalette.mutedForeground)),
-                              const SizedBox(height: 4),
-                              Text(d.description!, style: const TextStyle(fontSize: 14, height: 1.5)),
-                            ],
-                          ]),
-                        ),
+                        _NameCard(dealer: d!),
                         gap,
                         DealerWalletSection(dealerId: d.id, dealerName: d.name),
                         for (final c in _lists) ...[gap, _listSection(c, d.list(c.field))],
@@ -301,6 +279,108 @@ class _DealerViewScreenState extends State<DealerViewScreen> {
               ),
             ),
       ]),
+    );
+  }
+}
+
+/// Dark name card on the dealer's details (the orange balance card under it stands out): logo, name, status and
+/// only the main (first) phone, email and address.
+class _NameCard extends StatelessWidget {
+  final Dealer dealer;
+  const _NameCard({required this.dealer});
+
+  @override
+  Widget build(BuildContext context) {
+    final d = dealer;
+    final active = d.status == 'active';
+    String? first(String field) => d.list(field).firstOrNull;
+    final phone = first('phonenumbers'), email = first('emails'), address = first('addresses');
+    Widget chip(IconData icon, String text, {VoidCallback? onTap}) => Material(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(icon, size: 16, color: AppPalette.primary),
+                const SizedBox(width: 6),
+                Flexible(child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white))),
+              ]),
+            ),
+          ),
+        );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(colors: [AppPalette.dark, AppPalette.dark2, AppPalette.dark], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        ),
+        child: Stack(children: [
+          // Soft glows, purely decorative.
+          Positioned(
+            right: -60,
+            top: -70,
+            child: Container(width: 200, height: 200, decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [AppPalette.primary.withValues(alpha: 0.45), AppPalette.primary.withValues(alpha: 0)]))),
+          ),
+          Positioned(
+            left: -60,
+            bottom: -80,
+            child: Container(width: 180, height: 180, decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [const Color(0xFFFB923C).withValues(alpha: 0.18), const Color(0x00FB923C)]))),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Row(children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                  ),
+                  child: DealerLogo(d.logo, size: 76, name: d.name),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(d.name, style: const TextStyle(fontSize: 20, height: 1.2, fontWeight: FontWeight.w800, color: Colors.white)),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: (active ? AppPalette.success : AppPalette.destructive).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Container(width: 6, height: 6, decoration: BoxDecoration(shape: BoxShape.circle, color: active ? const Color(0xFF34D399) : const Color(0xFFF87171))),
+                        const SizedBox(width: 6),
+                        Text(active ? tr('Идэвхтэй') : tr('Идэвхгүй'),
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: active ? const Color(0xFF6EE7B7) : const Color(0xFFFCA5A5))),
+                      ]),
+                    ),
+                  ]),
+                ),
+              ]),
+              if (phone != null || email != null || address != null) ...[
+                const SizedBox(height: 16),
+                Wrap(spacing: 8, runSpacing: 8, children: [
+                  if (phone != null) chip(Icons.phone_rounded, phone, onTap: () => launchUrl(Uri.parse('tel:$phone'))),
+                  if (email != null) chip(Icons.mail_outline_rounded, email, onTap: () => launchUrl(Uri.parse('mailto:$email'))),
+                  if (address != null) chip(Icons.place_outlined, address),
+                ]),
+              ],
+              if ((d.description ?? '').trim().isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(height: 1, color: Colors.white.withValues(alpha: 0.1)),
+                const SizedBox(height: 12),
+                Text(d.description!, style: TextStyle(fontSize: 14, height: 1.5, color: Colors.white.withValues(alpha: 0.75))),
+              ],
+            ]),
+          ),
+        ]),
+      ),
     );
   }
 }
