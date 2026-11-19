@@ -532,6 +532,37 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
     }
   }
 
+  /// Settled transactions in a bottom sheet, opened from the balance card.
+  void _history(List<WalletTx> rows) => showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: AppPalette.background,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        builder: (ctx) => ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.85),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 8, 8),
+              child: Row(children: [
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(tr('Гүйлгээний түүх'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                    Text(widget.dealerName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppPalette.mutedForeground)),
+                  ]),
+                ),
+                IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(ctx)),
+              ]),
+            ),
+            Flexible(
+              child: rows.isEmpty
+                  ? Padding(padding: const EdgeInsets.all(32), child: Text(tr('Гүйлгээ алга'), textAlign: TextAlign.center, style: const TextStyle(color: AppPalette.mutedForeground)))
+                  : ListView(shrinkWrap: true, padding: const EdgeInsets.fromLTRB(16, 0, 16, 24), children: [RowList(children: [for (final tx in rows) TxRow(tx: tx)])]),
+            ),
+          ]),
+        ),
+      );
+
   Future<(double, List<WalletTx>, bool)> _fetch() async {
     final r = await Future.wait([AdminApi.dealerBalances(), AdminApi.transactions(dealerId: widget.dealerId, limit: 100), AdminApi.paymentInfo()]);
     final balance = (r[0] as List<DealerBalance>).where((d) => d.id == widget.dealerId).firstOrNull?.balance ?? 0;
@@ -571,6 +602,8 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
                 IntrinsicWidth(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
                     ActionChip2(label: tr('Засах'), icon: Icons.edit_outlined, background: Colors.white, foreground: AppPalette.primary, onTap: () => _adjust(balance)),
+                    const SizedBox(height: 8),
+                    ActionChip2(label: tr('Түүх'), icon: Icons.history_rounded, background: Colors.white24, foreground: Colors.white, onTap: () => _history(history)),
                     if (qpayOn) ...[
                       const SizedBox(height: 8),
                       ActionChip2(label: 'QPay', icon: Icons.qr_code_2_rounded, background: Colors.white24, foreground: Colors.white, onTap: _qpay),
@@ -583,11 +616,6 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
               title(tr('{pending} хүсэлт хүлээгдэж буй', {'pending': pending.length})),
               RowList(children: [for (final tx in pending) TxRow(tx: tx, onApprove: () => _approve(tx), onReject: () => _reject(tx))]),
             ],
-            title(tr('Гүйлгээний түүх')),
-            if (history.isEmpty)
-              Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Text(tr('Гүйлгээ алга'), style: const TextStyle(color: AppPalette.mutedForeground)))
-            else
-              RowList(children: [for (final tx in history) TxRow(tx: tx)]),
           ]);
         },
       );

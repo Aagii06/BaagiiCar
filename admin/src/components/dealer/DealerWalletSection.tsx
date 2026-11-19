@@ -1,7 +1,7 @@
 "use client";
 
 import { usePrompt, useConfirm } from "@/components/common/Confirm";
-import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
+import { ErrorState, ListSkeleton } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
 import QpayPanel from "@/components/payment/QpayPanel";
 import TransactionRow from "@/components/payment/TransactionRow";
@@ -9,8 +9,9 @@ import { adjustBalance, approveTopup, getDealerBalances, getPaymentInfo, listTra
 import { tr } from "@/lib/i18n/translations";
 import { useApi } from "@/lib/useApi";
 import { formatMoney } from "@/lib/utils";
-import { Check, Pencil, QrCode, Wallet } from "lucide-react";
+import { Check, History, Pencil, QrCode, Wallet } from "lucide-react";
 import { useState } from "react";
+import TransactionHistorySheet from "./TransactionHistorySheet";
 
 /** Admin: a dealer's balance, manual adjustment, bank top-ups to confirm and transaction history. */
 export default function DealerWalletSection({ dealerId, dealerName }: { dealerId: number; dealerName: string }) {
@@ -24,6 +25,7 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
   const balance = balances.data?.find((d) => d.id === dealerId)?.balance ?? 0;
   // An open QPay invoice for this dealer: its amount.
   const [qpayAmount, setQpayAmount] = useState<number | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const refresh = () => setVersion((v) => v + 1);
 
   const run = async (action: () => Promise<void>, done: string) => {
@@ -112,6 +114,10 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
             <Pencil className="size-4" />
             {tr("Засах")}
           </button>
+          <button type="button" onClick={() => setShowHistory(true)} className="flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-bold text-white hover:bg-white/30">
+            <History className="size-4" />
+            {tr("Түүх")}
+          </button>
           {info.data?.qpay && (
             <button type="button" onClick={qpay} className="flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-bold text-white hover:bg-white/30">
               <QrCode className="size-4" />
@@ -138,16 +144,7 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
         </>
       )}
 
-      <h2 className="mb-2 mt-6 font-bold">{tr("Гүйлгээний түүх")}</h2>
-      {!history.length ? (
-        <EmptyState title={tr("Гүйлгээ алга")} />
-      ) : (
-        <div className="divide-y divide-border overflow-hidden rounded-2xl bg-card">
-          {history.map((tx) => (
-            <TransactionRow key={tx.id} tx={tx} />
-          ))}
-        </div>
-      )}
+      {showHistory && <TransactionHistorySheet dealerName={dealerName} rows={history} onClose={() => setShowHistory(false)} />}
     </div>
   );
 }
