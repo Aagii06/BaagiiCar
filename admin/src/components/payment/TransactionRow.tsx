@@ -8,7 +8,8 @@ import { Check, Undo2 } from "lucide-react";
 const TYPE_LABEL: Record<Transaction["type"], string> = {
   topup: "Данс цэнэглэлт",
   renew: "Зар шинэчилсэн",
-  adjust: "Админ засварласан",
+  // Shown as a top-up (or a deduction for old negative ones); the method line already says "Админ".
+  adjust: "Данс цэнэглэлт",
 };
 const METHOD_LABEL: Record<Transaction["method"], string> = {
   qpay: "QPay",
@@ -42,7 +43,7 @@ export default function TransactionRow({
         <div className="min-w-0 flex-1">
           {showDealer && <p className="truncate text-xs font-bold text-primary">{tx.dealer_name ?? `#${tx.dealer_id}`}</p>}
           <p className="truncate font-bold">
-            {tr(TYPE_LABEL[tx.type])}
+            {tr(tx.type === "adjust" && tx.amount < 0 ? "Данснаас хассан" : TYPE_LABEL[tx.type])}
             {tx.car_code && <span className="font-medium text-muted-foreground"> · #{tx.car_code}</span>}
           </p>
           <p className="truncate text-xs text-muted-foreground">
