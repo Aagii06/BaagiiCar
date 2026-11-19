@@ -1,15 +1,57 @@
+"use client";
+
 import { DealerAvatar } from "@/components/car/DealerPicker";
-import { dealerList } from "@/lib/api/admin";
+import { errorMessage, useToast } from "@/components/common/Toast";
+import { dealerList, updateDealer, type DealerListField } from "@/lib/api/admin";
 import type { Dealer } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
-import { Star } from "lucide-react";
-import { DEALER_LIST_FIELDS, DEALER_LISTS } from "./dealerLists";
-import MainBadge from "./MainBadge";
+import { useState } from "react";
+import DealerListSection from "./DealerListSection";
+import DealerListSheet from "./DealerListSheet";
+import { DEALER_LIST_FIELDS } from "./dealerLists";
 import { tr } from "@/lib/i18n/translations";
 
-/** Read-only dealer details; editing is behind the header's pencil (`?edit=1`). */
-export default function DealerView({ dealer }: { dealer: Dealer }) {
+type DealerLists = Record<DealerListField, string[]>;
+
+/**
+ * Dealer details. Name / logo / status / description are edited behind the header's pencil (`?edit=1`);
+ * phones, emails and addresses are added right here in a modal that saves at once.
+ */
+export default function DealerView({ dealer, onChanged }: { dealer: Dealer; onChanged?: () => void }) {
+  const toast = useToast();
   const active = dealer.status === "active";
+  const [lists, setLists] = useState<DealerLists>(() => ({
+    phonenumbers: dealerList(dealer, "phonenumbers"),
+    emails: dealerList(dealer, "emails"),
+    addresses: dealerList(dealer, "addresses"),
+  }));
+  const [editing, setEditing] = useState<DealerListField | null>(null);
+
+  /** Saves the whole dealer with one list replaced; a thrown error stays in the modal. */
+  const saveList = async (field: DealerListField, items: string[]) => {
+    const next = { ...lists, [field]: items };
+    await updateDealer(dealer.id, {
+      name: dealer.name,
+      logo: dealer.logo,
+      description: dealer.description,
+      status: dealer.status === "inactive" ? "inactive" : "active",
+      ...next,
+    });
+    setLists(next);
+    setEditing(null);
+    toast(tr("Хадгаллаа"));
+    onChanged?.();
+  };
+
+  /** Picks a row as the main one by moving it to the top. */
+  const makeMain = async (field: DealerListField, index: number) => {
+    const items = lists[field];
+    try {
+      await saveList(field, [items[index], ...items.filter((_, i) => i !== index)]);
+    } catch (err) {
+      toast(errorMessage(err), "error");
+    }
+  };
   return (
     <div className="space-y-4">
       <section className="rounded-2xl bg-card p-4">
@@ -30,38 +72,10 @@ export default function DealerView({ dealer }: { dealer: Dealer }) {
         )}
       </section>
 
-      {DEALER_LIST_FIELDS.map((field) => {
-        const cfg = DEALER_LISTS[field];
-        const items = dealerList(dealer, field);
-        const several = items.length > 1;
-        return (
-          <section key={field} className="rounded-2xl bg-card p-4">
-            <h2 className="mb-3 text-lg font-bold">{cfg.title}</h2>
-            {items.length ? (
-              <ul className="space-y-1">
-                {items.map((v, i) => {
-                  const main = several && i === 0;
-                  return (
-                    <li key={v} className={cn("flex items-center gap-2 rounded-xl px-3 py-2.5", main ? "bg-primary-soft text-primary" : "bg-muted/50")}>
-                      {main && <Star className="size-4 shrink-0 fill-current" />}
-                      {field === "phonenumbers" ? (
-                        <a href={`tel:${v}`} className={cn("min-w-0 flex-1 break-words", main ? "font-bold" : "font-medium text-foreground/80")}>{v}</a>
-                      ) : field === "emails" ? (
-                        <a href={`mailto:${v}`} className={cn("min-w-0 flex-1 break-words", main ? "font-bold" : "font-medium text-foreground/80")}>{v}</a>
-                      ) : (
-                        <span className={cn("min-w-0 flex-1 break-words", main ? "font-bold" : "font-medium text-foreground/80")}>{v}</span>
-                      )}
-                      {main && <MainBadge />}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">{cfg.empty}</p>
-            )}
-          </section>
-        );
-      })}
+      {DEALER_LIST_FIELDS.map((field) => (
+        <DealerListSection key={field} field={field} items={lists[field]} onEdit={() => setEditing(field)} onMakeMain={(i) => makeMain(field, i)} />
+      ))}
+      {editing && <DealerListSheet field={editing} items={lists[editing]} onSave={(items) => saveList(editing, items)} onClose={() => setEditing(null)} />}
     </div>
   );
 }

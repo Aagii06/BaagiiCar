@@ -1,6 +1,6 @@
 import type { DealerListField } from "@/lib/api/admin";
 import { cn } from "@/lib/utils";
-import { Pencil, Plus, Star } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import { DEALER_LISTS } from "./dealerLists";
 import MainBadge from "./MainBadge";
 import { tr } from "@/lib/i18n/translations";
@@ -30,9 +30,14 @@ export default function DealerListSection({
           <h2 className="text-lg font-bold">{cfg.title}</h2>
           <p className="text-xs text-muted-foreground">{cfg.hint}</p>
         </div>
-        <button type="button" onClick={onEdit} className="flex shrink-0 items-center gap-1 rounded-xl bg-primary-soft px-3 py-2 text-sm font-bold text-primary hover:bg-primary/15">
-          {items.length ? <Pencil className="size-3.5" /> : <Plus className="size-4" strokeWidth={2.6} />}
-          {items.length ? tr("Засах") : tr("Нэмэх")}
+        <button
+          type="button"
+          onClick={onEdit}
+          aria-label={cfg.addLabel}
+          title={cfg.addLabel}
+          className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary hover:bg-primary/15"
+        >
+          <Plus className="size-5" strokeWidth={2.6} />
         </button>
       </div>
       {items.length ? (

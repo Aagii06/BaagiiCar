@@ -76,7 +76,7 @@ function DealerDetail() {
         <DealerForm key={data.data.id} dealer={data.data} listHref={listHref} savedHref={viewHref} onBusyChange={setSaving} onDirtyChange={setDirty} />
       ) : (
         <>
-          <DealerView dealer={data.data} />
+          <DealerView key={data.data.id} dealer={data.data} onChanged={data.reload} />
           <DealerWalletSection dealerId={data.data.id} dealerName={data.data.name} />
         </>
       )}

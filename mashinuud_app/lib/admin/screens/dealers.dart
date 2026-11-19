@@ -229,11 +229,40 @@ class _DealerViewScreenState extends State<DealerViewScreen> {
     );
   }
 
+  /// Phones / emails / addresses are edited in the sheet right from the details; it saves at once.
+  Future<void> _editList(_ListCfg c, List<String> items) async {
+    final d = _dealer!;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      builder: (_) => _ListSheet(
+        cfg: c,
+        items: items,
+        onSave: (values) async {
+          await AdminApi.updateRow('dealers', d.id, {
+            'name': d.name,
+            'logo': d.logo,
+            for (final l in _lists) l.field: l.field == c.field ? values : d.list(l.field),
+            'description': d.description,
+            'status': d.status == 'inactive' ? 'inactive' : 'active',
+          });
+          if (mounted) toast(context, tr('Хадгаллаа'));
+          await _load();
+        },
+      ),
+    );
+  }
+
   Widget _listSection(_ListCfg c, List<String> items) {
     final several = items.length > 1;
     return Section(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text(tr(c.title), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        Row(children: [
+          Expanded(child: Text(tr(c.title), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
+          _PlusButton(tooltip: tr(c.addLabel), onTap: () => _editList(c, items)),
+        ]),
         const SizedBox(height: 12),
         if (items.isEmpty)
           Text(tr(c.empty), style: const TextStyle(fontSize: 14, color: AppPalette.mutedForeground))
@@ -481,13 +510,7 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
             ]),
           ),
           const SizedBox(width: 8),
-          ActionChip2(
-            label: items.isEmpty ? tr('Нэмэх') : tr('Засах'),
-            icon: items.isEmpty ? Icons.add_rounded : Icons.edit_outlined,
-            background: AppPalette.primarySoft,
-            foreground: AppPalette.primary,
-            onTap: () => _editList(c),
-          ),
+          _PlusButton(tooltip: tr(c.addLabel), onTap: () => _editList(c)),
         ]),
         const SizedBox(height: 12),
         if (items.isEmpty)
@@ -515,6 +538,26 @@ class _DealerFormScreenState extends State<DealerFormScreen> {
       ]),
     );
   }
+}
+
+/// Icon-only "+" on a dealer list's header; opens its sheet.
+class _PlusButton extends StatelessWidget {
+  final String tooltip;
+  final VoidCallback onTap;
+  const _PlusButton({required this.tooltip, required this.onTap});
+  @override
+  Widget build(BuildContext context) => Tooltip(
+        message: tooltip,
+        child: Material(
+          color: AppPalette.primarySoft,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            child: const SizedBox(width: 36, height: 36, child: Icon(Icons.add_rounded, size: 22, color: AppPalette.primary)),
+          ),
+        ),
+      );
 }
 
 /// Sheet for one of the dealer's lists: add rows, reorder with the arrows, remove, then one "Хадгалах".
