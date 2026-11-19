@@ -168,7 +168,13 @@ module.exports.balances = handle("dealerBalances", async (req, res) => {
   const pendingBy = Object.fromEntries(pending.map((p) => [p.dealer_id, p.count]));
   return ok(
     res,
-    rows.map((r) => ({ ...r, balance: sums[r.id] ?? 0, pending: pendingBy[r.id] ?? 0 })),
+    rows.map((r) => ({
+      ...r,
+      balance: sums[r.id]?.balance ?? 0,
+      total_in: sums[r.id]?.total_in ?? 0,
+      total_out: sums[r.id]?.total_out ?? 0,
+      pending: pendingBy[r.id] ?? 0,
+    })),
   );
 });
 

@@ -16,15 +16,22 @@ const balanceOf = async (dealerId, transaction) => {
 };
 module.exports.balanceOf = balanceOf;
 
-// Бүх дилерийн үлдэгдэл { dealer_id: balance }
+// Бүх дилерийн данс { dealer_id: { balance, total_in, total_out } }: орсон (+) ба зарцуулсан (−, эерэгээр) нийлбэр
 module.exports.balances = async () => {
   const rows = await dealerTransactions.findAll({
-    attributes: ["dealer_id", [sequelize.fn("SUM", sequelize.col("amount")), "balance"]],
+    attributes: [
+      "dealer_id",
+      [sequelize.fn("SUM", sequelize.col("amount")), "balance"],
+      [sequelize.literal("SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END)"), "total_in"],
+      [sequelize.literal("SUM(CASE WHEN amount < 0 THEN -amount ELSE 0 END)"), "total_out"],
+    ],
     where: { status: "done" },
     group: ["dealer_id"],
     raw: true,
   });
-  return Object.fromEntries(rows.map((r) => [r.dealer_id, toNumber(r.balance)]));
+  return Object.fromEntries(
+    rows.map((r) => [r.dealer_id, { balance: toNumber(r.balance), total_in: toNumber(r.total_in), total_out: toNumber(r.total_out) }]),
+  );
 };
 
 // Ганц мөртэй тохиргоо (байхгүй бол null)

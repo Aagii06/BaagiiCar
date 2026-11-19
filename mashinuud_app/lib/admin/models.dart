@@ -316,6 +316,10 @@ class DealerBalance extends Rec {
   String get name => s('name') ?? '';
   String? get logo => s('logo');
   double get balance => _num(j['balance']);
+  /// Everything that came in (top-ups, admin additions).
+  double get totalIn => _num(j['total_in']);
+  /// Everything spent (renewals, deductions), as a positive number.
+  double get totalOut => _num(j['total_out']);
   int get pending => i('pending') ?? 0;
 }
 

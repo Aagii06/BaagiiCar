@@ -489,19 +489,20 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
     await _act(() => AdminApi.rejectTopup(tx.id, reason), tr('Буцаалаа'));
   }
 
-  Future<void> _adjust(double balance) async {
+  /// Admin adds money by hand (cash, a transfer checked outside the app…); always positive.
+  Future<void> _add(double balance) async {
     final raw = await promptSheet(context,
-        title: tr('{name} — данс засах', {'name': widget.dealerName}),
-        message: tr('Нэмэх бол эерэг (50000), хасах бол сөрөг (-50000) дүн бичнэ үү. Одоогийн үлдэгдэл {balance}.', {'balance': money(balance)}),
+        title: tr('{name} — дансанд нэмэх', {'name': widget.dealerName}),
+        message: tr('Одоогийн үлдэгдэл {balance}.', {'balance': money(balance)}),
         label: tr('Дүн (₮)'),
         placeholder: '50,000',
         confirmLabel: tr('Үргэлжлүүлэх'),
-        money: true,
-        signed: true);
+        icon: Icons.add_rounded,
+        money: true);
     if (raw == null || !mounted) return;
     final amount = int.tryParse(raw);
-    if (amount == null || amount == 0) return toast(context, tr('Дүн буруу байна'), error: true);
-    final note = await promptSheet(context, title: tr('Тайлбар'), label: tr('Яагаад засаж байгаа вэ?'), placeholder: tr('Жишээ нь: бэлнээр төлсөн'), confirmLabel: tr('Хадгалах'));
+    if (amount == null || amount <= 0) return toast(context, tr('Дүн буруу байна'), error: true);
+    final note = await promptSheet(context, title: tr('Тайлбар'), label: tr('Хаанаас орсон бэ?'), placeholder: tr('Жишээ нь: бэлнээр төлсөн'), confirmLabel: tr('Нэмэх'));
     if (note == null) return;
     await _act(() => AdminApi.adjustBalance(widget.dealerId, amount, note), tr('Хадгаллаа'));
   }
@@ -563,19 +564,36 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
         ),
       );
 
-  Future<(double, List<WalletTx>, bool)> _fetch() async {
+  Future<(DealerBalance?, List<WalletTx>, bool)> _fetch() async {
     final r = await Future.wait([AdminApi.dealerBalances(), AdminApi.transactions(dealerId: widget.dealerId, limit: 100), AdminApi.paymentInfo()]);
-    final balance = (r[0] as List<DealerBalance>).where((d) => d.id == widget.dealerId).firstOrNull?.balance ?? 0;
-    return (balance, (r[1] as ListPage<WalletTx>).rows, (r[2] as PaymentInfo).qpay);
+    final totals = (r[0] as List<DealerBalance>).where((d) => d.id == widget.dealerId).firstOrNull;
+    return (totals, (r[1] as ListPage<WalletTx>).rows, (r[2] as PaymentInfo).qpay);
   }
 
   @override
-  Widget build(BuildContext context) => Loader<(double, List<WalletTx>, bool)>(
+  Widget build(BuildContext context) => Loader<(DealerBalance?, List<WalletTx>, bool)>(
         fetchKey: '${widget.dealerId}|$_reload',
         fetch: _fetch,
         loading: const RowsSkeleton(count: 3),
         builder: (context, data, _) {
-          final (balance, txs, qpayOn) = data;
+          final (totals, txs, qpayOn) = data;
+          final balance = totals?.balance ?? 0;
+          // Үлдэгдэл = орсон − зарцуулсан
+          Widget stat(IconData icon, String label, String value) => Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(AppRadius.md)),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      Icon(icon, size: 14, color: Colors.white70),
+                      const SizedBox(width: 4),
+                      Flexible(child: Text(label, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white70))),
+                    ]),
+                    const SizedBox(height: 2),
+                    FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white))),
+                  ]),
+                ),
+              );
           final pending = txs.where((t) => t.status == 'pending').toList();
           final history = txs.where((t) => t.status != 'pending').toList();
           Widget title(String text) => Padding(padding: const EdgeInsets.fromLTRB(4, 16, 4, 8), child: Text(text, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)));
@@ -586,7 +604,7 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
                 gradient: const LinearGradient(colors: [AppPalette.primary, Color(0xFFF97316)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
-              child: Row(children: [
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(children: [
@@ -596,12 +614,18 @@ class _DealerWalletSectionState extends State<DealerWalletSection> {
                     ]),
                     const SizedBox(height: 4),
                     Text(money(balance), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
+                    const SizedBox(height: 12),
+                    Row(children: [
+                      stat(Icons.south_west_rounded, tr('Орсон'), '+${money(totals?.totalIn ?? 0)}'),
+                      const SizedBox(width: 8),
+                      stat(Icons.north_east_rounded, tr('Зарцуулсан'), '−${money(totals?.totalOut ?? 0)}'),
+                    ]),
                   ]),
                 ),
                 // Same width for both chips; stretch alone would need a bounded width inside the Row.
                 IntrinsicWidth(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
-                    ActionChip2(label: tr('Засах'), icon: Icons.edit_outlined, background: Colors.white, foreground: AppPalette.primary, onTap: () => _adjust(balance)),
+                    ActionChip2(label: tr('Нэмэх'), icon: Icons.add_rounded, background: Colors.white, foreground: AppPalette.primary, onTap: () => _add(balance)),
                     const SizedBox(height: 8),
                     ActionChip2(label: tr('Түүх'), icon: Icons.history_rounded, background: Colors.white24, foreground: Colors.white, onTap: () => _history(history)),
                     if (qpayOn) ...[

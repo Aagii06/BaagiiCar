@@ -9,7 +9,7 @@ import { adjustBalance, approveTopup, getDealerBalances, getPaymentInfo, listTra
 import { tr } from "@/lib/i18n/translations";
 import { useApi } from "@/lib/useApi";
 import { formatMoney } from "@/lib/utils";
-import { Check, History, Pencil, QrCode, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Check, History, Plus, QrCode, Wallet } from "lucide-react";
 import { useState } from "react";
 import TransactionHistorySheet from "./TransactionHistorySheet";
 
@@ -22,7 +22,8 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
   const balances = useApi(getDealerBalances, String(version));
   const txs = useApi(() => listTransactions({ dealer_id: dealerId, limit: 100 }), `${dealerId}:${version}`);
   const info = useApi(getPaymentInfo);
-  const balance = balances.data?.find((d) => d.id === dealerId)?.balance ?? 0;
+  const totals = balances.data?.find((d) => d.id === dealerId);
+  const balance = totals?.balance ?? 0;
   // An open QPay invoice for this dealer: its amount.
   const [qpayAmount, setQpayAmount] = useState<number | null>(null);
   const [showHistory, setShowHistory] = useState(false);
@@ -54,19 +55,21 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
     if (reason) await run(() => rejectTopup(tx.id, reason), tr("Буцаалаа"));
   };
 
-  const adjust = async () => {
+  /** Admin adds money by hand (cash, a transfer checked outside the panel…); always positive. */
+  const add = async () => {
     const raw = await prompt({
-      title: tr("{dealer} — данс засах", { dealer: dealerName }),
-      message: tr("Нэмэх бол эерэг (50000), хасах бол сөрөг (-50000) дүн бичнэ үү. Одоогийн үлдэгдэл {balance}.", { balance: formatMoney(balance) }),
+      title: tr("{dealer} — дансанд нэмэх", { dealer: dealerName }),
+      message: tr("Одоогийн үлдэгдэл {balance}.", { balance: formatMoney(balance) }),
       label: tr("Дүн (₮)"),
       placeholder: "50,000",
       confirmLabel: tr("Үргэлжлүүлэх"),
-      money: "signed",
+      icon: Plus,
+      money: true,
     });
     if (!raw) return;
     const amount = Number(raw);
-    if (!Number.isInteger(amount) || amount === 0) return toast(tr("Дүн буруу байна"), "error");
-    const note = await prompt({ title: tr("Тайлбар"), label: tr("Яагаад засаж байгаа вэ?"), placeholder: tr("Жишээ нь: бэлнээр төлсөн"), confirmLabel: tr("Хадгалах") });
+    if (!Number.isInteger(amount) || amount <= 0) return toast(tr("Дүн буруу байна"), "error");
+    const note = await prompt({ title: tr("Тайлбар"), label: tr("Хаанаас орсон бэ?"), placeholder: tr("Жишээ нь: бэлнээр төлсөн"), confirmLabel: tr("Нэмэх") });
     if (note) await run(() => adjustBalance(dealerId, amount, note), tr("Хадгаллаа"));
   };
 
@@ -101,18 +104,35 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
 
   return (
     <div>
-      <section className="flex items-center gap-3 rounded-2xl bg-linear-to-br from-primary to-orange-500 p-5 text-white shadow-md shadow-primary/30">
+      <section className="flex items-start gap-3 rounded-2xl bg-linear-to-br from-primary to-orange-500 p-5 text-white shadow-md shadow-primary/30">
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2 text-sm font-semibold text-white/80">
             <Wallet className="size-4" />
             {tr("Дансны үлдэгдэл")}
           </p>
           <p className="mt-1 font-display text-3xl font-bold">{formatMoney(balance)}</p>
+          {/* Үлдэгдэл = орсон − зарцуулсан */}
+          <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-xl bg-white/15 px-2.5 py-2">
+              <p className="flex items-center gap-1 font-semibold text-white/80">
+                <ArrowDownLeft className="size-3.5" />
+                {tr("Орсон")}
+              </p>
+              <p className="mt-0.5 text-sm font-bold">+{formatMoney(totals?.total_in ?? 0)}</p>
+            </div>
+            <div className="rounded-xl bg-white/15 px-2.5 py-2">
+              <p className="flex items-center gap-1 font-semibold text-white/80">
+                <ArrowUpRight className="size-3.5" />
+                {tr("Зарцуулсан")}
+              </p>
+              <p className="mt-0.5 text-sm font-bold">−{formatMoney(totals?.total_out ?? 0)}</p>
+            </div>
+          </div>
         </div>
         <div className="flex shrink-0 flex-col gap-2">
-          <button type="button" onClick={adjust} className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-bold text-primary">
-            <Pencil className="size-4" />
-            {tr("Засах")}
+          <button type="button" onClick={add} className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-bold text-primary">
+            <Plus className="size-4" strokeWidth={2.6} />
+            {tr("Нэмэх")}
           </button>
           <button type="button" onClick={() => setShowHistory(true)} className="flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-bold text-white hover:bg-white/30">
             <History className="size-4" />

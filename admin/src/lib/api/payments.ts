@@ -57,6 +57,10 @@ export interface DealerBalance {
   logo: string | null;
   status: string;
   balance: number;
+  /** Everything that came in (top-ups, admin additions). */
+  total_in: number;
+  /** Everything spent (renewals, deductions), as a positive number. */
+  total_out: number;
   /** Bank top-ups waiting for the admin. */
   pending: number;
 }
