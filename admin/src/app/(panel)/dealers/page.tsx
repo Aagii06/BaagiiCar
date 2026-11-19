@@ -6,6 +6,7 @@ import { inputClass } from "@/components/common/Field";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
 import PageHeader from "@/components/layout/PageHeader";
 import { listDealers } from "@/lib/api/admin";
+import { getDealerBalances } from "@/lib/api/payments";
 import type { Dealer } from "@/lib/api/types";
 import { useApi } from "@/lib/useApi";
 import { useBackTo, withFrom } from "@/lib/useBackTo";
@@ -29,6 +30,9 @@ function DealersList() {
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
   const dealers = useApi(() => listDealers(q), q);
+  // Bank top-ups waiting for the admin, per dealer; the list still shows if this fails.
+  const balances = useApi(getDealerBalances);
+  const pendingOf = new Map(balances.data?.map((b) => [b.id, b.pending]));
   // Dealer whose ads are open in the full-screen sheet.
   const [carsOf, setCarsOf] = useState<Dealer | null>(null);
 
@@ -71,6 +75,11 @@ function DealersList() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{d.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{[d.phonenumber, d.address].filter(Boolean).join(" · ")}</p>
+                  {(pendingOf.get(d.id) ?? 0) > 0 && (
+                    <span className="mt-0.5 inline-block rounded-full bg-amber-soft px-2 py-0.5 text-[11px] font-bold text-amber-ink">
+                      {tr("{n} хүсэлт хүлээгдэж буй", { n: pendingOf.get(d.id)! })}
+                    </span>
+                  )}
                 </div>
                 {d.status !== "active" && <span className="text-[10px] font-semibold text-destructive">{tr("Идэвхгүй")}</span>}
               </Link>

@@ -42,11 +42,16 @@ class _DealersScreenState extends State<DealersScreen> {
             Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: SearchBox(hint: tr('Дилерийн нэр эсвэл утас'), onSearch: (v) => setState(() => _q = v))),
           ]),
           Expanded(
-            child: Loader<ListPage<Dealer>>(
+            child: Loader<(ListPage<Dealer>, Map<int, int>)>(
               fetchKey: '$_q|$_reload',
-              fetch: () => AdminApi.dealersList(_q),
+              fetch: () async {
+                // Bank top-ups waiting for the admin, per dealer; the list still shows if this fails.
+                final r = await Future.wait<Object>([AdminApi.dealersList(_q), AdminApi.dealerBalances().catchError((_) => <DealerBalance>[])]);
+                return (r[0] as ListPage<Dealer>, {for (final b in r[1] as List<DealerBalance>) b.id: b.pending});
+              },
               loading: const Padding(padding: EdgeInsets.all(16), child: RowsSkeleton(count: 6)),
-              builder: (context, page, _) {
+              builder: (context, data, _) {
+                final (page, pendingOf) = data;
                 if (page.rows.isEmpty) return EmptyView(title: _q.isNotEmpty ? tr('Дилер олдсонгүй') : tr('Бүртгэлтэй дилер алга'), icon: Icons.storefront_outlined);
                 return ListView(padding: const EdgeInsets.only(bottom: 40), children: [
                   RowList(children: [
@@ -62,6 +67,11 @@ class _DealersScreenState extends State<DealersScreen> {
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                 Text(d.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
                                 Text([d.phonenumber, d.address].whereType<String>().join(' · '), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+                                if ((pendingOf[d.id] ?? 0) > 0)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Badge2(tr('{pending} хүсэлт хүлээгдэж буй', {'pending': pendingOf[d.id]}), background: AppPalette.amberSoft, foreground: AppPalette.amberInk),
+                                  ),
                               ]),
                             ),
                             if (d.status != 'active') Padding(padding: EdgeInsets.only(right: 8), child: Text(tr('Идэвхгүй'), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppPalette.destructive))),
