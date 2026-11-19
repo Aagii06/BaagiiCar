@@ -15,6 +15,9 @@ const nextConfig = (phase: string): NextConfig => ({
   // /_next/*). Allow the office LAN too, so another computer opening
   // http://192.168.10.x:3790 gets live updates instead of a websocket error.
   allowedDevOrigins: ["192.168.10.*"],
+  experimental: {
+    agentUpgrade: "security",
+  },
 });
 
 export default nextConfig;
