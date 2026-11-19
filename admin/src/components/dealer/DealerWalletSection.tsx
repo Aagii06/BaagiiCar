@@ -3,12 +3,13 @@
 import { usePrompt, useConfirm } from "@/components/common/Confirm";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/States";
 import { errorMessage, useToast } from "@/components/common/Toast";
+import QpayPanel from "@/components/payment/QpayPanel";
 import TransactionRow from "@/components/payment/TransactionRow";
-import { adjustBalance, approveTopup, getDealerBalances, listTransactions, rejectTopup, type Transaction } from "@/lib/api/payments";
+import { adjustBalance, approveTopup, getDealerBalances, getPaymentInfo, listTransactions, rejectTopup, type Transaction } from "@/lib/api/payments";
 import { tr } from "@/lib/i18n/translations";
 import { useApi } from "@/lib/useApi";
 import { formatMoney } from "@/lib/utils";
-import { Check, Pencil, Wallet } from "lucide-react";
+import { Check, Pencil, QrCode, Wallet } from "lucide-react";
 import { useState } from "react";
 
 /** Admin: a dealer's balance, manual adjustment, bank top-ups to confirm and transaction history. */
@@ -19,7 +20,10 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
   const [version, setVersion] = useState(0);
   const balances = useApi(getDealerBalances, String(version));
   const txs = useApi(() => listTransactions({ dealer_id: dealerId, limit: 100 }), `${dealerId}:${version}`);
+  const info = useApi(getPaymentInfo);
   const balance = balances.data?.find((d) => d.id === dealerId)?.balance ?? 0;
+  // An open QPay invoice for this dealer: its amount.
+  const [qpayAmount, setQpayAmount] = useState<number | null>(null);
   const refresh = () => setVersion((v) => v + 1);
 
   const run = async (action: () => Promise<void>, done: string) => {
@@ -64,6 +68,28 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
     if (note) await run(() => adjustBalance(dealerId, amount, note), tr("Хадгаллаа"));
   };
 
+  const qpay = async () => {
+    const raw = await prompt({
+      title: tr("{dealer} — QPay нэхэмжлэх", { dealer: dealerName }),
+      message: tr("Төлөгдмөгц дилерийн дансанд автоматаар орно."),
+      label: tr("Дүн (₮)"),
+      placeholder: "50,000",
+      confirmLabel: tr("Нэхэмжлэх үүсгэх"),
+      icon: QrCode,
+      money: true,
+    });
+    if (!raw) return;
+    const amount = Number(raw);
+    if (!Number.isInteger(amount) || amount < 100) return toast(tr("Дүн буруу байна"), "error");
+    setQpayAmount(amount);
+  };
+
+  const onPaid = () => {
+    setQpayAmount(null);
+    toast(tr("Төлбөр орлоо, дилерийн дансанд нэмэгдлээ"));
+    refresh();
+  };
+
   if ((balances.loading && !balances.data) || (txs.loading && !txs.data)) return <ListSkeleton />;
   const error = balances.error ?? txs.error;
   if (error) return <ErrorState message={error.message} onRetry={refresh} />;
@@ -81,11 +107,25 @@ export default function DealerWalletSection({ dealerId, dealerName }: { dealerId
           </p>
           <p className="mt-1 font-display text-3xl font-bold">{formatMoney(balance)}</p>
         </div>
-        <button type="button" onClick={adjust} className="flex shrink-0 items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-bold text-primary">
-          <Pencil className="size-4" />
-          {tr("Засах")}
-        </button>
+        <div className="flex shrink-0 flex-col gap-2">
+          <button type="button" onClick={adjust} className="flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-bold text-primary">
+            <Pencil className="size-4" />
+            {tr("Засах")}
+          </button>
+          {info.data?.qpay && (
+            <button type="button" onClick={qpay} className="flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-bold text-white hover:bg-white/30">
+              <QrCode className="size-4" />
+              QPay
+            </button>
+          )}
+        </div>
       </section>
+
+      {qpayAmount && (
+        <div className="mt-4">
+          <QpayPanel key={qpayAmount} amount={qpayAmount} dealerId={dealerId} onPaid={onPaid} onClose={() => setQpayAmount(null)} />
+        </div>
+      )}
 
       {pending.length > 0 && (
         <>

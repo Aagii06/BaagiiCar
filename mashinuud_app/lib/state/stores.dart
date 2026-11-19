@@ -24,8 +24,8 @@ class Stores {
     favorites._load(prefs);
     compare._load(prefs);
     auth._load(prefs);
-    mode._load(prefs);
     AdminApi.session.load(prefs);
+    mode._load(prefs); // after the session: reopens the admin half only while signed in
     appLang.load(prefs);
     appLock.load(prefs);
   }
@@ -183,19 +183,29 @@ class ShellController extends ChangeNotifier {
 
 /// Which half of the app is showing: the customer screens, or the admin panel (admins / dealers).
 /// The app always opens on the customer side; the admin half is entered from there (and asks for the PIN).
+/// Which half is open. The admin half is remembered across restarts (it still asks for the PIN on start),
+/// but only while an admin / dealer session is saved.
 class AppModeStore extends ChangeNotifier {
+  static const _key = 'baagii_car_admin_mode';
+  SharedPreferences? _prefs;
   bool _admin = false;
 
   bool get admin => _admin;
 
   void _load(SharedPreferences prefs) {
-    // Older versions kept the admin half open across restarts.
-    prefs.remove('baagii_car_admin_mode');
+    _prefs = prefs;
+    // try: an old version may have saved a different type under this key.
+    try {
+      _admin = (prefs.getBool(_key) ?? false) && AdminApi.session.signedIn;
+    } catch (_) {
+      prefs.remove(_key);
+    }
   }
 
   void setAdmin(bool value) {
     if (_admin == value) return;
     _admin = value;
+    _prefs?.setBool(_key, value);
     // Back on the customer side: start from its home page, not the tab the admin half was opened from.
     if (!value) Stores.shell.tab = ShellController.home;
     notifyListeners();

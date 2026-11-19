@@ -179,12 +179,20 @@ const parseAmount = (v) => {
   return amount;
 };
 
-// Дилер дансаа QPay-ээр цэнэглэх нэхэмжлэх
+// Дансаа QPay-ээр цэнэглэх нэхэмжлэх: дилер өөрийнхөө, админ dealer_id-аар аль ч дилерийнх
 module.exports.topupQpay = handle("topupQpay", async (req, res) => {
-  const dealerId = await requireDealer(req);
   const amount = parseAmount(req.body.amount);
-  const user = await users.findByPk(req.loggedUser.id, { attributes: ["phonenumber"], raw: true });
-  const invoice = await createTopupInvoice({ dealerId, amount, by: req.body.by, phone: user?.phonenumber });
+  let dealerId, phone;
+  if (isAdmin(req)) {
+    const dealer = await dealers.findByPk(Number(req.body.dealer_id), { attributes: ["id", "phonenumber", "status"], raw: true });
+    if (!dealer || dealer.status === "deleted") return fail(res, "Дилер олдсонгүй");
+    dealerId = dealer.id;
+    phone = dealer.phonenumber;
+  } else {
+    dealerId = await requireDealer(req);
+    phone = (await users.findByPk(req.loggedUser.id, { attributes: ["phonenumber"], raw: true }))?.phonenumber;
+  }
+  const invoice = await createTopupInvoice({ dealerId, amount, by: req.body.by, phone });
   return ok(res, toClient(invoice));
 });
 

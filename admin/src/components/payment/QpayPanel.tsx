@@ -4,7 +4,7 @@ import { checkTopupInvoice, createTopupInvoice, type QpayInvoice } from "@/lib/a
 import { errorMessage } from "@/components/common/Toast";
 import { formatMoney } from "@/lib/utils";
 import { tr } from "@/lib/i18n/translations";
-import { Loader2, X } from "lucide-react";
+import { Check, Copy, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 // How often the page asks the backend whether QPay got the money.
@@ -13,22 +13,34 @@ const POLL_MS = 4000;
 /**
  * A QPay invoice that tops up the dealer's balance: a QR to scan with any bank app, or (on a phone)
  * a link straight into one. Polls until the backend sees the payment, then calls `onPaid`.
+ * `dealerId`: an admin billing that dealer (the QR / link is then passed on to them).
  */
-export default function QpayPanel({ amount, onPaid, onClose }: { amount: number; onPaid: (balance: number) => void; onClose: () => void }) {
+export default function QpayPanel({
+  amount,
+  dealerId,
+  onPaid,
+  onClose,
+}: {
+  amount: number;
+  dealerId?: number;
+  onPaid: (balance: number) => void;
+  onClose: () => void;
+}) {
   const [invoice, setInvoice] = useState<QpayInvoice | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [notYet, setNotYet] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    createTopupInvoice(amount)
+    createTopupInvoice(amount, dealerId)
       .then((inv) => !cancelled && setInvoice(inv))
       .catch((err) => !cancelled && setError(errorMessage(err)));
     return () => {
       cancelled = true;
     };
-  }, [amount]);
+  }, [amount, dealerId]);
 
   const check = useCallback(async () => {
     if (!invoice) return false;
@@ -48,6 +60,17 @@ export default function QpayPanel({ amount, onPaid, onClose }: { amount: number;
     }, POLL_MS);
     return () => clearInterval(timer);
   }, [invoice, check]);
+
+  const copyLink = async () => {
+    if (!invoice?.short_url) return;
+    try {
+      await navigator.clipboard.writeText(invoice.short_url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard blocked (http / old browser): the link stays visible to copy by hand.
+    }
+  };
 
   const checkNow = async () => {
     setChecking(true);
@@ -84,6 +107,17 @@ export default function QpayPanel({ amount, onPaid, onClose }: { amount: number;
             <p className="text-xl font-bold text-primary">{formatMoney(invoice.amount)}</p>
             <p className="text-center text-sm text-muted-foreground">{tr("Банкны аппаараа QR кодыг уншуулж төлнө үү")}</p>
           </div>
+
+          {/* The admin sends this to the dealer (chat / SMS); it opens the same invoice. */}
+          {invoice.short_url && (
+            <div className="flex items-center gap-2 rounded-xl bg-muted/60 p-2 pl-3">
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">{invoice.short_url}</span>
+              <button type="button" onClick={copyLink} className="flex shrink-0 items-center gap-1 rounded-lg bg-white px-2.5 py-1.5 text-xs font-bold hover:bg-border">
+                {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
+                {copied ? tr("Хуулсан") : tr("Холбоос хуулах")}
+              </button>
+            </div>
+          )}
 
           {invoice.urls.length > 0 && (
             <div className="space-y-2">

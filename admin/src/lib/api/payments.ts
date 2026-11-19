@@ -94,8 +94,9 @@ export async function getDealerBalances() {
   return (await apiFetch<ApiItemResponse<DealerBalance[]>>("/api/payments/balances")).data;
 }
 
-export async function createTopupInvoice(amount: number) {
-  return (await apiFetch<ApiItemResponse<QpayInvoice>>("/api/payments/topup/qpay", { method: "POST", body: { amount } })).data;
+/** A dealer tops up their own balance; an admin passes `dealerId` to bill that dealer. */
+export async function createTopupInvoice(amount: number, dealerId?: number) {
+  return (await apiFetch<ApiItemResponse<QpayInvoice>>("/api/payments/topup/qpay", { method: "POST", body: { amount, dealer_id: dealerId } })).data;
 }
 
 export async function checkTopupInvoice(id: number) {
