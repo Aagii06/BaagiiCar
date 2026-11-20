@@ -1,6 +1,5 @@
 "use client";
 
-import { originalImage } from "@/lib/api/config";
 import { cn } from "@/lib/utils";
 import NoImage from "@/components/common/NoImage";
 import { useEffect, useRef, useState } from "react";
@@ -11,13 +10,11 @@ import { useEffect, useRef, useState } from "react";
  * give the image a size, or `placeholderClassName` one for while it loads
  * (images sized only by max-width/height are 0×0 until they arrive).
  * `skeletonClassName` swaps the default color, e.g. for dark backgrounds.
- * A resized cut (`thumb_` / `grid_` / `icon_`) that fails to load is retried as the original file
- * (SVGs and older uploads have no cuts).
  * No src (not uploaded / empty path) or a file that fails to load shows the "no image" picture instead,
  * or `fallback` when given.
  */
 export default function Img({
-  src: wanted,
+  src,
   className,
   skeletonClassName = "bg-foreground/10",
   placeholderClassName,
@@ -34,11 +31,9 @@ export default function Img({
   fallback?: React.ReactNode;
 }) {
   const ref = useRef<HTMLImageElement>(null);
-  // URLs that failed, so a new src gets its own try.
-  const [failed, setFailed] = useState<string[]>([]);
-  const original = originalImage(wanted);
-  const src = wanted && !failed.includes(wanted) ? wanted : original && !failed.includes(original) ? original : null;
-  const missing = !src;
+  // The src that failed, so a new src gets its own try.
+  const [failed, setFailed] = useState<string | null>(null);
+  const missing = !src || failed === src;
   // Tracks which src finished, so switching src shows the skeleton again.
   const [doneSrc, setDoneSrc] = useState<string | null>(null);
   const loading = !missing && doneSrc !== src;
@@ -56,7 +51,6 @@ export default function Img({
     // eslint-disable-next-line @next/next/no-img-element -- backend-served uploads, any host
     <img
       ref={ref}
-      key={src}
       src={src}
       alt={alt}
       onLoad={(e) => {
@@ -64,9 +58,8 @@ export default function Img({
         onLoad?.(e);
       }}
       onError={(e) => {
-        setFailed((f) => [...f, src]);
-        // Callers hear about it only once the original has failed too.
-        if (src !== wanted || !original) onError?.(e);
+        setFailed(src);
+        onError?.(e);
       }}
       className={cn("transition-opacity duration-300", className, loading && ["animate-pulse text-transparent", skeletonClassName, placeholderClassName])}
       {...props}

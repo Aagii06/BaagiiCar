@@ -312,7 +312,7 @@ function Filters({
           <div className="grid grid-cols-2 gap-2">
             {bodyTypes.map((b) => {
               const on = p.body.includes(b.id);
-              const image = catalogImage(b.image, "bodyTypes", "icon");
+              const image = catalogImage(b.image, "bodyTypes");
               return (
                 <button
                   key={b.id}
