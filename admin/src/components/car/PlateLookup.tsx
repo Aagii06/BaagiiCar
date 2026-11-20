@@ -9,7 +9,7 @@ import { tr } from "@/lib/i18n/translations";
 
 type SearchType = "plate" | "vin";
 
-/** УБ / Орон нутаг isn't asked here: the user picks it in the form. */
+/** УБ / Орон нутаг isn't asked here: the form picks it from the found plate (plateTypeOf). */
 const TYPES: Record<SearchType, { label: string; short: string; check: RegExp; error: string }> = {
   plate: { get label() { return tr("Улсын дугаар"); }, get short() { return tr("Улсын"); }, check: /^\d{4}[А-ЯЁӨҮ]{3}$/, get error() { return tr("Улсын дугаарын формат буруу байна (жш: 1234 УБА)"); } },
   vin: { get label() { return tr("Арлын дугаар"); }, get short() { return tr("Арлын"); }, check: /^[A-HJ-NPR-Z0-9-]{6,17}$/, get error() { return tr("Арлын дугаарын формат буруу байна"); } },
@@ -37,7 +37,9 @@ export default function PlateLookup({ onFound }: { onFound: (info: VehicleInfo) 
     setBusy(true);
     setNote(null);
     try {
-      const info = await vehicleLookup({ [type]: q });
+      const found = await vehicleLookup({ [type]: q });
+      // The registry may leave the plate out; the searched plate still tells УБ / Орон нутаг.
+      const info = { ...found, plate: found.plate || (type === "plate" ? q : null) };
       setNote({ tone: "ok", text: onFound(info) ?? tr("Мэдээлэл бөглөгдлөө") });
     } catch (err) {
       setNote({ tone: "error", text: err instanceof Error ? err.message : tr("Машины мэдээлэл олдсонгүй") });

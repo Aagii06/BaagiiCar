@@ -260,6 +260,16 @@ class CarConst {
   static const steerings = ['Зүүн', 'Баруун'];
   static const vehicleTypes = ['Суудлын', 'Туулах чадвар сайтай', 'Олон зориулалттай', 'Ердийн тэвштэй автомашин', 'Бүхээгтэй', 'Микроавтобус', 'Ачааны', 'Автобус', 'Тусгай зориулалтын', 'Бусад'];
   static const plateTypes = ['Дугаар аваагүй', 'УБ дугаартай', 'Орон нутаг дугаартай'];
+
+  /// First two plate letters of Ulaanbaatar plates ("1234 УБА"); add 'БР', 'НА' etc. here if needed.
+  static const ubPlateCodes = ['УБ', 'УН', 'УА', 'УЕ', 'УК'];
+
+  /// "1234 УБА" / "1234УБА" / "1234 уба" → 'УБ дугаартай'; other letters → 'Орон нутаг дугаартай'; no letters → null.
+  static String? plateTypeOf(String? plate) {
+    final letters = (plate ?? '').replaceAll(RegExp(r'[^А-ЯЁӨҮа-яёөү]'), '').toUpperCase();
+    if (letters.length < 2) return null;
+    return ubPlateCodes.contains(letters.substring(0, 2)) ? 'УБ дугаартай' : 'Орон нутаг дугаартай';
+  }
   static const exteriorColors = ['Цагаан', 'Хар', 'Саарал', 'Мөнгөлөг', 'Улаан', 'Цэнхэр', 'Ногоон', 'Шар', 'Улбар шар', 'Хүрэн', 'Бор', 'Шампань', 'Ягаан', 'Нил ягаан', 'Бусад'];
   static const interiorColors = ['Хар', 'Саарал', 'Бор', 'Шаргал', 'Цагаан', 'Хүрэн', 'Улаан', 'Хослол', 'Бусад'];
 

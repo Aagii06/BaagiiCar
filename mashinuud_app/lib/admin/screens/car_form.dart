@@ -601,9 +601,12 @@ class _CarFormState extends State<CarForm> {
     put('color', info['color'], CarConst.exteriorColors);
     put('vin', info['vin']);
     final lock = fill.keys.toSet();
+    // УБ / Орон нутаг is read off the plate letters; picked but not locked, so it can still be changed.
+    final plateType = CarConst.plateTypeOf(info['plate']?.toString());
     setState(() {
       if (brand != null && '${brand.id}' != f['brand_id']) f['car_model_id'] = '';
       f.addAll(fill);
+      if (plateType != null) f['plate_type'] = plateType;
       _locked = lock;
       _lookup = (plate: info['plate']?.toString(), vin: info['vin']?.toString());
     });
@@ -1079,6 +1082,8 @@ class _PlateLookupState extends State<_PlateLookup> {
     });
     try {
       final info = await AdminApi.vehicleLookup(_type, _q);
+      // The registry may leave the plate out; the searched plate still tells УБ / Орон нутаг.
+      if ('${info['plate'] ?? ''}'.isEmpty && _type == 'plate') info['plate'] = _q;
       if (mounted) setState(() => _note = (ok: true, text: widget.onFound(info)));
     } catch (e) {
       if (mounted) setState(() => _note = (ok: false, text: errorText(e)));

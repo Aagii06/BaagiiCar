@@ -12,7 +12,7 @@ import PublishChoiceSheet from "./PublishChoiceSheet";
 import { dealerPhones, getBodyTypes, getBrands, getDealers, getLocations, getModels, parseAutobox, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
 import type { Car, CarModel, Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, PLATE_TYPES, ROLES, STEERINGS, TRANSMISSIONS, VEHICLE_TYPES } from "@/lib/constants";
+import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, PLATE_TYPES, plateTypeOf, ROLES, STEERINGS, TRANSMISSIONS, VEHICLE_TYPES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "lucide-react";
@@ -370,7 +370,9 @@ export default function CarForm({
     put("mileage", info.mileage);
     put("color", info.color, EXTERIOR_COLORS);
     put("vin", info.vin);
-    setF((p) => ({ ...p, ...fill, ...(brand && brand.id !== Number(p.brand_id) ? { car_model_id: "" } : {}) }));
+    // УБ / Орон нутаг is read off the plate letters; picked but not locked, so it can still be changed.
+    const plateType = plateTypeOf(info.plate);
+    setF((p) => ({ ...p, ...fill, ...(plateType ? { plate_type: plateType } : {}), ...(brand && brand.id !== Number(p.brand_id) ? { car_model_id: "" } : {}) }));
     // A new lookup replaces the previous lock; fields the registry left empty stay editable.
     const lock = new Set(Object.keys(fill) as (keyof FormState)[]);
     setLocked(lock);

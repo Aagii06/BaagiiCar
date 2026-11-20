@@ -8,6 +8,16 @@ export const STEERINGS = ["Зүүн", "Баруун"];
 /** Registry categories (autobox vehicleTypeName); a registry value outside this list is still kept on the ad. */
 export const VEHICLE_TYPES = ["Суудлын", "Туулах чадвар сайтай", "Олон зориулалттай", "Ердийн тэвштэй автомашин", "Бүхээгтэй", "Микроавтобус", "Ачааны", "Автобус", "Тусгай зориулалтын", "Бусад"];
 export const PLATE_TYPES = ["Дугаар аваагүй", "УБ дугаартай", "Орон нутаг дугаартай"];
+
+/** First two plate letters of Ulaanbaatar plates ("1234 УБА"); add "БР", "НА" etc. here if needed. */
+const UB_PLATE_CODES = ["УБ", "УН", "УА", "УЕ", "УК"];
+
+/** "1234 УБА" / "1234УБА" / "1234 уба" → "УБ дугаартай"; other letters → "Орон нутаг дугаартай"; no letters → null. */
+export function plateTypeOf(plate: string | null | undefined): string | null {
+  const letters = (plate ?? "").replace(/[^А-ЯЁӨҮа-яёөү]/g, "").toUpperCase();
+  if (letters.length < 2) return null;
+  return UB_PLATE_CODES.includes(letters.slice(0, 2)) ? "УБ дугаартай" : "Орон нутаг дугаартай";
+}
 export const EXTERIOR_COLORS = ["Цагаан", "Хар", "Саарал", "Мөнгөлөг", "Улаан", "Цэнхэр", "Ногоон", "Шар", "Улбар шар", "Хүрэн", "Бор", "Шампань", "Ягаан", "Нил ягаан", "Бусад"];
 export const INTERIOR_COLORS = ["Хар", "Саарал", "Бор", "Шаргал", "Цагаан", "Хүрэн", "Улаан", "Хослол", "Бусад"];
 
