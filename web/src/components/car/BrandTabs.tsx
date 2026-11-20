@@ -31,7 +31,7 @@ export default function BrandTabs({
       {loading && <TileRowSkeleton />}
       {items.map((b) => {
         const active = b.id === selectedId;
-        const logo = catalogImage(b.logo, "brands");
+        const logo = catalogImage(b.logo, "brands", "icon");
         return (
           <button
             key={b.id}
