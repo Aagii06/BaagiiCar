@@ -2,7 +2,7 @@ name: mashinuud_app
 description: "Mashinuud app - Flutter application for car listings and management."
 publish_to: 'none' 
 
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.9.0
