@@ -123,7 +123,7 @@ function BrandGrid() {
             </div>
           ))}
         {(brands.data ?? []).slice(0, 16).map((b, i) => {
-          const logo = catalogImage(b.logo, "brands");
+          const logo = catalogImage(b.logo, "brands", "icon");
           return (
             <Link
               key={b.id}
@@ -164,7 +164,7 @@ function BodyTypes({ items, loading }: { items: BodyType[]; loading: boolean }) 
         {loading &&
           Array.from({ length: 4 }, (_, i) => <div key={i} className="h-[104px] animate-pulse rounded-2xl bg-card md:h-[120px]" />)}
         {items.map((b, i) => {
-          const image = catalogImage(b.image, "bodyTypes");
+          const image = catalogImage(b.image, "bodyTypes", "thumb");
           return (
             <Link
               key={b.id}

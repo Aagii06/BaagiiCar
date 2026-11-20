@@ -8,7 +8,7 @@ export const customerName = (c: Pick<Customer, "firstname" | "lastname" | "phone
   [c.lastname, c.firstname].filter(Boolean).join(" ") || c.phonenumber || c.email || tr("Нэргүй");
 
 export function CustomerAvatar({ customer, className = "size-10" }: { customer: Customer; className?: string }) {
-  const photo = catalogImage(customer.profile, "users");
+  const photo = catalogImage(customer.profile, "users", "icon");
   return (
     <Img
       src={photo}

@@ -12,7 +12,7 @@ import PublishChoiceSheet from "./PublishChoiceSheet";
 import { dealerPhones, getBodyTypes, getBrands, getDealers, getLocations, getModels, parseAutobox, saveCar, type CarInput, type PhotoItem, type VehicleInfo } from "@/lib/api/cars";
 import type { Car, CarModel, Dealer } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, PLATE_TYPES, plateTypeOf, ROLES, STEERINGS, TRANSMISSIONS, VEHICLE_TYPES } from "@/lib/constants";
+import { bodyTypeLabel, CAR_STATUS, DRIVE_TYPES, EXTERIOR_COLORS, FUEL_TYPES, INTERIOR_COLORS, classifyPlate, PLATE_TYPES, plateTypeOf, ROLES, STEERINGS, TRANSMISSIONS, VEHICLE_TYPES } from "@/lib/constants";
 import { useApi } from "@/lib/useApi";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ImagePlus, ShieldCheck, Store, X } from "lucide-react";
@@ -383,7 +383,9 @@ export default function CarForm({
       setLocked((prev) => (prev === lock ? new Set([...lock, "car_model_id"]) : prev));
     });
 
-    const name = [info.brand, info.model, info.manufactured_year].filter(Boolean).join(" ");
+    // "1234 ДАА" → "… · Дархан-Уул" at the end of the note.
+    const region = classifyPlate(info.plate).region;
+    const name = [info.brand, info.model, info.manufactured_year].filter(Boolean).join(" ") + (region ? ` · ${region}` : "");
     if (!brand) return tr("{name} олдлоо. \"{brand}\" үйлдвэр каталогид алга, гараар сонгоно уу", { name, brand: info.brand ?? "—" });
     return tr("{name} — бүртгэлийн мэдээлэл бөглөгдөж түгжигдлээ. Хурдны хайрцгийг сонгоно уу", { name });
   };

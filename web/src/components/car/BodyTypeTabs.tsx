@@ -27,7 +27,7 @@ export default function BodyTypeTabs({
     <div ref={rowRef} className={cn("no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0", className)}>
       {items.map((b) => {
         const active = b.id === selectedId;
-        const image = catalogImage(b.image, "bodyTypes");
+        const image = catalogImage(b.image, "bodyTypes", "icon");
         return (
           <button
             key={b.id}

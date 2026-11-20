@@ -1,5 +1,6 @@
 "use client";
 
+import Img from "@/components/common/Img";
 import { checkTopupInvoice, createTopupInvoice, type QpayInvoice } from "@/lib/api/payments";
 import { errorMessage } from "@/components/common/Toast";
 import { formatMoney } from "@/lib/utils";
@@ -125,8 +126,7 @@ export default function QpayPanel({
               <div className="grid grid-cols-4 gap-2">
                 {invoice.urls.map((app) => (
                   <a key={app.name} href={app.link} className="flex flex-col items-center gap-1 rounded-xl border border-border p-2 text-center hover:border-primary/40">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- bank logos come from QPay */}
-                    <img src={app.logo} alt="" className="size-9 rounded-lg" />
+                    <Img src={app.logo} className="size-9 rounded-lg" fallback={<span className="size-9 rounded-lg bg-muted" />} />
                     <span className="line-clamp-2 text-[11px] leading-tight">{app.description || app.name}</span>
                   </a>
                 ))}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mashinuud_app/api/client.dart';
 import 'package:mashinuud_app/app/format.dart';
 import 'package:mashinuud_app/app/theme.dart';
+import 'package:mashinuud_app/widgets/common.dart';
 
 /// Dealer logo (with [padding] around it on [background]); with no logo, or one that
 /// fails to load, the dealer's initials — first letters of the name's first two words —
@@ -29,18 +30,7 @@ class DealerAvatar extends StatelessWidget {
         );
       },
     );
-    final url = uploadUrl(logo, folder: 'dealers');
-    if (url == null) return fallback;
-    return Image.network(
-      url,
-      fit: BoxFit.contain,
-      gaplessPlayback: true,
-      frameBuilder: (_, child, frame, sync) => Container(
-        color: background,
-        padding: padding,
-        child: sync || frame != null ? child : null,
-      ),
-      errorBuilder: (_, _, _) => fallback,
-    );
+    // Avatars are ≤ 80pt: the 240px cut is sharp enough and much lighter than the original.
+    return UploadImage(uploadUrl(logo, size: 'thumb', folder: 'dealers'), fit: BoxFit.contain, background: background, padding: padding, error: fallback);
   }
 }

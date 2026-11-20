@@ -421,7 +421,7 @@ class _QpaySheetState extends State<_QpaySheet> {
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(border: Border.all(color: AppPalette.border), borderRadius: BorderRadius.circular(AppRadius.md)),
                         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.network('${app['logo']}', width: 36, height: 36, errorBuilder: (_, _, _) => const SizedBox(width: 36, height: 36))),
+                          ClipRRect(borderRadius: BorderRadius.circular(8), child: UploadImage('${app['logo']}', width: 36, height: 36, error: const SizedBox(width: 36, height: 36))),
                           const SizedBox(height: 4),
                           Text('${app['description'] ?? app['name']}', maxLines: 2, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, height: 1.1)),
                         ]),

@@ -5,7 +5,7 @@ import { cn, initials, userName } from "@/lib/utils";
 
 /** Profile photo (uploads/users), else — or if it fails to load — initials. */
 export default function UserAvatar({ user, className = "size-10" }: { user: User | null | undefined; className?: string }) {
-  const photo = catalogImage(user?.profile, "users");
+  const photo = catalogImage(user?.profile, "users", "icon");
   return (
     <Img
       src={photo}

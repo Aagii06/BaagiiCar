@@ -71,7 +71,7 @@ export default function CarRow({ car, onChanged, showDealer, renewPrice }: { car
     }
   };
 
-  const dealerLogo = catalogImage(car.dealer_logo, "dealers");
+  const dealerLogo = catalogImage(car.dealer_logo, "dealers", "icon");
 
   return (
     <div className={cn("relative overflow-hidden rounded-2xl bg-card", busy && "pointer-events-none")} aria-busy={busy || undefined}>

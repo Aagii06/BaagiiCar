@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:mashinuud_app/api/client.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/app/i18n.dart';
 
@@ -313,7 +314,78 @@ class NoImage extends StatelessWidget {
       );
 }
 
-/// Network photo on a tinted background, with the [noImage] picture when there is none.
+/// Pulsing block filling its box while a photo loads (web `Img` skeleton).
+class ImageSkeleton extends StatelessWidget {
+  final Color color;
+  const ImageSkeleton({super.key, this.color = const Color(0x1A16181D)});
+  @override
+  Widget build(BuildContext context) => Pulse(child: ColoredBox(color: color, child: const SizedBox.expand()));
+}
+
+/// Skeleton color that shows on [background]: light on dark, dark on light.
+Color skeletonOn(Color background) => background.a > 0.5 && background.computeLuminance() < 0.3 ? const Color(0x1AFFFFFF) : const Color(0x1A16181D);
+
+/// Network photo: an [ImageSkeleton] (over [background], inside [padding]) while it loads, then it fades in.
+/// A resized cut (`icon_` / `thumb_` / `grid_`) that fails to load is retried as the original file;
+/// [error] replaces the whole box when there is no [url] or the original fails too.
+class UploadImage extends StatefulWidget {
+  final String? url;
+  final BoxFit fit;
+  final double? width;
+  final double? height;
+  final Color? background;
+  final EdgeInsetsGeometry? padding;
+  final Widget error;
+  const UploadImage(this.url, {super.key, this.fit = BoxFit.cover, this.width, this.height, this.background, this.padding, required this.error});
+
+  @override
+  State<UploadImage> createState() => _UploadImageState();
+}
+
+class _UploadImageState extends State<UploadImage> {
+  /// The cut failed: show the original instead.
+  bool _original = false;
+
+  @override
+  void didUpdateWidget(UploadImage old) {
+    super.didUpdateWidget(old);
+    if (old.url != widget.url) _original = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final original = originalImage(widget.url);
+    final src = _original ? original : widget.url;
+    if (src == null) return widget.error;
+    final skeleton = ImageSkeleton(color: skeletonOn(widget.background ?? Colors.white));
+    Widget box(Widget child) => Container(width: widget.width, height: widget.height, color: widget.background, padding: widget.padding, child: child);
+    return Image.network(
+      src,
+      key: ValueKey(src),
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      frameBuilder: (_, child, frame, sync) => box(
+        sync
+            ? child
+            : Stack(fit: StackFit.passthrough, alignment: Alignment.center, children: [
+                if (frame == null) Positioned.fill(child: skeleton),
+                AnimatedOpacity(opacity: frame == null ? 0 : 1, duration: const Duration(milliseconds: 300), child: child),
+              ]),
+      ),
+      errorBuilder: (_, _, _) {
+        if (_original || original == null) return widget.error;
+        // Only a small 404 was spent; ask for the original next frame.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && !_original) setState(() => _original = true);
+        });
+        return box(skeleton);
+      },
+    );
+  }
+}
+
+/// Network photo on a tinted background: skeleton while it loads, the [noImage] picture when there is none.
 class NetImage extends StatelessWidget {
   final String? url;
   final BoxFit fit;
@@ -321,17 +393,8 @@ class NetImage extends StatelessWidget {
   const NetImage(this.url, {super.key, this.fit = BoxFit.cover, this.background = AppPalette.muted});
 
   @override
-  Widget build(BuildContext context) {
-    final placeholder = Container(color: background, child: const NoImage());
-    if (url == null) return placeholder;
-    return Image.network(
-      url!,
-      fit: fit,
-      gaplessPlayback: true,
-      frameBuilder: (_, child, frame, sync) => sync || frame != null ? Container(color: background, child: child) : Container(color: background),
-      errorBuilder: (_, _, _) => placeholder,
-    );
-  }
+  Widget build(BuildContext context) =>
+      UploadImage(url, fit: fit, background: background, error: Container(color: background, child: const NoImage()));
 }
 
 /// Filled orange button (web: `rounded-xl bg-primary font-bold text-white`).

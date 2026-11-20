@@ -150,11 +150,20 @@ Map<String, dynamic> _answer(int status, String text) {
   return data;
 }
 
-/// Photo under `<backend>/uploads/<folder>`; cars come in four sizes, each fit into a square box (icon 128, thumb 240, grid 480, full 800).
+/// Image under `<backend>/uploads/<folder>` (cars, brands, bodyTypes, dealers, users). Each upload is kept in four
+/// sizes, each fit into a square box: icon 128 / thumb 240 / grid 480 / full 800 (the original name). Small pictures
+/// ask for a small cut to save data (at ~3× screens: icon ≤ 40pt, thumb ≤ 80pt, grid for cards); full only for large views.
+/// SVGs have no cuts; older files may not either — [UploadImage] then falls back to the original.
 String? uploadUrl(String? fileName, {String size = 'full', String folder = 'cars'}) {
   final name = fileName?.trim();
   if (name == null || name.isEmpty) return null;
   if (RegExp(r'^https?://').hasMatch(name)) return name;
-  final prefix = size == 'full' ? '' : '${size}_';
+  final prefix = size == 'full' || name.toLowerCase().endsWith('.svg') ? '' : '${size}_';
   return '${AppConstants.apiUrl}/uploads/$folder/$prefix$name';
+}
+
+/// The original (full) file of a resized cut, or null when [url] isn't one: ".../uploads/cars/thumb_x.jpg" → ".../uploads/cars/x.jpg".
+String? originalImage(String? url) {
+  final m = RegExp(r'^(.*/uploads/[^/]+/)(?:icon|thumb|grid)_([^/]+)$').firstMatch(url ?? '');
+  return m == null ? null : '${m[1]}${m[2]}';
 }

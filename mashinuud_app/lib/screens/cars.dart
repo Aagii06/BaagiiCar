@@ -209,7 +209,7 @@ class _CarsScreenState extends State<CarsScreen> {
                 for (final b in _brands ?? <Brand>[])
                   _LogoTile(
                     label: b.name,
-                    image: uploadUrl(b.logo, folder: 'brands'),
+                    image: uploadUrl(b.logo, size: 'thumb', folder: 'brands'),
                     selected: _search.brandIds.length == 1 && _search.brandIds.first == b.id,
                     onTap: () {
                       final on = _search.brandIds.length == 1 && _search.brandIds.first == b.id;
@@ -669,7 +669,7 @@ class _BodyToggle extends StatelessWidget {
               child: Column(children: [
                 Expanded(
                   child: NetImage(
-                    uploadUrl(type.image, folder: 'bodyTypes'),
+                    uploadUrl(type.image, size: 'thumb', folder: 'bodyTypes'),
                     fit: BoxFit.contain,
                     background: Colors.transparent,
                   ),

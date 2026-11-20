@@ -98,7 +98,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         return (rows: p.rows.map((m) => _Row(m.id, m.name, m.j, subtitle: names[m.brandId] ?? '—')).toList(), count: p.count);
       case 'bodyTypes':
         final all = (await AdminApi.bodyTypes())
-            .map((b) => _Row(b.id, b.name, b.j, subtitle: b.carCount != null ? tr('{carCount} зар', {'carCount': b.carCount}) : null, image: catalogImage(b.image, 'bodyTypes'), hasImage: true))
+            .map((b) => _Row(b.id, b.name, b.j, subtitle: b.carCount != null ? tr('{carCount} зар', {'carCount': b.carCount}) : null, image: catalogImage(b.image, 'bodyTypes', size: 'icon'), hasImage: true))
             .toList();
         return _local(all);
       default:
@@ -113,7 +113,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   _Row _brandRow(Brand b) => _Row(b.id, b.name, b.j,
-      subtitle: [b.country, if (b.carCount != null) tr('{carCount} зар', {'carCount': b.carCount})].whereType<String>().join(' · '), image: catalogImage(b.logo, 'brands'), hasImage: true);
+      subtitle: [b.country, if (b.carCount != null) tr('{carCount} зар', {'carCount': b.carCount})].whereType<String>().join(' · '), image: catalogImage(b.logo, 'brands', size: 'icon'), hasImage: true);
 
   Future<void> _edit(_Row? row) async {
     if (_tab.value == 'models' && _brands.isEmpty) {

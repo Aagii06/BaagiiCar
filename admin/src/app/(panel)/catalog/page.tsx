@@ -76,7 +76,7 @@ const brandRow = (b: Brand): Row => ({
   id: b.id,
   name: b.name,
   subtitle: [b.country, b.car_count != null && tr("{n} зар", { n: b.car_count })].filter(Boolean).join(" · "),
-  image: catalogImage(b.logo, "brands"),
+  image: catalogImage(b.logo, "brands", "icon"),
   values: { ...b },
 });
 
@@ -88,7 +88,7 @@ async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
     const rows = await getBodyTypes();
     return {
       brands: [],
-      rows: rows.map((b) => ({ id: b.id, name: b.name, subtitle: b.car_count != null ? tr("{n} зар", { n: b.car_count }) : undefined, image: catalogImage(b.image, "bodyTypes"), values: { ...b } })),
+      rows: rows.map((b) => ({ id: b.id, name: b.name, subtitle: b.car_count != null ? tr("{n} зар", { n: b.car_count }) : undefined, image: catalogImage(b.image, "bodyTypes", "icon"), values: { ...b } })),
     };
   }
   const rows = await getLocations();
@@ -99,7 +99,7 @@ async function loadTab(tab: Tab): Promise<{ rows: Row[]; brands: Brand[] }> {
 function ImageInput({ value, folder, onChange }: { value: string; folder: NonNullable<FieldDef["folder"]>; onChange: (v: string) => void }) {
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
-  const preview = catalogImage(value, folder);
+  const preview = catalogImage(value, folder, "icon");
 
   const pick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

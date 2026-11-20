@@ -14,7 +14,8 @@ import 'package:mashinuud_app/app/i18n.dart';
 void openCar(BuildContext context, Car car) =>
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => CarDetailScreen(carId: car.id, preview: car)));
 
-/// A car's photo over the default "image coming soon" picture; the photo fades in once loaded.
+/// A car's photo: a skeleton while it loads, then it fades in; the default "no image" picture when there is none
+/// or it fails. [size]: thumb for small list pictures, grid for cards, full only for a large view.
 class CarImage extends StatelessWidget {
   final Car car;
   final String size;
@@ -26,20 +27,9 @@ class CarImage extends StatelessWidget {
     final url = uploadUrl(car.image, size: size);
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
-      child: Stack(fit: StackFit.expand, children: [
-        // "No image" while there is no photo, while it loads (however slowly), and if it fails — same as the website.
-        const ColoredBox(color: Colors.white, child: NoImage()),
-        if (url != null)
-          Image.network(
-            url,
-            fit: BoxFit.cover,
-            gaplessPlayback: true,
-            frameBuilder: (_, child, frame, sync) => sync
-                ? child
-                : AnimatedOpacity(opacity: frame == null ? 0 : 1, duration: const Duration(milliseconds: 300), child: child),
-            errorBuilder: (_, _, _) => const SizedBox.shrink(),
-          ),
-      ]),
+      child: SizedBox.expand(
+        child: UploadImage(url, background: Colors.white, error: const ColoredBox(color: Colors.white, child: NoImage())),
+      ),
     );
   }
 }

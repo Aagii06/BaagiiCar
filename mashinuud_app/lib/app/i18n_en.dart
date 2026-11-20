@@ -420,6 +420,7 @@ const appEn = <String, String>{
   'Орж ирсэн он оруулна уу': 'Enter the year of import',
   'Орж ирсэн он үйлдвэрлэсэн оноос өмнө байж болохгүй': 'The year of import can\'t be before the year of manufacture',
   'Орон нутаг дугаартай': 'Provincial plate',
+  'Тодорхойгүй': 'Unknown',
   'Орсон, батлах': 'Received, confirm',
   'Оруулж байна…': 'Uploading…',
   'Профайл': 'Profile',

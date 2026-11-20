@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
       vehicle_type: { type: DataTypes.STRING },
       // autobox.mn-ээс татсан мэдээлэл (JSON): { plate, vin, fetched_at, fields } - fields-ийг засахгүй
       autobox_data: { type: DataTypes.TEXT },
-      // Улсын дугаар: config/constants.js-ийн plateTypes
+      // Улсын дугаар: config/constants.js-ийн plateTypes ("Тодорхойгүй" — код нь жагсаалтад байхгүй дугаар)
       plate_type: { type: DataTypes.STRING(30) },
       // Лизингээр авах боломжтой эсэх
       is_leasing: { type: DataTypes.BOOLEAN, defaultValue: false },

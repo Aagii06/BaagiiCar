@@ -259,16 +259,40 @@ class CarConst {
   static const driveTypes = ['FWD', 'RWD', '4WD'];
   static const steerings = ['Зүүн', 'Баруун'];
   static const vehicleTypes = ['Суудлын', 'Туулах чадвар сайтай', 'Олон зориулалттай', 'Ердийн тэвштэй автомашин', 'Бүхээгтэй', 'Микроавтобус', 'Ачааны', 'Автобус', 'Тусгай зориулалтын', 'Бусад'];
-  static const plateTypes = ['Дугаар аваагүй', 'УБ дугаартай', 'Орон нутаг дугаартай'];
+  static const plateTypes = ['Дугаар аваагүй', 'УБ дугаартай', 'Орон нутаг дугаартай', 'Тодорхойгүй'];
 
-  /// First two plate letters of Ulaanbaatar plates ("1234 УБА"); add 'БР', 'НА' etc. here if needed.
-  static const ubPlateCodes = ['УБ', 'УН', 'УА', 'УЕ', 'УК'];
+  /// Region of a plate by its first two letters ("1234 ДАА" → Дархан-Уул).
+  static const plateRegions = {
+    // Улаанбаатар
+    'УБ': 'Улаанбаатар', 'УН': 'Улаанбаатар', 'УА': 'Улаанбаатар', 'УЕ': 'Улаанбаатар', 'УК': 'Улаанбаатар',
+    'БР': 'Багануур (Улаанбаатар)', 'НА': 'Налайх (Улаанбаатар)',
+    // 21 аймаг
+    'АР': 'Архангай', 'БӨ': 'Баян-Өлгий', 'БХ': 'Баянхонгор', 'БУ': 'Булган', 'ГА': 'Говь-Алтай', 'ГС': 'Говьсүмбэр',
+    'ДА': 'Дархан-Уул', 'ДГ': 'Дорноговь', 'ДО': 'Дорнод', 'ДУ': 'Дундговь', 'ЗА': 'Завхан', 'ОР': 'Орхон',
+    'ӨВ': 'Өвөрхангай', 'ӨМ': 'Өмнөговь', 'СҮ': 'Сүхбаатар', 'СЭ': 'Сэлэнгэ', 'СБ': 'Сэлэнгэ (Сүхбаатар хот)',
+    'ТӨ': 'Төв', 'УВ': 'Увс', 'ХО': 'Ховд', 'ХӨ': 'Хөвсгөл', 'ХЭ': 'Хэнтий',
+  };
 
-  /// "1234 УБА" / "1234УБА" / "1234 уба" → 'УБ дугаартай'; other letters → 'Орон нутаг дугаартай'; no letters → null.
-  static String? plateTypeOf(String? plate) {
+  /// Codes counted as Ulaanbaatar plates (Багануур, Налайх included).
+  static const ubPlateCodes = ['УБ', 'УН', 'УА', 'УЕ', 'УК', 'БР', 'НА'];
+
+  /// "1234 УБА" / "1234УБА" / "1234 уба" → (type: 'ub', region: 'Улаанбаатар'); an unknown code → 'unknown'.
+  static ({String type, String? region}) classifyPlate(String? plate) {
     final letters = (plate ?? '').replaceAll(RegExp(r'[^А-ЯЁӨҮа-яёөү]'), '').toUpperCase();
-    if (letters.length < 2) return null;
-    return ubPlateCodes.contains(letters.substring(0, 2)) ? 'УБ дугаартай' : 'Орон нутаг дугаартай';
+    final code = letters.length < 2 ? letters : letters.substring(0, 2);
+    if (ubPlateCodes.contains(code)) return (type: 'ub', region: plateRegions[code]);
+    if (plateRegions.containsKey(code)) return (type: 'local', region: plateRegions[code]);
+    return (type: 'unknown', region: null);
+  }
+
+  /// The form's plate_type for a plate: 'УБ дугаартай' / 'Орон нутаг дугаартай' / 'Тодорхойгүй' (code not in the list); null with no plate.
+  static String? plateTypeOf(String? plate) {
+    if ((plate ?? '').trim().isEmpty) return null;
+    return switch (classifyPlate(plate).type) {
+      'ub' => 'УБ дугаартай',
+      'local' => 'Орон нутаг дугаартай',
+      _ => 'Тодорхойгүй',
+    };
   }
   static const exteriorColors = ['Цагаан', 'Хар', 'Саарал', 'Мөнгөлөг', 'Улаан', 'Цэнхэр', 'Ногоон', 'Шар', 'Улбар шар', 'Хүрэн', 'Бор', 'Шампань', 'Ягаан', 'Нил ягаан', 'Бусад'];
   static const interiorColors = ['Хар', 'Саарал', 'Бор', 'Шаргал', 'Цагаан', 'Хүрэн', 'Улаан', 'Хослол', 'Бусад'];

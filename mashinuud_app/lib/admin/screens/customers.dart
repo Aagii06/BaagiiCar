@@ -14,7 +14,7 @@ class CustomerAvatar extends StatelessWidget {
   const CustomerAvatar(this.customer, {super.key, this.size = 40});
   @override
   Widget build(BuildContext context) =>
-      Avatar(url: catalogImage(customer.profile, 'users'), name: customer.displayName, size: size, background: AppPalette.muted, foreground: AppPalette.foreground);
+      Avatar(url: catalogImage(customer.profile, 'users', size: size <= 40 ? 'icon' : 'thumb'), name: customer.displayName, size: size, background: AppPalette.muted, foreground: AppPalette.foreground);
 }
 
 /// Web visitors (`customers` table): they sign up themselves with a one-time code.

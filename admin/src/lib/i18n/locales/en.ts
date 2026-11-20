@@ -443,6 +443,7 @@ export const en: Dict = {
   "Дугаар аваагүй": "No plate",
   "УБ дугаартай": "Ulaanbaatar plate",
   "Орон нутаг дугаартай": "Provincial plate",
+  "Тодорхойгүй": "Unknown",
   "Цагаан": "White",
   "Хар": "Black",
   "Саарал": "Grey",

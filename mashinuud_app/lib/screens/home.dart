@@ -459,7 +459,7 @@ class _BrandGrid extends StatelessWidget {
                           child: Tooltip(
                             message: b.name,
                             child: NetImage(
-                              uploadUrl(b.logo, folder: 'brands'),
+                              uploadUrl(b.logo, size: 'thumb', folder: 'brands'),
                               fit: BoxFit.contain,
                               background: AppPalette.card,
                             ),
@@ -501,7 +501,7 @@ class _BodyTypes extends StatelessWidget {
                 color: _tints[i % _tints.length],
                 title: items[i].name,
                 subtitle: tr('{carCount} машин', {'carCount': items[i].carCount}),
-                image: uploadUrl(items[i].image, folder: 'bodyTypes'),
+                image: uploadUrl(items[i].image, size: 'thumb', folder: 'bodyTypes'),
                 onTap: () => Stores.shell.openCars(CarSearch(bodyTypeIds: [items[i].id])),
               ),
           ],

@@ -2,6 +2,7 @@
 
 import { errorMessage, useToast } from "@/components/common/Toast";
 import { uploadCatalogImage, type UploadFolder } from "@/lib/api/admin";
+import Img from "@/components/common/Img";
 import { catalogImage } from "@/lib/api/config";
 import { cn } from "@/lib/utils";
 import { CircleX, CloudUpload, ImageUp, Loader2, RefreshCw, Trash2, Undo2 } from "lucide-react";
@@ -36,7 +37,8 @@ export default function ImageInput({
   const [dragging, setDragging] = useState(false);
   // The saved file can be missing on the server: then it's offered for adding, like an empty one.
   const [broken, setBroken] = useState<string | null>(null);
-  const saved = catalogImage(value, folder);
+  // The round avatar is 128px across (grid cut), the square preview 80px (thumb cut).
+  const saved = catalogImage(value, folder, round ? "grid" : "thumb");
   const preview = saved && saved !== broken ? saved : null;
   // The image the form opened with: after a new upload / delete, "Буцаах" brings it back.
   const [initial] = useState(value);
@@ -108,8 +110,7 @@ export default function ImageInput({
             )}
           >
             {preview ? (
-              // eslint-disable-next-line @next/next/no-img-element -- uploaded image
-              <img src={preview} alt="" onError={() => setBroken(preview)} className="size-full object-cover" />
+              <Img src={preview} onError={() => setBroken(preview)} className="size-full object-cover" />
             ) : (
               <span className="absolute left-1/2 top-[25%] size-[45%] -translate-x-1/2 rounded-full bg-white" />
             )}
@@ -161,8 +162,7 @@ export default function ImageInput({
   return (
     <div {...dropProps} className={cn("flex items-center gap-4 rounded-2xl border border-border p-3 transition", dragging && "border-primary bg-primary-soft/40")}>
       <span className={cn("relative grid size-20 shrink-0 place-items-center overflow-hidden border border-border bg-white", round ? "rounded-full" : "rounded-xl")}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded image */}
-        <img src={preview} alt="" onError={() => setBroken(preview)} className={cn("size-full", round ? "object-cover" : "object-contain p-1.5")} />
+        <Img src={preview} onError={() => setBroken(preview)} className={cn("size-full", round ? "object-cover" : "object-contain p-1.5")} />
         {uploading && (
           <span className="absolute inset-0 grid place-items-center bg-white/70">
             <Loader2 className="size-5 animate-spin text-primary" />

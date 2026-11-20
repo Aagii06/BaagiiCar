@@ -15,7 +15,7 @@ export interface Car {
   drive_type: string | null;
   steering: string | null;
   vehicle_type?: string | null;
-  /** "Дугаар аваагүй" / "УБ дугаартай" / "Орон нутаг дугаартай". */
+  /** "Дугаар аваагүй" / "УБ дугаартай" / "Орон нутаг дугаартай" / "Тодорхойгүй". */
   plate_type?: string | null;
   /** Лизингээр авах боломжтой эсэх. */
   is_leasing?: boolean | number | null;

@@ -1,5 +1,5 @@
 import Img from "@/components/common/Img";
-import { uploadUrl } from "@/lib/api/config";
+import { uploadUrl, type ImageSize } from "@/lib/api/config";
 import { cn, initials } from "@/lib/utils";
 
 /**
@@ -10,6 +10,7 @@ export default function DealerAvatar({
   logo,
   name,
   className,
+  size = "thumb",
   ...props
 }: {
   /** File name in `uploads/dealers`. */
@@ -17,6 +18,8 @@ export default function DealerAvatar({
   /** Dealer name, for the initials fallback. */
   name: string | null | undefined;
   className?: string;
+  /** Resized cut: thumb (≤120px) fits every avatar; full only for a large view. */
+  size?: ImageSize;
   skeletonClassName?: string;
 } & Pick<React.ImgHTMLAttributes<HTMLImageElement>, "loading" | "fetchPriority">) {
   const fallback = (
@@ -32,5 +35,5 @@ export default function DealerAvatar({
       <span className="text-[38cqw] leading-none">{initials(name, "start")}</span>
     </span>
   );
-  return <Img src={uploadUrl(logo, "full", "dealers")} className={className} fallback={fallback} {...props} />;
+  return <Img src={uploadUrl(logo, size, "dealers")} className={className} fallback={fallback} {...props} />;
 }

@@ -551,4 +551,5 @@ class PhotoItem {
 }
 
 /// Brand logos, body-type icons, profile photos and dealer logos: the DB keeps only the file name.
-String? catalogImage(String? name, String folder) => uploadUrl(name, folder: folder);
+/// [size]: icon / thumb / grid cut for small pictures (see [uploadUrl]); full for large views.
+String? catalogImage(String? name, String folder, {String size = 'full'}) => uploadUrl(name, folder: folder, size: size);

@@ -7,16 +7,36 @@ export const DRIVE_TYPES = ["FWD", "RWD", "4WD"];
 export const STEERINGS = ["Зүүн", "Баруун"];
 /** Registry categories (autobox vehicleTypeName); a registry value outside this list is still kept on the ad. */
 export const VEHICLE_TYPES = ["Суудлын", "Туулах чадвар сайтай", "Олон зориулалттай", "Ердийн тэвштэй автомашин", "Бүхээгтэй", "Микроавтобус", "Ачааны", "Автобус", "Тусгай зориулалтын", "Бусад"];
-export const PLATE_TYPES = ["Дугаар аваагүй", "УБ дугаартай", "Орон нутаг дугаартай"];
+export const PLATE_TYPES = ["Дугаар аваагүй", "УБ дугаартай", "Орон нутаг дугаартай", "Тодорхойгүй"];
 
-/** First two plate letters of Ulaanbaatar plates ("1234 УБА"); add "БР", "НА" etc. here if needed. */
-const UB_PLATE_CODES = ["УБ", "УН", "УА", "УЕ", "УК"];
+/** Region of a plate by its first two letters ("1234 ДАА" → Дархан-Уул). */
+export const PLATE_REGIONS: Record<string, string> = {
+  // Улаанбаатар
+  УБ: "Улаанбаатар", УН: "Улаанбаатар", УА: "Улаанбаатар", УЕ: "Улаанбаатар", УК: "Улаанбаатар",
+  БР: "Багануур (Улаанбаатар)", НА: "Налайх (Улаанбаатар)",
+  // 21 аймаг
+  АР: "Архангай", БӨ: "Баян-Өлгий", БХ: "Баянхонгор", БУ: "Булган", ГА: "Говь-Алтай", ГС: "Говьсүмбэр",
+  ДА: "Дархан-Уул", ДГ: "Дорноговь", ДО: "Дорнод", ДУ: "Дундговь", ЗА: "Завхан", ОР: "Орхон",
+  ӨВ: "Өвөрхангай", ӨМ: "Өмнөговь", СҮ: "Сүхбаатар", СЭ: "Сэлэнгэ", СБ: "Сэлэнгэ (Сүхбаатар хот)",
+  ТӨ: "Төв", УВ: "Увс", ХО: "Ховд", ХӨ: "Хөвсгөл", ХЭ: "Хэнтий",
+};
 
-/** "1234 УБА" / "1234УБА" / "1234 уба" → "УБ дугаартай"; other letters → "Орон нутаг дугаартай"; no letters → null. */
+/** Codes counted as Ulaanbaatar plates (Багануур, Налайх included). */
+const UB_PLATE_CODES = ["УБ", "УН", "УА", "УЕ", "УК", "БР", "НА"];
+
+/** "1234 УБА" / "1234УБА" / "1234 уба" → { type: "ub", region: "Улаанбаатар" }; an unknown code → "unknown". */
+export function classifyPlate(plate: string | null | undefined): { type: "ub" | "local" | "unknown"; region: string | null } {
+  const code = (plate ?? "").replace(/[^А-ЯЁӨҮа-яёөү]/g, "").toUpperCase().slice(0, 2);
+  if (UB_PLATE_CODES.includes(code)) return { type: "ub", region: PLATE_REGIONS[code] };
+  if (PLATE_REGIONS[code]) return { type: "local", region: PLATE_REGIONS[code] };
+  return { type: "unknown", region: null };
+}
+
+/** The form's plate_type for a plate: "УБ дугаартай" / "Орон нутаг дугаартай" / "Тодорхойгүй" (code not in the list); null with no plate. */
 export function plateTypeOf(plate: string | null | undefined): string | null {
-  const letters = (plate ?? "").replace(/[^А-ЯЁӨҮа-яёөү]/g, "").toUpperCase();
-  if (letters.length < 2) return null;
-  return UB_PLATE_CODES.includes(letters.slice(0, 2)) ? "УБ дугаартай" : "Орон нутаг дугаартай";
+  if (!plate?.trim()) return null;
+  const { type } = classifyPlate(plate);
+  return type === "ub" ? "УБ дугаартай" : type === "local" ? "Орон нутаг дугаартай" : "Тодорхойгүй";
 }
 export const EXTERIOR_COLORS = ["Цагаан", "Хар", "Саарал", "Мөнгөлөг", "Улаан", "Цэнхэр", "Ногоон", "Шар", "Улбар шар", "Хүрэн", "Бор", "Шампань", "Ягаан", "Нил ягаан", "Бусад"];
 export const INTERIOR_COLORS = ["Хар", "Саарал", "Бор", "Шаргал", "Цагаан", "Хүрэн", "Улаан", "Хослол", "Бусад"];

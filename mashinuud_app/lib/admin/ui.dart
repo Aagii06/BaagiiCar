@@ -538,9 +538,7 @@ class Avatar extends StatelessWidget {
       child: Text(initials(name), style: TextStyle(fontSize: size * 0.34, fontWeight: FontWeight.w700, color: foreground)),
     );
     if (url == null) return fallback;
-    return ClipOval(
-      child: Image.network(url!, width: size, height: size, fit: BoxFit.cover, errorBuilder: (_, _, _) => fallback),
-    );
+    return ClipOval(child: UploadImage(url, width: size, height: size, error: fallback));
   }
 }
 
@@ -549,7 +547,7 @@ class UserAvatar extends StatelessWidget {
   final double size;
   const UserAvatar(this.user, {super.key, this.size = 40});
   @override
-  Widget build(BuildContext context) => Avatar(url: catalogImage(user?.profile, 'users'), name: user?.fullName ?? '', size: size);
+  Widget build(BuildContext context) => Avatar(url: catalogImage(user?.profile, 'users', size: size <= 40 ? 'icon' : 'thumb'), name: user?.fullName ?? '', size: size);
 }
 
 /// Dealer logo in a white rounded square.
@@ -581,7 +579,7 @@ class DealerLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final url = catalogImage(logo, 'dealers');
+    final url = catalogImage(logo, 'dealers', size: size <= 40 ? 'icon' : 'thumb');
     if (url == null && name != null) return _initials();
     return Container(
       width: size,
@@ -592,7 +590,7 @@ class DealerLogo extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
         child: name == null
             ? NetImage(url, fit: BoxFit.contain, background: Colors.white)
-            : Image.network(url!, fit: BoxFit.contain, gaplessPlayback: true, errorBuilder: (_, _, _) => FittedBox(child: _initials())),
+            : UploadImage(url, fit: BoxFit.contain, background: Colors.white, error: FittedBox(child: _initials())),
       ),
     );
   }
@@ -783,7 +781,8 @@ class _ImageUploadFieldState extends State<ImageUploadField> {
 
   @override
   Widget build(BuildContext context) {
-    final url = catalogImage(widget.value, widget.folder);
+    // Round avatar 120pt → grid cut; the square preview 60pt → thumb.
+    final url = catalogImage(widget.value, widget.folder, size: widget.round ? 'grid' : 'thumb');
     final changed = widget.value != _initial;
     final revert = TextButton.icon(
       onPressed: _uploading ? null : () => widget.onChanged(_initial),
@@ -807,7 +806,7 @@ class _ImageUploadFieldState extends State<ImageUploadField> {
                   height: 120,
                   color: const Color(0xFFDEDEDE),
                   child: Stack(fit: StackFit.expand, children: [
-                    if (url != null) Image.network(url, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox()) else const Icon(Icons.person_rounded, size: 72, color: Colors.white),
+                    if (url != null) UploadImage(url, error: const SizedBox()) else const Icon(Icons.person_rounded, size: 72, color: Colors.white),
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Container(
@@ -880,7 +879,7 @@ class _ImageUploadFieldState extends State<ImageUploadField> {
           height: 72,
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(color: Colors.white, border: Border.all(color: AppPalette.border), borderRadius: BorderRadius.circular(AppRadius.md)),
-          child: _uploading ? Center(child: spinner) : Image.network(url, fit: BoxFit.contain, errorBuilder: (_, _, _) => const NoImage()),
+          child: _uploading ? Center(child: spinner) : UploadImage(url, fit: BoxFit.contain, background: Colors.white, error: const NoImage()),
         ),
         const SizedBox(width: 14),
         Expanded(

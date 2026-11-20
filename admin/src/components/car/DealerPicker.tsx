@@ -14,7 +14,7 @@ import { useState } from "react";
 import { tr } from "@/lib/i18n/translations";
 
 export function DealerAvatar({ dealer, className = "size-11" }: { dealer: Pick<Dealer, "name" | "logo">; className?: string }) {
-  const logo = catalogImage(dealer.logo, "dealers");
+  const logo = catalogImage(dealer.logo, "dealers", "icon");
   return (
     <Img
       src={logo}

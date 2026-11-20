@@ -626,7 +626,9 @@ class _CarFormState extends State<CarForm> {
         _notifyDirty();
       });
     }
-    final name = [info['brand'], info['model'], info['manufactured_year']].where((v) => v != null && '$v'.isNotEmpty).join(' ');
+    // "1234 ДАА" → "… · Дархан-Уул" at the end of the note.
+    final region = CarConst.classifyPlate(info['plate']?.toString()).region;
+    final name = [info['brand'], info['model'], info['manufactured_year']].where((v) => v != null && '$v'.isNotEmpty).join(' ') + (region != null ? ' · $region' : '');
     if (brand == null) return tr('{name} олдлоо. "{brand}" үйлдвэр каталогид алга, гараар сонгоно уу', {'name': name, 'brand': info['brand'] ?? '—'});
     return tr('{name} — бүртгэлийн мэдээлэл бөглөгдөж түгжигдлээ. Хурдны хайрцгийг сонгоно уу', {'name': name});
   }
