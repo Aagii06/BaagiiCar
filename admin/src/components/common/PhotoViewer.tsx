@@ -140,7 +140,13 @@ export default function PhotoViewer({ urls, start, onClose }: { urls: string[]; 
                     current && zoomed && "cursor-grab touch-none active:cursor-grabbing"
                   )}
                 >
-                  <Img src={url} alt="" className="max-h-full max-w-full select-none object-contain" draggable={false} />
+                  <Img
+                    src={url}
+                    className="max-h-full max-w-full select-none object-contain"
+                    skeletonClassName="bg-white/10"
+                    placeholderClassName="aspect-[4/3] w-full"
+                    draggable={false}
+                  />
                 </div>
               </div>
             );
