@@ -1,6 +1,6 @@
 {
-    "name": "mashinuud_app",
-    "short_name": "mashinuud_app",
+    "name": "Cardealer",
+    "short_name": "Cardealer",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
