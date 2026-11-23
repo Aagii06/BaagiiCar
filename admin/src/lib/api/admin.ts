@@ -46,7 +46,7 @@ export async function forgotReset(reset_token: string, password: string, passwor
   });
 }
 
-/** Also returns a fresh 7-day token, so every visit slides the session forward. */
+/** Also returns a fresh 14-day token (other calls renew it too, via `X-Refresh-Token`). */
 export async function getUserData() {
   const res = await apiFetch<{ success: boolean; loggedUser: User | null; token?: string }>("/api/users/get-user-data", {
     method: "POST",

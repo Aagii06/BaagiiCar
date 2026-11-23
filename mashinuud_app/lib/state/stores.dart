@@ -119,11 +119,19 @@ class CompareStore extends ChangeNotifier {
   }
 }
 
-/// Phone + code sign-in. The token (7 days) is kept on the device and re-checked against the backend on start.
+/// Phone + code sign-in. The token is kept on the device, re-checked against the backend on start, and renewed
+/// while in use — it expires 14 days after the last action.
 class AuthStore extends ChangeNotifier {
   static const _key = 'baagii_car_auth';
   SharedPreferences? _prefs;
   Session? _session;
+
+  AuthStore() {
+    tokenRefreshListeners.add((old, token) {
+      final s = _session;
+      if (s != null && s.token == old) signIn(Session(token, s.user));
+    });
+  }
 
   WebUser? get user => _session?.user;
   String? get token => _session?.token;

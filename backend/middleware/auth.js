@@ -1,25 +1,39 @@
 const jwt = require("jsonwebtoken");
 const { roles } = require("../config/constants");
 
+// Нэвтэрсэн эрх сүүлийн үйлдлээс хойш 14 хоног хүчинтэй: хамгаалалттай хүсэлт бүрт
+// (цагт нэгээс олонгүй) шинэ токен `X-Refresh-Token` толгойгоор буцаж, клиент солино.
+const SESSION_TTL = "14d";
+const REFRESH_AFTER_SEC = 60 * 60;
+
 module.exports.authLogin = (user, callback) => {
   jwt.sign(
     { user },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" },
+    { expiresIn: SESSION_TTL },
     (err, token) => callback(token),
   );
 };
 
-// Токеноос хэрэглэгчийг уншина; байхгүй / буруу / хугацаа дууссан бол null
-const readToken = (req) => {
+// Токены payload; байхгүй / буруу / хугацаа дууссан бол null
+const readPayload = (req) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return null;
   try {
-    return jwt.verify(token, process.env.JWT_SECRET).user ?? null;
+    return jwt.verify(token, process.env.JWT_SECRET);
   } catch (error) {
     console.log(error);
     return null;
   }
+};
+
+// Токеноос хэрэглэгчийг уншина; байхгүй / буруу / хугацаа дууссан бол null
+const readToken = (req) => readPayload(req)?.user ?? null;
+
+// Хүчинтэй токен цагаас хуучин бол шинэ 14 хоногийн токен толгойд нэмнэ.
+const refreshSession = (res, payload) => {
+  if (!payload?.user || Date.now() / 1000 - (payload.iat ?? 0) < REFRESH_AFTER_SEC) return;
+  res.setHeader("X-Refresh-Token", jwt.sign({ user: payload.user }, process.env.JWT_SECRET, { expiresIn: SESSION_TTL }));
 };
 
 module.exports.readToken = readToken;
@@ -44,7 +58,8 @@ const unauthorized = (res) => res.status(401).json({ success: false, message: "�
 // түүний id нь customers-ийнх тул users-ийн ижил id-тай андуурагдах ёсгүй.
 // Блоклогдсон / идэвхгүй / устгагдсан хэрэглэгчийн хуучин токен хүчингүй.
 module.exports.protect = async (req, res, next) => {
-  const user = readToken(req);
+  const payload = readPayload(req);
+  const user = payload?.user;
   if (!user || user.customer) return unauthorized(res);
   try {
     const { users } = require("../models");
@@ -56,14 +71,17 @@ module.exports.protect = async (req, res, next) => {
     return next(error);
   }
   req.loggedUser = user;
+  refreshSession(res, payload);
   next();
 };
 
 // Вэбийн зочин (customers хүснэгт) - зөвхөн /web/auth/otp-login-оор авсан токен
 module.exports.protectCustomer = async (req, res, next) => {
-  const user = readToken(req);
+  const payload = readPayload(req);
+  const user = payload?.user;
   if (!user?.customer) return unauthorized(res);
   req.loggedUser = user;
+  refreshSession(res, payload);
   next();
 };
 

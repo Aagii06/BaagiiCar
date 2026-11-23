@@ -1,6 +1,6 @@
 "use client";
 
-import { UNAUTHORIZED_EVENT } from "@/lib/api/client";
+import { TOKEN_REFRESHED_EVENT, UNAUTHORIZED_EVENT } from "@/lib/api/client";
 import { getMe, type Session, type WebUser } from "@/lib/api/auth";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
@@ -37,7 +37,8 @@ function writeStored(session: Session | null) {
   }
 }
 
-/** Phone + code sign-in. The JWT (7 days) is kept in this browser and re-checked against the backend on load. */
+/** Phone + code sign-in. The JWT is kept in this browser, re-checked against the backend on load, and renewed while
+ * the visitor is active — it expires 14 days after the last action. */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
@@ -67,10 +68,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(null);
     };
     const onStorage = (e: StorageEvent) => e.key === STORAGE_KEY && setSession(readStored());
+    // Swap in a renewed token, only for the session it was issued to (not after a sign-out).
+    const onRefreshed = (e: Event) => {
+      const { oldToken, token } = (e as CustomEvent<{ oldToken: string; token: string }>).detail;
+      setSession((cur) => {
+        if (cur?.token !== oldToken) return cur;
+        const next = { ...cur, token };
+        writeStored(next);
+        return next;
+      });
+    };
     window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    window.addEventListener(TOKEN_REFRESHED_EVENT, onRefreshed);
     window.addEventListener("storage", onStorage);
     return () => {
       window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+      window.removeEventListener(TOKEN_REFRESHED_EVENT, onRefreshed);
       window.removeEventListener("storage", onStorage);
     };
   }, []);

@@ -580,7 +580,7 @@ module.exports.getUserData = async (req, res) => {
       result.loggedUser = user;
       result.message = message;
       if (!success || !user) return res.status(200).json(result);
-      // Хандах бүрт шинэ 7 хоногийн токен өгнө: идэвхтэй хэрэглэгчийн нэвтрэлт сунгагдана
+      // Хандах бүрт шинэ 14 хоногийн токен өгнө: идэвхтэй хэрэглэгчийн нэвтрэлт сунгагдана
       authLogin(user, (token) => {
         result.token = token;
         return res.status(200).json(result);

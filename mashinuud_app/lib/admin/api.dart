@@ -14,6 +14,13 @@ class AdminSession extends ChangeNotifier {
   String? _token;
   AUser? _user;
 
+  AdminSession() {
+    // Renewed while in use: the session ends 14 days after the last action.
+    tokenRefreshListeners.add((old, token) {
+      if (_token == old && _user != null) _set(token, _user!);
+    });
+  }
+
   String? get token => _token;
   AUser? get user => _user;
   bool get signedIn => _token != null && _user != null;
@@ -59,7 +66,7 @@ class AdminSession extends ChangeNotifier {
     _set(data['token'] as String, user);
   }
 
-  /// Re-reads the signed-in user (and slides the 7-day token forward). Signs out a revoked session.
+  /// Re-reads the signed-in user (and slides the 14-day token forward). Signs out a revoked session.
   Future<void> refresh() async {
     if (_token == null) return;
     try {

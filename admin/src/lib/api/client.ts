@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "./config";
-import { clearSession, getAuthToken } from "./token";
+import { clearSession, getAuthToken, replaceAuthToken } from "./token";
 import { tr } from "@/lib/i18n/translations";
 
 /** Fired on `window` when the backend rejects the stored token. */
@@ -69,6 +69,11 @@ export async function apiFetch<T>(
     if (err instanceof TypeError) throw new ApiError(0, tr("Сервертэй холбогдож чадсангүй"));
     throw err;
   }
+
+  // The session slides: while the user is active the backend sends a renewed
+  // 14-day token, so it only expires after 14 days without any action.
+  const refreshed = response.headers.get("X-Refresh-Token");
+  if (auth && refreshed) replaceAuthToken(refreshed);
 
   const isJson = response.headers.get("content-type")?.includes("application/json");
   const data = isJson ? await response.json() : undefined;

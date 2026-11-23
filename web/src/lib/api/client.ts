@@ -5,6 +5,12 @@ import { API_BASE_URL } from "./config";
 /** Fired when a signed-in request comes back 401 (token expired or account removed); the session is dropped. */
 export const UNAUTHORIZED_EVENT = "web-unauthorized";
 
+/**
+ * Fired when the backend renews a signed-in token (`X-Refresh-Token`), with
+ * `{ oldToken, token }`: the session is kept 14 days from the last action.
+ */
+export const TOKEN_REFRESHED_EVENT = "web-token-refreshed";
+
 export class ApiError extends Error {
   status: number;
   /** The response's `data`, e.g. `{ resend_in }` when a code was asked for too soon. */
@@ -62,6 +68,11 @@ export async function apiFetch<T>(
     if (err instanceof TypeError) throw new ApiError(0, tr("Сервертэй холбогдож чадсангүй"));
     throw err;
   }
+
+  const refreshed = response.headers.get("X-Refresh-Token");
+  const sent = requestHeaders.get("Authorization")?.split(" ")[1];
+  if (refreshed && sent && typeof window !== "undefined")
+    window.dispatchEvent(new CustomEvent(TOKEN_REFRESHED_EVENT, { detail: { oldToken: sent, token: refreshed } }));
 
   const isJson = response.headers.get("content-type")?.includes("application/json");
   const data = isJson ? await response.json() : undefined;

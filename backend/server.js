@@ -12,7 +12,8 @@ const { scheduleDigest } = require("./helper/digestHelper");
 const { schedulePhoneVerifyCleanup } = require("./helper/phoneVerifyHelper");
 const { scheduleCarPurge } = require("./helper/carPurgeHelper");
 
-app.use(cors());
+// Вэб/админ хуудас сунгасан токеныг уншихын тулд толгойг ил гаргана.
+app.use(cors({ exposedHeaders: ["X-Refresh-Token"] }));
 app.use(express.static(__dirname + "/public"));
 app.use(
   bodyParser.urlencoded({

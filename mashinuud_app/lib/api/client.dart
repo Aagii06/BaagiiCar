@@ -41,6 +41,18 @@ String listQuery({List<Condition> filter = const [], List<Map<String, Object>>? 
 
 final HttpClient _http = HttpClient()..connectionTimeout = const Duration(seconds: 12);
 
+/// Called with (sent token, renewed token) when the backend renews a signed-in session (`X-Refresh-Token`):
+/// a session lasts 14 days from the last action. The customer and admin sessions each swap in their own.
+final List<void Function(String oldToken, String token)> tokenRefreshListeners = [];
+
+void _noteRefresh(String? sent, HttpClientResponse response) {
+  final renewed = response.headers.value('x-refresh-token');
+  if (sent == null || renewed == null || renewed.isEmpty) return;
+  for (final listener in List.of(tokenRefreshListeners)) {
+    listener(sent, renewed);
+  }
+}
+
 /// JSON request. The backend answers failures with HTTP 200 and `success: false`, so that flag is checked too.
 Future<Map<String, dynamic>> apiFetch(String path, {String method = 'GET', Object? body, String? token}) async {
   final uri = Uri.parse('${AppConstants.apiUrl}$path');
@@ -55,6 +67,7 @@ Future<Map<String, dynamic>> apiFetch(String path, {String method = 'GET', Objec
       request.add(utf8.encode(jsonEncode(body)));
     }
     response = await request.close().timeout(const Duration(seconds: 20));
+    _noteRefresh(token, response);
     text = await response.transform(utf8.decoder).join();
   } on SocketException {
     throw ApiError(0, tr('Сервертэй холбогдож чадсангүй'));
@@ -117,6 +130,7 @@ Future<Map<String, dynamic>> apiUpload(String path, {Map<String, String> fields 
     request.headers.contentType = ContentType('multipart', 'form-data', parameters: {'boundary': boundary});
     request.add(body.takeBytes());
     response = await request.close().timeout(const Duration(seconds: 120));
+    _noteRefresh(token, response);
     text = await response.transform(utf8.decoder).join();
   } on SocketException {
     throw ApiError(0, tr('Сервертэй холбогдож чадсангүй'));
