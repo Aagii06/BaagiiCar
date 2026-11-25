@@ -471,7 +471,7 @@ class _PhoneFieldState extends State<PhoneField> {
         keyboardType: TextInputType.phone,
         inputFormatters: phoneFormatters,
         decoration: InputDecoration(
-            hintText: '9911 2345', errorText: widget.invalid ? '' : null, errorStyle: const TextStyle(height: 0, fontSize: 0), suffixIcon: widget.suffix),
+            hintText: tr('Утасны дугаар'), errorText: widget.invalid ? '' : null, errorStyle: const TextStyle(height: 0, fontSize: 0), suffixIcon: widget.suffix),
         onChanged: widget.onChanged,
       );
 }
