@@ -400,6 +400,13 @@ class _CarRowState extends State<CarRow> {
                         const Icon(Icons.phone_outlined, size: 14, color: AppPalette.mutedForeground),
                         const SizedBox(width: 3),
                         Text('${car.phoneViewCount}', style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground)),
+                        // When the ad last went to the top of the list: renewed, else added.
+                        if ((car.listedAt ?? car.renewedAt ?? car.createdAt) case final at?) ...[
+                          const SizedBox(width: 12),
+                          const Icon(Icons.history_rounded, size: 14, color: AppPalette.mutedForeground),
+                          const SizedBox(width: 3),
+                          Flexible(child: Text(at.length > 16 ? at.substring(0, 16) : at, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppPalette.mutedForeground))),
+                        ],
                       ]),
                       if (s == 'rejected' && car.rejectReason != null)
                         Padding(

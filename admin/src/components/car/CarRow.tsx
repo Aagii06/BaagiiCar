@@ -12,7 +12,7 @@ import type { Car } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { CAR_RENEW_DAYS, CAR_RESTORE_DAYS, CAR_STATUS, ROLES } from "@/lib/constants";
 import { carTitle, cn, daysUntil, formatMoney, formatPrice } from "@/lib/utils";
-import { ArchiveRestore, BadgeCheck, Check, Clock, Eye, EyeOff, Phone, RefreshCw, Star, Store, Trash2, Undo2, Loader2 } from "lucide-react";
+import { ArchiveRestore, BadgeCheck, Check, Clock, Eye, EyeOff, History, Phone, RefreshCw, Star, Store, Trash2, Undo2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { tr } from "@/lib/i18n/translations";
@@ -115,6 +115,13 @@ export default function CarRow({ car, onChanged, showDealer, renewPrice }: { car
                 <Phone className="size-3.5" />
                 {car.phone_view_count ?? 0}
               </span>
+              {/* When the ad last went to the top of the list: renewed, else added. */}
+              {(car.listed_at ?? car.renewed_at ?? car.created_at) && (
+                <span className="flex items-center gap-1" title={tr("Сүүлд шинэчилсэн")}>
+                  <History className="size-3.5" />
+                  {(car.listed_at ?? car.renewed_at ?? car.created_at)!.slice(0, 16)}
+                </span>
+              )}
             </p>
             {car.status === "rejected" && car.reject_reason && <p className="mt-1 line-clamp-2 text-xs text-destructive">↩ {car.reject_reason}</p>}
             {/* The admin can renew any time, so the 7-day countdown is only for dealers. */}

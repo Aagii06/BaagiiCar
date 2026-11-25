@@ -29,6 +29,7 @@ export const en: Dict = {
   "Нууллаа, вэб дээр харагдахгүй": "Hidden from the website",
   "Зар үзсэн": "Views",
   "Дугаар харсан": "Phone views",
+  "Сүүлд шинэчилсэн": "Last renewed",
   "Зарын эзэн": "Ad owner",
   "Тайлбар": "Description",
   "Вэб сайт дээр нийтлэгдсэн": "Published on the website",
