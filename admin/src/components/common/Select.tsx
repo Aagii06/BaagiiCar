@@ -106,8 +106,16 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
   const needle = q.trim().toLowerCase();
   const rows = needle ? options.filter((o) => o.text.toLowerCase().includes(needle)) : options;
 
+  // The caller passes a new onClose each render. Rerunning the effect below on every parent render (a focus
+  // handler up the tree re-renders on each tap) would pull focus and scroll back to the chosen row between
+  // the press and the release, so a tap on a row lower down never became a click. Once, on open.
+  const onCloseRef = useRef(onClose);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    onCloseRef.current = onClose;
+  });
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onCloseRef.current();
     window.addEventListener("keydown", onKey);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -119,7 +127,7 @@ function OptionSheet({ title, options, value, onPick, onClose }: { title: string
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = overflow;
     };
-  }, [onClose]);
+  }, []);
 
   // Portal: outside the field's <label>, so taps in the sheet don't re-trigger the select.
   return createPortal(
