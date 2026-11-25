@@ -17,6 +17,7 @@ import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
 import 'package:mashinuud_app/app/i18n.dart';
+import 'package:mashinuud_app/widgets/phone_input.dart';
 
 /// Профайл tab: the signed-in user, the admin sections, switching to the customer side, sign-out.
 class AdminProfileTab extends StatelessWidget {
@@ -212,7 +213,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   late AUser me = AdminApi.session.user!;
   late final _last = TextEditingController(text: me.lastname ?? '');
   late final _first = TextEditingController(text: me.firstname ?? '');
-  late final _phone = TextEditingController(text: me.phonenumber ?? '');
+  late final _phone = PhoneController(text: me.phonenumber ?? '');
   late final _email = TextEditingController(text: me.email ?? '');
   late String _profile = me.profile ?? '';
   late String _verifiedPhone = me.phonenumber ?? '';

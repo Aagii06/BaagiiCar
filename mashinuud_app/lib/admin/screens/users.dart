@@ -7,6 +7,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
 import 'package:mashinuud_app/app/i18n.dart';
+import 'package:mashinuud_app/widgets/phone_input.dart';
 
 /// Admin & Dealer accounts; the last tab lists blocked ones.
 class UsersScreen extends StatefulWidget {
@@ -103,7 +104,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
   AUser? _user;
   final _last = TextEditingController();
   final _first = TextEditingController();
-  final _phone = TextEditingController();
+  final _phone = PhoneController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();

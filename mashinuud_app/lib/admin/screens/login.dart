@@ -9,6 +9,7 @@ import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/app_bar.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/app/i18n.dart';
+import 'package:mashinuud_app/widgets/phone_input.dart';
 
 final _phoneRe = RegExp(r'^[5-9]\d{7}$');
 
@@ -23,7 +24,7 @@ class AdminLoginForm extends StatefulWidget {
 }
 
 class _AdminLoginFormState extends State<AdminLoginForm> {
-  final _phone = TextEditingController();
+  final _phone = PhoneController();
   final _password = TextEditingController();
   String? _error;
   String? _invalid; // 'phone' | 'both'
@@ -144,7 +145,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  late final _phone = TextEditingController(text: widget.phone);
+  late final _phone = PhoneController(text: widget.phone);
   final _code = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();

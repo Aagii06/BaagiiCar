@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mashinuud_app/api/api.dart';
 import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/screens/leasing.dart';
 import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/app/i18n.dart';
+import 'package:mashinuud_app/widgets/phone_input.dart';
 
 const _faq = [
   ('sell', 'Машинаа зарах боломжтой юу?', 'Зарыг манай админ оруулдаг. Машинаа зарах бол утсаар эсвэл чатаар бидэнтэй холбогдоно уу.'),
@@ -201,7 +201,7 @@ class _ContactForm extends StatefulWidget {
 
 class _ContactFormState extends State<_ContactForm> {
   late final _name = TextEditingController(text: Stores.auth.user?.firstname ?? '');
-  late final _phone = TextEditingController(text: Stores.auth.user?.phonenumber ?? '');
+  late final _phone = PhoneController(text: Stores.auth.user?.phonenumber ?? '');
   final _email = TextEditingController();
   late final _message = TextEditingController(
     // Prefilled message to the staff: stays in Mongolian. no-tr
@@ -268,7 +268,7 @@ class _ContactFormState extends State<_ContactForm> {
           TextField(
             controller: _phone,
             keyboardType: TextInputType.phone,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
+            inputFormatters: phoneFormatters,
             decoration: InputDecoration(hintText: tr('Утасны дугаар')),
             onChanged: changed,
           ),

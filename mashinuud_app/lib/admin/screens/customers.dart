@@ -7,6 +7,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
 import 'package:mashinuud_app/app/i18n.dart';
+import 'package:mashinuud_app/widgets/phone_input.dart';
 
 class CustomerAvatar extends StatelessWidget {
   final Customer customer;
@@ -113,7 +114,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   Customer? _c;
   final _last = TextEditingController();
   final _first = TextEditingController();
-  final _phone = TextEditingController();
+  final _phone = PhoneController();
   final _email = TextEditingController();
   String _status = 'active';
   String _initial = '';

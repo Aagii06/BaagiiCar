@@ -11,6 +11,7 @@ import 'package:mashinuud_app/state/stores.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mashinuud_app/app/i18n.dart';
+import 'package:mashinuud_app/widgets/phone_input.dart';
 
 /// Question about an ad (or a general one when [car] is null), as a bottom sheet:
 /// not signed in → phone → 4-digit code first; signed in → straight to the message box.
@@ -255,7 +256,7 @@ class PhoneCodeForm extends StatefulWidget {
 }
 
 class _PhoneCodeFormState extends State<PhoneCodeForm> {
-  final _phone = TextEditingController();
+  final _phone = PhoneController();
   final _code = TextEditingController();
   bool _codeStep = false;
   bool _busy = false;
@@ -340,7 +341,7 @@ class _PhoneCodeFormState extends State<PhoneCodeForm> {
             controller: _phone,
             autofocus: widget.autofocus,
             keyboardType: TextInputType.phone,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
+            inputFormatters: phoneFormatters,
             decoration: InputDecoration(
               hintText: widget.change ? tr('Шинэ дугаар') : tr('Утасны дугаар'),
               prefixIcon: const Icon(Icons.phone_iphone_rounded, size: 20),

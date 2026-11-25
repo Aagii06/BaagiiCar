@@ -11,6 +11,7 @@ import 'package:mashinuud_app/app/theme.dart';
 import 'package:mashinuud_app/widgets/common.dart';
 import 'package:mashinuud_app/widgets/select.dart';
 import 'package:mashinuud_app/app/i18n.dart';
+import 'package:mashinuud_app/widgets/phone_input.dart';
 
 /// Shared pieces of the admin half (admin/src/components/common/*).
 
@@ -437,8 +438,9 @@ class AdminSelect<T> extends StatelessWidget {
   }
 }
 
-/// 8-digit phone input.
-class PhoneField extends StatelessWidget {
+/// 8-digit phone input, shown masked as "9911 2345" (the value stays 8 digits).
+/// Pass a [PhoneController] as [controller] for the mask; without one it keeps its own.
+class PhoneField extends StatefulWidget {
   final TextEditingController? controller;
   final String? initial;
   final ValueChanged<String>? onChanged;
@@ -448,15 +450,29 @@ class PhoneField extends StatelessWidget {
   final bool enabled;
   const PhoneField({super.key, this.controller, this.initial, this.onChanged, this.invalid = false, this.suffix, this.autofocus = false, this.enabled = true});
   @override
+  State<PhoneField> createState() => _PhoneFieldState();
+}
+
+class _PhoneFieldState extends State<PhoneField> {
+  // Without a controller: its own masked one, from `initial`.
+  late final PhoneController? _own = widget.controller == null ? PhoneController(text: widget.initial ?? '') : null;
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => TextFormField(
-        controller: controller,
-        initialValue: controller == null ? initial : null,
-        enabled: enabled,
-        autofocus: autofocus,
+        controller: widget.controller ?? _own,
+        enabled: widget.enabled,
+        autofocus: widget.autofocus,
         keyboardType: TextInputType.phone,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)],
-        decoration: InputDecoration(hintText: '00000000', errorText: invalid ? '' : null, errorStyle: const TextStyle(height: 0, fontSize: 0), suffixIcon: suffix),
-        onChanged: onChanged,
+        inputFormatters: phoneFormatters,
+        decoration: InputDecoration(
+            hintText: '9911 2345', errorText: widget.invalid ? '' : null, errorStyle: const TextStyle(height: 0, fontSize: 0), suffixIcon: widget.suffix),
+        onChanged: widget.onChanged,
       );
 }
 
